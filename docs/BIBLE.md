@@ -48,7 +48,7 @@ menu or settings-file code.
 
 ## 5. The Laws {#UR-§5}
 
-Unity.Ricochet **inherits the org-wide house rules** in `../MindAttic.HouseRules.md`. Of note here:
+Unity.Ricochet **inherits the org-wide house rules** in `../../MindAttic.HouseRules.md`. Of note here:
 HOUSE-LAW-1 (whole-number versioning), HOUSE-LAW-8 (done is verified, not asserted), HOUSE-LAW-15 (don't wait on
 a full local test run before landing — the orchestrator's background run catches the rest).
 
