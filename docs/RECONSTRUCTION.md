@@ -74,6 +74,7 @@ a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `
 | Room graph, how to play, controls, credits | built as MindAttic Components screens | `Core/Menu/MenuFlow`, `Runtime/Menus` |
 | Four hand-laid maps | built (deviation: the original randomised the level, UR-T23) | `Core/Level/Maps` |
 | Endgame recap | built as a list (the original had a podium) | `Runtime/EndgameRecap` |
+| Commands and events: every input a command with a player id, one authority, ordered events (new, UR-T34) | built | `Core/Commands/` (`GameAuthority`, `PlayerState`, `Commands`, `GameEvents`) |
 | Real multiplayer, votes, reconnect, profile | built (new, replaces the hotseat rooms) | `Core/Menu/` (`Lobby`, `VoteMenu`), `Core/Net/ShotWire`, kit |
 | Sound | four synthesised cues, no recordings, no music | `Core/Menu/Sound`, `Runtime/GameAudio` |
 | Art | none imported: shapes and IMGUI | `Runtime/*` |
@@ -118,9 +119,9 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 
 | Standard | State on main | Ticket |
 |---|---|---|
-| Engine-free Core, `noEngineReferences`, tested outside Unity | met: `Ricochet.Core` asmdef, `dotnet test Core.slnx`, 17 test files | kept |
+| Engine-free Core, `noEngineReferences`, tested outside Unity | met: `Ricochet.Core` asmdef, `dotnet test Core.slnx`, 18 test files | kept |
 | Assembly names and one-way boundaries, an Editor assembly | met: `Ricochet.Runtime`, `Ricochet.Editor` (menus and validators), `Ricochet.Tests`, `Ricochet.EditorTests`; Core grouped by domain (Aim, Arsenal, Match, Level, Ai, Menu, Net) with `Ricochet.Core.*` sub-namespaces; `CoreBoundaryTests` fails if Core references anything beyond the BCL | kept |
-| State changes only through commands that produce events | gap: Runtime mutates Core directly | UR-T34 |
+| State changes only through commands that produce events | met: `Core/Commands/` (`GameAuthority` applies `AimCommand`, `SetPowerCommand`, `FireCommand`, `CycleWeaponCommand`, `CycleItemCommand`, `FuseCommand`, `UseItemCommand`, `DetonateCommand`, `DriveCommand`, `EndTurnCommand`, `RerollCommand`, `VoteCommand`, each carrying a player id, and returns ordered events); `Player`'s `[ToServer]` calls are those commands and `Arena` plays the events | kept |
 | Content and tuning as validated data | gap: rules, maps, lines and slides are C# initialisers | UR-T35 |
 | Input System | gap: Active Input Handling is the legacy manager, no actions asset, no rebinding | UR-T36 |
 | URP behind a pipeline-agnostic layer | gap: no pipeline asset assigned in Graphics or Quality | UR-T37 |

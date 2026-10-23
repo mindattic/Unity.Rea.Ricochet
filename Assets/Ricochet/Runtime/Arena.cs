@@ -25,6 +25,10 @@
 // health and score (Match.Drop); on their turn the clock waits for them, and every peer's HUD says so through Turns. Back
 // in time (SeatReclaimed) they resume the same turn (Match.Rejoin); once the kit gives the seat up (SeatReleased) they leave.
 // Votes (UR-T14): a third vote, the kit's kick, removes a player; the kit frees their seat at once, so they leave the same way.
+// Commands and events (UR-T34): the rules above are applied by Core's GameAuthority, the one place that changes the match, the
+// loadouts, the crates and the hazards; Arena builds it, feeds it the clock and the match's seats, and listens to the events
+// it publishes (OnEvent): it spawns and lands the crate objects, knocks down the dummy a shot struck, adopts the level it
+// laid, starts an AI seat's turn, and has the announcer speak. Nothing here changes the game another way.
 using System;
 using System.Collections.Generic;
 using Ricochet.Core.Ai;
@@ -37,14 +41,15 @@ using Ricochet.Core.Net;
 using Unity.Multiplayer;      // NetSession, NetKey
 using Unity.Multiplayer.Core; // VoteKind
 using UnityEngine;
+using Cmd = Ricochet.Core.Commands;
 
 namespace Ricochet
 {
     public sealed class Arena
     {
         public const int DummyCount = 3;
-        public const string DummyKeyPrefix = "dummy:";
-        public const string SeatKeyPrefix = "seat:";
+        public const string DummyKeyPrefix = Cmd.TargetIds.DummyPrefix;
+        public const string SeatKeyPrefix = Cmd.TargetIds.SeatPrefix;
         public const string AiKeyPrefix = "ai:";
         public const string RestartVote = "restart";
         public const string MatchVote = "match";
@@ -132,11 +137,7 @@ namespace Ricochet
         private readonly NetSession _session;
         private readonly GameObject _dummyPrefab;
         private readonly System.Random _aiDice = new System.Random();
-        private readonly System.Random _dropDice = new System.Random();
-        private readonly System.Random _layoutDice = new System.Random();
-        private readonly HazardField _hazards;
-        private Match _match;
-        private DropField _field;
+        private readonly Cmd.GameAuthority _authority;
         private Turns _turns;
         private readonly Dictionary<int, int> _humanSeats = new Dictionary<int, int>(); // kit seat -> match seat
         private MatchSetup _setup = new MatchSetup();
@@ -149,17 +150,45 @@ namespace Ricochet
         {
             _session = session ?? throw new ArgumentNullException(nameof(session));
             _dummyPrefab = dummyPrefab ?? throw new ArgumentNullException(nameof(dummyPrefab));
-            _hazards = new HazardField(Level, HazardRules, new System.Random());
+            _authority = new Cmd.GameAuthority(new World(session), Rules, MatchRules, ArsenalRules, DropRules, HazardRules);
+            _authority.Published += OnEvent;
             _hazards.Added += SpawnHazard;
             _hazards.Changed += MirrorHazard;
             _hazards.Removed += hazard => _session.Objects.Despawn(LevelHazard.KeyFor(hazard.Id));
         }
 
+        // The authority's state, by the names this class has always used.
+        private Match _match => _authority.Match;
+
+        private HazardField _hazards => _authority.Hazards;
+
+        private DropField _field => _authority.Crates;
+
+        /// <summary>The single authority that applies every player's commands (server only; Player gives it theirs).</summary>
+        public Cmd.GameAuthority Authority => _authority;
+
         /// <summary>
         /// True when each round (and practice) is laid with the rules' electric arcs, laser gates and foliage. The game's
         /// scene turns it on; off, the only hazards are the ones players make (shield walls, redirectors, breaches).
         /// </summary>
-        public bool LaysHazards { get; set; }
+        public bool LaysHazards
+        {
+            get => _authority.LaysHazards;
+            set => _authority.LaysHazards = value;
+        }
+
+        // Where the practice dummies stand, for the authority's targets.
+        private sealed class World : Cmd.IGameWorld
+        {
+            private readonly NetSession _session;
+
+            public World(NetSession session)
+            {
+                _session = session;
+            }
+
+            public IReadOnlyList<Target> DummyTargets() => Dummies(_session);
+        }
 
         /// <summary>The hazards on the level now (server only).</summary>
         public IReadOnlyList<Hazard> HazardsOnField => _hazards.Hazards;
@@ -254,19 +283,10 @@ namespace Ricochet
         /// </summary>
         public static List<Target> Targets(NetSession session)
         {
-            var targets = new List<Target>();
+            List<Target> targets = Dummies(session);
             if (session == null || session.Objects == null)
             {
                 return targets;
-            }
-
-            foreach (NetKey key in session.Objects.All)
-            {
-                Dummy dummy = key != null ? key.GetComponent<Dummy>() : null;
-                if (dummy != null && dummy.IsSpawned && !dummy.Down)
-                {
-                    targets.Add(new Target(dummy.Key, ToCore(dummy.Position), DummyRadius));
-                }
             }
 
             if (Turns.For(session) != null)
@@ -283,6 +303,27 @@ namespace Ricochet
             return targets;
         }
 
+        /// <summary>A target for every standing practice dummy <paramref name="session"/> knows about.</summary>
+        public static List<Target> Dummies(NetSession session)
+        {
+            var targets = new List<Target>();
+            if (session == null || session.Objects == null)
+            {
+                return targets;
+            }
+
+            foreach (NetKey key in session.Objects.All)
+            {
+                Dummy dummy = key != null ? key.GetComponent<Dummy>() : null;
+                if (dummy != null && dummy.IsSpawned && !dummy.Down)
+                {
+                    targets.Add(new Target(dummy.Key, ToCore(dummy.Position), DummyRadius));
+                }
+            }
+
+            return targets;
+        }
+
         /// <summary>
         /// The level <paramref name="shooter"/>'s shot sees in <paramref name="session"/> now: the level with every hazard
         /// on it that stops their shot (not their own shield walls), the breaches and the placed redirectors. The server
@@ -293,7 +334,7 @@ namespace Ricochet
             Arena current = Current;
             if (current != null && current._session == session)
             {
-                return current._hazards.LevelFor(shooter);
+                return current._authority.LevelFor(shooter);
             }
 
             return session != null ? HazardField.Build(Level, LevelHazard.Collect(session), shooter) : Level;
@@ -303,44 +344,7 @@ namespace Ricochet
         /// Server: every hazard goes, and the level is laid again when <see cref="LaysHazards"/> (the arcs and gates, and
         /// create_random_foliage's tufts kept clear of every seat's spot, every player and the practice dummies).
         /// </summary>
-        public void ResetHazards()
-        {
-            _hazards.Clear();
-            if (!LaysHazards)
-            {
-                return;
-            }
-
-            var keepClear = new List<Vec2>();
-            for (int i = 0; i < MatchRules.MaxSeats; i++)
-            {
-                keepClear.Add(s_layout.SpawnPoint(i));
-            }
-
-            for (int i = 0; i < DummyCount; i++)
-            {
-                keepClear.Add(ToCore(DummyStart(i)));
-            }
-
-            foreach (Player player in Player.In(_session))
-            {
-                keepClear.Add(ToCore(player.Position));
-            }
-
-            _hazards.LayOut(keepClear);
-        }
-
-        /// <summary>Server: spawn_shieldwall.gml: <paramref name="player"/>'s shield wall, across their aim, in front of them.</summary>
-        public Hazard PlaceShieldWall(Player player)
-        {
-            return player == null ? null : _hazards.AddShieldWall(player.Seat, ToCore(player.Position), player.Heading);
-        }
-
-        /// <summary>Server: the redirector item set down at <paramref name="spot"/>, sending shots along <paramref name="heading"/>.</summary>
-        public Hazard PlaceRedirector(Player player, Vec2 spot, double heading)
-        {
-            return player == null ? null : _hazards.AddRedirector(player.Seat, spot, heading);
-        }
+        public void ResetHazards() => _authority.ResetHazards();
 
         private void SpawnHazard(Hazard hazard)
         {
@@ -353,22 +357,6 @@ namespace Ricochet
             if (_session.Objects.TryGet(LevelHazard.KeyFor(hazard.Id), out LevelHazard entity) && entity != null)
             {
                 entity.Mirror(hazard);
-            }
-        }
-
-        // A landed volley's mark on the level: every shield wall or tuft it ran into goes (obj_shieldwall's collision
-        // events), and a vortex that went off swallows what it reaches and breaches the border near it (vortex_step's pull).
-        private void Scar(Player player, Volley volley)
-        {
-            int shooter = player != null ? player.Seat : -1;
-            foreach (int id in volley.HazardsHit)
-            {
-                _hazards.Struck(id, shooter);
-            }
-
-            if (volley.Weapon == Weapon.Vortex && volley.HasBlast)
-            {
-                _hazards.Implode(volley.BlastCenter, volley.BlastRadius);
             }
         }
 
@@ -445,29 +433,18 @@ namespace Ricochet
             _setup = setup;
             _setup.ApplyTo(ArsenalRules);
             _aiTurn = null;
-            UseMap(_setup.Map); // the map room's choice; a random map's level is rolled as round one starts (NewRound)
-            _hazards.UseLevel(Level);
-            NewField();
-            _match = new Match(MatchRules) { Goal = _setup.Goal };
-            _match.RoundStarted += _ => NewRound();
-            _match.GameEnded += _ => GameOver();
-            _match.TurnStarted += seat =>
-            {
-                ClearExtraBounces();
-                _hazards.NextTurn(); // the laser gates switch
-                BeginAiTurn(seat);
-            };
+            _authority.BeginMatch(_setup.Map, _setup.Goal); // the map room's choice; a random map's level is rolled as round one starts
             _humanSeats.Clear();
             for (int i = 0; i < humans.Count; i++)
             {
                 Player human = humans[i];
                 int seat = i < seated ? i : -1; // a seventeenth human watches
-                human.Seat = seat;
+                human.AssignSeat(seat);
                 if (seat >= 0)
                 {
                     _match.Join(seat, SeatKind.Human, human.DisplayName);
                     _humanSeats[human.KitSeat] = seat;
-                    human.Position = SpawnPoint(seat);
+                    human.Place(SpawnPoint(seat));
                     if (human.Away)
                     {
                         _match.Drop(seat, HoldLeft(human.KitSeat)); // dropped before the match: their seat waits for them too
@@ -481,8 +458,8 @@ namespace Ricochet
                 int seat = seated + i;
                 GameObject spawned = _session.Objects.Spawn(opponentPrefab, AiKeyPrefix + (i + 1), SpawnPoint(seat));
                 Player ai = spawned.GetComponent<Player>();
-                ai.Seat = seat;
-                ai.Position = SpawnPoint(seat);
+                ai.AssignSeat(seat);
+                ai.Place(SpawnPoint(seat));
                 _match.Join(seat, SeatKind.Ai, ai.DisplayName);
             }
 
@@ -496,7 +473,7 @@ namespace Ricochet
             _turns.MirrorMap(MapIndex);
             _announcer = new Announcer(_setup.AnnouncerVoice, _setup.Announcements, _announcerDice);
             _turns.MirrorVoice(_announcer.Voice);
-            _match.Start();
+            _authority.StartMatch();
             Mirror();
             Say(_announcer.Welcome()); // obj_game's create event: random_announcement_welcome
             return true;
@@ -513,184 +490,88 @@ namespace Ricochet
             return player != null && player.Seat >= 0 && _match.MayFire(player.Seat);
         }
 
-        /// <summary>
-        /// Server: may <paramref name="player"/> shoot now: <see cref="MayFire"/>, and in a match not after driving this turn
-        /// (fire_weapon.gml's "!hasMoved").
-        /// </summary>
-        public bool MayShoot(Player player)
+        // What the authority published (UR-T34), in the order it happened. Core changed nothing here: this is Runtime
+        // reacting to it, with objects, the announcer and the players' copies of what every peer reads.
+        private void OnEvent(Cmd.GameEvent e)
         {
-            return MayFire(player) && !(_match != null && _match.IsRunning && _match.HasMoved);
-        }
-
-        /// <summary>
-        /// Server: <paramref name="player"/> is driving its tank. True when it may (its own turn in a match, or any time in practice); the turn is
-        /// then marked moved, so it cannot shoot until the turn passes.
-        /// </summary>
-        public bool Moved(Player player)
-        {
-            if (player == null)
+            Player.Present(_session, e); // the shot drawn and sent, and the result sent, by the player who fired it
+            switch (e)
             {
-                return false;
-            }
-
-            if (_match == null || !_match.IsRunning)
-            {
-                return true; // practice: free driving, there is no shot to forfeit
-            }
-
-            bool first = !_match.HasMoved;
-            if (!_match.Move(player.Seat))
-            {
-                return false;
-            }
-
-            if (first)
-            {
-                Mirror(); // only the first drive of a turn changes what peers see
-            }
-
-            return true;
-        }
-
-        /// <summary>Server: <paramref name="player"/> ends its own turn early (F, the End Turn button; next_player.gml).</summary>
-        public void EndTurn(Player player)
-        {
-            if (_match != null && _match.IsRunning && player != null && _match.EndTurn(player.Seat))
-            {
-                Mirror();
+                case Cmd.Hit hit when hit.IsDummy:
+                    Knock(hit.TargetId);
+                    break;
+                case Cmd.ShotLanded landed:
+                    Announce(landed);
+                    break;
+                case Cmd.CrateDropped dropped:
+                    SpawnCrate(dropped.Crate);
+                    break;
+                case Cmd.CrateLanded landed:
+                    LandCrate(landed.Crate);
+                    break;
+                case Cmd.CrateRemoved removed:
+                    _session.Objects.Despawn(Crate.KeyFor(removed.Crate.Id));
+                    break;
+                case Cmd.LayoutChanged layout:
+                    AdoptServerLayout(layout);
+                    break;
+                case Cmd.LevelRerolled _:
+                    ResetDummies();
+                    break;
+                case Cmd.TurnStarted turn:
+                    BeginAiTurn(turn.Seat);
+                    break;
+                case Cmd.GameOver _:
+                    _aiTurn = null;
+                    break;
+                case Cmd.DriveStarted _:
+                    Mirror(); // only the first drive of a turn changes what peers see
+                    break;
             }
         }
 
-        /// <summary>Server: <paramref name="player"/> fired (the turn clock stops until it lands).</summary>
-        public void Fired(Player player)
+        // The announcer cheers a knock-out (random_announcement_win) or heckles a shot that hit nobody
+        // (random_announcement_lose, obj_explosion).
+        private void Announce(Cmd.ShotLanded landed)
         {
-            if (_match != null && _match.IsRunning && player != null)
-            {
-                _match.Fire(player.Seat);
-                Mirror();
-            }
-        }
-
-        /// <summary>
-        /// Server: <paramref name="player"/>'s volley landed: knock down every dummy it struck; in a match, hurt every
-        /// player it struck (hit.gml per strike), give the shooter every crate it passed over, and end the turn.
-        /// </summary>
-        public void Landed(Player player, Volley volley)
-        {
-            if (volley == null)
+            if (landed.Outcome == null || _announcer == null)
             {
                 return;
             }
 
-            Scar(player, volley);
-            foreach (Strike strike in volley.Strikes)
+            if (landed.KnockedOut >= 0)
             {
-                if (strike.TargetId != null && strike.TargetId.StartsWith(DummyKeyPrefix, StringComparison.Ordinal))
-                {
-                    Knock(strike.TargetId);
-                }
+                Say(_announcer.Win(landed.Seat, landed.KnockedOut));
+            }
+            else if (!landed.StruckAPlayer)
+            {
+                Say(_announcer.Lose(landed.Seat));
+            }
+        }
+
+        // The server laid a level (a match's map, a new round, a reroll): this peer plays on it and every player's clients learn it.
+        private void AdoptServerLayout(Cmd.LayoutChanged layout)
+        {
+            UseLayout(layout.Map, layout.Seed);
+            if (!layout.Rolled)
+            {
+                return;
             }
 
-            if (_match != null && _match.IsRunning && player != null)
+            LevelVersion = layout.Version;
+            foreach (Player player in Player.In(_session))
             {
-                // hit.gml per strike: damage, and points for a hit on an opponent; the announcer cheers a knock-out
-                // (random_announcement_win) or heckles a shot that hit nobody (random_announcement_lose, obj_explosion).
-                bool struckAPlayer = false;
-                int knockedOut = -1;
-                double flight = volley.Duration;
-                var outcome = new ShotOutcome(); // UR-T12: what it did, for every peer
-                foreach (Strike strike in volley.Strikes)
-                {
-                    int hit = SeatOf(strike.TargetId);
-                    if (hit >= 0)
-                    {
-                        struckAPlayer = true;
-                        bool wasIn = _match.TryGetSeat(hit, out MatchSeat before) && before.Alive;
-                        outcome.Add(hit, _match.Strike(player.Seat, hit, strike.Bounces, strike.Scale, flight));
-                        if (wasIn && !_match.Seat(hit).Alive)
-                        {
-                            outcome.KnockOut(hit);
-                            if (hit != player.Seat)
-                            {
-                                knockedOut = hit;
-                            }
-                        }
-                    }
-                }
-
-                player.ServerResult(outcome);
-
-                if (_announcer != null)
-                {
-                    if (knockedOut >= 0)
-                    {
-                        Say(_announcer.Win(player.Seat, knockedOut));
-                    }
-                    else if (!struckAPlayer)
-                    {
-                        Say(_announcer.Lose(player.Seat));
-                    }
-                }
-
-                if (_field != null)
-                {
-                    foreach (Ricochet.Core.Drop drop in _field.Collect(volley))
-                    {
-                        Give(player, drop.Kind);
-                    }
-                }
-
-                _match.ShotOver(player.Seat);
-                Mirror();
+                player.MirrorLevel(MapIndex, LevelSeed, LevelVersion);
             }
         }
 
         /// <summary>The crates on the level now (server only; empty outside a match).</summary>
-        public IReadOnlyList<Ricochet.Core.Drop> CratesOnField => _field != null ? _field.Drops : (IReadOnlyList<Ricochet.Core.Drop>)Array.Empty<Ricochet.Core.Drop>();
+        public IReadOnlyList<Drop> CratesOnField => _field != null ? _field.Drops : (IReadOnlyList<Drop>)Array.Empty<Drop>();
 
         /// <summary>Server: drops a crate of <paramref name="kind"/> at <paramref name="spot"/> now (a test, or a debug key; null outside a match).</summary>
-        public Ricochet.Core.Drop DropCrate(DropKind kind, Vector2 spot)
-        {
-            return MatchRunning && _field != null ? _field.Spawn(kind, ToCore(spot)) : null;
-        }
+        public Drop DropCrate(DropKind kind, Vector2 spot) => _authority.DropCrate(kind, ToCore(spot));
 
-        // add_random_weapon / add_random_item / add_random_health.gml: what a collected crate gives its collector.
-        private void Give(Player player, DropKind kind)
-        {
-            int value = 0;
-            switch (kind)
-            {
-                case DropKind.Weapon:
-                case DropKind.Powerup:
-                    Weapon? weapon = Pickups.RandomWeapon(_dropDice, ArsenalRules);
-                    if (weapon == null)
-                    {
-                        return;
-                    }
-
-                    player.Loadout.Add(weapon.Value);
-                    value = (int)weapon.Value;
-                    break;
-                case DropKind.Item:
-                    Item? item = Pickups.RandomItem(_dropDice, ArsenalRules);
-                    if (item == null)
-                    {
-                        return;
-                    }
-
-                    player.Loadout.Add(item.Value);
-                    value = (int)item.Value;
-                    break;
-                case DropKind.Health:
-                    value = _match.Heal(player.Seat, Pickups.HealAmount(_dropDice, MatchRules.WeaponDamage));
-                    break;
-            }
-
-            player.MirrorLoadout();
-            player.Collected(kind, value);
-        }
-
-        private void SpawnCrate(Ricochet.Core.Drop drop)
+        private void SpawnCrate(Drop drop)
         {
             GameObject spawned = _session.Objects.Spawn(CratePrefab(), Crate.KeyFor(drop.Id), ToUnity(drop.Position));
             Crate crate = spawned.GetComponent<Crate>();
@@ -699,7 +580,7 @@ namespace Ricochet
             crate.Landed = drop.Landed;
         }
 
-        private void LandCrate(Ricochet.Core.Drop drop)
+        private void LandCrate(Drop drop)
         {
             if (_session.Objects.TryGet(Crate.KeyFor(drop.Id), out Crate crate) && crate != null)
             {
@@ -707,96 +588,12 @@ namespace Ricochet
             }
         }
 
-        // A new round: everyone back to the starting loadout and full size, and the level cleared of crates.
-        // A random map is laid afresh (randomize_level.gml) and everyone stands at a random spot of it
-        // (randomize_player_position.gml).
-        private void NewRound()
-        {
-            RollLayout(_setup.Map);
-            NewField();
-            foreach (Player player in Player.In(_session))
-            {
-                if (player.Seat >= 0)
-                {
-                    player.Position = SpawnPoint(player.Seat);
-                }
-            }
-
-            ResetHazards();
-            foreach (Player player in Player.In(_session))
-            {
-                player.ResetForRound();
-            }
-        }
-
-        // Server: lays map `index`'s next round (a fresh seed for the random map), tells the hazards and every player's
-        // clients which level it is.
-        private void RollLayout(int index)
-        {
-            index = Maps.Clamp(index);
-            int seed = Maps.At(index).IsRandom ? _layoutDice.Next(1, int.MaxValue) : 0;
-            UseLayout(index, seed);
-            LevelVersion++;
-            _hazards.UseLevel(Level);
-            foreach (Player player in Player.In(_session))
-            {
-                player.MirrorLevel(MapIndex, LevelSeed, LevelVersion);
-            }
-        }
-
-        // Server: a new crate field on the current level, the old one's crates gone.
-        private void NewField()
-        {
-            _field?.Clear();
-            _field = new DropField(Level, DropRules, _dropDice);
-            _field.Spawned += SpawnCrate;
-            _field.Landed += LandCrate;
-            _field.Removed += drop => _session.Objects.Despawn(Crate.KeyFor(drop.Id));
-        }
-
         /// <summary>
         /// Server, practice only (R, PageUp and PageDown in the original): rolls another random level, stands every player at
         /// a fresh spot and lays the practice dummies and hazards again. False during a match, whose rounds roll their own.
+        /// Players ask for it with a command; this is for a test or a debug key.
         /// </summary>
-        public bool RerollLevel()
-        {
-            if (_match != null && _match.Phase != MatchPhase.Practice)
-            {
-                return false; // a match, or its recap, keeps its level
-            }
-
-            RollLayout(Maps.RandomIndex);
-            foreach (Player player in Player.In(_session))
-            {
-                if (player.Seat >= 0)
-                {
-                    player.Position = SpawnPoint(player.Seat);
-                }
-            }
-
-            ResetDummies();
-            ResetHazards();
-            return true;
-        }
-
-        // check_endgame's room_goto(endgame): the goal was reached. The crates go and no AI plays on; the recap is every
-        // peer's HUD's, from Turns' phase and champion.
-        private void GameOver()
-        {
-            _field?.Clear();
-            _aiTurn = null;
-        }
-
-        private void ClearExtraBounces()
-        {
-            foreach (Player player in Player.In(_session))
-            {
-                if (player.ExtraBounces != 0)
-                {
-                    player.ExtraBounces = 0;
-                }
-            }
-        }
+        public bool RerollLevel() => _authority.Reroll().Count > 0;
 
         /// <summary>True while a match is being played (server only).</summary>
         public bool MatchRunning => _match != null && _match.IsRunning;
@@ -813,12 +610,12 @@ namespace Ricochet
             }
 
             int seat = _match.FreeSeat();
-            player.Seat = seat;
+            player.AssignSeat(seat);
             if (seat >= 0)
             {
                 _match.Join(seat, SeatKind.Human, player.DisplayName);
                 _humanSeats[player.KitSeat] = seat;
-                player.Position = SpawnPoint(seat);
+                player.Place(SpawnPoint(seat));
             }
 
             Mirror();
@@ -916,21 +713,7 @@ namespace Ricochet
                 return;
             }
 
-            _match.Tick(seconds);
-
-            // obj_drop_emitter: crates fall while a round is being played; none outlive the match.
-            if (_field != null)
-            {
-                if (_match.IsRunning && _match.Phase != MatchPhase.RoundOver && _match.Phase != MatchPhase.GameOver)
-                {
-                    _field.Tick(seconds);
-                    _hazards.Tick(seconds); // shield walls decay
-                }
-                else if ((!_match.IsRunning || _match.Phase == MatchPhase.GameOver) && _field.Drops.Count > 0)
-                {
-                    _field.Clear();
-                }
-            }
+            _authority.Tick(seconds);
 
             PlayAi(seconds);
             Mirror();
@@ -1043,8 +826,15 @@ namespace Ricochet
             return count;
         }
 
-        private void Mirror()
+        // Copies the authority's state out to every peer: each player's copy of what the authority holds (aim, tank,
+        // loadout, shot) first, then the match's turn state and each seat's health.
+        internal void Mirror()
         {
+            foreach (Player each in Player.In(_session))
+            {
+                each.SyncFromAuthority();
+            }
+
             if (_match == null)
             {
                 return;

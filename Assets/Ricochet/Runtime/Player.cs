@@ -33,6 +33,11 @@
 // Reconnects (UR-T13): a dropped human's Player waits with their seat (the kit hands it to the server, then back to them
 // when they reconnect in time), marked Away: nobody plays it meanwhile, not even a host it now belongs to, and its name
 // and colour stay theirs because the roster is read by the connection seat it was spawned for, not by its current owner.
+// Commands and events (UR-T34): every [ToServer] call above is turned, on the server, into a Core command carrying this
+// player's id (AimCommand, FireCommand, UseItemCommand, DriveCommand ...) that the one GameAuthority applies; the aim, the
+// loadout, the tank and the shot in the air are the authority's PlayerState, and what this object syncs to the peers is a
+// copy of it (SyncFromAuthority). The authority answers with events, which Present plays: the shot drawn and sent, the result
+// sent. A Player never changes the game another way, and never asks who "the current player" is.
 using System.Collections.Generic;
 using Ricochet.Core.Ai;
 using Ricochet.Core.Aim;
@@ -44,6 +49,7 @@ using Ricochet.Core.Net;
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
 using Unity.Multiplayer.Core; // [ToServer], [Synced]
 using UnityEngine;
+using Cmd = Ricochet.Core.Commands;
 
 namespace Ricochet
 {
@@ -56,11 +62,6 @@ namespace Ricochet
         /// <summary>Health before the first match (Arena.MatchRules.MaxHealth; the server keeps it from then on).</summary>
         public const int StartHealth = 100;
 
-        /// <summary>How long (seconds) past the last drive key the server keeps the tank moving.</summary>
-        private const float DriveHold = 0.25f;
-
-        private int _driveDirection;
-        private float _driveUntil;
         private float _driveSentAt;
 
         private static readonly List<Player> s_spawned = new List<Player>();
@@ -179,7 +180,6 @@ namespace Ricochet
         private float _sentHeading = float.NaN;
         private float _sentPower = float.NaN;
 
-        private Loadout _loadout;                 // server only: the real loadout
         private Loadout _shownLoadout;            // every other peer: the synced one, unpacked
         private int _shownWeapons = -1;
         private int _shownItems = -1;
@@ -196,7 +196,6 @@ namespace Ricochet
         private int _seenPickups;
         private float _pickupShownUntil = -1f;
 
-        private VolleyFlight _serverFlight; // server only: the volley it is flying, to land the impact
         private int _seenShots;             // every peer: the last shot it has drawn
         private Volley _preview;            // owner only: the shot as it would fly right now
 
@@ -345,7 +344,7 @@ namespace Ricochet
             {
                 if (IsServer)
                 {
-                    return ServerLoadout;
+                    return State.Loadout;
                 }
 
                 if (_shownLoadout == null || Weapons != _shownWeapons || Items != _shownItems)
@@ -368,9 +367,191 @@ namespace Ricochet
             }
         }
 
-        private Loadout ServerLoadout
+        // ---- the authority's copy of this player (server only)
+
+        private static int s_nextPlayerId = 1;
+        private int _playerId;
+        private Cmd.PlayerState _state;
+        private Cmd.GameAuthority _registered; // the authority _state belongs to
+        private Cmd.GameAuthority _standalone;  // one of its own, for a player in a session that serves no Arena (a bare test fixture)
+
+        /// <summary>What commands name this player by (server only; 0 before it has spawned).</summary>
+        public int PlayerId => _playerId;
+
+        // The authority this player's commands go to: the arena's, or (no Arena serving this session) a plain practice one.
+        private Cmd.GameAuthority Authority
         {
-            get { return _loadout ?? (_loadout = new Loadout(Arena.ArsenalRules)); }
+            get
+            {
+                Arena arena = Arena.Current;
+                if (arena != null)
+                {
+                    return arena.Authority;
+                }
+
+                if (_standalone == null)
+                {
+                    NetSession session = Session;
+                    _standalone = new Cmd.GameAuthority(new StandaloneWorld(session), Arena.Rules, Arena.MatchRules, Arena.ArsenalRules,
+                        Arena.DropRules, Arena.HazardRules);
+                    _standalone.Published += e => Present(session, e);
+                }
+
+                return _standalone;
+            }
+        }
+
+        private sealed class StandaloneWorld : Cmd.IGameWorld
+        {
+            private readonly NetSession _session;
+
+            public StandaloneWorld(NetSession session)
+            {
+                _session = session;
+            }
+
+            public IReadOnlyList<Target> DummyTargets() => Arena.Dummies(_session);
+        }
+
+        /// <summary>Server: the authority's state for this player, added (or moved to the arena's authority) the first time it is asked for.</summary>
+        private Cmd.PlayerState State
+        {
+            get
+            {
+                Cmd.GameAuthority wanted = Authority;
+                if (_state == null || _registered != wanted)
+                {
+                    if (_playerId == 0)
+                    {
+                        _playerId = s_nextPlayerId++;
+                    }
+
+                    Cmd.PlayerSnapshot from = _state != null ? Cmd.PlayerSnapshot.Of(_state) : SnapshotFromSynced();
+                    if (_registered != null)
+                    {
+                        _registered.RemovePlayer(_playerId);
+                    }
+
+                    _state = wanted.AddPlayer(_playerId, IsAi, from);
+                    _registered = wanted;
+                }
+
+                return _state;
+            }
+        }
+
+        // A player object that spawned before an authority knew it (or came back after a reconnect): what it has synced.
+        private Cmd.PlayerSnapshot SnapshotFromSynced()
+        {
+            return new Cmd.PlayerSnapshot
+            {
+                Seat = Seat,
+                Position = Arena.ToCore(Position),
+                Heading = Heading,
+                Power = Power,
+                Weapons = Weapons,
+                Items = Items,
+                ExtraBounces = ExtraBounces,
+                Scale = Scale,
+                Shots = Shots,
+                ShotHeading = ShotHeading,
+                ShotPower = ShotPower,
+                ShotWeapon = ShotWeapon,
+                ShotFuse = ShotFuse,
+                ShotExtraBounces = ShotExtraBounces,
+                ShotDetonation = ShotDetonation,
+                Assists = Assists,
+                AssistHeading = AssistHeading,
+                AssistPower = AssistPower,
+                Pickups = PickupCount,
+                LastPickup = LastPickup,
+            };
+        }
+
+        /// <summary>Server: copies the authority's state for this player out to the values every peer reads.</summary>
+        internal void SyncFromAuthority()
+        {
+            if (!IsServer || !IsSpawned)
+            {
+                return;
+            }
+
+            Cmd.PlayerState state = State;
+            Vector2 at = Arena.ToUnity(state.Position);
+            if (Position != at)
+            {
+                Position = at;
+            }
+
+            if (Heading != (float)state.Heading)
+            {
+                Heading = (float)state.Heading;
+            }
+
+            if (Power != (float)state.Power)
+            {
+                Power = (float)state.Power;
+            }
+
+            if (ExtraBounces != state.ExtraBounces)
+            {
+                ExtraBounces = state.ExtraBounces;
+            }
+
+            if (Scale != (float)state.Scale)
+            {
+                Scale = (float)state.Scale;
+            }
+
+            if (Shots != state.Shots)
+            {
+                ShotHeading = (float)state.ShotHeading;
+                ShotPower = (float)state.ShotPower;
+                ShotWeapon = (int)state.ShotWeapon;
+                ShotFuse = (float)state.ShotFuse;
+                ShotExtraBounces = state.ShotExtraBounces;
+                Shots = state.Shots;
+            }
+
+            if (ShotDetonation != (float)state.ShotDetonation)
+            {
+                ShotDetonation = (float)state.ShotDetonation;
+            }
+
+            if (Assists != state.Assists)
+            {
+                AssistHeading = (float)state.AssistHeading;
+                AssistPower = (float)state.AssistPower;
+                Assists = state.Assists;
+            }
+
+            if (PickupCount != state.Pickups)
+            {
+                LastPickup = state.LastPickup;
+                PickupCount = state.Pickups;
+            }
+
+            MirrorLoadout();
+        }
+
+        /// <summary>Server: sits this player in <paramref name="seat"/> (-1 for none) with the match, and on every peer.</summary>
+        internal void AssignSeat(int seat)
+        {
+            Seat = seat;
+            if (IsServer)
+            {
+                Authority.SetSeat(State.Id, seat);
+            }
+        }
+
+        /// <summary>Server: stands this player's tank at <paramref name="spot"/> (a spawn, a seat taken).</summary>
+        internal void Place(Vector2 spot)
+        {
+            if (IsServer)
+            {
+                Authority.Place(State.Id, Arena.ToCore(spot));
+                SyncFromAuthority();
+            }
         }
 
         /// <summary>Every spawned player <paramref name="session"/> has, humans and AI, in no particular order.</summary>
@@ -399,13 +580,13 @@ namespace Ricochet
         /// <summary>True while this player's last shot is still in the air on this peer.</summary>
         public bool ShotInFlight
         {
-            get { return IsServer ? _serverFlight != null && !_serverFlight.Landed : _shotView != null && _shotView.Flying; }
+            get { return IsServer ? State.InFlight : _shotView != null && _shotView.Flying; }
         }
 
         /// <summary>Server: how far the shot in the air (its first projectile) has flown from the muzzle; 0 with none.</summary>
         public double ShotTravelled
         {
-            get { return IsServer && _serverFlight != null && _serverFlight.Flights.Count > 0 ? _serverFlight.Flights[0].Travelled : 0; }
+            get { return IsServer && State.Flight != null && State.Flight.Flights.Count > 0 ? State.Flight.Flights[0].Travelled : 0; }
         }
 
         /// <summary>The main path of the shot this peer last saw fired (null before the first).</summary>
@@ -482,13 +663,13 @@ namespace Ricochet
                 }
                 else
                 {
-                    Seat = Owner.HasSeat ? Owner.SeatIndex : 0;
+                    AssignSeat(Owner.HasSeat ? Owner.SeatIndex : 0);
                 }
             }
 
             if (IsServer && Position == Vector2.zero)
             {
-                Position = Arena.SpawnPoint(Mathf.Max(0, Seat));
+                Place(Arena.SpawnPoint(Mathf.Max(0, Seat)));
             }
 
             if (IsServer && Arena.LevelVersion > 0)
@@ -541,6 +722,13 @@ namespace Ricochet
         protected override void OnDespawned()
         {
             s_spawned.Remove(this);
+            if (_registered != null)
+            {
+                _registered.RemovePlayer(_playerId); // back from its synced values if the kit respawns it on a reconnect
+                _registered = null;
+                _state = null;
+            }
+
             if (_shotView != null)
             {
                 Destroy(_shotView.gameObject);
@@ -555,20 +743,18 @@ namespace Ricochet
                 return;
             }
 
-            Weapons = ServerLoadout.PackWeapons();
-            Items = ServerLoadout.PackItems();
-        }
-
-        /// <summary>Server: this player collected a crate of <paramref name="kind"/> that gave <paramref name="value"/>.</summary>
-        public void Collected(DropKind kind, int value)
-        {
-            if (!IsServer)
+            Loadout loadout = State.Loadout;
+            int weapons = loadout.PackWeapons();
+            int items = loadout.PackItems();
+            if (Weapons != weapons)
             {
-                return;
+                Weapons = weapons;
             }
 
-            LastPickup = (int)kind * 1000 + Mathf.Clamp(value, 0, 999);
-            PickupCount = PickupCount + 1;
+            if (Items != items)
+            {
+                Items = items;
+            }
         }
 
         /// <summary>
@@ -590,25 +776,24 @@ namespace Ricochet
             }
         }
 
-        /// <summary>Server: a fresh round: the starting loadout, full size, no extra bounces.</summary>
-        public void ResetForRound()
+        // Server: gives the authority this player's command, copies what changed out to the peers, and has the match
+        // mirrored when the command can change it.
+        private void Run(Cmd.Command command, bool mirror = true)
         {
-            if (!IsServer)
+            Authority.Apply(command);
+            SyncFromAuthority();
+            if (mirror && Arena.Current != null)
             {
-                return;
+                Arena.Current.Mirror();
             }
-
-            ServerLoadout.Reset();
-            MirrorLoadout();
-            Scale = 1f;
-            ExtraBounces = 0;
         }
 
         // Server: a new barrel direction. Never trusted as-is: NaN or an out-of-range power would be garbage on every peer.
         private void OnAim(float heading, float power)
         {
-            Heading = (float)Angles.Normalize(float.IsNaN(heading) ? Heading : heading);
-            Power = (float)ShotRules.ClampPower(power);
+            int id = State.Id;
+            Run(new Cmd.AimCommand(id, heading), mirror: false);
+            Run(new Cmd.SetPowerCommand(id, power), mirror: false);
         }
 
         /// <summary>Server: turns the barrel for an AI seat (or a test), clamped like a client's Aim.</summary>
@@ -631,12 +816,12 @@ namespace Ricochet
                 return false;
             }
 
-            for (int i = 0; i < ArsenalRules.Kinds && ServerLoadout.Weapon != weapon; i++)
+            for (int i = 0; i < ArsenalRules.Kinds && State.Loadout.Weapon != weapon; i++)
             {
                 OnCycleWeapon(1);
             }
 
-            return ServerLoadout.Weapon == weapon;
+            return State.Loadout.Weapon == weapon;
         }
 
         /// <summary>Server: fires for an AI seat (or a test), through the same checks as a client's Fire.</summary>
@@ -675,74 +860,10 @@ namespace Ricochet
             }
         }
 
-        // Server: may this player cycle, set the fuse or use an item now? As for a shot: their turn (or practice), and
-        // nothing of theirs in the air (cycle_weapon_left's "turnStarted && !hasFired").
-        private bool MayAct()
-        {
-            if (_serverFlight != null && !_serverFlight.Landed)
-            {
-                return false;
-            }
-
-            Arena arena = Arena.Current;
-            return arena == null || arena.MayFire(this);
-        }
-
-        // Practice is free fire: nothing is spent.
-        private static bool Practising
-        {
-            get
-            {
-                Arena arena = Arena.Current;
-                return arena == null || !arena.MatchRunning;
-            }
-        }
-
-        // Server: fire. One volley in the air per player, and in a match only on your turn (Arena) and only with a weapon
-        // you have (fire_weapon.gml); the aim is clamped like Aim's, then the volley is solved here.
-        private void OnFire(float heading, float power)
-        {
-            if (!MayAct() || (Arena.Current != null && !Arena.Current.MayShoot(this)))
-            {
-                return;
-            }
-
-            Loadout loadout = ServerLoadout;
-            Weapon weapon;
-            if (Practising)
-            {
-                if (!loadout.Has(loadout.Weapon))
-                {
-                    return;
-                }
-
-                weapon = loadout.Weapon;
-            }
-            else
-            {
-                Weapon? fired = loadout.Fire();
-                if (fired == null)
-                {
-                    return;
-                }
-
-                weapon = fired.Value;
-            }
-
-            OnAim(heading, power);
-            ShotHeading = Heading;
-            ShotPower = Power;
-            ShotWeapon = (int)weapon;
-            ShotFuse = (float)loadout.Fuse;
-            ShotExtraBounces = ExtraBounces;
-            ShotDetonation = 0f;
-            ExtraBounces = 0;
-            MirrorLoadout();
-            Shots = Shots + 1;
-            _seenShots = Shots; // a second Fire in the same frame finds this one in the air
-            LaunchShot();
-            Arena.Current?.Fired(this);
-        }
+        // Server: fire. One volley in the air per player, and in a match only on your turn and only with a weapon you have
+        // (fire_weapon.gml); the aim is clamped like Aim's, then the authority solves the volley and the shot is drawn
+        // and sent from its ShotFired event (Present).
+        private void OnFire(float heading, float power) => Run(new Cmd.FireCommand(State.Id, heading, power));
 
         /// <summary>Server: writes the level in play for the clients to adopt (see <see cref="Arena.AdoptLayout"/>).</summary>
         internal void MirrorLevel(int map, int seed, int version)
@@ -758,194 +879,57 @@ namespace Ricochet
         }
 
         // Server: R / PageUp / PageDown in practice: a new random level, everyone to fresh spots. Ignored in a match.
-        private void OnReroll()
-        {
-            Arena.Current?.RerollLevel();
-        }
+        private void OnReroll() => Run(new Cmd.RerollCommand(State.Id));
 
         // Server: vortex_detonate.gml. Only this player's own vortex, only while it is still in the air, and only once: the
-        // volley is cut short where it is now and lands at once (the implosion strikes, swallows and breaches there).
-        private void OnDetonate()
-        {
-            if (_serverFlight == null || _serverFlight.Landed || _serverFlight.Volley.Weapon != Weapon.Vortex || ShotDetonation > 0f)
-            {
-                return;
-            }
-
-            float at = Mathf.Max(0.001f, (float)_serverFlight.Flights[0].Travelled);
-            Volley cut = Arsenal.Detonate(_serverFlight.Volley, at, Arena.Targets(Session), Arena.ArsenalRules);
-            if (ReferenceEquals(cut, _serverFlight.Volley))
-            {
-                return;
-            }
-
-            ShotDetonation = at;
-            LastVolley = cut;
-            if (_shotView != null)
-            {
-                _shotView.Detonate(cut);
-            }
-
-            SendResolved(Shots, cut); // every client cuts its flight at the server's own cut, striking whom it struck
-            _serverFlight = new VolleyFlight(cut);
-            _serverFlight.Advance(cut.Duration + 1.0);
-            Arena.Current?.Landed(this, cut);
-        }
+        // authority cuts the volley short where it is now and lands it at once; ShotCut tells every client.
+        private void OnDetonate() => Run(new Cmd.DetonateCommand(State.Id));
 
         // Server: the owner holds a drive key. Only on their own turn with nothing of theirs in the air, never for NaN; the
         // tank then moves in Update until the key stops arriving.
-        private void OnDrive(int direction)
-        {
-            direction = System.Math.Sign(direction);
-            if (direction == 0 || !MayAct() || Arena.Current == null)
-            {
-                _driveDirection = 0;
-                return;
-            }
+        private void OnDrive(int direction) => Run(new Cmd.DriveCommand(State.Id, direction), mirror: false);
 
-            _driveDirection = direction;
-            _driveUntil = Time.time + DriveHold;
-        }
+        // Server: F / End Turn. Only on the seat's own turn, before firing.
+        private void OnEndTurn() => Run(new Cmd.EndTurnCommand(State.Id));
 
-        // Server: F / End Turn. Only on the seat's own turn, before firing (Match.EndTurn).
-        private void OnEndTurn()
-        {
-            _driveDirection = 0;
-            if (MayAct())
-            {
-                Arena.Current?.EndTurn(this);
-            }
-        }
-
-        // Server: drives the tank a frame along its barrel (Driving.Step) while a drive key is held, telling the match once.
+        // Server: drives the tank a frame along its barrel while a drive key is held.
         private void DriveStep()
         {
-            Arena arena = Arena.Current;
-            if (_driveDirection == 0 || Time.time > _driveUntil || arena == null || !MayAct())
-            {
-                _driveDirection = 0;
-                return;
-            }
-
-            if (!arena.Moved(this))
-            {
-                _driveDirection = 0;
-                return;
-            }
-
-            Vec2 from = Arena.ToCore(Position);
-            Vec2 to = Driving.Step(from, Heading, _driveDirection, Time.deltaTime, ShotLevel, Radius, Arena.Rules);
-            if (to != from)
-            {
-                Position = Arena.ToUnity(to);
-            }
-        }
-
-        private void OnCycleWeapon(int direction)
-        {
-            if (MayAct() && ServerLoadout.CycleWeapon(System.Math.Sign(direction)))
-            {
-                MirrorLoadout();
-            }
-        }
-
-        private void OnCycleItem(int direction)
-        {
-            if (MayAct() && ServerLoadout.CycleItem(System.Math.Sign(direction)))
-            {
-                MirrorLoadout();
-            }
-        }
-
-        private void OnFuse(int change)
-        {
-            if (!MayAct())
+            Cmd.PlayerState state = State;
+            if (state.DriveDirection == 0)
             {
                 return;
             }
 
-            Loadout loadout = ServerLoadout;
-            if (change < 0)
+            Authority.AdvanceDrive(state.Id, Time.deltaTime);
+            SyncFromAuthority();
+        }
+
+        // Server: moves this player's shot a frame; the frame it lands the authority strikes, scores and collects.
+        private void FlightStep()
+        {
+            Cmd.PlayerState state = State;
+            if (!state.InFlight)
             {
-                loadout.ShortenFuse();
-            }
-            else if (change == 1)
-            {
-                loadout.LengthenFuse();
-            }
-            else if (change >= 2)
-            {
-                loadout.MaxOutFuse();
+                return;
             }
 
-            MirrorLoadout();
+            Authority.AdvanceFlight(state.Id, Time.deltaTime);
+            if (!state.InFlight) // it landed: the dummies are down, the players hurt, the crates collected, the turn over
+            {
+                SyncFromAuthority();
+                Arena.Current?.Mirror();
+            }
         }
+
+        private void OnCycleWeapon(int direction) => Run(new Cmd.CycleWeaponCommand(State.Id, direction), mirror: false);
+
+        private void OnCycleItem(int direction) => Run(new Cmd.CycleItemCommand(State.Id, direction), mirror: false);
+
+        private void OnFuse(int change) => Run(new Cmd.FuseCommand(State.Id, change), mirror: false);
 
         // Server: use_item.gml. The selected item, if carried and in play, before this turn's shot.
-        private void OnUseItem(float heading, float power)
-        {
-            if (!MayAct())
-            {
-                return;
-            }
-
-            Loadout loadout = ServerLoadout;
-            Item item = loadout.Item;
-            if (!Arena.ArsenalRules.InPlay(item) || !loadout.Has(item))
-            {
-                return;
-            }
-
-            if (!Practising)
-            {
-                loadout.Use();
-            }
-
-            OnAim(heading, power);
-            switch (item)
-            {
-                case Item.ExtraBounce:
-                    ExtraBounces = ExtraBounces + 1;
-                    break;
-                case Item.Teleporter:
-                    Vec2 spot = Arsenal.Teleport(Arena.ToCore(Position), Heading, Power, ShotLevel, Arena.Rules, Radius, out _);
-                    Position = Arena.ToUnity(spot);
-                    break;
-                case Item.ShieldWall:
-                    Arena.Current?.PlaceShieldWall(this); // spawn_shieldwall.gml
-                    break;
-                case Item.Redirector:
-                    Vec2 placed = Arsenal.PlaceRedirector(Arena.ToCore(Position), Heading, Power, ShotLevel, Arena.Rules, out double redirectorHeading, out _);
-                    Arena.Current?.PlaceRedirector(this, placed, redirectorHeading);
-                    break;
-                case Item.ShrinkRay:
-                    string hit = Arsenal.ShrinkRay(Arena.ToCore(Position), Heading, Arena.SeatTarget(Seat), ShotLevel, Arena.Targets(Session),
-                        Arena.Rules, out _);
-                    int seat = Arena.SeatOf(hit);
-                    Arena arena = Arena.Current;
-                    Player shrunk = seat >= 0 && arena != null ? arena.PlayerAt(seat) : null;
-                    if (shrunk != null)
-                    {
-                        shrunk.Scale = Mathf.Min(shrunk.Scale, (float)Arena.ArsenalRules.ShrinkScale);
-                    }
-
-                    break;
-                case Item.AimAssist:
-                    // obj_aimassist, with the AI's targeting: onto the shot that reaches an opponent, if any does.
-                    AiPlan assist = Ai.Assist(Arena.ToCore(Position), Arena.SeatTarget(Seat), ShotLevel, Arena.Targets(Session), Power, Arena.Rules);
-                    if (assist != null)
-                    {
-                        OnAim((float)assist.Heading, (float)assist.Power);
-                    }
-
-                    AssistHeading = Heading;
-                    AssistPower = Power;
-                    Assists = Assists + 1;
-                    break;
-            }
-
-            MirrorLoadout();
-        }
+        private void OnUseItem(float heading, float power) => Run(new Cmd.UseItemCommand(State.Id, heading, power), mirror: false);
 
         // A human on their own machine: not a bot (its driver fires for it) and not an AI (Arena plays its turns). A dropped
         // player's object belongs to the server while their seat is held, so a host owns it then, but does not play it.
@@ -989,15 +973,7 @@ namespace Ricochet
             if (IsServer)
             {
                 DriveStep();
-            }
-
-            if (IsServer && _serverFlight != null && !_serverFlight.Landed)
-            {
-                _serverFlight.Advance(Time.deltaTime);
-                if (_serverFlight.Landed)
-                {
-                    Arena.Current?.Landed(this, _serverFlight.Volley); // dummies knocked down, players hurt, crates collected, the turn over
-                }
+                FlightStep();
             }
 
             float shownHeading = LocallyControlled ? (float)_aim.Heading : Heading;
@@ -1155,14 +1131,65 @@ namespace Ricochet
             get { return ShotInFlight && LastVolley != null && LastVolley.Weapon == Weapon.Vortex && LastVolley.HasBlast && ShotDetonation <= 0f; }
         }
 
-        // Server: solve the volley just fired, fly it, and send every client what was solved (UR-T12). The server's own solve
-        // is the one that lands; no client works it out again.
-        private void LaunchShot()
+        // The authority's events about shots (UR-T34), played by the player they name: a shot fired is drawn here and sent to
+        // every client as the volley the authority solved (UR-T12; its own solve is the one that lands), a vortex set off in
+        // the air cuts that volley short, and a landed shot's result goes to everyone. Called for every event of a session.
+        internal static void Present(NetSession session, Cmd.GameEvent e)
         {
-            Volley volley = SolveVolley((Weapon)Mathf.Clamp(ShotWeapon, 0, ArsenalRules.Kinds - 1), ShotHeading, ShotPower, ShotFuse, ShotExtraBounces);
-            _serverFlight = new VolleyFlight(volley);
-            Draw(Shots, volley);
-            SendResolved(Shots, volley);
+            switch (e)
+            {
+                case Cmd.ShotFired fired:
+                    ById(session, fired.PlayerId)?.OnShotFired(fired);
+                    break;
+                case Cmd.ShotCut cut:
+                    ById(session, cut.PlayerId)?.OnShotCut(cut);
+                    break;
+                case Cmd.ShotLanded landed:
+                    ById(session, landed.PlayerId)?.OnShotLanded(landed);
+                    break;
+            }
+        }
+
+        private static Player ById(NetSession session, int playerId)
+        {
+            foreach (Player player in In(session))
+            {
+                if (player._playerId == playerId)
+                {
+                    return player;
+                }
+            }
+
+            return null;
+        }
+
+        private void OnShotFired(Cmd.ShotFired fired)
+        {
+            SyncFromAuthority();
+            _seenShots = fired.Shot; // a second Fire in the same frame finds this one in the air
+            Draw(fired.Shot, fired.Volley);
+            SendResolved(fired.Shot, fired.Volley);
+        }
+
+        private void OnShotCut(Cmd.ShotCut cut)
+        {
+            SyncFromAuthority();
+            LastVolley = cut.Volley;
+            if (_shotView != null)
+            {
+                _shotView.Detonate(cut.Volley);
+            }
+
+            SendResolved(cut.Shot, cut.Volley); // every client cuts its flight at the server's own cut, striking whom it struck
+        }
+
+        private void OnShotLanded(Cmd.ShotLanded landed)
+        {
+            SyncFromAuthority();
+            if (landed.Outcome != null)
+            {
+                ServerResult(landed.Outcome);
+            }
         }
 
         // Server: ShotResolved for shot number `shot`.

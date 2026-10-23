@@ -155,7 +155,7 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Turns.For(Client) != null, "the client never got the match");
 
             // Straight up from seat 0 at (0, -4.5): the shot passes (0, -2) on its way to the middle wall.
-            Ricochet.Core.Drop drop = arena.DropCrate(DropKind.Item, new Vector2(0f, -2f));
+            Drop drop = arena.DropCrate(DropKind.Item, new Vector2(0f, -2f));
             Assert.That(drop, Is.Not.Null);
             Crate crate = null;
             yield return WaitUntil(() => Client.Objects.TryGet(Crate.KeyFor(drop.Id), out crate) && crate != null, "the client never saw the crate");
