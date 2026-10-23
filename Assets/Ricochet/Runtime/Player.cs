@@ -6,8 +6,15 @@
 // synced shot inputs to draw it, so nothing per-frame goes over the wire. The name and colour live in the session's
 // roster (NetRoster), which every peer has. In a match (UR-T4) the server gives each player a seat, refuses a shot
 // out of turn, and keeps their health and whether they are still in the round; Arena runs the turns.
+// Weapons and items (UR-T5): the server keeps each player's Loadout (Core) and mirrors it packed into two [Synced] ints;
+// the owner cycles the weapon (Q/E) and item (Z/C), sets a grenade's fuse (1/2/3) and uses the item (F) through
+// [ToServer] calls the server checks like a shot (only on your turn, before you fire). A shot fires the selected weapon
+// (Core's Arsenal: cannon, laser, shotgun, grenade, railgun) and spends one in a match (practice is free fire); its
+// weapon, fuse and extra bounces are synced with the aim so every peer flies the same volley. The items: an extra
+// bounce for this turn's shot, a teleporter that moves you to where it lands, and a shrink ray that shrinks the first
+// player it reaches for the rest of the round.
 using System.Collections.Generic;
-using Ricochet.Core;          // AimState, BounceSolver, ProjectileFlight, ShotPath, MatchPhase
+using Ricochet.Core;          // AimState, Arsenal, Loadout, Volley, VolleyFlight, ShotPath, MatchPhase
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
 using Unity.Multiplayer.Core; // [ToServer], [Synced]
 using UnityEngine;
@@ -29,33 +36,75 @@ namespace Ricochet
         [ToServer(RateLimit = 20)]
         public partial void Aim(float heading, float power);
 
-        // client -> server: fire at this aim. The shot carries its own aim, so a dropped Aim never changes what flies.
+        // client -> server: fire the selected weapon at this aim. The shot carries its own aim, so a dropped Aim never
+        // changes what flies.
         [ToServer(RateLimit = 4)]
         public partial void Fire(float heading, float power);
+
+        // client -> server: select the next weapon (+1, cycle_weapon_right) or the one before (-1, cycle_weapon_left).
+        [ToServer(RateLimit = 10)]
+        public partial void CycleWeapon(int direction);
+
+        // client -> server: select the next item (+1) or the one before (-1).
+        [ToServer(RateLimit = 10)]
+        public partial void CycleItem(int direction);
+
+        // client -> server: the grenade fuse keys: -1 shorter, +1 longer, +2 the longest.
+        [ToServer(RateLimit = 10)]
+        public partial void Fuse(int change);
+
+        // client -> server: use the selected item at this aim (a teleporter and a shrink ray fly along it).
+        [ToServer(RateLimit = 4)]
+        public partial void UseItem(float heading, float power);
 
         // Only the server writes these; every peer, late joiners included, reads the same values.
         [Synced] private Vector2 _position;
         [Synced] private float _heading = StartHeading;
         [Synced] private float _power = StartPower;
 
-        // The last shot: its aim, and a count that goes up by one per shot so every peer knows a new one was fired.
+        // The last shot: its aim, weapon, fuse and extra bounces, and a count that goes up by one per shot so every peer
+        // knows a new one was fired.
         [Synced] private int _shots;
         [Synced] private float _shotHeading;
         [Synced] private float _shotPower;
+        [Synced] private int _shotWeapon;
+        [Synced] private float _shotFuse = 2f;
+        [Synced] private int _shotExtraBounces;
 
         // The match: the seat (turn order and spot; -1 for none), health, and whether still in the round.
         [Synced] private int _seat = -1;
         [Synced] private int _health = StartHealth;
         [Synced] private bool _inRound;
 
+        // The loadout (Loadout.PackWeapons / PackItems; 0 until the server first writes it), the extra bounces used this
+        // turn, and the size a shrink ray left this player at (1 = full size).
+        [Synced] private int _weapons;
+        [Synced] private int _items;
+        [Synced] private int _extraBounces;
+        [Synced] private float _scale = 1f;
+
+        // The last crate collected (kind * 1000 + what it gave: a weapon or item index, or the health added), and a count
+        // that goes up by one per crate so every peer can float its "Laser x 1 collected" over the player.
+        [Synced] private int _pickupCount;
+        [Synced] private int _lastPickup;
+
         private readonly AimState _aim = new AimState(StartHeading, StartPower); // owner only: the local, responsive aim
         private float _aimSentAt = -1f;
         private float _sentHeading = float.NaN;
         private float _sentPower = float.NaN;
 
-        private ProjectileFlight _serverFlight; // server only: the shot it is flying, to land the impact
-        private int _seenShots;                 // every peer: the last shot it has drawn
-        private ShotPath _preview;              // owner only: the shot as it would fly right now
+        private Loadout _loadout;                 // server only: the real loadout
+        private Loadout _shownLoadout;            // every other peer: the synced one, unpacked
+        private int _shownWeapons = -1;
+        private int _shownItems = -1;
+
+        private const float PickupSeconds = 2.5f;
+        private int _seenPickups;
+        private float _pickupShownUntil = -1f;
+
+        private VolleyFlight _serverFlight; // server only: the volley it is flying, to land the impact
+        private int _seenShots;             // every peer: the last shot it has drawn
+        private Volley _preview;            // owner only: the shot as it would fly right now
 
         private SpriteRenderer _body;
         private SpriteRenderer _barrel;
@@ -126,6 +175,47 @@ namespace Ricochet
             }
         }
 
+        /// <summary>The hit radius: a seat's full radius, less after a shrink ray.</summary>
+        public double Radius => Seating.PlayerRadius * Mathf.Clamp(Scale, 0.05f, 1f);
+
+        /// <summary>
+        /// What this player carries: on the server the real loadout; on every other peer the synced copy (read-only in
+        /// spirit: changing it changes nothing but this peer's view).
+        /// </summary>
+        public Loadout Loadout
+        {
+            get
+            {
+                if (IsServer)
+                {
+                    return ServerLoadout;
+                }
+
+                if (_shownLoadout == null || Weapons != _shownWeapons || Items != _shownItems)
+                {
+                    _shownLoadout = _shownLoadout ?? new Loadout(Arena.ArsenalRules);
+                    if (Weapons == 0)
+                    {
+                        _shownLoadout.Reset();
+                    }
+                    else
+                    {
+                        _shownLoadout.UnpackFrom(Weapons, Items);
+                    }
+
+                    _shownWeapons = Weapons;
+                    _shownItems = Items;
+                }
+
+                return _shownLoadout;
+            }
+        }
+
+        private Loadout ServerLoadout
+        {
+            get { return _loadout ?? (_loadout = new Loadout(Arena.ArsenalRules)); }
+        }
+
         /// <summary>Every spawned player <paramref name="session"/> has, humans and AI, in no particular order.</summary>
         public static IEnumerable<Player> In(NetSession session)
         {
@@ -145,16 +235,26 @@ namespace Ricochet
             get { return IsServer ? _serverFlight != null && !_serverFlight.Landed : _shotView != null && _shotView.Flying; }
         }
 
-        /// <summary>The path of the shot this peer last saw fired (null before the first).</summary>
-        public ShotPath LastShot { get; private set; }
+        /// <summary>The main path of the shot this peer last saw fired (null before the first).</summary>
+        public ShotPath LastShot => LastVolley != null ? LastVolley.Main : null;
+
+        /// <summary>The whole volley this peer last saw fired (null before the first).</summary>
+        public Volley LastVolley { get; private set; }
 
         /// <summary>The owner's current preview: what would fly if they fired now (null on other peers).</summary>
-        public ShotPath Preview => _preview;
+        public Volley Preview => _preview;
 
-        /// <summary>Solves a shot from this player's spot at <paramref name="heading"/> and <paramref name="power"/>, as things stand.</summary>
+        /// <summary>Solves a cannon shot from this player's spot at <paramref name="heading"/> and <paramref name="power"/>, as things stand.</summary>
         public ShotPath Solve(float heading, float power)
         {
-            return BounceSolver.Solve(Arena.ToCore(Position), heading, power, Arena.Level, Arena.Targets(Session), Arena.Rules);
+            return SolveVolley(Weapon.Cannon, heading, power, Arena.ArsenalRules.DefaultFuse, 0).Main;
+        }
+
+        /// <summary>Solves what <paramref name="weapon"/> would do from this player's spot, as things stand.</summary>
+        public Volley SolveVolley(Weapon weapon, float heading, float power, double fuse, int extraBounces)
+        {
+            return Arsenal.Fire(weapon, Arena.ToCore(Position), heading, power, fuse, extraBounces, Arena.Level, Arena.Targets(Session),
+                Arena.Rules, Arena.ArsenalRules);
         }
 
         protected override void OnSpawned()
@@ -198,7 +298,13 @@ namespace Ricochet
                 Position = Arena.SpawnPoint(Mathf.Max(0, Seat));
             }
 
+            if (IsServer)
+            {
+                MirrorLoadout();
+            }
+
             _seenShots = Shots; // a late joiner does not replay a shot fired before it arrived
+            _seenPickups = PickupCount;
             _shotView = ShotView.Create("Shot (" + name + ")");
             if (LocallyControlled)
             {
@@ -214,6 +320,63 @@ namespace Ricochet
             {
                 Destroy(_shotView.gameObject);
             }
+        }
+
+        /// <summary>Server: copies the loadout out to the synced ints every peer reads.</summary>
+        public void MirrorLoadout()
+        {
+            if (!IsServer)
+            {
+                return;
+            }
+
+            Weapons = ServerLoadout.PackWeapons();
+            Items = ServerLoadout.PackItems();
+        }
+
+        /// <summary>Server: this player collected a crate of <paramref name="kind"/> that gave <paramref name="value"/>.</summary>
+        public void Collected(DropKind kind, int value)
+        {
+            if (!IsServer)
+            {
+                return;
+            }
+
+            LastPickup = (int)kind * 1000 + Mathf.Clamp(value, 0, 999);
+            PickupCount = PickupCount + 1;
+        }
+
+        /// <summary>
+        /// add_random_weapon / item / health's floating text for a pickup code: "Grenade x 1 collected",
+        /// "Teleporter x 1 collected", "+7".
+        /// </summary>
+        public static string PickupText(int code)
+        {
+            var kind = (DropKind)Mathf.Clamp(code / 1000, 0, DropRules.KindCount - 1);
+            int value = code % 1000;
+            switch (kind)
+            {
+                case DropKind.Health:
+                    return "+" + value;
+                case DropKind.Item:
+                    return ArsenalRules.Name((Item)Mathf.Clamp(value, 0, ArsenalRules.Kinds - 1)) + " x 1 collected";
+                default:
+                    return ArsenalRules.Name((Weapon)Mathf.Clamp(value, 0, ArsenalRules.Kinds - 1)) + " x 1 collected";
+            }
+        }
+
+        /// <summary>Server: a fresh round: the starting loadout, full size, no extra bounces.</summary>
+        public void ResetForRound()
+        {
+            if (!IsServer)
+            {
+                return;
+            }
+
+            ServerLoadout.Reset();
+            MirrorLoadout();
+            Scale = 1f;
+            ExtraBounces = 0;
         }
 
         // Server: a new barrel direction. Never trusted as-is: NaN or an out-of-range power would be garbage on every peer.
@@ -232,28 +395,177 @@ namespace Ricochet
             }
         }
 
-        // Server: fire. One shot in the air per player, and in a match only on your turn (Arena); the aim is clamped
-        // like Aim's, then the shot is solved here.
-        private void OnFire(float heading, float power)
+        /// <summary>Server: cycles the weapon for an AI seat (or a test), through the same checks as a client's.</summary>
+        public void ServerCycleWeapon(int direction)
+        {
+            if (IsServer)
+            {
+                OnCycleWeapon(direction);
+            }
+        }
+
+        /// <summary>Server: uses the selected item for an AI seat (or a test), through the same checks as a client's.</summary>
+        public void ServerUseItem(float heading, float power)
+        {
+            if (IsServer)
+            {
+                OnUseItem(heading, power);
+            }
+        }
+
+        // Server: may this player cycle, set the fuse or use an item now? As for a shot: their turn (or practice), and
+        // nothing of theirs in the air (cycle_weapon_left's "turnStarted && !hasFired").
+        private bool MayAct()
         {
             if (_serverFlight != null && !_serverFlight.Landed)
+            {
+                return false;
+            }
+
+            Arena arena = Arena.Current;
+            return arena == null || arena.MayFire(this);
+        }
+
+        // Practice is free fire: nothing is spent.
+        private static bool Practising
+        {
+            get
+            {
+                Arena arena = Arena.Current;
+                return arena == null || !arena.MatchRunning;
+            }
+        }
+
+        // Server: fire. One volley in the air per player, and in a match only on your turn (Arena) and only with a weapon
+        // you have (fire_weapon.gml); the aim is clamped like Aim's, then the volley is solved here.
+        private void OnFire(float heading, float power)
+        {
+            if (!MayAct())
             {
                 return;
             }
 
-            Arena arena = Arena.Current;
-            if (arena != null && !arena.MayFire(this))
+            Loadout loadout = ServerLoadout;
+            Weapon weapon;
+            if (Practising)
             {
-                return;
+                if (!loadout.Has(loadout.Weapon))
+                {
+                    return;
+                }
+
+                weapon = loadout.Weapon;
+            }
+            else
+            {
+                Weapon? fired = loadout.Fire();
+                if (fired == null)
+                {
+                    return;
+                }
+
+                weapon = fired.Value;
             }
 
             OnAim(heading, power);
             ShotHeading = Heading;
             ShotPower = Power;
+            ShotWeapon = (int)weapon;
+            ShotFuse = (float)loadout.Fuse;
+            ShotExtraBounces = ExtraBounces;
+            ExtraBounces = 0;
+            MirrorLoadout();
             Shots = Shots + 1;
             _seenShots = Shots; // launched here, not by Update, so a second Fire in the same frame finds it in the air
             LaunchShot();
-            arena?.Fired(this);
+            Arena.Current?.Fired(this);
+        }
+
+        private void OnCycleWeapon(int direction)
+        {
+            if (MayAct() && ServerLoadout.CycleWeapon(System.Math.Sign(direction)))
+            {
+                MirrorLoadout();
+            }
+        }
+
+        private void OnCycleItem(int direction)
+        {
+            if (MayAct() && ServerLoadout.CycleItem(System.Math.Sign(direction)))
+            {
+                MirrorLoadout();
+            }
+        }
+
+        private void OnFuse(int change)
+        {
+            if (!MayAct())
+            {
+                return;
+            }
+
+            Loadout loadout = ServerLoadout;
+            if (change < 0)
+            {
+                loadout.ShortenFuse();
+            }
+            else if (change == 1)
+            {
+                loadout.LengthenFuse();
+            }
+            else if (change >= 2)
+            {
+                loadout.MaxOutFuse();
+            }
+
+            MirrorLoadout();
+        }
+
+        // Server: use_item.gml. The selected item, if carried and in play, before this turn's shot.
+        private void OnUseItem(float heading, float power)
+        {
+            if (!MayAct())
+            {
+                return;
+            }
+
+            Loadout loadout = ServerLoadout;
+            Item item = loadout.Item;
+            if (!Arena.ArsenalRules.InPlay(item) || !loadout.Has(item))
+            {
+                return;
+            }
+
+            if (!Practising)
+            {
+                loadout.Use();
+            }
+
+            OnAim(heading, power);
+            switch (item)
+            {
+                case Item.ExtraBounce:
+                    ExtraBounces = ExtraBounces + 1;
+                    break;
+                case Item.Teleporter:
+                    Vec2 spot = Arsenal.Teleport(Arena.ToCore(Position), Heading, Power, Arena.Level, Arena.Rules, Radius, out _);
+                    Position = Arena.ToUnity(spot);
+                    break;
+                case Item.ShrinkRay:
+                    string hit = Arsenal.ShrinkRay(Arena.ToCore(Position), Heading, Arena.SeatTarget(Seat), Arena.Level, Arena.Targets(Session),
+                        Arena.Rules, out _);
+                    int seat = Arena.SeatOf(hit);
+                    Arena arena = Arena.Current;
+                    Player shrunk = seat >= 0 && arena != null ? arena.PlayerAt(seat) : null;
+                    if (shrunk != null)
+                    {
+                        shrunk.Scale = Mathf.Min(shrunk.Scale, (float)Arena.ArsenalRules.ShrinkScale);
+                    }
+
+                    break;
+            }
+
+            MirrorLoadout();
         }
 
         // A human on their own machine: not a bot (its driver fires for it) and not an AI (Arena plays its turns).
@@ -270,6 +582,7 @@ namespace Ricochet
             }
 
             transform.position = Position;
+            transform.localScale = new Vector3(Scale, Scale, 1f) * 0.8f;
 
             if (LocallyControlled) // a bot's driver calls Fire itself (GameBot.cs); Arena fires for an AI
             {
@@ -282,12 +595,18 @@ namespace Ricochet
                 LaunchShot();
             }
 
+            if (PickupCount != _seenPickups)
+            {
+                _seenPickups = PickupCount;
+                _pickupShownUntil = Time.time + PickupSeconds;
+            }
+
             if (IsServer && _serverFlight != null && !_serverFlight.Landed)
             {
                 _serverFlight.Advance(Time.deltaTime);
                 if (_serverFlight.Landed)
                 {
-                    Arena.Current?.Landed(this, _serverFlight.Path); // a dummy knocked down, or a player hurt and the turn over
+                    Arena.Current?.Landed(this, _serverFlight.Volley); // dummies knocked down, players hurt, crates collected, the turn over
                 }
             }
 
@@ -317,15 +636,40 @@ namespace Ricochet
             }
 
             bool mayFire = Turns.MayFire(Session, Seat);
-            if (GameInput.Fire() && !ShotInFlight && mayFire)
+            bool mayAct = mayFire && !ShotInFlight;
+            int cycleWeapon = GameInput.CycleWeapon();
+            if (cycleWeapon != 0 && mayAct)
+            {
+                CycleWeapon(cycleWeapon);
+            }
+
+            int cycleItem = GameInput.CycleItem();
+            if (cycleItem != 0 && mayAct)
+            {
+                CycleItem(cycleItem);
+            }
+
+            int fuse = GameInput.Fuse();
+            if (fuse != 0 && mayAct && Loadout.Weapon == Weapon.Grenade)
+            {
+                Fuse(fuse);
+            }
+
+            if (GameInput.UseItem() && mayAct)
+            {
+                UseItem(heading, power);
+            }
+
+            if (GameInput.Fire() && mayAct)
             {
                 Fire(heading, power);
             }
 
-            // The preview: the whole path as it would fly now, hidden while the shot is in the air.
-            if (changed || _preview == null || Time.frameCount % 10 == 0)
+            // The preview: the whole path of the selected weapon as it would fly now, hidden while the shot is in the air.
+            Loadout loadout = Loadout;
+            if (changed || _preview == null || Time.frameCount % 10 == 0 || _preview.Weapon != loadout.Weapon)
             {
-                _preview = Solve(heading, power);
+                _preview = SolveVolley(loadout.Weapon, heading, power, loadout.Fuse, ExtraBounces);
             }
 
             if (_previewLine != null)
@@ -336,33 +680,35 @@ namespace Ricochet
                 }
                 else
                 {
-                    _previewLine.positionCount = _preview.Points.Count + 1;
+                    ShotPath main = _preview.Main;
+                    _previewLine.positionCount = main.Points.Count + 1;
                     _previewLine.SetPosition(0, Position);
-                    for (int i = 0; i < _preview.Points.Count; i++)
+                    for (int i = 0; i < main.Points.Count; i++)
                     {
-                        _previewLine.SetPosition(i + 1, Arena.ToUnity(_preview.Points[i]));
+                        _previewLine.SetPosition(i + 1, Arena.ToUnity(main.Points[i]));
                     }
                 }
             }
         }
 
-        // Every peer: draw the shot the server just took. The server's own solve is the one that lands.
+        // Every peer: draw the volley the server just took. The server's own solve is the one that lands.
         private void LaunchShot()
         {
-            ShotPath path = Solve(ShotHeading, ShotPower);
-            LastShot = path;
+            Volley volley = SolveVolley((Weapon)Mathf.Clamp(ShotWeapon, 0, ArsenalRules.Kinds - 1), ShotHeading, ShotPower, ShotFuse, ShotExtraBounces);
+            LastVolley = volley;
             if (IsServer)
             {
-                _serverFlight = new ProjectileFlight(path, Arena.Rules);
+                _serverFlight = new VolleyFlight(volley);
             }
 
             if (_shotView != null)
             {
-                _shotView.Launch(path, Color);
+                _shotView.Launch(volley, Color);
             }
         }
 
-        // The name under the square, and for the owner draw_bounceinfo's line: angle, power and "Bounces: n/max".
+        // The name under the square, and for the owner draw_bounceinfo's line (angle, power, "Bounces: n/max") with
+        // draw_weaponinfo / draw_iteminfo's weapon and item (and the grenade's fuse).
         // IMGUI keeps the template free of fonts and canvases; swap in MindAttic Components widgets with the HUD (UR-T8).
         private void OnGUI()
         {
@@ -377,6 +723,13 @@ namespace Ricochet
             var centered = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
             GUI.Label(label, DisplayName + (LocallyControlled ? " (you)" : string.Empty), centered);
 
+            // show_float_text: what the last crate gave, rising over the player for a moment.
+            if (Time.time < _pickupShownUntil)
+            {
+                float rise = (1f - (_pickupShownUntil - Time.time) / PickupSeconds) * 30f;
+                GUI.Label(new Rect(screen.x - 120f, Screen.height - screen.y - 70f - rise, 240f, 22f), PickupText(LastPickup), centered);
+            }
+
             // In a match, a small health bar under the name (the roster's bars along the top are MatchHud's).
             if (Turns.For(Session) != null && Seat >= 0)
             {
@@ -385,14 +738,23 @@ namespace Ricochet
 
             if (LocallyControlled)
             {
-                ShotPath shown = ShotInFlight && _shotView != null ? _shotView.Flight.Path : _preview;
-                int bounces = ShotInFlight && _shotView != null ? _shotView.Flight.Contacts : shown != null ? shown.Contacts.Count : 0;
-                string end = shown == null ? string.Empty
+                bool flying = ShotInFlight && _shotView != null && _shotView.Flight != null;
+                ShotPath shown = flying ? _shotView.Flight.Volley.Main : _preview != null ? _preview.Main : null;
+                int bounces = flying ? _shotView.Flight.Flights[0].Contacts : shown != null ? shown.Contacts.Count : 0;
+                string end = shown == null || (_preview != null && _preview.HasBlast) ? string.Empty
                     : shown.End == ShotEndKind.Target ? "  -> HIT"
                     : shown.End == ShotEndKind.Spent ? "  -> falls short" : string.Empty;
-                GUI.Label(new Rect(12f, Screen.height - 34f, 600f, 24f),
+                GUI.Label(new Rect(12f, Screen.height - 34f, 900f, 24f),
                     "Angle " + Mathf.RoundToInt((float)_aim.Heading) + "°   Power " + Mathf.RoundToInt((float)_aim.Power * 100f) + "%   Bounces: "
-                    + bounces + "/" + Arena.Rules.MaxBounces + end + "   (Left/Right aim, Up/Down power, Space fire)");
+                    + bounces + "/" + (Arena.Rules.MaxBounces + ExtraBounces) + end + "   (Left/Right aim, Up/Down power, Space fire)");
+
+                Loadout loadout = Loadout;
+                string weapon = "Weapon: " + ArsenalRules.Name(loadout.Weapon) + " x" + ArsenalRules.CountText(loadout.Count(loadout.Weapon))
+                    + (loadout.Weapon == Weapon.Grenade ? "   Fuse " + loadout.Fuse.ToString("0.0") + "s (1/2/3)" : string.Empty) + "  (Q/E)";
+                string item = "Item: " + (loadout.Has(loadout.Item) ? ArsenalRules.Name(loadout.Item) + " x" + ArsenalRules.CountText(loadout.Count(loadout.Item)) : "none")
+                    + (ExtraBounces > 0 ? "   +" + ExtraBounces + " bounce" + (ExtraBounces == 1 ? string.Empty : "s") : string.Empty) + "  (Z/C, F to use)";
+                GUI.Label(new Rect(12f, Screen.height - 76f, 900f, 22f), weapon);
+                GUI.Label(new Rect(12f, Screen.height - 56f, 900f, 22f), item);
             }
         }
 

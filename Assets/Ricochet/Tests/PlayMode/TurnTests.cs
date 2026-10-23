@@ -28,6 +28,7 @@ namespace Ricochet.Tests
             RegisterPrefab(GamePrefabs.Dummy);
             RegisterPrefab(GamePrefabs.Opponent);
             RegisterPrefab(GamePrefabs.Turns);
+            RegisterPrefab(GamePrefabs.Crate);
             Client.Identity = new PlayerIdentity("ann-token", "Ann", new PlayerColor(230, 80, 60));
         }
 

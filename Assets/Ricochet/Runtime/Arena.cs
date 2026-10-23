@@ -3,7 +3,10 @@
 // over the wire), spawns the keyed practice dummies shots are fired at before a match, and runs the match (UR-T4): up
 // to sixteen seats, the connected humans plus AI opponents it spawns, taking turns on Core's Match with its turn
 // clock and health, mirrored to every peer through the Turns object and each Player. It offers two votes: start a
-// match (with a number of AI opponents) and restart (the round's health, or the practice dummies).
+// match (with a number of AI opponents) and restart (the round's health, or the practice dummies). Weapons and items
+// (UR-T5): a landed volley strikes everyone it reached (Core's Arsenal), every player's loadout is reset at the start of
+// each round, and during a round Core's DropField drops crates (spawned as keyed Crate objects) that a shot passing
+// over collects for its shooter: a random weapon, a random item or some health.
 using System;
 using System.Collections.Generic;
 using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, SimpleAi
@@ -34,12 +37,20 @@ namespace Ricochet
         /// <summary>The match rules every peer plays by.</summary>
         public static readonly MatchRules MatchRules = MatchRules.Default;
 
+        /// <summary>The weapons and items every peer plays with (UR-T5).</summary>
+        public static readonly ArsenalRules ArsenalRules = ArsenalRules.Default;
+
+        /// <summary>How crates drop during a match (UR-T5).</summary>
+        public static readonly DropRules DropRules = DropRules.Default;
+
         private static readonly Vector2[] DummyStarts = { new Vector2(-7f, 1f), new Vector2(7f, -3f), new Vector2(0f, 3.5f) };
 
         private readonly NetSession _session;
         private readonly GameObject _dummyPrefab;
         private readonly System.Random _aiDice = new System.Random();
+        private readonly System.Random _dropDice = new System.Random();
         private Match _match;
+        private DropField _field;
         private Turns _turns;
         private readonly Dictionary<int, int> _humanSeats = new Dictionary<int, int>(); // kit seat -> match seat
         private int _aiCount;
@@ -145,7 +156,7 @@ namespace Ricochet
                 {
                     if (player.InRound && player.Seat >= 0)
                     {
-                        targets.Add(new Target(SeatTarget(player.Seat), ToCore(player.Position), Seating.PlayerRadius));
+                        targets.Add(new Target(SeatTarget(player.Seat), ToCore(player.Position), player.Radius));
                     }
                 }
             }
@@ -216,7 +227,14 @@ namespace Ricochet
             }
 
             _aiCount = aiCount;
+            _field?.Clear();
+            _field = new DropField(Level, DropRules, _dropDice);
+            _field.Spawned += SpawnCrate;
+            _field.Landed += LandCrate;
+            _field.Removed += drop => _session.Objects.Despawn(Crate.KeyFor(drop.Id));
             _match = new Match(MatchRules);
+            _match.RoundStarted += _ => NewRound();
+            _match.TurnStarted += _ => ClearExtraBounces();
             _humanSeats.Clear();
             for (int i = 0; i < humans.Count; i++)
             {
@@ -275,24 +293,129 @@ namespace Ricochet
             }
         }
 
-        /// <summary>Server: <paramref name="player"/>'s shot landed: knock down a dummy, or hurt a player and end the turn.</summary>
-        public void Landed(Player player, ShotPath path)
+        /// <summary>
+        /// Server: <paramref name="player"/>'s volley landed: knock down every dummy it struck; in a match, hurt every
+        /// player it struck (hit.gml per strike), give the shooter every crate it passed over, and end the turn.
+        /// </summary>
+        public void Landed(Player player, Volley volley)
         {
-            if (path == null)
+            if (volley == null)
             {
                 return;
             }
 
-            if (path.End == ShotEndKind.Target && path.TargetId.StartsWith(DummyKeyPrefix, StringComparison.Ordinal))
+            foreach (Strike strike in volley.Strikes)
             {
-                Knock(path.TargetId);
+                if (strike.TargetId != null && strike.TargetId.StartsWith(DummyKeyPrefix, StringComparison.Ordinal))
+                {
+                    Knock(strike.TargetId);
+                }
             }
 
             if (_match != null && _match.IsRunning && player != null)
             {
-                int hit = path.End == ShotEndKind.Target ? SeatOf(path.TargetId) : -1;
-                _match.ShotLanded(player.Seat, hit, path.Bounces);
+                foreach (Strike strike in volley.Strikes)
+                {
+                    int hit = SeatOf(strike.TargetId);
+                    if (hit >= 0)
+                    {
+                        _match.Strike(player.Seat, hit, strike.Bounces, strike.Scale);
+                    }
+                }
+
+                if (_field != null)
+                {
+                    foreach (Ricochet.Core.Drop drop in _field.Collect(volley))
+                    {
+                        Give(player, drop.Kind);
+                    }
+                }
+
+                _match.ShotOver(player.Seat);
                 Mirror();
+            }
+        }
+
+        /// <summary>The crates on the level now (server only; empty outside a match).</summary>
+        public IReadOnlyList<Ricochet.Core.Drop> CratesOnField => _field != null ? _field.Drops : (IReadOnlyList<Ricochet.Core.Drop>)Array.Empty<Ricochet.Core.Drop>();
+
+        /// <summary>Server: drops a crate of <paramref name="kind"/> at <paramref name="spot"/> now (a test, or a debug key; null outside a match).</summary>
+        public Ricochet.Core.Drop DropCrate(DropKind kind, Vector2 spot)
+        {
+            return MatchRunning && _field != null ? _field.Spawn(kind, ToCore(spot)) : null;
+        }
+
+        // add_random_weapon / add_random_item / add_random_health.gml: what a collected crate gives its collector.
+        private void Give(Player player, DropKind kind)
+        {
+            int value = 0;
+            switch (kind)
+            {
+                case DropKind.Weapon:
+                case DropKind.Powerup:
+                    Weapon? weapon = Pickups.RandomWeapon(_dropDice, ArsenalRules);
+                    if (weapon == null)
+                    {
+                        return;
+                    }
+
+                    player.Loadout.Add(weapon.Value);
+                    value = (int)weapon.Value;
+                    break;
+                case DropKind.Item:
+                    Item? item = Pickups.RandomItem(_dropDice, ArsenalRules);
+                    if (item == null)
+                    {
+                        return;
+                    }
+
+                    player.Loadout.Add(item.Value);
+                    value = (int)item.Value;
+                    break;
+                case DropKind.Health:
+                    value = _match.Heal(player.Seat, Pickups.HealAmount(_dropDice, MatchRules.WeaponDamage));
+                    break;
+            }
+
+            player.MirrorLoadout();
+            player.Collected(kind, value);
+        }
+
+        private void SpawnCrate(Ricochet.Core.Drop drop)
+        {
+            GameObject spawned = _session.Objects.Spawn(CratePrefab(), Crate.KeyFor(drop.Id), ToUnity(drop.Position));
+            Crate crate = spawned.GetComponent<Crate>();
+            crate.Kind = (int)drop.Kind;
+            crate.Spot = ToUnity(drop.Spot);
+            crate.Landed = drop.Landed;
+        }
+
+        private void LandCrate(Ricochet.Core.Drop drop)
+        {
+            if (_session.Objects.TryGet(Crate.KeyFor(drop.Id), out Crate crate) && crate != null)
+            {
+                crate.Landed = true;
+            }
+        }
+
+        // A new round: everyone back to the starting loadout and full size, and the level cleared of crates.
+        private void NewRound()
+        {
+            _field?.Clear();
+            foreach (Player player in Player.In(_session))
+            {
+                player.ResetForRound();
+            }
+        }
+
+        private void ClearExtraBounces()
+        {
+            foreach (Player player in Player.In(_session))
+            {
+                if (player.ExtraBounces != 0)
+                {
+                    player.ExtraBounces = 0;
+                }
             }
         }
 
@@ -345,6 +468,20 @@ namespace Ricochet
             }
 
             _match.Tick(seconds);
+
+            // obj_drop_emitter: crates fall while a round is being played; none outlive the match.
+            if (_field != null)
+            {
+                if (_match.IsRunning && _match.Phase != MatchPhase.RoundOver)
+                {
+                    _field.Tick(seconds);
+                }
+                else if (!_match.IsRunning && _field.Drops.Count > 0)
+                {
+                    _field.Clear();
+                }
+            }
+
             if (_match.Phase == MatchPhase.Aiming && _match.TryGetSeat(_match.Current, out MatchSeat seat) && seat.Kind == SeatKind.Ai
                 && _match.Rules.TurnSeconds - _match.TimeLeft >= _match.Rules.AiThinkSeconds)
             {
@@ -456,6 +593,8 @@ namespace Ricochet
         private static GameObject OpponentPrefab() => LoadPrefab("Game/Opponent");
 
         private static GameObject TurnsPrefab() => LoadPrefab("Game/Turns");
+
+        private static GameObject CratePrefab() => LoadPrefab("Game/Crate");
 
         private static GameObject LoadPrefab(string path)
         {

@@ -98,6 +98,9 @@ namespace Ricochet.Core
 
         public bool IsRunning => Phase != MatchPhase.Practice;
 
+        /// <summary>A round began (its number), every seat back at full health, just before its first turn.</summary>
+        public event Action<int> RoundStarted;
+
         /// <summary>A new turn began, for this seat.</summary>
         public event Action<int> TurnStarted;
 
@@ -237,26 +240,64 @@ namespace Ricochet.Core
         /// </summary>
         public int ShotLanded(int shooter, int hitSeat, int bounces)
         {
-            int damage = 0;
-            if (_seats.TryGetValue(hitSeat, out MatchSeat hit) && hit.Alive && IsRunning)
+            int damage = Strike(shooter, hitSeat, bounces);
+            ShotOver(shooter);
+            return damage;
+        }
+
+        /// <summary>
+        /// One hit from <paramref name="shooter"/>'s shot on <paramref name="hitSeat"/> (a volley can make several: a
+        /// shotgun's pellets, a grenade's blast, a railgun's slug): hit.gml's damage times <paramref name="scale"/> (at
+        /// least 1), and a kill at zero. The turn does not end here; see <see cref="ShotOver"/>. Returns the damage done.
+        /// </summary>
+        public int Strike(int shooter, int hitSeat, int bounces, double scale = 1)
+        {
+            if (!IsRunning || Phase == MatchPhase.RoundOver || !_seats.TryGetValue(hitSeat, out MatchSeat hit) || !hit.Alive)
             {
-                damage = Rules.Damage(hitSeat == shooter, bounces, _dice.NextDouble() * 2 - 1);
-                hit.Health = Math.Max(0, hit.Health - damage);
-                Damaged?.Invoke(hitSeat, damage, shooter);
-                if (hit.Health == 0)
-                {
-                    hit.Alive = false;
-                    Eliminated?.Invoke(hitSeat);
-                }
+                return 0;
             }
 
+            int full = Rules.Damage(hitSeat == shooter, bounces, _dice.NextDouble() * 2 - 1);
+            int damage = double.IsNaN(scale) || scale >= 1 ? full : Math.Max(1, (int)Math.Round(full * Math.Max(0, scale), MidpointRounding.AwayFromZero));
+            hit.Health = Math.Max(0, hit.Health - damage);
+            Damaged?.Invoke(hitSeat, damage, shooter);
+            if (hit.Health == 0)
+            {
+                hit.Alive = false;
+                Eliminated?.Invoke(hitSeat);
+            }
+
+            return damage;
+        }
+
+        /// <summary>
+        /// add_random_health.gml: <paramref name="amount"/> health back for a seat still in the round, up to the maximum.
+        /// Returns what was actually added.
+        /// </summary>
+        public int Heal(int seat, int amount)
+        {
+            if (!IsRunning || amount <= 0 || !_seats.TryGetValue(seat, out MatchSeat healed) || !healed.Alive)
+            {
+                return 0;
+            }
+
+            int before = healed.Health;
+            healed.Health = Math.Min(Rules.MaxHealth, healed.Health + amount);
+            return healed.Health - before;
+        }
+
+        /// <summary>The current seat's shot (every part of it) has landed: the round may be over, else the turn ends.</summary>
+        public void ShotOver(int shooter)
+        {
             if (Phase == MatchPhase.ShotInFlight && shooter == Current && !CheckRoundOver())
             {
                 Phase = MatchPhase.TurnOver;
                 _phaseTime = Rules.EndTurnSeconds;
             }
-
-            return damage;
+            else
+            {
+                CheckRoundOver();
+            }
         }
 
         /// <summary>Runs the clock: the turn timer while aiming, and the pauses after a shot and after a round.</summary>
@@ -362,6 +403,7 @@ namespace Ricochet.Core
             }
 
             int first = firstSeat >= 0 && _seats.TryGetValue(firstSeat, out MatchSeat winner) && winner.Alive ? firstSeat : NextLiving(-1);
+            RoundStarted?.Invoke(Round);
             BeginTurn(first);
         }
 

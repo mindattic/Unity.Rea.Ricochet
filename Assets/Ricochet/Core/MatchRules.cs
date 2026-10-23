@@ -21,7 +21,7 @@ namespace Ricochet.Core
         /// <summary>The last this-many whole seconds of a turn each beep (turn_countdown's 4, 3, 2, 1).</summary>
         public int CountdownBeeps { get; set; } = 4;
 
-        /// <summary>A shot's base damage (weapon_damage; weapons, UR-T5, will each carry their own).</summary>
+        /// <summary>A hit's base damage (weapon_damage, the same for every weapon; a shotgun pellet does a share, Match.Strike).</summary>
         public int WeaponDamage { get; set; } = 10;
 
         /// <summary>Seconds between a shot landing and the next player's turn (obj_endturn's pause).</summary>

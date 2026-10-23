@@ -64,6 +64,12 @@ namespace Ricochet
                 s.AddText("In a match you play in turn: the yellow clock at the top is your 20 seconds to fire, the bars are "
                     + "everyone's health, and the line under the clock is the order the players still standing take their turns. "
                     + "A shot hurts more for every bounce (and hurts you, if it comes back). The last one standing wins the round.");
+                s.AddText("Weapons: Q/E cycle the cannon (unlimited), laser (full range, fast), shotgun (a fan of five pellets), "
+                    + "grenade (passes through players and goes off when its fuse runs out: 1 shorter, 2 longer, 3 longest) and "
+                    + "railgun (straight through walls, hitting everyone on the line). You start each round with three of each.");
+                s.AddText("Items: Z/C cycle, F uses: an extra bounce for this turn's shot, a teleporter that moves you to where it "
+                    + "lands, and a shrink ray that shrinks the first player it reaches. Crates fall during a match: shoot across "
+                    + "one to collect it (W a weapon, I an item, + health, ? a mystery weapon).");
             }, MenuPlacement.Both);
 
             frontEnd.AddPauseMenuItems(s =>

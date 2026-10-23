@@ -31,6 +31,12 @@ namespace Ricochet.Core
 
         public static ShotRules Default => new ShotRules();
 
+        /// <summary>A copy, to change for one shot (an extra bounce, a grenade's fuse) without touching the shared rules.</summary>
+        public ShotRules Clone()
+        {
+            return (ShotRules)MemberwiseClone();
+        }
+
         /// <summary>The range a shot of <paramref name="power"/> (clamped to 0..1) travels.</summary>
         public double RangeFor(double power)
         {

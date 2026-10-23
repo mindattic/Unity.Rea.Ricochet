@@ -84,6 +84,13 @@ copy of any of these is a bug.
   clock, health and damage per hit.gml, the last one standing wins the round, and a HUD of per-seat health bars,
   the clock and the turn order (UR-T4; `Core/Match.cs` tested by `dotnet test Core.slnx`, the wire by
   `Tests/PlayMode/TurnTests.cs`). The AI seats play a stand-in turn until UR-T7.
-- ⬜ Everything else — weapons, hazards, the real AI, announcer/HUD, menus, profiles (UR-T5–UR-T10) and
+- ✅ Weapons and items: a per-player loadout of six weapons and six items cycled left/right (cycle_weapon/item_*.gml),
+  a count of 10 meaning unlimited, the cannon unlimited, three of the rest each round; the laser, shotgun, fused grenade
+  (1/2/3 set a 0.5–6 s fuse; it passes through players and blasts everyone near where it goes off) and railgun; the
+  extra bounce, teleporter and shrink ray; and weapon/item/health/powerup crates that fall during a match on
+  obj_drop_emitter's random timers and go to whoever's shot passes over one (UR-T5; `Core/Loadout.cs`, `Volley.cs`,
+  `Drops.cs` tested by `dotnet test Core.slnx`, the wire by `Tests/PlayMode/WeaponTests.cs`). The vortex, shield wall
+  and redirector wait for UR-T6's hazards and aim assist for UR-T7: nobody carries them and no crate gives them yet.
+- ⬜ Everything else — hazards, the real AI, announcer/HUD, menus, profiles (UR-T6–UR-T10) and
   multiplayer polish (UR-T11–UR-T14) — is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.

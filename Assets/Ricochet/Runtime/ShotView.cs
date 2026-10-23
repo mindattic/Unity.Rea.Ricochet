@@ -1,6 +1,8 @@
-// Draws one player's shot in the air: the projectile walking its ProjectileFlight, the trail behind it, and a brief
-// flash where it lands. Every peer runs its own flight from the same synced inputs (Player's ShotHeading/ShotPower),
-// so this is presentation only; the server's own flight decides what the impact hit.
+// Draws one player's volley in the air: each projectile walking its flight (one shell, a beam, a railgun slug, a
+// grenade, or a shotgun's fan of pellets), the trail behind it, and a brief flash where it lands; a grenade's flash is
+// its blast, drawn at the blast's size. Every peer runs its own flight from the same synced inputs (Player's ShotWeapon,
+// ShotHeading, ShotPower, ShotFuse, ShotExtraBounces), so this is presentation only; the server's own flight decides
+// what the volley struck.
 using System.Collections.Generic;
 using Ricochet.Core;
 using UnityEngine;
@@ -11,24 +13,24 @@ namespace Ricochet
     {
         private const float FlashSeconds = 0.6f;
 
-        private ProjectileFlight _flight;
-        private SpriteRenderer _projectile;
-        private SpriteRenderer _flash;
-        private LineRenderer _trail;
-        private readonly List<Vector3> _trailPoints = new List<Vector3>();
+        private readonly List<Part> _parts = new List<Part>();
+        private VolleyFlight _flight;
+        private SpriteRenderer _blast;
+        private LineRenderer _blastRing;
         private float _flashLeft;
+        private Color _color = Color.white;
 
-        /// <summary>The flight being drawn (null before the first shot).</summary>
-        public ProjectileFlight Flight => _flight;
+        /// <summary>The volley being drawn (null before the first).</summary>
+        public VolleyFlight Flight => _flight;
 
-        /// <summary>True while a shot is in the air.</summary>
+        /// <summary>True while any projectile is in the air.</summary>
         public bool Flying => _flight != null && !_flight.Landed;
 
         /// <summary>Raised once per contact passed, with the contact point (a bounce sound or puff hangs off this).</summary>
         public event System.Action<Vector2> Bounced;
 
-        /// <summary>Raised when the shot lands, with its path.</summary>
-        public event System.Action<ShotPath> Landed;
+        /// <summary>Raised when the whole volley has landed.</summary>
+        public event System.Action<Volley> Landed;
 
         /// <summary>A new, unparented view (the player's own transform is scaled to its square); the player destroys it.</summary>
         public static ShotView Create(string name)
@@ -36,88 +38,197 @@ namespace Ricochet
             return new GameObject(name).AddComponent<ShotView>();
         }
 
-        public void Launch(ShotPath path, Color color)
+        public void Launch(Volley volley, Color color)
         {
-            EnsureParts();
-            _flight = new ProjectileFlight(path, Arena.Rules);
-            _projectile.color = color;
-            _projectile.enabled = true;
-            _trail.startColor = new Color(color.r, color.g, color.b, 0.15f);
-            _trail.endColor = new Color(color.r, color.g, color.b, 0.8f);
-            _trailPoints.Clear();
-            _trailPoints.Add(Arena.ToUnity(path.Start));
-            Lines.Set(_trail, _trailPoints);
-            _flash.enabled = false;
-            Place(_projectile.transform, path.Start);
+            EnsureBlast();
+            _flight = new VolleyFlight(volley);
+            _color = color;
+            while (_parts.Count < volley.Paths.Count)
+            {
+                _parts.Add(new Part(transform, _parts.Count));
+            }
+
+            float size = volley.Weapon == Weapon.Shotgun ? 0.14f : volley.Weapon == Weapon.Grenade ? 0.3f : 0.22f;
+            for (int i = 0; i < _parts.Count; i++)
+            {
+                Part part = _parts[i];
+                bool used = i < volley.Paths.Count;
+                part.Projectile.enabled = used;
+                part.Flash.enabled = false;
+                part.Trail.positionCount = 0;
+                part.Points.Clear();
+                part.Landed = !used;
+                if (!used)
+                {
+                    continue;
+                }
+
+                part.Projectile.color = color;
+                part.Projectile.transform.localScale = new Vector3(size, size, 1f);
+                float width = volley.Weapon == Weapon.Laser || volley.Weapon == Weapon.Railgun ? 0.11f : 0.07f;
+                part.Trail.startWidth = width;
+                part.Trail.endWidth = width;
+                part.Trail.startColor = new Color(color.r, color.g, color.b, 0.15f);
+                part.Trail.endColor = new Color(color.r, color.g, color.b, 0.8f);
+                part.Points.Add(Arena.ToUnity(volley.Paths[i].Start));
+                Lines.Set(part.Trail, part.Points);
+                Place(part.Projectile.transform, volley.Paths[i].Start);
+            }
+
+            _blast.enabled = false;
+            _blastRing.positionCount = 0;
+            _flashLeft = 0f;
         }
 
         private void Update()
         {
             if (_flight != null && !_flight.Landed)
             {
-                int before = _flight.Contacts;
-                int passed = _flight.Advance(Time.deltaTime);
-                for (int i = 0; i < passed; i++)
+                for (int i = 0; i < _flight.Flights.Count; i++)
                 {
-                    Vec2 point = _flight.Path.Contacts[before + i].Point;
-                    _trailPoints.Add(Arena.ToUnity(point));
-                    Bounced?.Invoke(Arena.ToUnity(point));
-                }
+                    ProjectileFlight flight = _flight.Flights[i];
+                    Part part = _parts[i];
+                    if (part.Landed)
+                    {
+                        continue;
+                    }
 
-                Place(_projectile.transform, _flight.Position);
-                _trailPoints.Add(_projectile.transform.position);
-                Lines.Set(_trail, _trailPoints);
-                _trailPoints.RemoveAt(_trailPoints.Count - 1);
+                    int before = flight.Contacts;
+                    int passed = flight.Advance(Time.deltaTime);
+                    for (int c = 0; c < passed; c++)
+                    {
+                        Vec2 point = flight.Path.Contacts[before + c].Point;
+                        part.Points.Add(Arena.ToUnity(point));
+                        Bounced?.Invoke(Arena.ToUnity(point));
+                    }
+
+                    Place(part.Projectile.transform, flight.Position);
+                    part.Points.Add(part.Projectile.transform.position);
+                    Lines.Set(part.Trail, part.Points);
+                    part.Points.RemoveAt(part.Points.Count - 1);
+
+                    if (flight.Landed)
+                    {
+                        part.Landed = true;
+                        part.Projectile.enabled = false;
+                        if (!_flight.Volley.HasBlast)
+                        {
+                            part.Flash.enabled = true;
+                            part.Flash.color = _color;
+                            Place(part.Flash.transform, flight.Path.Impact);
+                        }
+                    }
+                }
 
                 if (_flight.Landed)
                 {
-                    _projectile.enabled = false;
-                    _flash.enabled = true;
-                    _flash.color = _projectile.color;
-                    Place(_flash.transform, _flight.Path.Impact);
                     _flashLeft = FlashSeconds;
-                    Landed?.Invoke(_flight.Path);
+                    if (_flight.Volley.HasBlast)
+                    {
+                        _blast.enabled = true;
+                        _blast.color = new Color(1f, 0.6f, 0.2f, 0.45f);
+                        Place(_blast.transform, _flight.Volley.BlastCenter);
+                        Ring(_flight.Volley.BlastCenter, _flight.Volley.BlastRadius);
+                    }
+
+                    Landed?.Invoke(_flight.Volley);
                 }
             }
             else if (_flashLeft > 0f)
             {
                 _flashLeft -= Time.deltaTime;
                 float t = Mathf.Clamp01(_flashLeft / FlashSeconds);
-                _flash.transform.localScale = Vector3.one * Mathf.Lerp(1.4f, 0.4f, t);
-                Color c = _flash.color;
-                _flash.color = new Color(c.r, c.g, c.b, t);
-                _trail.startColor = new Color(c.r, c.g, c.b, 0.15f * t);
-                _trail.endColor = new Color(c.r, c.g, c.b, 0.8f * t);
+                foreach (Part part in _parts)
+                {
+                    if (part.Flash.enabled)
+                    {
+                        part.Flash.transform.localScale = Vector3.one * Mathf.Lerp(1.4f, 0.4f, t);
+                        part.Flash.color = new Color(_color.r, _color.g, _color.b, t);
+                    }
+
+                    part.Trail.startColor = new Color(_color.r, _color.g, _color.b, 0.15f * t);
+                    part.Trail.endColor = new Color(_color.r, _color.g, _color.b, 0.8f * t);
+                }
+
+                if (_blast.enabled)
+                {
+                    float diameter = (float)(_flight.Volley.BlastRadius * 2.0) * Mathf.Lerp(1f, 0.6f, t);
+                    _blast.transform.localScale = new Vector3(diameter, diameter, 1f);
+                    _blast.color = new Color(1f, 0.6f, 0.2f, 0.45f * t);
+                    _blastRing.startColor = _blastRing.endColor = new Color(1f, 1f, 1f, 0.7f * t);
+                }
+
                 if (_flashLeft <= 0f)
                 {
-                    _flash.enabled = false;
-                    _trail.positionCount = 0;
+                    foreach (Part part in _parts)
+                    {
+                        part.Flash.enabled = false;
+                        part.Trail.positionCount = 0;
+                    }
+
+                    _blast.enabled = false;
+                    _blastRing.positionCount = 0;
                 }
             }
         }
 
-        private void EnsureParts()
+        // obj_grenade_explosion's draw_circle outline at the blast's full radius.
+        private void Ring(Vec2 center, double radius)
         {
-            if (_projectile != null)
+            const int Segments = 40;
+            _blastRing.positionCount = Segments + 1;
+            for (int i = 0; i <= Segments; i++)
+            {
+                float a = i * Mathf.PI * 2f / Segments;
+                _blastRing.SetPosition(i, new Vector3((float)(center.X + radius * Mathf.Cos(a)), (float)(center.Y + radius * Mathf.Sin(a)), 0f));
+            }
+        }
+
+        private void EnsureBlast()
+        {
+            if (_blast != null)
             {
                 return;
             }
 
-            var projectile = new GameObject("Projectile");
-            projectile.transform.SetParent(transform, false);
-            _projectile = Shapes.Square(projectile, 0.22f, 5);
-
-            var flash = new GameObject("Impact");
-            flash.transform.SetParent(transform, false);
-            _flash = Shapes.Square(flash, 0.8f, 4);
-            _flash.enabled = false;
-
-            _trail = Lines.Create(transform, "Trail", Color.white, 0.07f, 3);
+            var blast = new GameObject("Blast");
+            blast.transform.SetParent(transform, false);
+            _blast = Shapes.Square(blast, 1f, 3);
+            _blast.enabled = false;
+            _blastRing = Lines.Create(transform, "Blast ring", Color.white, 0.05f, 4);
         }
 
         private static void Place(Transform t, Vec2 point)
         {
             t.position = new Vector3((float)point.X, (float)point.Y, 0f);
+        }
+
+        // One projectile's drawing: the projectile, its trail, and its impact flash.
+        private sealed class Part
+        {
+            public Part(Transform parent, int index)
+            {
+                var projectile = new GameObject("Projectile " + index);
+                projectile.transform.SetParent(parent, false);
+                Projectile = Shapes.Square(projectile, 0.22f, 5);
+
+                var flash = new GameObject("Impact " + index);
+                flash.transform.SetParent(parent, false);
+                Flash = Shapes.Square(flash, 0.8f, 4);
+                Flash.enabled = false;
+
+                Trail = Lines.Create(parent, "Trail " + index, Color.white, 0.07f, 3);
+            }
+
+            public SpriteRenderer Projectile { get; }
+
+            public SpriteRenderer Flash { get; }
+
+            public LineRenderer Trail { get; }
+
+            public List<Vector3> Points { get; } = new List<Vector3>();
+
+            public bool Landed { get; set; }
         }
     }
 }

@@ -93,6 +93,19 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    each Player's `[Synced]` seat/health; a late joiner sits the round out. AI seats fire a stand-in shot
    (`SimpleAi`, nearest reachable opponent) until UR-T7.
 4. **UR-T5/UR-T6**: weapons/items and hazards — content on top of the turn loop, independent of each other.
+   UR-T5 (done), as built: Core `Loadout` (counts, selection, fuse; cycle_weapon/item_left/right, the spend rule of
+   fire_weapon/use_item with 10 = unlimited, packed into two ints for the wire), `Arsenal.Fire` solving each weapon's
+   `Volley` (cannon; laser at full range and triple speed; a five-pellet shotgun fan, each pellet a share of a hit; a
+   grenade that passes through players and blasts on its fuse, 0.5–6 s by keys 1/2/3, or its bounce limit; a railgun
+   straight through walls hitting everyone on the line), the items (extra bounce, teleporter, shrink ray), and
+   `DropField`/`Pickups` (obj_drop_emitter's 20–120 s timer per kind, crates falling to a random spot and lasting
+   20–120 s, collected by a shot passing over, add_random_weapon/item/health). The server keeps each Player's loadout
+   and mirrors it; the client cycles, fuses and uses items through `[ToServer]` calls checked like a shot; crates are
+   keyed `Crate` objects. Departures: the cannon is unlimited (an empty-handed player could only time out); the vortex,
+   shield wall and redirector belong with UR-T6's hazards and aim assist with UR-T7, so they are out of play (nobody
+   starts with them, no crate gives them) until those land; a crate's roll gives the kind it names (the original's
+   cannon roll gave a laser, its aim-assist roll a teleporter); a grenade's blast hurts everyone in it, not just the
+   first player it touches.
 5. **UR-T7**: AI — depends on UR-T3's bounce solver (reused for targeting) and UR-T4's turn loop.
 6. **UR-T8**: announcer/HUD — presentation on top of whatever state exists by then.
 7. **UR-T9**: full menu/room flow connecting everything built so far.

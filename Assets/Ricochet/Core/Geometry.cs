@@ -97,5 +97,18 @@ namespace Ricochet.Core
             distance = -b - Math.Sqrt(discriminant);
             return distance >= 0;
         }
+
+        /// <summary>
+        /// How far along the segment <paramref name="a"/>-<paramref name="b"/> (0 at a) the point nearest to
+        /// <paramref name="p"/> lies, and how far that nearest point is from <paramref name="p"/>.
+        /// </summary>
+        public static double SegmentDistance(Vec2 a, Vec2 b, Vec2 p, out double along)
+        {
+            Vec2 ab = b - a;
+            double lengthSquared = ab.LengthSquared;
+            double t = lengthSquared <= Epsilon * Epsilon ? 0 : Math.Max(0, Math.Min(1, Vec2.Dot(p - a, ab) / lengthSquared));
+            along = t * Math.Sqrt(lengthSquared);
+            return Vec2.Distance(a + ab * t, p);
+        }
     }
 }

@@ -149,6 +149,25 @@ namespace Ricochet.Core
             return _points[0];
         }
 
+        /// <summary>
+        /// How far along the path the shot comes within <paramref name="radius"/> of <paramref name="center"/> (the
+        /// nearest approach on the first leg that does), or null when it never does: what a pickup lying there is
+        /// collected at (the original's drop objects collided with every bullet, pellet, grenade and laser).
+        /// </summary>
+        public double? PassDistance(Vec2 center, double radius)
+        {
+            for (int i = 1; i < _points.Count; i++)
+            {
+                double gap = Geometry.SegmentDistance(_points[i - 1], _points[i], center, out double along);
+                if (gap <= radius)
+                {
+                    return _cumulative[i - 1] + along;
+                }
+            }
+
+            return _points.Count == 1 && Vec2.Distance(_points[0], center) <= radius ? 0 : (double?)null;
+        }
+
         /// <summary>Contacts at or before <paramref name="distance"/> along the path.</summary>
         public int ContactsBefore(double distance)
         {
