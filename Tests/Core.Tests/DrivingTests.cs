@@ -2,6 +2,9 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Level;
+    using Ricochet.Core.Match;
     public class DrivingTests
     {
         private static readonly Level Open = new Level(-10, -5, 10, 5);

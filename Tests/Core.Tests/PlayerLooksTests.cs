@@ -2,6 +2,7 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Menu;
     // UR-T21: two default profiles were both "Default" in teal everywhere.
     public class PlayerLooksTests
     {

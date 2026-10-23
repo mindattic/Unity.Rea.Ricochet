@@ -2,6 +2,8 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Level;
     public class LoadoutTests
     {
         [Test]

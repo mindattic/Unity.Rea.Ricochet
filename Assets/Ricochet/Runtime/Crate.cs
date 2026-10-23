@@ -3,7 +3,8 @@
 // from above the top of the level to its spot at the rules' speed (the original's tick(10) a frame), then sitting there
 // with its kind's mark over it (obj_weapondrop's gun icon, obj_itemdrop's, obj_healthdrop's cross, obj_powerup's): W,
 // I, + or ?. Only a landed crate can be collected (by a shot passing over it, Arena), so only the landing is synced.
-using Ricochet.Core;          // DropKind
+using Ricochet.Core.Arsenal;
+using Ricochet.Core.Level;
 using Unity.Multiplayer;      // NetEntity, NetKey
 using Unity.Multiplayer.Core; // [Synced]
 using UnityEngine;

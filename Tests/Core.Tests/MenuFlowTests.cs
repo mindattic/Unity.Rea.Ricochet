@@ -5,6 +5,12 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Ai;
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Level;
+    using Ricochet.Core.Match;
+    using Ricochet.Core.Menu;
     // UR-T9: the room graph (titlescreen -> mainmenu -> players -> maproom -> gamescreen -> endgame), the how-to-play
     // slides, the maps, the game's goal and the endgame recap.
     public class MenuFlowTests

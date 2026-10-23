@@ -13,7 +13,8 @@
 // seats along the bottom of the level on the left, where the announcer card is widest.
 using System.Collections.Generic;
 using MindAttic.Components.Unity;      // MaCanvas, MaPanel, MaText, PanelStyle, TextStyle
-using Ricochet.Core;                   // Announcer, AnnouncerVoice, Announcement, ArsenalRules, Loadout, MatchPhase
+using Ricochet.Core.Arsenal;
+using Ricochet.Core.Match;
 using TMPro;                           // TextAlignmentOptions
 using Unity.Multiplayer;               // NetSession
 using UnityEngine;

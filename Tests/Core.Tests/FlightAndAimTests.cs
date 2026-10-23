@@ -2,6 +2,8 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Level;
     public class FlightAndAimTests
     {
         private static ShotPath BorderToBorder()

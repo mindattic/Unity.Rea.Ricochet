@@ -5,7 +5,9 @@
 // struck. A vortex set off in mid-flight carries on along the cut-short volley the server sends again (Detonate) and
 // goes off where the server set it off (UR-T6).
 using System.Collections.Generic;
-using Ricochet.Core;
+using Ricochet.Core.Aim;
+using Ricochet.Core.Arsenal;
+using Ricochet.Core.Net;
 using UnityEngine;
 
 namespace Ricochet

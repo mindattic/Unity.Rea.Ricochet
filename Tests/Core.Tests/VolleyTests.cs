@@ -3,6 +3,9 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Level;
     public class VolleyTests
     {
         // An open 20 x 10 room: nothing to bounce off but the border.

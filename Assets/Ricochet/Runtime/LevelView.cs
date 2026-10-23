@@ -1,7 +1,8 @@
 // Draws Arena.Level on every peer: the border, the mirror walls, and the redirectors with a tick pointing the way
 // they send a shot. Presentation only: the level itself is Core data, the same everywhere. When a match is played on
 // another map (UR-T9), the drawing is rebuilt from the new level.
-using Ricochet.Core;
+using Ricochet.Core.Aim;
+using Ricochet.Core.Level;
 using UnityEngine;
 
 namespace Ricochet

@@ -2,6 +2,7 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Match;
     // UR-T17: below ~1400px wide, MatchHud's four unscaled 150px bar columns left of the clock ran off the left
     // edge of a 1280x720 window (found by UR-T15). Seating.BarScale/BarX are the pure layout math MatchHud now
     // scales its bars with; these tests check the result always fits the screen and never shrinks on a wide one.

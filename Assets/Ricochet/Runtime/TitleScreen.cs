@@ -5,7 +5,7 @@
 using System;
 using MindAttic.Components.Unity; // MenuStack, MenuScreen, MaIcon
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Ricochet.Core;              // MenuFlow, Room
+using Ricochet.Core.Menu;
 using Unity.Multiplayer.UI;       // NetFrontEnd
 using UnityEngine;
 

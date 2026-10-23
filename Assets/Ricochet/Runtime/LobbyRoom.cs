@@ -12,7 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MindAttic.Components.Unity; // MenuScreen, MaText, MaButton, MaRow
-using Ricochet.Core;              // Lobby, MatchSetup, MenuFlow, Room
+using Ricochet.Core.Match;
+using Ricochet.Core.Menu;
 using Unity.Multiplayer;          // NetSession
 using Unity.Multiplayer.Core;     // NetPlayer, JoinCode, Disconnection
 using Unity.Multiplayer.UI;       // NetFrontEnd, FrontEndState

@@ -5,7 +5,11 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core;
+using Ricochet.Core.Ai;
+using Ricochet.Core.Aim;
+using Ricochet.Core.Arsenal;
+using Ricochet.Core.Level;
+using Ricochet.Core.Match;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;

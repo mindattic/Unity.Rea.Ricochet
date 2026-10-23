@@ -6,7 +6,7 @@
 // a player's shot plays them as it fires, bounces and lands. Music plays from the music source at the music volume
 // when the game gives it a clip. Nothing is created on a headless peer (a dedicated server or a bot).
 using System.Collections.Generic;
-using Ricochet.Core; // AudioMix, SoundCue, Tones
+using Ricochet.Core.Menu;
 using Unity.Shared;
 using Unity.Shared.Core;
 using UnityEngine;

@@ -12,7 +12,11 @@ using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MenuScreen, MaText, MaSelect, TextStyle
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Ricochet.Core;              // MenuFlow, Room, Maps, MatchSetup, MatchRules, Ai, ArsenalRules, Announcer
+using Ricochet.Core.Ai;
+using Ricochet.Core.Arsenal;
+using Ricochet.Core.Level;
+using Ricochet.Core.Match;
+using Ricochet.Core.Menu;
 using UnityEngine;
 
 namespace Ricochet

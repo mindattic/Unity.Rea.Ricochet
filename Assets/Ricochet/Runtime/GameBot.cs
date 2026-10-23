@@ -5,7 +5,8 @@
 // knocked the dummy down. Keep the shape: wait for what you need, play like a player would (the same [ToServer]
 // calls), and Pass or Fail.
 using System.Threading.Tasks;
-using Ricochet.Core;     // BounceSolver
+using Ricochet.Core.Aim;
+using Ricochet.Core.Level;
 using Unity.Multiplayer; // IBotDriver, NetBot, [NetBotDriver]
 using UnityEngine.Scripting;
 

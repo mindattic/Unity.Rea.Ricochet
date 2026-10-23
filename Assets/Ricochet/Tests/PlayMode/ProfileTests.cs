@@ -7,7 +7,7 @@
 using System.Collections;
 using System.IO;
 using NUnit.Framework;
-using Ricochet.Core;
+using Ricochet.Core.Menu;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;

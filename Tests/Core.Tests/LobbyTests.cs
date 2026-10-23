@@ -3,6 +3,9 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Level;
+    using Ricochet.Core.Match;
+    using Ricochet.Core.Menu;
     // UR-T11: the host's lobby: how the sixteen seats fill as people join (everyone in the lobby, then as many of the AI
     // opponents asked for as still fit), whether Start can begin a match, and what the lobby's match box says.
     public class LobbyTests

@@ -13,7 +13,9 @@
 using System.Collections.Generic;
 using System.Text;
 using MindAttic.Components.Unity; // MaModal (a dialog over the menus)
-using Ricochet.Core;              // MatchPhase, Seating, Ai
+using Ricochet.Core.Ai;
+using Ricochet.Core.Match;
+using Ricochet.Core.Menu;
 using Unity.Multiplayer;          // NetBootstrap, NetSession
 using Unity.Multiplayer.UI;       // NetFrontEnd (the Esc menu, main menu and lobby)
 using UnityEngine;
@@ -108,7 +110,7 @@ namespace Ricochet
             }
 
             _seated.Sort((a, b) => a.Seat.CompareTo(b.Seat));
-            for (int i = 0; i < _seated.Count && i < Ricochet.Core.MatchRules.MaxSeats; i++)
+            for (int i = 0; i < _seated.Count && i < Ricochet.Core.Match.MatchRules.MaxSeats; i++)
             {
                 DrawSlot(i, _seated[i], turns, centre, barWidth, barGap, clockGap);
             }

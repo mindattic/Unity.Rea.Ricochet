@@ -5,6 +5,10 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Level;
+    using Ricochet.Core.Match;
     public class DropTests
     {
         private static Level Open() => new Level(-10, -5, 10, 5);

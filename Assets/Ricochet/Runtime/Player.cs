@@ -34,7 +34,13 @@
 // when they reconnect in time), marked Away: nobody plays it meanwhile, not even a host it now belongs to, and its name
 // and colour stay theirs because the roster is read by the connection seat it was spawned for, not by its current owner.
 using System.Collections.Generic;
-using Ricochet.Core;          // AimState, Arsenal, Loadout, Volley, VolleyFlight, ShotPath, MatchPhase, Ai
+using Ricochet.Core.Ai;
+using Ricochet.Core.Aim;
+using Ricochet.Core.Arsenal;
+using Ricochet.Core.Level;
+using Ricochet.Core.Match;
+using Ricochet.Core.Menu;
+using Ricochet.Core.Net;
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
 using Unity.Multiplayer.Core; // [ToServer], [Synced]
 using UnityEngine;
@@ -1232,7 +1238,7 @@ namespace Ricochet
         // Every peer (the host's included): the server's result for shot number `shot`.
         private void OnShotResult(int shot, int[] seats, int[] damage, int[] knockedOut)
         {
-            ShotOutcome outcome = ShotOutcome.Decode(seats, damage, knockedOut, global::Ricochet.Core.MatchRules.MaxSeats);
+            ShotOutcome outcome = ShotOutcome.Decode(seats, damage, knockedOut, global::Ricochet.Core.Match.MatchRules.MaxSeats);
             if (outcome == null)
             {
                 Debug.LogWarning("[Ricochet] " + name + ": the result of shot " + shot + " came over unreadable.");

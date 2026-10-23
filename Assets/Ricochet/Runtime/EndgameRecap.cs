@@ -7,7 +7,9 @@
 using System.Collections.Generic;
 using MindAttic.Components.Unity;       // MenuStack, MenuScreen, MaText, TextStyle
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Ricochet.Core;                    // MatchPhase, Recap, RecapEntry, MatchSetup, Maps
+using Ricochet.Core.Level;
+using Ricochet.Core.Match;
+using Ricochet.Core.Menu;
 using Unity.Multiplayer;                // NetSession, NetVotes
 using Unity.Multiplayer.UI;             // NetFrontEnd
 using UnityEngine;

@@ -11,7 +11,8 @@
 //   Breach       a dark gap over the border, its ends marked.
 //   Redirector   a rail redirector with a tick pointing the way it sends a shot, as LevelView draws the level's own.
 using System.Collections.Generic;
-using Ricochet.Core;          // Hazard, HazardKind
+using Ricochet.Core.Aim;
+using Ricochet.Core.Level;
 using Unity.Multiplayer;      // NetEntity, NetSession
 using Unity.Multiplayer.Core; // [Synced]
 using UnityEngine;

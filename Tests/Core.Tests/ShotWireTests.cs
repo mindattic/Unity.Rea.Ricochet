@@ -3,6 +3,11 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Level;
+    using Ricochet.Core.Menu;
+    using Ricochet.Core.Net;
     public class ShotWireTests
     {
         // A room with a mirror wall and a redirector, so a shot makes every kind of contact.

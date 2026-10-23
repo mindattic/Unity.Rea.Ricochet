@@ -7,7 +7,9 @@
 // the portrait and name box in with it. And the menu flow (UR-T9): the map the match is played on (every peer builds its
 // level from the index), the game's goal, and once the goal is reached the champion, for every peer's endgame recap.
 // And reconnects (UR-T13): while the turn waits for its dropped player to come back, the whole seconds they have left.
-using Ricochet.Core;          // MatchPhase, MatchRules, Announcement
+using Ricochet.Core.Ai;
+using Ricochet.Core.Level;
+using Ricochet.Core.Match;
 using Unity.Multiplayer;      // NetEntity, NetSession
 using Unity.Multiplayer.Core; // [Synced]
 using UnityEngine;

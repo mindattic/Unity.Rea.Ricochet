@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using Ricochet.Core;
+using Ricochet.Core.Menu;
 
 namespace Ricochet.Core.Tests
 {

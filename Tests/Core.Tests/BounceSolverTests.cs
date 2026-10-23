@@ -3,6 +3,8 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Level;
     public class BounceSolverTests
     {
         // A plain 20 x 10 box, and rules with a long range so the bounce limit, not power, ends a shot.

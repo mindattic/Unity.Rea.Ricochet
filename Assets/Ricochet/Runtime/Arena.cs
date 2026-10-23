@@ -27,7 +27,13 @@
 // Votes (UR-T14): a third vote, the kit's kick, removes a player; the kit frees their seat at once, so they leave the same way.
 using System;
 using System.Collections.Generic;
-using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, Ai, AiTurn, MatchSetup, HazardField
+using Ricochet.Core.Ai;
+using Ricochet.Core.Aim;
+using Ricochet.Core.Arsenal;
+using Ricochet.Core.Level;
+using Ricochet.Core.Match;
+using Ricochet.Core.Menu;
+using Ricochet.Core.Net;
 using Unity.Multiplayer;      // NetSession, NetKey
 using Unity.Multiplayer.Core; // VoteKind
 using UnityEngine;

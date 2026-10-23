@@ -5,6 +5,11 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Ai;
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Level;
+    using Ricochet.Core.Match;
     public class AiTests
     {
         private static Level Box(params Wall[] walls) => new Level(-10, -5, 10, 5, walls);

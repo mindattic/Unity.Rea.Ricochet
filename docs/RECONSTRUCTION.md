@@ -119,7 +119,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Standard | State on main | Ticket |
 |---|---|---|
 | Engine-free Core, `noEngineReferences`, tested outside Unity | met: `Ricochet.Core` asmdef, `dotnet test Core.slnx`, 17 test files | kept |
-| Assembly names and one-way boundaries, an Editor assembly | gap: runtime asmdef is the template's `MyGame.asmdef`, tests `MyGame.*`, no Editor assembly, no boundary test | UR-T33 |
+| Assembly names and one-way boundaries, an Editor assembly | met: `Ricochet.Runtime`, `Ricochet.Editor` (menus and validators), `Ricochet.Tests`, `Ricochet.EditorTests`; Core grouped by domain (Aim, Arsenal, Match, Level, Ai, Menu, Net) with `Ricochet.Core.*` sub-namespaces; `CoreBoundaryTests` fails if Core references anything beyond the BCL | kept |
 | State changes only through commands that produce events | gap: Runtime mutates Core directly | UR-T34 |
 | Content and tuning as validated data | gap: rules, maps, lines and slides are C# initialisers | UR-T35 |
 | Input System | gap: Active Input Handling is the legacy manager, no actions asset, no rebinding | UR-T36 |
