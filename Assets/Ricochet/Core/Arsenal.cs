@@ -148,7 +148,7 @@ namespace Ricochet.Core
             }
         }
 
-        /// <summary>"3", or "inf" for unlimited.</summary>
-        public static string CountText(int count) => count >= Unlimited ? "inf" : count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        /// <summary>"x3", or "unlimited" (the original drew an infinity sign; the default HUD font may lack the glyph).</summary>
+        public static string CountLabel(int count) => count >= Unlimited ? "unlimited" : "x" + count.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 }

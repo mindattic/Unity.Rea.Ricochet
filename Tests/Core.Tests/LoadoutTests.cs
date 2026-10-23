@@ -184,8 +184,8 @@ namespace Ricochet.Core.Tests
         {
             Assert.That(ArsenalRules.Name(Weapon.Vortex), Is.EqualTo("Vortex Device"));
             Assert.That(ArsenalRules.Name(Item.ExtraBounce), Is.EqualTo("Extra Bounce"));
-            Assert.That(ArsenalRules.CountText(ArsenalRules.Unlimited), Is.EqualTo("inf"));
-            Assert.That(ArsenalRules.CountText(3), Is.EqualTo("3"));
+            Assert.That(ArsenalRules.CountLabel(ArsenalRules.Unlimited), Is.EqualTo("unlimited"));
+            Assert.That(ArsenalRules.CountLabel(3), Is.EqualTo("x3"));
         }
     }
 }

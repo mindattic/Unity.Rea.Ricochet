@@ -205,7 +205,7 @@ namespace Ricochet
                 return "Weapon: -";
             }
 
-            return "Weapon: " + ArsenalRules.Name(loadout.Weapon) + " x" + ArsenalRules.CountText(loadout.Count(loadout.Weapon))
+            return "Weapon: " + ArsenalRules.Name(loadout.Weapon) + " " + ArsenalRules.CountLabel(loadout.Count(loadout.Weapon))
                 + (loadout.Weapon == Weapon.Grenade ? "   Fuse " + loadout.Fuse.ToString("0.0") + " s" : string.Empty);
         }
 
@@ -213,7 +213,7 @@ namespace Ricochet
         public static string ItemLine(Loadout loadout, int extraBounces)
         {
             string item = loadout != null && loadout.Has(loadout.Item)
-                ? ArsenalRules.Name(loadout.Item) + " x" + ArsenalRules.CountText(loadout.Count(loadout.Item))
+                ? ArsenalRules.Name(loadout.Item) + " " + ArsenalRules.CountLabel(loadout.Count(loadout.Item))
                 : "none";
             return "Item: " + item + (extraBounces > 0 ? "   +" + extraBounces + " bounce" + (extraBounces == 1 ? string.Empty : "s") : string.Empty);
         }
