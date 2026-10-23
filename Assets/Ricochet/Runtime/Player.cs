@@ -791,7 +791,7 @@ namespace Ricochet
         private void OnDrive(int direction)
         {
             direction = System.Math.Sign(direction);
-            if (direction == 0 || !MayAct() || Arena.Current == null || !Arena.Current.MatchRunning)
+            if (direction == 0 || !MayAct() || Arena.Current == null)
             {
                 _driveDirection = 0;
                 return;

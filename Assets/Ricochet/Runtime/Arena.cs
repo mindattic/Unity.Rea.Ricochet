@@ -517,17 +517,32 @@ namespace Ricochet
         }
 
         /// <summary>
-        /// Server: <paramref name="player"/> is driving its tank. True when it may (its own turn in a match); the turn is
+        /// Server: <paramref name="player"/> is driving its tank. True when it may (its own turn in a match, or any time in practice); the turn is
         /// then marked moved, so it cannot shoot until the turn passes.
         /// </summary>
         public bool Moved(Player player)
         {
-            if (_match == null || !_match.IsRunning || player == null || !_match.Move(player.Seat))
+            if (player == null)
             {
                 return false;
             }
 
-            Mirror();
+            if (_match == null || !_match.IsRunning)
+            {
+                return true; // practice: free driving, there is no shot to forfeit
+            }
+
+            bool first = !_match.HasMoved;
+            if (!_match.Move(player.Seat))
+            {
+                return false;
+            }
+
+            if (first)
+            {
+                Mirror(); // only the first drive of a turn changes what peers see
+            }
+
             return true;
         }
 

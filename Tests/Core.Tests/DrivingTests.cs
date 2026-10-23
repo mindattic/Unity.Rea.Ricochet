@@ -61,6 +61,19 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
+        public void DrivingAgainInTheSameTurnStaysMoved_AndPracticeHasNoShotToForfeit()
+        {
+            Match match = Started();
+            Assert.That(match.Move(match.Current), Is.True);
+            Assert.That(match.Move(match.Current), Is.True);
+            Assert.That(match.HasMoved, Is.True);
+
+            var practice = new Match();
+            Assert.That(practice.Move(0), Is.False, "Match.Move is for a running turn; practice drives freely in the Arena");
+            Assert.That(practice.HasMoved, Is.False);
+        }
+
+        [Test]
         public void EndTurn_PassesTheTurnOnlyForTheSeatOnTurnBeforeItFires()
         {
             Match match = Started();
