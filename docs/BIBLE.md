@@ -103,6 +103,14 @@ copy of any of these is a bug.
   swallows the destructible hazards it reaches and breaches the border it reaches, so later shots fly out (UR-T6;
   `Core/Hazards.cs` with `Level`'s barriers and breaches tested by `dotnet test Core.slnx`, the wire by
   `Tests/PlayMode/HazardTests.cs`).
-- ⬜ Everything else — announcer/HUD, menus, profiles (UR-T8–UR-T10) and
+- ✅ Announcer and HUD: the start-match vote carries one of the original's seven on-air personalities and how often they
+  speak (0 off, 1 every time, 2–4 one time in 3/6/9); their portrait and name box slide in with a welcome at the match's
+  start, a cheer for a knock-out and a heckle for a shot that hits nobody, ten written lines a kind drawn without repeats
+  (the original's were recordings); a hit on an opponent scores the shooter 100 + 25 a bounce + 5 a tenth of a second in
+  the air for the whole match (hit.gml/draw_potential.gml), shown on each seat's bar; a turn card shows everyone whose
+  turn it is with their score, weapon, item and combo (draw_weaponinfo/draw_iteminfo). The cards are MindAttic Components
+  widgets; the per-colour health bars stay IMGUI (UR-T8; `Core/Announcer.cs`, `MatchRules.Points` and `Match`'s scores
+  tested by `dotnet test Core.slnx`, the wire and HUD by `Tests/PlayMode/AnnouncerTests.cs`).
+- ⬜ Everything else — menus, profiles (UR-T9–UR-T10) and
   multiplayer polish (UR-T11–UR-T14) — is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.

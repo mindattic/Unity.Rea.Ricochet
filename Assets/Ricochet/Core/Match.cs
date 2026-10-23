@@ -52,6 +52,9 @@ namespace Ricochet.Core
 
         public int Health { get; internal set; }
 
+        /// <summary>Points scored this match (pScore): hits on opponents, carried from round to round (UR-T8).</summary>
+        public int Score { get; internal set; }
+
         /// <summary>Still in this round: has health left, and has not left the game or joined after it started.</summary>
         public bool Alive { get; internal set; }
 
@@ -112,6 +115,9 @@ namespace Ricochet.Core
 
         /// <summary>A seat lost health: (seat, damage, by seat).</summary>
         public event Action<int, int, int> Damaged;
+
+        /// <summary>A seat scored for a hit on an opponent: (seat, points).</summary>
+        public event Action<int, int> Scored;
 
         /// <summary>A seat's health reached zero.</summary>
         public event Action<int> Eliminated;
@@ -201,6 +207,11 @@ namespace Ricochet.Core
 
             Round = 0;
             Winner = -1;
+            foreach (MatchSeat seat in _seats.Values)
+            {
+                seat.Score = 0; // reset_scores.gml: a new match starts everyone at nothing
+            }
+
             StartRound(-1);
         }
 
@@ -248,17 +259,28 @@ namespace Ricochet.Core
         /// <summary>
         /// One hit from <paramref name="shooter"/>'s shot on <paramref name="hitSeat"/> (a volley can make several: a
         /// shotgun's pellets, a grenade's blast, a railgun's slug): hit.gml's damage times <paramref name="scale"/> (at
-        /// least 1), and a kill at zero. The turn does not end here; see <see cref="ShotOver"/>. Returns the damage done.
+        /// least 1), and a kill at zero. A hit on an opponent also scores the shooter <see cref="MatchRules.Points"/> for
+        /// the bounces and the <paramref name="flightSeconds"/> the shot was in the air, times the same share (hit.gml's
+        /// pScore += point_combo). The turn does not end here; see <see cref="ShotOver"/>. Returns the damage done.
         /// </summary>
-        public int Strike(int shooter, int hitSeat, int bounces, double scale = 1)
+        public int Strike(int shooter, int hitSeat, int bounces, double scale = 1, double flightSeconds = 0)
         {
             if (!IsRunning || Phase == MatchPhase.RoundOver || !_seats.TryGetValue(hitSeat, out MatchSeat hit) || !hit.Alive)
             {
                 return 0;
             }
 
+            bool whole = double.IsNaN(scale) || scale >= 1;
             int full = Rules.Damage(hitSeat == shooter, bounces, _dice.NextDouble() * 2 - 1);
-            int damage = double.IsNaN(scale) || scale >= 1 ? full : Math.Max(1, (int)Math.Round(full * Math.Max(0, scale), MidpointRounding.AwayFromZero));
+            int damage = whole ? full : Math.Max(1, (int)Math.Round(full * Math.Max(0, scale), MidpointRounding.AwayFromZero));
+            if (hitSeat != shooter && _seats.TryGetValue(shooter, out MatchSeat scorer))
+            {
+                int combo = Rules.Points(bounces, flightSeconds);
+                int points = whole ? combo : Math.Max(1, (int)Math.Round(combo * Math.Max(0, scale), MidpointRounding.AwayFromZero));
+                scorer.Score += points;
+                Scored?.Invoke(shooter, points);
+            }
+
             hit.Health = Math.Max(0, hit.Health - damage);
             Damaged?.Invoke(hitSeat, damage, shooter);
             if (hit.Health == 0)

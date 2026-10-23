@@ -2,8 +2,10 @@
 // server's Core Match (whose turn, the phase, the turn clock, the round and its winner) for every peer's HUD and input.
 // Only the server writes it (UR-LAW-1); its server-side Update is what runs the match clock. Each player's own seat
 // and health live on their Player. On an AI seat's turn it also carries which of check_ai's "is thinking..." lines is up
-// (UR-T7), for every peer's HUD.
-using Ricochet.Core;          // MatchPhase, MatchRules
+// (UR-T7), for every peer's HUD. And the announcer (UR-T8): which personality is on the air, and the last line it said
+// (its kind, which of the ten, the seats it names) with a count that goes up by one per line, so every peer's HUD slides
+// the portrait and name box in with it.
+using Ricochet.Core;          // MatchPhase, MatchRules, Announcement
 using Unity.Multiplayer;      // NetEntity, NetSession
 using Unity.Multiplayer.Core; // [Synced]
 using UnityEngine;
@@ -23,6 +25,14 @@ namespace Ricochet
         [Synced] private int _round;
         [Synced] private int _winner = -1;
         [Synced] private int _aiLine = -1;
+
+        // The announcer: the personality (an index into Announcer.Voices), the lines said so far, and the last one.
+        [Synced] private int _voice;
+        [Synced] private int _announced;
+        [Synced] private int _lineKind;
+        [Synced] private int _lineIndex;
+        [Synced] private int _lineSubject = -1;
+        [Synced] private int _lineOther = -1;
 
         private float _shownTime;
         private float _lastSyncedTime = -1f;
@@ -63,6 +73,28 @@ namespace Ricochet
             {
                 AiLine = line;
             }
+        }
+
+        /// <summary>The last line the announcer said (meaningful once <see cref="Announced"/> is above 0).</summary>
+        public Announcement LastAnnouncement => new Announcement((AnnouncementKind)LineKind, LineIndex, LineSubject, LineOther);
+
+        /// <summary>Server: the personality on the air for this match.</summary>
+        internal void MirrorVoice(int voice)
+        {
+            if (Voice != voice)
+            {
+                Voice = voice;
+            }
+        }
+
+        /// <summary>Server: the announcer says <paramref name="announcement"/> (every peer's HUD shows it).</summary>
+        internal void Announce(Announcement announcement)
+        {
+            LineKind = (int)announcement.Kind;
+            LineIndex = announcement.Line;
+            LineSubject = announcement.Subject;
+            LineOther = announcement.Other;
+            Announced = Announced + 1;
         }
 
         /// <summary>Server: copies the match's state out (the clock only when it moves by a tenth, or jumps back up).</summary>

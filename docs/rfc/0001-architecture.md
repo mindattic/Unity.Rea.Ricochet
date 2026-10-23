@@ -136,7 +136,22 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    power if it can, else at full) and every peer draws that path as a beam that fades over 5.5 s or goes with the
    shot. Departures: the railgun choice is new (the original AI only fired bullets); the original took the first
    degree that touched a target, often a graze.
-6. **UR-T8**: announcer/HUD — presentation on top of whatever state exists by then.
+6. **UR-T8** (done): announcer/HUD — presentation on top of whatever state exists by then.
+   As built: the announcer was voice-only in the original: seven personalities (obl_lbl_announcer's names, two with drawn
+   profiles), ten recordings a moment, played on a welcome (obj_game's create), a win (hit.gml, when a shot puts an
+   opponent out) and a lose (obj_explosion, a shot that went off at its bounce limit without hitting anyone), as often as
+   the "announcements" setting (0 off, 1 always, 2/3/4 one in 3/6/9; the welcome always) allowed, each recording once
+   before repeats (random_win_number); obj_announcer slid the portrait in while the sound played. Core `Announcer` keeps
+   those rules with written lines naming the players; `MatchSetup` carries the personality and setting in the
+   start-match vote; Arena says the lines (`Turns` mirrors the last one and a count) and every peer's `HudOverlay` slides a
+   MindAttic Components card in with the portrait (the personality's colour and monogram) and name box. Scores, which the
+   original kept (pScore += point_combo on every opponent hit: points_kill 100, points_bounce 25, points_flighttime 5 per
+   100 steps at 1020 fps), are `MatchRules.Points` and `Match`'s per-seat `Score` (a pellet scores its share; reset when a
+   match starts, kept across rounds), mirrored on each `Player`. draw_weaponinfo/draw_iteminfo/draw_potential became the
+   turn card: everyone sees the current seat's weapon, item and combo, as everyone at the one screen did. The health bars,
+   clock and turn order stay IMGUI (MaProgressBar has no per-player colour). Departures: no audio (the recordings are the
+   original's), and the turn does not wait for a line to finish as check_endgame waited for the recording; the score
+   goal that ended a game (goal = 500) belongs with UR-T9's endgame.
 7. **UR-T9**: full menu/room flow connecting everything built so far.
 8. **UR-T10**: Unity.Shared profile wiring — can land any time after UR-T3's scaffold exists.
 9. **UR-T11–UR-T14** (NET epic): host/join/lobby, then server-authoritative sync of the UR-T3/UR-T4 loop

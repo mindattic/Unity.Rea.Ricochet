@@ -1,7 +1,7 @@
 // The game's one scene component: it draws the level, serves the rules (Arena) on the server, registers the votes the game offers, and
 // adds the game's own items to the drop-in front end. The menus, lobby, join codes, reconnect, roster and vote overlay
 // are the kit's; this is the only glue a game writes. Runs on every peer: a dedicated server and a bot run this scene too.
-using Ricochet.Core;        // MatchRules, MatchSetup, Ai, ArsenalRules
+using Ricochet.Core;        // MatchRules, MatchSetup, Ai, ArsenalRules, Announcer
 using Unity.Multiplayer;    // NetBootstrap, NetVotes
 using Unity.Multiplayer.UI; // NetFrontEnd, MenuPlacement
 using UnityEngine;
@@ -81,6 +81,11 @@ namespace Ricochet
                     + "reaches; shots fly out through a breach instead of bouncing. The shield wall item stands a wall in front of "
                     + "you that only your own shots pass; anyone else's shatters it. The redirector item sets a redirector down "
                     + "where it lands, sending shots on the way it flew.");
+                s.AddText("The announcer (pick who and how often before you vote to start a match) welcomes everyone, cheers a "
+                    + "shot that knocks someone out and heckles one that hits nobody. A hit on an opponent scores 100 points, 25 "
+                    + "more a bounce and 5 for every tenth of a second the shot was in the air; scores last the whole match. The "
+                    + "card at the bottom right shows whose turn it is, their score, weapon, item and the combo the shot in the "
+                    + "air would score.");
                 s.AddText("Hazards: the blue electric arc stops any shot that touches it; the red laser gate does too, but it is "
                     + "only on every other turn; a shot cuts down the first tuft of grass it touches and stops there.");
             }, MenuPlacement.Both);
@@ -91,6 +96,16 @@ namespace Ricochet
                 s.AddRange("AI skill", Ai.MinSkill, Ai.MaxSkill, _setup.AiSkill, v => _setup.AiSkill = Mathf.RoundToInt(v), wholeNumbers: true);
                 s.AddRange("Aim assists each (10 = unlimited)", 0, ArsenalRules.Unlimited, _setup.AimAssists, v => _setup.AimAssists = Mathf.RoundToInt(v),
                     wholeNumbers: true);
+                // The settings screen's announcements box (UR-T8): the personality, and how often it speaks.
+                var voices = new System.Collections.Generic.List<string>();
+                foreach (AnnouncerVoice voice in Announcer.Voices)
+                {
+                    voices.Add(voice.Name);
+                }
+
+                s.AddSelect("Announcer", voices, _setup.AnnouncerVoice, v => _setup.AnnouncerVoice = v);
+                s.AddRange("Announcements (0 off, 1 every time, 4 rarely)", 0, Announcer.MaxFrequency, _setup.Announcements,
+                    v => _setup.Announcements = Mathf.RoundToInt(v), wholeNumbers: true);
                 s.AddButton("Vote to start a match", StartMatchVote);
                 s.AddButton("Vote to restart", StartRestartVote);
             });

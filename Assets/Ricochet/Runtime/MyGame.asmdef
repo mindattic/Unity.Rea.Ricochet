@@ -9,7 +9,9 @@
         "MindAttic.Components.Unity",
         "MindAttic.Components.Unity.Core",
         "Unity.Netcode.Runtime",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

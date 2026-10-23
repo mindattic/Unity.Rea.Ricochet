@@ -14,7 +14,10 @@
 // asks for them), the shield walls and redirectors players place, and the breaches a vortex tears in the border; each is
 // mirrored as a keyed LevelHazard object, and every peer builds the level a shot sees from them (LevelFor). A landed
 // volley shatters the shield wall or cuts down the tuft it ran into, and a vortex's implosion swallows what it reaches
-// and breaches the border.
+// and breaches the border. The announcer and scores (UR-T8): the match vote's setup also names the personality on the air
+// and how often it speaks; Core's Announcer welcomes everyone when the match starts, cheers a shot that knocks an
+// opponent out and heckles one that hits nobody, each line mirrored through Turns; a hit on an opponent scores the shooter
+// (Match.Strike, for the bounces and the volley's time in the air), mirrored to each Player's score.
 using System;
 using System.Collections.Generic;
 using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, Ai, AiTurn, MatchSetup, HazardField
@@ -67,6 +70,8 @@ namespace Ricochet
         private readonly Dictionary<int, int> _humanSeats = new Dictionary<int, int>(); // kit seat -> match seat
         private MatchSetup _setup = new MatchSetup();
         private AiTurn _aiTurn;
+        private Announcer _announcer;
+        private readonly System.Random _announcerDice = new System.Random();
         private bool _dummiesUp;
 
         public Arena(NetSession session, GameObject dummyPrefab)
@@ -406,8 +411,11 @@ namespace Ricochet
             }
 
             _turns.Arena = this;
+            _announcer = new Announcer(_setup.AnnouncerVoice, _setup.Announcements, _announcerDice);
+            _turns.MirrorVoice(_announcer.Voice);
             _match.Start();
             Mirror();
+            Say(_announcer.Welcome()); // obj_game's create event: random_announcement_welcome
             return true;
         }
 
@@ -454,12 +462,35 @@ namespace Ricochet
 
             if (_match != null && _match.IsRunning && player != null)
             {
+                // hit.gml per strike: damage, and points for a hit on an opponent; the announcer cheers a knock-out
+                // (random_announcement_win) or heckles a shot that hit nobody (random_announcement_lose, obj_explosion).
+                bool struckAPlayer = false;
+                int knockedOut = -1;
+                double flight = volley.Duration;
                 foreach (Strike strike in volley.Strikes)
                 {
                     int hit = SeatOf(strike.TargetId);
                     if (hit >= 0)
                     {
-                        _match.Strike(player.Seat, hit, strike.Bounces, strike.Scale);
+                        struckAPlayer = true;
+                        bool wasIn = _match.TryGetSeat(hit, out MatchSeat before) && before.Alive;
+                        _match.Strike(player.Seat, hit, strike.Bounces, strike.Scale, flight);
+                        if (wasIn && hit != player.Seat && !_match.Seat(hit).Alive)
+                        {
+                            knockedOut = hit;
+                        }
+                    }
+                }
+
+                if (_announcer != null)
+                {
+                    if (knockedOut >= 0)
+                    {
+                        Say(_announcer.Win(player.Seat, knockedOut));
+                    }
+                    else if (!struckAPlayer)
+                    {
+                        Say(_announcer.Lose(player.Seat));
                     }
                 }
 
@@ -705,7 +736,7 @@ namespace Ricochet
         /// </summary>
         public VoteKind CreateMatchVote() => new VoteKind(MatchVote, r => "Start a match with " + r.Number + " AI opponent" + (r.Number == 1 ? "?" : "s?"))
         {
-            Description = r => MatchSetup.Parse(r.Number, r.Text).Describe() + ". Everyone takes a seat and plays in turn; the last one standing wins the round.",
+            Description = r => MatchSetup.Parse(r.Number, r.Text).Describe() + ". " + MatchSetup.Parse(r.Number, r.Text).DescribeAnnouncer() + ". Everyone takes a seat and plays in turn; the last one standing wins the round.",
             Check = r => HumanCount() + Math.Max(0, r.Number) < 2 ? "A match needs two players: add an AI opponent." : null,
             Passed = v => StartMatch(MatchSetup.Parse(v.Number, v.Text)),
         };
@@ -740,11 +771,21 @@ namespace Ricochet
                 {
                     player.Health = seat.Health;
                     player.InRound = seat.Alive;
+                    player.Score = seat.Score;
                 }
                 else
                 {
                     player.InRound = false;
                 }
+            }
+        }
+
+        // The announcer says a line (when it spoke at all): every peer's HUD shows it through Turns.
+        private void Say(Announcement? announcement)
+        {
+            if (announcement != null && _turns != null && _turns.IsSpawned)
+            {
+                _turns.Announce(announcement.Value);
             }
         }
 

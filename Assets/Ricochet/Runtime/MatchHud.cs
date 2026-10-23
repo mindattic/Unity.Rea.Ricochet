@@ -3,7 +3,9 @@
 // the player's colour with their name and an AI tag (setup_players.gml's obj_healthbar row and draw_scores.gml's
 // icons), the seat whose turn it is outlined, and under the clock the order the living seats play in from now. On an AI
 // seat's turn, obj_ai_gui's line along the bottom: "AI 2 is plotting and scheming...", pulsing between half and full.
-// IMGUI keeps the template free of fonts and canvases; the HUD proper moves to MindAttic Components widgets in UR-T8.
+// Each slot also carries the seat's match score (draw_scores.gml's "name: score", UR-T8). The announcer's portrait and
+// name box and the turn card (whose turn, their weapon, item and combo) are MindAttic Components widgets (HudOverlay,
+// added with this); the bars, clock and turn order stay IMGUI, drawn in each player's own colour.
 using System.Collections.Generic;
 using System.Text;
 using Ricochet.Core;     // MatchPhase, Seating, Ai
@@ -23,6 +25,7 @@ namespace Ricochet
         private readonly List<Player> _seated = new List<Player>();
         private GUIStyle _clockStyle;
         private GUIStyle _nameStyle;
+        private GUIStyle _scoreStyle;
         private GUIStyle _centerStyle;
         private GUIStyle _thinkingStyle;
 
@@ -31,11 +34,18 @@ namespace Ricochet
         {
             var hud = new GameObject("Match HUD").AddComponent<MatchHud>();
             hud.Session = session;
+            hud.Overlay = HudOverlay.Create(hud);
             return hud;
         }
 
         /// <summary>The session read; null for NetBootstrap's.</summary>
         public NetSession Session { get; set; }
+
+        /// <summary>The Components half: the announcer's card and the turn card.</summary>
+        public HudOverlay Overlay { get; private set; }
+
+        /// <summary>The session drawn now: <see cref="Session"/>, or the bootstrap's.</summary>
+        public NetSession CurrentSession => Session ?? (NetBootstrap.Instance != null ? NetBootstrap.Instance.Session : null);
 
         /// <summary>A health bar: a dark back, the remaining fraction in <paramref name="color"/>, faint when out.</summary>
         public static void Bar(Rect rect, float fraction, Color color, bool alive)
@@ -48,7 +58,7 @@ namespace Ricochet
 
         private void OnGUI()
         {
-            NetSession session = Session ?? (NetBootstrap.Instance != null ? NetBootstrap.Instance.Session : null);
+            NetSession session = CurrentSession;
             Turns turns = Turns.For(session);
             if (turns == null)
             {
@@ -108,6 +118,7 @@ namespace Ricochet
             string state = player.InRound ? player.Health.ToString() : turns.MatchPhase == MatchPhase.RoundOver || player.Health <= 0 ? "OUT" : "next round";
             _nameStyle.normal.textColor = player.InRound ? color : new Color(color.r, color.g, color.b, 0.45f);
             GUI.Label(new Rect(x, y, BarWidth, 18f), tag + player.DisplayName + "  " + state, _nameStyle);
+            GUI.Label(new Rect(x, y, BarWidth, 18f), player.Score.ToString(), _scoreStyle); // draw_scores.gml
             Bar(new Rect(x, y + 17f, BarWidth, BarHeight), player.Health / (float)Arena.MatchRules.MaxHealth, color, player.InRound);
         }
 
@@ -164,6 +175,8 @@ namespace Ricochet
             _clockStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter, fontSize = 26, fontStyle = FontStyle.Bold };
             _clockStyle.normal.textColor = new Color(1f, 0.92f, 0.2f); // draw_turntime's c_yellow
             _nameStyle = new GUIStyle(GUI.skin.label) { fontSize = 12, clipping = TextClipping.Clip };
+            _scoreStyle = new GUIStyle(GUI.skin.label) { fontSize = 12, alignment = TextAnchor.UpperRight, fontStyle = FontStyle.Bold };
+            _scoreStyle.normal.textColor = new Color(1f, 1f, 1f, 0.85f);
             _centerStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
             _thinkingStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter, fontSize = 18, fontStyle = FontStyle.Bold };
         }

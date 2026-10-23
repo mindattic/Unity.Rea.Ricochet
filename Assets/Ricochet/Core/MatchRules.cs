@@ -2,7 +2,9 @@
 // reference only, UR-LAW-2): 100 health a player (maxhp), a 20-second turn (turnTime; draw_turntime showed "20.00" before
 // the first turn), a countdown beep on each of the last four seconds, and a cannon that does 10 damage (weapon_damage)
 // plus a fifth of that per bounce to an opponent, or the full 10 per bounce to yourself, with a dice roll of a tenth
-// either way on an opponent hit.
+// either way on an opponent hit. Scoring (UR-T8) follows hit.gml and draw_potential.gml: a hit on an opponent pays the
+// shooter 100 points (points_kill), 25 a bounce (points_bounce) and 5 for every tenth of a second in the air
+// (points_flighttime on obj_bullet's alarm); scores carry over from round to round for the whole match.
 using System;
 
 namespace Ricochet.Core
@@ -36,7 +38,35 @@ namespace Ricochet.Core
         /// <summary>Degrees a second an AI seat turns its barrel towards its aim (rotate_left/right); faster when the clock is short.</summary>
         public double AiDegreesPerSecond { get; set; } = 180;
 
+        /// <summary>Points for landing a hit on an opponent (points_kill; hit.gml paid it on every hit, not only a kill).</summary>
+        public int PointsHit { get; set; } = 100;
+
+        /// <summary>Points for every bounce the striking shot made first (points_bounce).</summary>
+        public int PointsBounce { get; set; } = 25;
+
+        /// <summary>Points for every <see cref="FlightBonusSeconds"/> the shot was in the air (points_flighttime).</summary>
+        public int PointsFlightTime { get; set; } = 5;
+
+        /// <summary>
+        /// How often the flight bonus ticks: obj_bullet's alarm added points_flighttime every 100 steps at shootFPS (1020),
+        /// about a tenth of a second.
+        /// </summary>
+        public double FlightBonusSeconds { get; set; } = 100.0 / 1020.0;
+
         public static MatchRules Default => new MatchRules();
+
+        /// <summary>
+        /// draw_potential.gml's point_combo: what a hit on an opponent scores, points_kill + points_bounce a bounce + the
+        /// flight bonus for <paramref name="flightSeconds"/> in the air. Never negative.
+        /// </summary>
+        public int Points(int bounces, double flightSeconds)
+        {
+            int flight = double.IsNaN(flightSeconds) || flightSeconds <= 0 || FlightBonusSeconds <= 0
+                ? 0
+                : (int)Math.Min(int.MaxValue / 4, Math.Floor(flightSeconds / FlightBonusSeconds + 1e-9));
+            long points = (long)Math.Max(0, PointsHit) + (long)Math.Max(0, PointsBounce) * Math.Max(0, bounces) + (long)Math.Max(0, PointsFlightTime) * flight;
+            return (int)Math.Min(int.MaxValue / 4, points);
+        }
 
         /// <summary>
         /// hit.gml's damage: to an opponent, base + ceil(base / 5) per bounce, plus a roll of up to base / 10 either way;

@@ -21,6 +21,9 @@
 // of you and the redirector item sets a redirector down where it lands (both Arena's HazardField); fire again while your
 // vortex is in the air to set it off there (Detonate, vortex_detonate.gml): the server cuts the volley short and syncs
 // the distance it went off at, so every peer cuts its own flight there too.
+// The HUD (UR-T8): the server mirrors each player's match score; the weapon and item the player whose turn it is carries
+// are shown to everyone by MatchHud's turn card (draw_weaponinfo / draw_iteminfo), so this draws only the name, the
+// pickup text, the small health bar and, for its owner, draw_bounceinfo's aim line.
 using System.Collections.Generic;
 using Ricochet.Core;          // AimState, Arsenal, Loadout, Volley, VolleyFlight, ShotPath, MatchPhase, Ai
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
@@ -90,6 +93,9 @@ namespace Ricochet
         [Synced] private int _seat = -1;
         [Synced] private int _health = StartHealth;
         [Synced] private bool _inRound;
+
+        // Points scored this match (UR-T8: hit.gml's pScore), carried from round to round.
+        [Synced] private int _score;
 
         // The loadout (Loadout.PackWeapons / PackItems; 0 until the server first writes it), the extra bounces used this
         // turn, and the size a shrink ray left this player at (1 = full size).
@@ -909,9 +915,24 @@ namespace Ricochet
             }
         }
 
-        // The name under the square, and for the owner draw_bounceinfo's line (angle, power, "Bounces: n/max") with
-        // draw_weaponinfo / draw_iteminfo's weapon and item (and the grenade's fuse).
-        // IMGUI keeps the template free of fonts and canvases; swap in MindAttic Components widgets with the HUD (UR-T8).
+        /// <summary>True for the human playing on this machine (not a bot, not an AI).</summary>
+        public bool IsLocalHuman => IsSpawned && LocallyControlled;
+
+        /// <summary>
+        /// The number of bounces this player's shot has made so far on this peer while it flies (draw_potential's combo
+        /// grows with them), or -1 when nothing of theirs is in the air.
+        /// </summary>
+        public int BouncesInFlight => ShotInFlight && _shotView != null && _shotView.Flight != null && _shotView.Flight.Flights.Count > 0
+            ? _shotView.Flight.Flights[0].Contacts
+            : -1;
+
+        /// <summary>Seconds this player's shot has been in the air on this peer (0 when nothing is).</summary>
+        public double SecondsInFlight => ShotInFlight && _shotView != null && _shotView.Flight != null && _shotView.Flight.Flights.Count > 0 && LastVolley != null
+            ? _shotView.Flight.Flights[0].Travelled / LastVolley.Speed
+            : 0;
+
+        // The name under the square, and for the owner draw_bounceinfo's line (angle, power, "Bounces: n/max"). The weapon
+        // and item are MatchHud's turn card (Components widgets); this stays IMGUI, drawn at each player's spot.
         private void OnGUI()
         {
             Camera camera = Camera.main;
@@ -954,12 +975,6 @@ namespace Ricochet
                     + bounces + "/" + (Arena.Rules.MaxBounces + ExtraBounces) + end + "   (Left/Right aim, Up/Down power, Space fire)");
 
                 Loadout loadout = Loadout;
-                string weapon = "Weapon: " + ArsenalRules.Name(loadout.Weapon) + " x" + ArsenalRules.CountText(loadout.Count(loadout.Weapon))
-                    + (loadout.Weapon == Weapon.Grenade ? "   Fuse " + loadout.Fuse.ToString("0.0") + "s (1/2/3)" : string.Empty) + "  (Q/E)";
-                string item = "Item: " + (loadout.Has(loadout.Item) ? ArsenalRules.Name(loadout.Item) + " x" + ArsenalRules.CountText(loadout.Count(loadout.Item)) : "none")
-                    + (ExtraBounces > 0 ? "   +" + ExtraBounces + " bounce" + (ExtraBounces == 1 ? string.Empty : "s") : string.Empty) + "  (Z/C, F to use)";
-                GUI.Label(new Rect(12f, Screen.height - 76f, 900f, 22f), weapon);
-                GUI.Label(new Rect(12f, Screen.height - 56f, 900f, 22f), item);
 
                 // draw_vortexdetonate.gml: tell the player how to set the vortex off.
                 if ((loadout.Weapon == Weapon.Vortex && Turns.MayFire(Session, Seat)) || VortexInFlight)
