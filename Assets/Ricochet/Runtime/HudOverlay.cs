@@ -194,7 +194,7 @@ namespace Ricochet
             int combo = bounces >= 0 ? Arena.MatchRules.Points(bounces, subject.SecondsInFlight) : 0;
             _comboText.Text = "Combo: " + combo;
             _hintText.Visible = subject.IsLocalHuman;
-            _hintText.Text = "Q/E weapon   Z/C item   F use item   Space fire";
+            _hintText.Text = "W/S drive   A/D turn   Q/E weapon   Z/C item   Ctrl use item   F end turn   Space fire";
         }
 
         /// <summary>draw_weaponinfo: "Weapon: Grenade x3   Fuse 2.0 s".</summary>

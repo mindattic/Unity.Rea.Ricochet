@@ -105,6 +105,9 @@ namespace Ricochet.Core
         /// <summary>The seat whose turn it is, or -1 (practice, or nobody left).</summary>
         public int Current { get; private set; }
 
+        /// <summary>The current seat has driven this turn, so it can no longer shoot (the original's hasMoved).</summary>
+        public bool HasMoved { get; private set; }
+
         /// <summary>Seconds left in the current turn (stopped while a shot is in the air).</summary>
         public double TimeLeft { get; private set; }
 
@@ -328,6 +331,7 @@ namespace Ricochet.Core
         public void Stop()
         {
             Phase = MatchPhase.Practice;
+            HasMoved = false;
             Current = -1;
             TimeLeft = 0;
         }
@@ -341,12 +345,42 @@ namespace Ricochet.Core
             return Phase == MatchPhase.Practice || (Phase == MatchPhase.Aiming && seat == Current && !WaitingForCurrent);
         }
 
+        /// <summary>
+        /// The current seat drove its tank this turn (move_forward.gml's hasMoved): it may not shoot again until the turn
+        /// passes. False (and nothing changes) when it may not drive now.
+        /// </summary>
+        public bool Move(int seat)
+        {
+            if (Phase != MatchPhase.Aiming || seat != Current || WaitingForCurrent)
+            {
+                return false;
+            }
+
+            HasMoved = true;
+            return true;
+        }
+
+        /// <summary>
+        /// next_player.gml on F or the End Turn button: the current seat gives up the rest of its turn (before firing). False
+        /// when it may not (not its turn, a shot already in the air, or no match).
+        /// </summary>
+        public bool EndTurn(int seat)
+        {
+            if (Phase != MatchPhase.Aiming || seat != Current || WaitingForCurrent)
+            {
+                return false;
+            }
+
+            NextTurn();
+            return true;
+        }
+
         /// <summary>The current seat fired: the timer stops until the shot lands. False (and nothing changes) when it may not.</summary>
         public bool Fire(int seat)
         {
-            if (!MayFire(seat))
+            if (!MayFire(seat) || (Phase == MatchPhase.Aiming && HasMoved))
             {
-                return false;
+                return false; // fire_weapon.gml: "You cannot move and shoot within the same turn"
             }
 
             if (Phase == MatchPhase.Aiming)
@@ -586,6 +620,7 @@ namespace Ricochet.Core
         private void BeginTurn(int seat)
         {
             Current = seat;
+            HasMoved = false;
             Phase = MatchPhase.Aiming;
             TimeLeft = Rules.TurnSeconds;
             TurnStarted?.Invoke(seat);

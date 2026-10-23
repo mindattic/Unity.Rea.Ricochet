@@ -507,6 +507,39 @@ namespace Ricochet
             return player != null && player.Seat >= 0 && _match.MayFire(player.Seat);
         }
 
+        /// <summary>
+        /// Server: may <paramref name="player"/> shoot now: <see cref="MayFire"/>, and in a match not after driving this turn
+        /// (fire_weapon.gml's "!hasMoved").
+        /// </summary>
+        public bool MayShoot(Player player)
+        {
+            return MayFire(player) && !(_match != null && _match.IsRunning && _match.HasMoved);
+        }
+
+        /// <summary>
+        /// Server: <paramref name="player"/> is driving its tank. True when it may (its own turn in a match); the turn is
+        /// then marked moved, so it cannot shoot until the turn passes.
+        /// </summary>
+        public bool Moved(Player player)
+        {
+            if (_match == null || !_match.IsRunning || player == null || !_match.Move(player.Seat))
+            {
+                return false;
+            }
+
+            Mirror();
+            return true;
+        }
+
+        /// <summary>Server: <paramref name="player"/> ends its own turn early (F, the End Turn button; next_player.gml).</summary>
+        public void EndTurn(Player player)
+        {
+            if (_match != null && _match.IsRunning && player != null && _match.EndTurn(player.Seat))
+            {
+                Mirror();
+            }
+        }
+
         /// <summary>Server: <paramref name="player"/> fired (the turn clock stops until it lands).</summary>
         public void Fired(Player player)
         {

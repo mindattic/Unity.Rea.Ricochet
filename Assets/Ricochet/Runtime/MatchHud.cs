@@ -115,6 +115,19 @@ namespace Ricochet
 
             GUI.Label(new Rect(centre - 300f, 38f + SlotHeight * 2f, 600f, 22f), Caption(turns), _centerStyle);
 
+            // draw_movewarning.gml: driving forfeits the turn's shot.
+            if (turns.HasMoved && turns.MatchPhase == MatchPhase.Aiming)
+            {
+                Player driver = Find(turns.Current);
+                if (driver != null && driver.IsLocalHuman)
+                {
+                    Color shown = GUI.color;
+                    GUI.color = new Color(1f, 0.2f, 0.2f, 1f);
+                    GUI.Label(new Rect(centre - 400f, Screen.height - 62f, 800f, 26f), "You cannot move and shoot within the same turn. Press [F] to finish current turn", _thinkingStyle);
+                    GUI.color = shown;
+                }
+            }
+
             Player thinking = turns.ThinkingLine >= 0 && turns.MatchPhase == MatchPhase.Aiming ? Find(turns.Current) : null;
             if (thinking != null)
             {

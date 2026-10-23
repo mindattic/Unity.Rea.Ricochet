@@ -29,6 +29,9 @@ namespace Ricochet.Core
         /// <summary>Degrees the aim turns per second while a turn key is held.</summary>
         public double DegreesPerSecond { get; set; } = 90;
 
+        /// <summary>Units a second a tank drives while W or S is held (the original's moveSpeed, one pixel a step).</summary>
+        public double DriveSpeed { get; set; } = 3;
+
         public static ShotRules Default => new ShotRules();
 
         /// <summary>A copy, to change for one shot (an extra bounce, a grenade's fuse) without touching the shared rules.</summary>

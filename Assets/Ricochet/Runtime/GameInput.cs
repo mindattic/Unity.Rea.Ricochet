@@ -1,6 +1,8 @@
-// Reads the aim keys with whichever input handling the project uses (Project Settings > Player > Active Input
-// Handling): Left/Right or A/D turn the aim, Up/Down or W/S charge the power, Space fires; Q/E cycle the weapon, Z/C the
-// item, F uses the item, and 1/2/3 set a grenade's fuse (shorter, longer, longest). Nothing here is about networking.
+// Reads the keys with whichever input handling the project uses (Project Settings > Player > Active Input Handling),
+// bound as obj_game's keyboard events were: A/D or Left/Right turn the tank and its aim, W/S drive it forward and back,
+// F ends the turn, Ctrl uses the item, Space fires; Q/E cycle the weapon, Z/C the item, and 1/2/3 set a grenade's fuse
+// (shorter, longer, longest). The original had no power meter, so the rebuild's power stays on Up/Down alone (W/S were
+// the drive keys). Nothing here is about networking.
 #if ENABLE_INPUT_SYSTEM && GAME_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -28,11 +30,37 @@ namespace Ricochet
         {
 #if ENABLE_INPUT_SYSTEM && GAME_INPUT_SYSTEM
             Keyboard keyboard = Keyboard.current;
-            return keyboard == null ? 0f : Axis(keyboard.upArrowKey.isPressed || keyboard.wKey.isPressed, keyboard.downArrowKey.isPressed || keyboard.sKey.isPressed);
+            return keyboard == null ? 0f : Axis(keyboard.upArrowKey.isPressed, keyboard.downArrowKey.isPressed);
 #elif ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetAxisRaw("Vertical");
+            return (Input.GetKey(KeyCode.UpArrow) ? 1f : 0f) - (Input.GetKey(KeyCode.DownArrow) ? 1f : 0f);
 #else
             return 0f;
+#endif
+        }
+
+        /// <summary>+1 while W is held (move_forward), -1 while S is held (move_backward), 0 otherwise.</summary>
+        public static int Drive()
+        {
+#if ENABLE_INPUT_SYSTEM && GAME_INPUT_SYSTEM
+            Keyboard keyboard = Keyboard.current;
+            return keyboard == null ? 0 : (keyboard.wKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed ? 1 : 0);
+#elif ENABLE_LEGACY_INPUT_MANAGER
+            return (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0);
+#else
+            return 0;
+#endif
+        }
+
+        /// <summary>True on the frame F is pressed (next_player: end the turn).</summary>
+        public static bool EndTurn()
+        {
+#if ENABLE_INPUT_SYSTEM && GAME_INPUT_SYSTEM
+            Keyboard keyboard = Keyboard.current;
+            return keyboard != null && keyboard.fKey.wasPressedThisFrame;
+#elif ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKeyDown(KeyCode.F);
+#else
+            return false;
 #endif
         }
 
@@ -88,14 +116,14 @@ namespace Ricochet
 #endif
         }
 
-        /// <summary>True on the frame F (use the selected item) is pressed.</summary>
+        /// <summary>True on the frame Ctrl (obj_game's vk_control: use the selected item) is pressed.</summary>
         public static bool UseItem()
         {
 #if ENABLE_INPUT_SYSTEM && GAME_INPUT_SYSTEM
             Keyboard keyboard = Keyboard.current;
-            return keyboard != null && keyboard.fKey.wasPressedThisFrame;
+            return keyboard != null && (keyboard.leftCtrlKey.wasPressedThisFrame || keyboard.rightCtrlKey.wasPressedThisFrame);
 #elif ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyDown(KeyCode.F);
+            return Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl);
 #else
             return false;
 #endif

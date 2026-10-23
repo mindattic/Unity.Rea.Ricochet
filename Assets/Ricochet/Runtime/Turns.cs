@@ -28,6 +28,9 @@ namespace Ricochet
         [Synced] private int _winner = -1;
         [Synced] private int _aiLine = -1;
 
+        // The current seat has driven this turn, so it cannot shoot (draw_movewarning.gml).
+        [Synced] private bool _moved;
+
         // The announcer: the personality (an index into Announcer.Voices), the lines said so far, and the last one.
         [Synced] private int _voice;
         [Synced] private int _announced;
@@ -72,6 +75,9 @@ namespace Ricochet
             Turns turns = For(session);
             return turns == null || turns.MatchPhase == MatchPhase.Practice || (turns.MatchPhase == MatchPhase.Aiming && turns.Current == seat && !turns.Waiting);
         }
+
+        /// <summary>The current seat drove this turn and may not shoot until it ends.</summary>
+        public bool HasMoved => Moved;
 
         /// <summary>The map this match is played on (an index into Maps.All).</summary>
         public int MapIndex => Map;
@@ -150,6 +156,7 @@ namespace Ricochet
             Current = match.Current;
             Round = match.Round;
             Winner = match.Winner;
+            Moved = match.HasMoved;
             Goal = match.Goal;
             Champion = match.Champion;
             float time = (float)match.TimeLeft;

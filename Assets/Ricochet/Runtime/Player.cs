@@ -50,6 +50,13 @@ namespace Ricochet
         /// <summary>Health before the first match (Arena.MatchRules.MaxHealth; the server keeps it from then on).</summary>
         public const int StartHealth = 100;
 
+        /// <summary>How long (seconds) past the last drive key the server keeps the tank moving.</summary>
+        private const float DriveHold = 0.25f;
+
+        private int _driveDirection;
+        private float _driveUntil;
+        private float _driveSentAt;
+
         private static readonly List<Player> s_spawned = new List<Player>();
 
         // client -> server: the owner's aim, so everyone sees which way the barrel points (at most 20 a second).
@@ -84,6 +91,16 @@ namespace Ricochet
         // client -> server (UR-T23): R, PageUp or PageDown in practice: roll another random level (randomize_level.gml).
         [ToServer(RateLimit = 2)]
         public partial void Reroll();
+
+        // client -> server: the owner is holding W (+1, move_forward.gml) or S (-1, move_backward.gml); sent every tenth of a
+        // second while held, and the server keeps driving only a moment past the last one, so a dropped stop cannot leave the
+        // tank running. Driving forfeits the turn's shot (Match.Move).
+        [ToServer(RateLimit = 20)]
+        public partial void Drive(int direction);
+
+        // client -> server: F or the End Turn button (next_player.gml): give up the rest of this turn.
+        [ToServer(RateLimit = 4)]
+        public partial void EndTurn();
 
         // server -> every client (UR-T12): the volley the server solved for shot number `shot` (Core's ShotWire), so every
         // peer flies the server's own bounce. Sent again, for the same shot, with the volley cut short when a vortex is set
@@ -360,6 +377,16 @@ namespace Ricochet
                 {
                     yield return player;
                 }
+            }
+        }
+
+        /// <summary>This player is the seat on turn and has driven this turn, so it cannot shoot (draw_movewarning.gml).</summary>
+        public bool Moved
+        {
+            get
+            {
+                Turns turns = Turns.For(Session);
+                return turns != null && turns.MatchPhase == MatchPhase.Aiming && turns.Current == Seat && turns.HasMoved;
             }
         }
 
@@ -669,7 +696,7 @@ namespace Ricochet
         // you have (fire_weapon.gml); the aim is clamped like Aim's, then the volley is solved here.
         private void OnFire(float heading, float power)
         {
-            if (!MayAct())
+            if (!MayAct() || (Arena.Current != null && !Arena.Current.MayShoot(this)))
             {
                 return;
             }
@@ -757,6 +784,55 @@ namespace Ricochet
             _serverFlight = new VolleyFlight(cut);
             _serverFlight.Advance(cut.Duration + 1.0);
             Arena.Current?.Landed(this, cut);
+        }
+
+        // Server: the owner holds a drive key. Only on their own turn with nothing of theirs in the air, never for NaN; the
+        // tank then moves in Update until the key stops arriving.
+        private void OnDrive(int direction)
+        {
+            direction = System.Math.Sign(direction);
+            if (direction == 0 || !MayAct() || Arena.Current == null || !Arena.Current.MatchRunning)
+            {
+                _driveDirection = 0;
+                return;
+            }
+
+            _driveDirection = direction;
+            _driveUntil = Time.time + DriveHold;
+        }
+
+        // Server: F / End Turn. Only on the seat's own turn, before firing (Match.EndTurn).
+        private void OnEndTurn()
+        {
+            _driveDirection = 0;
+            if (MayAct())
+            {
+                Arena.Current?.EndTurn(this);
+            }
+        }
+
+        // Server: drives the tank a frame along its barrel (Driving.Step) while a drive key is held, telling the match once.
+        private void DriveStep()
+        {
+            Arena arena = Arena.Current;
+            if (_driveDirection == 0 || Time.time > _driveUntil || arena == null || !MayAct())
+            {
+                _driveDirection = 0;
+                return;
+            }
+
+            if (!arena.Moved(this))
+            {
+                _driveDirection = 0;
+                return;
+            }
+
+            Vec2 from = Arena.ToCore(Position);
+            Vec2 to = Driving.Step(from, Heading, _driveDirection, Time.deltaTime, ShotLevel, Radius, Arena.Rules);
+            if (to != from)
+            {
+                Position = Arena.ToUnity(to);
+            }
         }
 
         private void OnCycleWeapon(int direction)
@@ -904,6 +980,11 @@ namespace Ricochet
 
             DrawAssist();
 
+            if (IsServer)
+            {
+                DriveStep();
+            }
+
             if (IsServer && _serverFlight != null && !_serverFlight.Landed)
             {
                 _serverFlight.Advance(Time.deltaTime);
@@ -953,6 +1034,24 @@ namespace Ricochet
 
             bool mayFire = Turns.MayFire(Session, Seat);
             bool mayAct = mayFire && !ShotInFlight;
+            // W / S drive (obj_game's keyboard events): a held key is re-sent every tenth of a second, a released one once.
+            int drive = mayAct ? GameInput.Drive() : 0;
+            if (drive != 0 && Time.unscaledTime - _driveSentAt >= 0.1f)
+            {
+                _driveSentAt = Time.unscaledTime;
+                Drive(drive);
+            }
+            else if (drive == 0 && _driveSentAt > 0f)
+            {
+                _driveSentAt = 0f;
+                Drive(0); // stop_moving.gml on key release
+            }
+
+            if (GameInput.EndTurn() && mayFire && !ShotInFlight)
+            {
+                EndTurn();
+            }
+
             int cycleWeapon = GameInput.CycleWeapon();
             if (cycleWeapon != 0 && mayAct)
             {
@@ -976,7 +1075,7 @@ namespace Ricochet
                 UseItem(heading, power);
             }
 
-            if (GameInput.Fire() && mayAct)
+            if (GameInput.Fire() && mayAct && !Moved)
             {
                 Fire(heading, power);
             }
@@ -994,7 +1093,7 @@ namespace Ricochet
 
             if (_previewLine != null)
             {
-                if (ShotInFlight || !mayFire)
+                if (ShotInFlight || !mayFire || Moved) // obj_guide: no guide once the tank has driven
                 {
                     _previewLine.positionCount = 0;
                 }
@@ -1237,7 +1336,7 @@ namespace Ricochet
                     : shown.End == ShotEndKind.Spent ? "  -> falls short" : string.Empty;
                 GUI.Label(new Rect(12f, Screen.height - 34f, 900f, 24f),
                     "Angle " + Mathf.RoundToInt((float)_aim.Heading) + "°   Power " + Mathf.RoundToInt((float)_aim.Power * 100f) + "%   Bounces: "
-                    + bounces + "/" + (Arena.Rules.MaxBounces + ExtraBounces) + end + "   (Left/Right aim, Up/Down power, Space fire)");
+                    + bounces + "/" + (Arena.Rules.MaxBounces + ExtraBounces) + end + "   (A/D aim, Up/Down power, W/S drive, Space fire, F end turn)");
 
                 Loadout loadout = Loadout;
 

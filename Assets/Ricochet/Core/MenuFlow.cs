@@ -151,12 +151,14 @@ namespace Ricochet.Core
         /// <summary>The controls screen (the original's keyboard-layout picture), as lines.</summary>
         public static IReadOnlyList<ControlBinding> Controls { get; } = new[]
         {
-            new ControlBinding("Left / Right (A / D)", "Turn your aim"),
-            new ControlBinding("Up / Down (W / S)", "Set the power"),
+            new ControlBinding("Left / Right (A / D)", "Turn your tank and its aim"),
+            new ControlBinding("W / S", "Drive your tank forward / backward (driving forfeits that turn's shot)"),
+            new ControlBinding("Up / Down", "Set the power"),
             new ControlBinding("Space", "Fire (again, while your vortex device flies: set it off)"),
             new ControlBinding("Q / E", "Cycle your weapon"),
             new ControlBinding("Z / C", "Cycle your item"),
-            new ControlBinding("F", "Use your item"),
+            new ControlBinding("Ctrl", "Use your item"),
+            new ControlBinding("F", "End your turn early"),
             new ControlBinding("1 / 2 / 3", "Grenade fuse: shorter, longer, longest"),
             new ControlBinding("Esc", "The in-game menu: players, map, settings, votes, invite, leave"),
         };
