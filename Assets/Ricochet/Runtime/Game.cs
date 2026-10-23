@@ -1,7 +1,7 @@
 // The game's one scene component: it draws the level, serves the rules (Arena) on the server, registers the votes the game offers, and
 // adds the game's own items to the drop-in front end. The menus, lobby, join codes, reconnect, roster and vote overlay
 // are the kit's; this is the only glue a game writes. Runs on every peer: a dedicated server and a bot run this scene too.
-using Ricochet.Core;        // MatchRules, MatchSetup, Ai, ArsenalRules, Announcer
+using Ricochet.Core;        // MatchRules, MatchSetup, Ai, ArsenalRules, Announcer, AudioMix, SoundCue
 using Unity.Multiplayer;    // NetBootstrap, NetVotes
 using Unity.Multiplayer.UI; // NetFrontEnd, MenuPlacement
 using UnityEngine;
@@ -49,17 +49,26 @@ namespace Ricochet
                 NetVotes.Instance.AddKind(_arena.CreateMatchVote());
             }
 
+            // Sound (UR-T10): the volumes and mutes are the active MindAttic profile's (none on a headless peer).
+            GameAudio.Create();
+
             NetFrontEnd frontEnd = NetFrontEnd.Instance;
             if (frontEnd == null)
             {
                 return;
             }
 
+            // The Settings screen: the kit's name and colour (read from and saved to the MindAttic profile, Unity.Shared,
+            // since that package is installed), then the profile's audio settings, saved the moment they change.
+            frontEnd.AddSettingsItems(AddAudioSettings);
+
             frontEnd.AddScreen("How to play", s =>
             {
                 s.AddText("Left/Right (or A/D) turn your aim, Up/Down (or W/S) set the power, Space fires.");
                 s.AddText("The faint line shows where the shot will bounce: off the border, off the white walls, and along "
                     + "the orange redirectors' arrows. It explodes on its fifth contact. Knock the dummies down.");
+                s.AddText("Your name, colour and sound volumes come from your MindAttic profile, so you set them once: change "
+                    + "them under Settings and every session (and every MindAttic game) after keeps them.");
                 s.AddText("Esc opens the menu: invite players, change your name and colour, pick how many AI opponents to add "
                     + "(up to 16 seats in all) and vote to start a match.");
                 s.AddText("In a match you play in turn: the yellow clock at the top is your 20 seconds to fire, the bars are "
@@ -111,6 +120,41 @@ namespace Ricochet
             });
             frontEnd.GameStarted += () => Debug.Log("[Game] In the game as " + frontEnd.Session.Identity.DisplayName + ".");
             frontEnd.Left += why => Debug.Log("[Game] Back at the main menu: " + why + ".");
+        }
+
+        // The profile's music and effect volumes (0-100) and mutes: heard at once while the screen is open, written back to
+        // the profile's settings.json when it closes (once, not on every step of a dragged slider).
+        private static void AddAudioSettings(MindAttic.Components.Unity.MenuScreen s)
+        {
+            GameAudio audio = GameAudio.Instance;
+            if (audio == null)
+            {
+                return;
+            }
+
+            audio.Reload();
+            AudioMix mix = audio.Mix;
+            bool changed = false;
+            System.Action<System.Action<AudioMix>> change = edit =>
+            {
+                edit(mix);
+                changed = true;
+                audio.Apply(mix);
+                GameAudio.Play(SoundCue.Bounce); // a click at the new volume
+            };
+
+            s.AddRange("Sound effects volume", 0, 100, Mathf.Round(mix.SfxVolume * 100f), v => change(m => m.SfxVolume = v / 100f), wholeNumbers: true);
+            s.AddToggle("Mute sound effects", mix.MuteSfx, v => change(m => m.MuteSfx = v));
+            s.AddRange("Music volume", 0, 100, Mathf.Round(mix.MusicVolume * 100f), v => change(m => m.MusicVolume = v / 100f), wholeNumbers: true);
+            s.AddToggle("Mute music", mix.MuteMusic, v => change(m => m.MuteMusic = v));
+            s.Hidden += () =>
+            {
+                if (changed && audio != null)
+                {
+                    changed = false;
+                    audio.Save(mix);
+                }
+            };
         }
 
         private void StartMatchVote()

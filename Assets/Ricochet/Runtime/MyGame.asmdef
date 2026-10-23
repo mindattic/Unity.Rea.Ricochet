@@ -11,7 +11,9 @@
         "Unity.Netcode.Runtime",
         "Unity.InputSystem",
         "Unity.TextMeshPro",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.Shared",
+        "Unity.Shared.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

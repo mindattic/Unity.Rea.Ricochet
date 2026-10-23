@@ -24,6 +24,9 @@
 // The HUD (UR-T8): the server mirrors each player's match score; the weapon and item the player whose turn it is carries
 // are shown to everyone by MatchHud's turn card (draw_weaponinfo / draw_iteminfo), so this draws only the name, the
 // pickup text, the small health bar and, for its owner, draw_bounceinfo's aim line.
+// The profile (UR-T10): a human's name and colour are the ones their MindAttic profile (Unity.Shared) holds; the kit's
+// front end sends them with the connection, so they reach the roster this reads. A shot's fire, bounces and landing
+// play through GameAudio at the profile's effect volume.
 using System.Collections.Generic;
 using Ricochet.Core;          // AimState, Arsenal, Loadout, Volley, VolleyFlight, ShotPath, MatchPhase, Ai
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
@@ -357,6 +360,8 @@ namespace Ricochet
             _seenAssists = Assists;
             _adoptedAssists = Assists;
             _shotView = ShotView.Create("Shot (" + name + ")");
+            _shotView.Bounced += _ => GameAudio.Play(SoundCue.Bounce);
+            _shotView.Landed += volley => GameAudio.Play(volley.HasBlast ? SoundCue.Blast : SoundCue.Land);
             _assistLine = Lines.Create(_shotView.transform, "Aim assist", new UnityEngine.Color(0.55f, 0.95f, 1f, 1f), 0.08f, 3);
             if (LocallyControlled)
             {
@@ -913,6 +918,8 @@ namespace Ricochet
             {
                 _shotView.Launch(volley, Color);
             }
+
+            GameAudio.Play(SoundCue.Fire); // UR-T10: at the profile's effect volume
         }
 
         /// <summary>True for the human playing on this machine (not a bot, not an AI).</summary>
