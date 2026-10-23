@@ -3,6 +3,7 @@
 // maproom (the level) -> gamescreen (the match) -> endgame (the winner on a pedestal and a leaderboard), with settings,
 // controls, howtoplay and credits each one button off the main menu and a Back button to it. Its multiplayer_hostorjoin/
 // host/join rooms are not here: the kit's Host / Join by IP / Join by code screens replace them (BIBLE §3).
+// The kit's host lobby (the join code and who is in, UR-T11) stands between the map room and the game as the Lobby room.
 // Here every room but the game is a screen: the title is shown first, the kit's main menu is the main menu, and the
 // setup rooms are screens on it and on the in-game menu (the setup is only proposed to the others by the match vote).
 // The how-to-play slides, the controls and the credits are written for this game, in this project's own words.
@@ -24,6 +25,12 @@ namespace Ricochet.Core
         Controls,
         HowToPlay,
         Credits,
+
+        /// <summary>
+        /// The host's lobby (UR-T11): the kit's lobby screen, with the join code (or the address) and who is in, and the
+        /// match it will start. It stands where the original's multiplayer_host room did, between the map room and the game.
+        /// </summary>
+        Lobby,
     }
 
     /// <summary>A line on the controls screen: the keys, and what they do.</summary>
@@ -76,6 +83,8 @@ namespace Ricochet.Core
                 case Room.Players:
                     return Room.MapRoom;
                 case Room.MapRoom:
+                    return Room.Lobby;
+                case Room.Lobby:
                     return Room.Game;
                 case Room.Game:
                     return Room.Endgame;
@@ -86,7 +95,8 @@ namespace Ricochet.Core
 
         /// <summary>
         /// Where a room's Back button goes (obj_btn_back_*): the main menu for every room off it, the players room from the
-        /// map room (one step back along the setup), and the title for the main menu itself.
+        /// map room (one step back along the setup), and the title for the main menu itself. Back from the lobby ends the
+        /// game being hosted, so it is the main menu too.
         /// </summary>
         public static Room Back(Room room)
         {
@@ -131,6 +141,8 @@ namespace Ricochet.Core
                     return "How to play";
                 case Room.Credits:
                     return "Credits";
+                case Room.Lobby:
+                    return "Lobby";
                 default:
                     return room.ToString();
             }
@@ -182,6 +194,10 @@ namespace Ricochet.Core
             new Slide("Opponents and the announcer",
                 "AI opponents fill the empty seats: choose how many and how well they aim on the Players screen. On its turn an AI thinks out loud, then looks for a straight shot, a bank shot or a railgun shot.",
                 "The announcer welcomes everyone, cheers a knock-out and heckles a shot that hits nobody. Choose who, and how often, under Game settings."),
+            new Slide("Playing together",
+                "Everyone plays on their own computer. One player hosts: Players, then the map, then Start opens the lobby with a join code to share (or the address to join at).",
+                "The others click Join by code and type it in, or Join by IP with the host's address. When everyone is in the lobby, the host presses Start and the match begins.",
+                "Someone who joins later plays from the next round; Esc > Invite players shows the code again."),
             new Slide("Your profile",
                 "Your name, colour and sound volumes come from your MindAttic profile, so you set them once: change them under Settings and every session, and every MindAttic game, keeps them."),
         };

@@ -1,7 +1,7 @@
 // The game's one scene component: it draws the level, serves the rules (Arena) on the server, registers the votes the game offers, and
 // adds the game's own rooms to the drop-in front end (UR-T9: the title, players, map, controls, how-to-play and credits rooms,
-// Menus/TitleScreen; the endgame recap is the HUD's). The menus, lobby, join codes, reconnect, roster and vote overlay
-// are the kit's; this is the only glue a game writes. Runs on every peer: a dedicated server and a bot run this scene too.
+// Menus/TitleScreen; the endgame recap is the HUD's) and the match box on the host's lobby (UR-T11, LobbyRoom). The
+// menus, Host / Join by IP / Join by code, the lobby's join code and roster, reconnect and the vote overlay are the kit's. Runs on every peer: a dedicated server and a bot run this scene too.
 using System.Collections;
 using MindAttic.Components.Unity; // MenuScreen
 using Ricochet.Core;        // MatchSetup, MenuFlow, Room, AudioMix, SoundCue
@@ -20,7 +20,11 @@ namespace Ricochet
         [SerializeField] private GameObject dummyPrefab;
 
         private Arena _arena;
+        private LobbyRoom _lobby;
         private readonly MatchSetup _setup = new MatchSetup(); // what the start-match vote proposes: the players, map and settings rooms' choices
+
+        /// <summary>The host's lobby (null before Start, or without the front end).</summary>
+        public LobbyRoom HostLobby => _lobby;
 
         /// <summary>The rules this scene serves (null before Start).</summary>
         public Arena Rules
@@ -82,6 +86,8 @@ namespace Ricochet
                 s.AddButton("Vote to start a match", StartMatchVote);
                 s.AddButton("Vote to restart", StartRestartVote);
             });
+            // The host's lobby (UR-T11): the kit's join code and roster, with the match Start will begin.
+            _lobby = LobbyRoom.Attach(frontEnd, this, setup => _arena != null && _arena.StartMatch(setup));
             frontEnd.GameStarted += () => Debug.Log("[Game] In the game as " + frontEnd.Session.Identity.DisplayName + ".");
             frontEnd.Left += why => Debug.Log("[Game] Back at the main menu: " + why + ".");
         }
@@ -132,58 +138,30 @@ namespace Ricochet
             }
         }
 
-        // The map room, one step on from the players room: its button goes into the game. From the main menu that hosts a
-        // game straight into play with the setup (others can still join by the invite); in a game it is the match vote.
+        // The map room, one step on from the players room: its button goes on. From the main menu that hosts a game with
+        // the setup and opens the lobby (UR-T11: the join code, who is in, and the match), whose Start begins the match with
+        // everyone who joined; in a game it is the match vote.
         private void BuildMapRoom(MenuScreen s)
         {
             NetFrontEnd frontEnd = NetFrontEnd.Instance;
             bool inGame = frontEnd != null && frontEnd.State == FrontEndState.InGame;
-            Menus.BuildMap(s, _setup, inGame ? "Vote to start a match" : "Start", inGame ? (System.Action)StartMatchVote : HostAndPlay);
+            Menus.BuildMap(s, _setup, inGame ? "Vote to start a match" : "Next: " + MenuFlow.Title(MenuFlow.Next(Room.MapRoom)),
+                inGame ? (System.Action)StartMatchVote : HostFromMapRoom);
         }
 
-        // titlescreen -> mainmenu -> players -> maproom -> gamescreen, for a player on their own: host, skip the lobby, start
-        // the match with the setup (no one to ask yet).
-        private async void HostAndPlay()
+        // titlescreen -> mainmenu -> players -> maproom -> lobby -> gamescreen: host with the setup; the lobby's Start plays it.
+        private void HostFromMapRoom()
         {
-            NetFrontEnd frontEnd = NetFrontEnd.Instance;
-            if (frontEnd == null || frontEnd.State != FrontEndState.Menu)
+            if (_lobby != null)
             {
-                return;
-            }
-
-            if (!await frontEnd.HostAsync() || this == null)
-            {
-                return;
-            }
-
-            if (frontEnd.State == FrontEndState.Lobby)
-            {
-                frontEnd.StartGame();
-            }
-
-            // The host's own player spawns a frame or so after the host starts; the match seats it.
-            for (int frame = 0; frame < 300 && this != null && !HasHuman(frontEnd.Session); frame++)
-            {
-                await System.Threading.Tasks.Task.Yield();
-            }
-
-            if (this != null && _arena != null && !_arena.StartMatch(_setup.Clone()))
-            {
-                Debug.Log("[Game] A match needs two players: add an AI opponent on the Players screen.");
+                _ = _lobby.HostMatch(_setup);
             }
         }
 
-        private static bool HasHuman(NetSession session)
+        private void OnDestroy()
         {
-            foreach (Player player in Player.In(session))
-            {
-                if (!player.IsAi)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            _lobby?.Dispose();
+            _lobby = null;
         }
 
         private void StartMatchVote()

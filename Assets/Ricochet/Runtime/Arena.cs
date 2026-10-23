@@ -379,12 +379,14 @@ namespace Ricochet
             }
 
             humans.Sort((a, b) => a.KitSeat.CompareTo(b.KitSeat));
-            int seated = Math.Min(humans.Count, MatchRules.MaxSeats);
-            aiCount = Math.Max(0, Math.Min(aiCount, MatchRules.MaxSeats - seated));
-            if (seated + aiCount < 2)
+            // The lobby's rule (UR-T11): the people first, then as many of the AI as still fit; two seats at least.
+            if (!Lobby.CanStart(humans.Count, aiCount))
             {
                 return false;
             }
+
+            int seated = Lobby.HumanSeats(humans.Count);
+            aiCount = Lobby.AiSeats(humans.Count, aiCount);
 
             RemoveAi();
             if (_dummiesUp)

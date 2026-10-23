@@ -10,15 +10,20 @@ namespace Ricochet.Core.Tests
     public class MenuFlowTests
     {
         [Test]
-        public void TheRoomGraphRunsTitleToMainMenuToPlayersToMapToGameToEndgame_AndBackToTheMainMenu()
+        public void TheRoomGraphRunsTitleToMainMenuToPlayersToMapToLobbyToGameToEndgame_AndBackToTheMainMenu()
         {
             var walked = new List<Room> { Room.Title };
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 7; i++)
             {
                 walked.Add(MenuFlow.Next(walked[walked.Count - 1]));
             }
 
-            Assert.That(walked, Is.EqualTo(new[] { Room.Title, Room.MainMenu, Room.Players, Room.MapRoom, Room.Game, Room.Endgame, Room.MainMenu }));
+            Assert.That(walked, Is.EqualTo(new[]
+            {
+                Room.Title, Room.MainMenu, Room.Players, Room.MapRoom, Room.Lobby, Room.Game, Room.Endgame, Room.MainMenu,
+            }));
+            Assert.That(MenuFlow.Back(Room.Lobby), Is.EqualTo(Room.MainMenu), "leaving the lobby ends the hosted game");
+            Assert.That(MenuFlow.Title(Room.Lobby), Is.EqualTo("Lobby"), "the kit's lobby screen's title");
         }
 
         [Test]
