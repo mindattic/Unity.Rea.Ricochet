@@ -65,17 +65,17 @@ a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `
 
 | Original system | Rebuild | Where |
 |---|---|---|
-| Aim, bounce preview, shot flight (`aim`, `draw_potential`, `check_rail_intersection`, `lines_intersect`) | built, adds a power meter (deviation: the original had none) | `Core/BounceSolver`, `ShotPath`, `AimState`, `ShotRules` |
-| Seats, health, turn order, clock, scoring, round and goal | built | `Core/Match`, `MatchRules`, `Seating` |
-| Six weapons, six items, counts, crates | built | `Core/Loadout`, `Volley`, `Arsenal`, `Drops` |
-| Hazards: electricity, laser gate, foliage, shield wall, redirector, vortex, breaches | built | `Core/Hazards`, `Level` |
-| AI and aim assist | built (one skill for all AI, UR-T28) | `Core/Ai` |
-| Announcer (written lines, not recordings) | partial | `Core/Announcer` |
-| Room graph, how to play, controls, credits | built as MindAttic Components screens | `Core/MenuFlow`, `Runtime/Menus` |
-| Four hand-laid maps | built (deviation: the original randomised the level, UR-T23) | `Core/Maps` |
+| Aim, bounce preview, shot flight (`aim`, `draw_potential`, `check_rail_intersection`, `lines_intersect`) | built, adds a power meter (deviation: the original had none) | `Core/Aim/` (`BounceSolver`, `ShotPath`, `AimState`, `ShotRules`) |
+| Seats, health, turn order, clock, scoring, round and goal | built | `Core/Match/` (`Match`, `MatchRules`, `Seating`) |
+| Six weapons, six items, counts, crates | built | `Core/Arsenal/` (`Loadout`, `Volley`, `Arsenal`, `Drops`) |
+| Hazards: electricity, laser gate, foliage, shield wall, redirector, vortex, breaches | built | `Core/Level/` (`Hazards`, `Level`) |
+| AI and aim assist | built (one skill for all AI, UR-T28) | `Core/Ai/` |
+| Announcer (written lines, not recordings) | partial | `Core/Match/Announcer` |
+| Room graph, how to play, controls, credits | built as MindAttic Components screens | `Core/Menu/MenuFlow`, `Runtime/Menus` |
+| Four hand-laid maps | built (deviation: the original randomised the level, UR-T23) | `Core/Level/Maps` |
 | Endgame recap | built as a list (the original had a podium) | `Runtime/EndgameRecap` |
-| Real multiplayer, votes, reconnect, profile | built (new, replaces the hotseat rooms) | `Core/Lobby`, `ShotWire`, `VoteMenu`, kit |
-| Sound | four synthesised cues, no recordings, no music | `Core/Sound`, `Runtime/GameAudio` |
+| Real multiplayer, votes, reconnect, profile | built (new, replaces the hotseat rooms) | `Core/Menu/` (`Lobby`, `VoteMenu`), `Core/Net/ShotWire`, kit |
+| Sound | four synthesised cues, no recordings, no music | `Core/Menu/Sound`, `Runtime/GameAudio` |
 | Art | none imported: shapes and IMGUI | `Runtime/*` |
 
 ## 3. Gaps against the original, and the ticket for each

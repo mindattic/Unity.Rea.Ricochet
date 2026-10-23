@@ -15,13 +15,23 @@ namespace Ricochet.ToolingTests
                 "Ricochet.Core must stay engine-free: no UnityEngine and no other game assembly");
         }
 
+        [System.Serializable]
+        private class AsmdefData
+        {
+            public string[] references;
+            public string[] precompiledReferences;
+            public bool noEngineReferences;
+            public bool overrideReferences;
+        }
+
         [Test]
         public void CoreAsmdefDeclaresNoReferencesAndNoEngine()
         {
-            string asmdef = Path.Combine(UnityEngine.Application.dataPath, "Ricochet", "Core", "Ricochet.Core.asmdef");
-            string text = File.ReadAllText(asmdef);
-            Assert.That(text, Does.Contain("\"noEngineReferences\": true"));
-            Assert.That(text, Does.Contain("\"references\": []"));
+            string path = Path.Combine(UnityEngine.Application.dataPath, "Ricochet", "Core", "Ricochet.Core.asmdef");
+            var data = UnityEngine.JsonUtility.FromJson<AsmdefData>(File.ReadAllText(path));
+            Assert.That(data.references, Is.Empty);
+            Assert.That(data.precompiledReferences, Is.Empty);
+            Assert.That(data.noEngineReferences, Is.True);
         }
     }
 }
