@@ -50,26 +50,59 @@ namespace Ricochet
         /// The level every peer plays in: the current map's (UR-T9). The first map (the practice range) until a match is
         /// started on another; each peer follows the map Turns carries.
         /// </summary>
-        public static Level Level { get; private set; } = Maps.At(0).Build();
+        public static Level Level => s_layout.Level;
+
+        // The round being played: the map's level and where each seat stands (a random map's come from LevelSeed, UR-T23).
+        private static RoundLayout s_layout = Maps.At(0).Layout(0);
 
         /// <summary>The map <see cref="Level"/> was built from (an index into Maps.All).</summary>
         public static int MapIndex { get; private set; }
+
+        /// <summary>The seed the current round's random level was built from (0 on a hand-laid map).</summary>
+        public static int LevelSeed { get; private set; }
+
+        /// <summary>Counts the server's level changes, so a client adopts the newest and never an older one (0 before any).</summary>
+        public static int LevelVersion { get; private set; }
 
         /// <summary>Raised on this peer when <see cref="Level"/> changes to another map's (the level view redraws).</summary>
         public static event Action<Level> LevelChanged;
 
         /// <summary>Plays on map <paramref name="index"/> from now on, on this peer (the server's match start, a client's Turns).</summary>
-        public static void UseMap(int index)
+        public static void UseMap(int index) => UseLayout(index, 0);
+
+        /// <summary>
+        /// Plays map <paramref name="index"/>'s round for <paramref name="seed"/> from now on, on this peer: a random map's
+        /// level and seat spots are built from the seed, so every peer lays the same round (UR-T23).
+        /// </summary>
+        public static void UseLayout(int index, int seed)
         {
             index = Maps.Clamp(index);
-            if (index == MapIndex)
+            if (index == MapIndex && seed == LevelSeed)
             {
                 return;
             }
 
             MapIndex = index;
-            Level = Maps.At(index).Build();
+            LevelSeed = seed;
+            s_layout = Maps.At(index).Layout(seed);
             LevelChanged?.Invoke(Level);
+        }
+
+        /// <summary>Back to the practice range and no level changes seen yet (a session starting or ending).</summary>
+        private static void ResetLayout()
+        {
+            LevelVersion = 0;
+            UseLayout(0, 0);
+        }
+
+        /// <summary>Client: the server's level (map, seed and version, as Player carries them): adopted when newer than this peer's.</summary>
+        internal static void AdoptLayout(int index, int seed, int version)
+        {
+            if (version > LevelVersion)
+            {
+                LevelVersion = version;
+                UseLayout(index, seed);
+            }
         }
 
         /// <summary>The shot rules every peer plays by.</summary>
@@ -93,6 +126,7 @@ namespace Ricochet
         private readonly GameObject _dummyPrefab;
         private readonly System.Random _aiDice = new System.Random();
         private readonly System.Random _dropDice = new System.Random();
+        private readonly System.Random _layoutDice = new System.Random();
         private readonly HazardField _hazards;
         private Match _match;
         private DropField _field;
@@ -147,7 +181,7 @@ namespace Ricochet
             var arena = new Arena(session, dummyPrefab) { LaysHazards = layHazards };
             session.Started += () =>
             {
-                UseMap(0); // every session opens on the practice range
+                ResetLayout(); // every session opens on the practice range
                 if (session.IsServer)
                 {
                     Current = arena;
@@ -165,11 +199,11 @@ namespace Ricochet
                     Current = null;
                 }
 
-                UseMap(0);
+                ResetLayout();
             };
             if (session.IsServer && session.IsLive)
             {
-                UseMap(0);
+                ResetLayout();
                 Current = arena;
                 arena.SpawnDummies();
                 arena.ResetHazards();
@@ -189,8 +223,8 @@ namespace Ricochet
 
         public static Vector2 DummyStart(int index) => DummyStarts[((index % DummyStarts.Length) + DummyStarts.Length) % DummyStarts.Length];
 
-        /// <summary>Where a seat's player stands (Core's sixteen spots; the first five are along the bottom).</summary>
-        public static Vector2 SpawnPoint(int seat) => ToUnity(Seating.SpawnPoint(Math.Max(0, seat)));
+        /// <summary>Where a seat's player stands this round (a random map's spots, else Core's fixed sixteen).</summary>
+        public static Vector2 SpawnPoint(int seat) => ToUnity(s_layout.SpawnPoint(Math.Max(0, seat)));
 
         /// <summary>The target id a seated player is hit as ("seat:3").</summary>
         public static string SeatTarget(int seat) => SeatKeyPrefix + seat;
@@ -273,7 +307,7 @@ namespace Ricochet
             var keepClear = new List<Vec2>();
             for (int i = 0; i < MatchRules.MaxSeats; i++)
             {
-                keepClear.Add(Seating.SpawnPoint(i));
+                keepClear.Add(s_layout.SpawnPoint(i));
             }
 
             for (int i = 0; i < DummyCount; i++)
@@ -404,13 +438,8 @@ namespace Ricochet
             _setup = setup;
             _setup.ApplyTo(ArsenalRules);
             _aiTurn = null;
-            UseMap(_setup.Map); // the map room's choice: every round of this match is laid on it
-            _hazards.UseLevel(Level);
-            _field?.Clear();
-            _field = new DropField(Level, DropRules, _dropDice);
-            _field.Spawned += SpawnCrate;
-            _field.Landed += LandCrate;
-            _field.Removed += drop => _session.Objects.Despawn(Crate.KeyFor(drop.Id));
+            RollLayout(_setup.Map); // the map room's choice; a random map lays a fresh level every round
+            NewField();
             _match = new Match(MatchRules) { Goal = _setup.Goal };
             _match.RoundStarted += _ => NewRound();
             _match.GameEnded += _ => GameOver();
@@ -623,14 +652,75 @@ namespace Ricochet
         }
 
         // A new round: everyone back to the starting loadout and full size, and the level cleared of crates.
+        // A random map is laid afresh (randomize_level.gml) and everyone stands at a random spot of it
+        // (randomize_player_position.gml).
         private void NewRound()
         {
-            _field?.Clear();
+            RollLayout(_setup.Map);
+            NewField();
+            foreach (Player player in Player.In(_session))
+            {
+                if (player.Seat >= 0)
+                {
+                    player.Position = SpawnPoint(player.Seat);
+                }
+            }
+
             ResetHazards();
             foreach (Player player in Player.In(_session))
             {
                 player.ResetForRound();
             }
+        }
+
+        // Server: lays map `index`'s next round (a fresh seed for the random map), tells the hazards and every player's
+        // clients which level it is.
+        private void RollLayout(int index)
+        {
+            index = Maps.Clamp(index);
+            int seed = Maps.At(index).IsRandom ? _layoutDice.Next(1, int.MaxValue) : 0;
+            UseLayout(index, seed);
+            LevelVersion++;
+            _hazards.UseLevel(Level);
+            foreach (Player player in Player.In(_session))
+            {
+                player.MirrorLevel(MapIndex, LevelSeed, LevelVersion);
+            }
+        }
+
+        // Server: a new crate field on the current level, the old one's crates gone.
+        private void NewField()
+        {
+            _field?.Clear();
+            _field = new DropField(Level, DropRules, _dropDice);
+            _field.Spawned += SpawnCrate;
+            _field.Landed += LandCrate;
+            _field.Removed += drop => _session.Objects.Despawn(Crate.KeyFor(drop.Id));
+        }
+
+        /// <summary>
+        /// Server, practice only (R, PageUp and PageDown in the original): rolls another random level, stands every player at
+        /// a fresh spot and lays the practice dummies and hazards again. False during a match, whose rounds roll their own.
+        /// </summary>
+        public bool RerollLevel()
+        {
+            if (MatchRunning)
+            {
+                return false;
+            }
+
+            RollLayout(Maps.RandomIndex);
+            foreach (Player player in Player.In(_session))
+            {
+                if (player.Seat >= 0)
+                {
+                    player.Position = SpawnPoint(player.Seat);
+                }
+            }
+
+            ResetDummies();
+            ResetHazards();
+            return true;
         }
 
         // check_endgame's room_goto(endgame): the goal was reached. The crates go and no AI plays on; the recap is every

@@ -37,7 +37,7 @@ namespace Ricochet.Core
         private int _voice = Announcer.DefaultVoice;
         private int _announcements = Announcer.DefaultFrequency;
         private int _goal = DefaultGoal;
-        private int _map;
+        private int _map = Maps.RandomIndex;
 
         /// <summary>AI opponents to add (0 to 15; the server seats fewer when the table is full).</summary>
         public int AiCount

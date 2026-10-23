@@ -14,8 +14,9 @@ namespace Ricochet.Core
     {
         private readonly Func<Level> _build;
 
-        internal MapInfo(int index, string name, string description, Func<Level> build)
+        internal MapInfo(int index, string name, string description, Func<Level> build, bool random = false)
         {
+            IsRandom = random;
             Index = index;
             Name = name;
             Description = description;
@@ -30,8 +31,31 @@ namespace Ricochet.Core
         /// <summary>One line for the map room.</summary>
         public string Description { get; }
 
-        /// <summary>A fresh copy of the map's level (walls and redirectors, no hazards).</summary>
-        public Level Build() => _build();
+        /// <summary>True for the random arena (UR-T23): every round is laid afresh from a seed by <see cref="LevelGenerator"/>.</summary>
+        public bool IsRandom { get; }
+
+        /// <summary>A fresh copy of the map's level (walls and redirectors, no hazards); a random map's is the one for seed 1.</summary>
+        public Level Build() => IsRandom ? LevelGenerator.Generate(1).Level : _build();
+
+        /// <summary>
+        /// The arena for one round: a random map's level and seat spots come from <paramref name="seed"/> (randomize_level.gml,
+        /// randomize_player_position.gml); a hand-laid map is always itself with the fixed seat spots.
+        /// </summary>
+        public RoundLayout Layout(int seed)
+        {
+            if (IsRandom)
+            {
+                return LevelGenerator.Generate(seed);
+            }
+
+            var spots = new Vec2[MatchRules.MaxSeats];
+            for (int i = 0; i < spots.Length; i++)
+            {
+                spots[i] = Seating.SpawnPoint(i);
+            }
+
+            return new RoundLayout(_build(), spots);
+        }
     }
 
     public static class Maps
@@ -50,7 +74,13 @@ namespace Ricochet.Core
             new MapInfo(3, "Funnel",
                 "Long walls slope down from the upper corners towards the middle; a redirector on the right wall throws shots back up and in.",
                 Funnel),
+            new MapInfo(4, "Random Arena",
+                "A new level every round, as in the original: twenty abstract polygons turned any way, none overlapping, and everyone starts at a random spot. R in practice rolls another.",
+                Level.Default, random: true),
         };
+
+        /// <summary>The random arena's index (the default map).</summary>
+        public static int RandomIndex => s_all.Length - 1;
 
         /// <summary>Every map, in the order the map room lists them.</summary>
         public static IReadOnlyList<MapInfo> All => s_all;

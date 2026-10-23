@@ -109,7 +109,7 @@ namespace Ricochet.Core.Tests
             HazardRules hazards = HazardRules.Default;
             var laid = hazards.Arcs.Concat(hazards.Gates).ToList();
 
-            foreach (MapInfo map in Maps.All)
+            foreach (MapInfo map in Maps.All.Where(m => !m.IsRandom))
             {
                 Level level = map.Build();
                 Assert.That((level.MinX, level.MinY, level.MaxX, level.MaxY), Is.EqualTo((-11.0, -6.0, 11.0, 6.0)), map.Name + " keeps the border");
@@ -133,7 +133,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void EverySeatCanReachSomeoneOnEveryMap()
         {
-            foreach (MapInfo map in Maps.All)
+            foreach (MapInfo map in Maps.All.Where(m => !m.IsRandom))
             {
                 Level level = map.Build();
                 var targets = Enumerable.Range(0, 4).Select(i => new Target("seat:" + i, Seating.SpawnPoint(i), Seating.PlayerRadius)).ToList();

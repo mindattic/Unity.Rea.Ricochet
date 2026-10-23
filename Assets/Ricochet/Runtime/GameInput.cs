@@ -49,6 +49,19 @@ namespace Ricochet
 #endif
         }
 
+        /// <summary>True on the frame R, PageUp or PageDown is pressed: roll another random level (practice only).</summary>
+        public static bool Reroll()
+        {
+#if ENABLE_INPUT_SYSTEM && GAME_INPUT_SYSTEM
+            Keyboard keyboard = Keyboard.current;
+            return keyboard != null && (keyboard.rKey.wasPressedThisFrame || keyboard.pageUpKey.wasPressedThisFrame || keyboard.pageDownKey.wasPressedThisFrame);
+#elif ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.PageUp) || Input.GetKeyDown(KeyCode.PageDown);
+#else
+            return false;
+#endif
+        }
+
         /// <summary>The weapon to cycle to this frame: -1 (Q, left), +1 (E, right) or 0.</summary>
         public static int CycleWeapon()
         {

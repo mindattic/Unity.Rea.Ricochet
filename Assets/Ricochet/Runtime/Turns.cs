@@ -177,11 +177,8 @@ namespace Ricochet
                 Arena.Tick(Time.deltaTime);
             }
 
-            // A client in a process of its own plays on the map the server chose (a host's peers share its Arena.Level).
-            if (!IsServer && global::Ricochet.Arena.Current == null && Map != global::Ricochet.Arena.MapIndex)
-            {
-                global::Ricochet.Arena.UseMap(Map);
-            }
+            // A client in a process of its own plays on the level the server chose: the map and seed ride on every Player
+            // (UR-T23), which adopts them, so a random round's level is not reset to the map's here.
 
             // Every peer: follow the synced clock, ticking down locally between its tenths.
             if (TimeLeft != _lastSyncedTime)

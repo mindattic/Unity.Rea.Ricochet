@@ -25,7 +25,11 @@ namespace Ricochet.Core
             new Vec2(0, 4.5),
         };
 
-        /// <summary>Where seat <paramref name="seat"/> stands (any index maps onto the sixteen spots).</summary>
+        /// <summary>Where the practice dummies stand (the arena's three; every level keeps its walls clear of them).</summary>
+        public static readonly Vec2[] DummyStarts = { new Vec2(-7, 1), new Vec2(7, -3), new Vec2(0, 3.5) };
+
+        /// <summary>Where seat <paramref name="seat"/> stands on the hand-laid maps (any index maps onto the sixteen spots);
+        /// a random round has its own spots, see <see cref="RoundLayout"/>.</summary>
         public static Vec2 SpawnPoint(int seat)
         {
             int n = Spots.Length;

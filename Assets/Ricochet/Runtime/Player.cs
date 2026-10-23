@@ -81,6 +81,10 @@ namespace Ricochet
         [ToServer(RateLimit = 4)]
         public partial void Detonate();
 
+        // client -> server (UR-T23): R, PageUp or PageDown in practice: roll another random level (randomize_level.gml).
+        [ToServer(RateLimit = 2)]
+        public partial void Reroll();
+
         // server -> every client (UR-T12): the volley the server solved for shot number `shot` (Core's ShotWire), so every
         // peer flies the server's own bounce. Sent again, for the same shot, with the volley cut short when a vortex is set
         // off in the air.
@@ -91,6 +95,13 @@ namespace Ricochet
         // damage each seat it struck took, and the seats it put out of the round.
         [ToClients]
         public partial void ShotResult(int shot, int[] seats, int[] damage, int[] knockedOut);
+
+        // The level in play (UR-T23): the map, the seed its random round was built from, and a count that goes up by one per
+        // change, so a peer adopts the newest and every one lays the identical round (Arena.AdoptLayout). Every Player
+        // carries the same three, so a late joiner learns the level whichever Player it sees first, practice included.
+        [Synced] private int _levelMap;
+        [Synced] private int _levelSeed;
+        [Synced] private int _levelVersion;
 
         // Only the server writes these; every peer, late joiners included, reads the same values.
         [Synced] private Vector2 _position;
@@ -447,6 +458,11 @@ namespace Ricochet
                 Position = Arena.SpawnPoint(Mathf.Max(0, Seat));
             }
 
+            if (IsServer && Arena.LevelVersion > 0)
+            {
+                MirrorLevel(Arena.MapIndex, Arena.LevelSeed, Arena.LevelVersion);
+            }
+
             if (IsServer)
             {
                 MirrorLoadout();
@@ -695,6 +711,25 @@ namespace Ricochet
             Arena.Current?.Fired(this);
         }
 
+        /// <summary>Server: writes the level in play for the clients to adopt (see <see cref="Arena.AdoptLayout"/>).</summary>
+        internal void MirrorLevel(int map, int seed, int version)
+        {
+            if (!IsServer)
+            {
+                return;
+            }
+
+            LevelMap = map;
+            LevelSeed = seed;
+            LevelVersion = version;
+        }
+
+        // Server: R / PageUp / PageDown in practice: a new random level, everyone to fresh spots. Ignored in a match.
+        private void OnReroll()
+        {
+            Arena.Current?.RerollLevel();
+        }
+
         // Server: vortex_detonate.gml. Only this player's own vortex, only while it is still in the air, and only once: the
         // volley is cut short where it is now and lands at once (the implosion strikes, swallows and breaches there).
         private void OnDetonate()
@@ -846,6 +881,17 @@ namespace Ricochet
 
             transform.position = Position;
             transform.localScale = new Vector3(Scale, Scale, 1f) * 0.8f;
+
+            // A client in a process of its own lays the server's level (a host's peers share its Arena).
+            if (!IsServer && Arena.Current == null && LevelVersion > 0)
+            {
+                Arena.AdoptLayout(LevelMap, LevelSeed, LevelVersion);
+            }
+
+            if (LocallyControlled && GameInput.Reroll())
+            {
+                Reroll();
+            }
 
             if (LocallyControlled) // a bot's driver calls Fire itself (GameBot.cs); Arena fires for an AI
             {
