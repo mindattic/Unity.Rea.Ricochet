@@ -8,11 +8,14 @@
 // added with this); the bars, clock and turn order stay IMGUI, drawn in each player's own colour. Once the game's goal is
 // reached (UR-T9) the caption names the champion and the endgame recap (EndgameRecap, added with this) comes up. A seat
 // whose player dropped reads "away" (UR-T13), and while the turn waits for them the line under the clock says so, with
-// the seconds they have left to reconnect.
+// the seconds they have left to reconnect. IMGUI always draws over the kit's uGUI menus and dialogs, so this goes quiet
+// while one is open (UR-T18): the Esc menu, the main menu (and the lobby pushed on it), or a modal.
 using System.Collections.Generic;
 using System.Text;
-using Ricochet.Core;     // MatchPhase, Seating, Ai
-using Unity.Multiplayer; // NetBootstrap, NetSession
+using MindAttic.Components.Unity; // MaModal (a dialog over the menus)
+using Ricochet.Core;              // MatchPhase, Seating, Ai
+using Unity.Multiplayer;          // NetBootstrap, NetSession
+using Unity.Multiplayer.UI;       // NetFrontEnd (the Esc menu, main menu and lobby)
 using UnityEngine;
 
 namespace Ricochet
@@ -73,6 +76,11 @@ namespace Ricochet
             if (turns == null)
             {
                 return; // practice: no match, no HUD
+            }
+
+            if (MenuOpen())
+            {
+                return; // UR-T18: IMGUI always draws over uGUI, so stay off while the Esc menu, main menu/lobby or a dialog is up
             }
 
             EnsureStyles();
@@ -178,6 +186,20 @@ namespace Ricochet
             }
 
             return order.ToString();
+        }
+
+        // UR-T18: the kit's menus and dialogs are uGUI, under IMGUI's always-on-top (Unity draws OnGUI last); check
+        // whether one is showing so the caption, bar names, "Game over" line and AI thinking line can stay off it.
+        private static bool MenuOpen()
+        {
+            NetFrontEnd frontEnd = NetFrontEnd.Instance;
+            if (frontEnd != null && frontEnd.HasMenus
+                && ((frontEnd.MainMenu != null && frontEnd.MainMenu.IsOpen) || (frontEnd.PauseMenu != null && frontEnd.PauseMenu.IsOpen)))
+            {
+                return true; // the main menu (and the lobby pushed on it) or the Esc menu
+            }
+
+            return MaModal.OpenCount > 0; // a dialog: busy, an alert, a confirm...
         }
 
         private Player Find(int seat)

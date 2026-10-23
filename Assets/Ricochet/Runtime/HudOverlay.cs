@@ -9,6 +9,8 @@
 //   In practice it shows the local player's own loadout. Everyone sees it, as everyone at the original's one screen did.
 // The health bars, clock, turn order and the AI's thinking line stay MatchHud's IMGUI: MaProgressBar has no per-player
 // colour, and a bar in each player's own colour is the point of them.
+// Both cards sit above the bottom row of seats (UR-T18): their opaque backdrop used to cover the tanks and names of the
+// seats along the bottom of the level on the left, where the announcer card is widest.
 using System.Collections.Generic;
 using MindAttic.Components.Unity;      // MaCanvas, MaPanel, MaText, PanelStyle, TextStyle
 using Ricochet.Core;                   // Announcer, AnnouncerVoice, Announcement, ArsenalRules, Loadout, MatchPhase
@@ -28,7 +30,13 @@ namespace Ricochet
         private const float AnnouncerHeight = 150f;
         private const float TurnCardWidth = 560f;
         private const float Margin = 24f;
-        private const float AboveAimLine = 72f;
+
+        // UR-T18: both corner cards used to sit low enough (72) to cover the bottom row's tanks and names on the left
+        // (Seating's five bottom spots, Y -4.5) under their opaque backdrop. The main camera is orthographic, size 7 (14
+        // world units tall), on this canvas's 1920x1080 reference, so 1 world unit is 1080 / 14 units of this canvas; a
+        // bottom-row tank's top sits at roughly (-4.5 + 7) * (1080 / 14) + 35 (its own half-height) ~= 228 up from the
+        // bottom. 250 clears it with room to spare, without climbing into the next row up.
+        private const float AboveAimLine = 250f;
 
         private MatchHud _hud;
         private Canvas _canvas;
