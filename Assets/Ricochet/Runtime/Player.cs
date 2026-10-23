@@ -2,8 +2,11 @@
 // AI opponent, the same thing spawned by the server under a key ("ai:1", from the Opponent prefab) when a match starts.
 // The owner turns an aim and charges a power (AimState) and sees the shot's whole bounce path before firing; Fire
 // sends the aim to the server, which is the one that decides (UR-LAW-1): it clamps the input, solves the shot with
-// Core's BounceSolver, flies it, and knocks down whatever it lands on. Every peer replays the same flight from the
-// synced shot inputs to draw it, so nothing per-frame goes over the wire. The name and colour live in the session's
+// Core's BounceSolver, flies it, and knocks down whatever it lands on. It sends every client the volley it solved
+// (UR-T12: ShotResolved, packed by Core's ShotWire), so every peer draws the server's own bounce rather than solving it
+// again in a level that may not match the server's that frame, and once it lands in a match what it did (ShotResult:
+// Core's ShotOutcome, the damage each seat took), which the struck players float over themselves; nothing per-frame
+// goes over the wire. The name and colour live in the session's
 // roster (NetRoster), which every peer has. In a match (UR-T4) the server gives each player a seat, refuses a shot
 // out of turn, and keeps their health and whether they are still in the round; Arena runs the turns.
 // Weapons and items (UR-T5): the server keeps each player's Loadout (Core) and mirrors it packed into two [Synced] ints;
@@ -75,6 +78,17 @@ namespace Ricochet
         [ToServer(RateLimit = 4)]
         public partial void Detonate();
 
+        // server -> every client (UR-T12): the volley the server solved for shot number `shot` (Core's ShotWire), so every
+        // peer flies the server's own bounce. Sent again, for the same shot, with the volley cut short when a vortex is set
+        // off in the air.
+        [ToClients]
+        public partial void ShotResolved(int shot, double[] numbers, string ids);
+
+        // server -> every client (UR-T12): what shot number `shot` did in a match once it landed (Core's ShotOutcome): the
+        // damage each seat it struck took, and the seats it put out of the round.
+        [ToClients]
+        public partial void ShotResult(int shot, int[] seats, int[] damage, int[] knockedOut);
+
         // Only the server writes these; every peer, late joiners included, reads the same values.
         [Synced] private Vector2 _position;
         [Synced] private float _heading = StartHeading;
@@ -142,8 +156,12 @@ namespace Ricochet
 
         private VolleyFlight _serverFlight; // server only: the volley it is flying, to land the impact
         private int _seenShots;             // every peer: the last shot it has drawn
-        private float _seenDetonation;      // every peer: the last detonation it has cut its flight at
         private Volley _preview;            // owner only: the shot as it would fly right now
+
+        private const float HurtSeconds = 1.6f;
+        private ShotOutcome _pendingOutcome;  // a client: the server's result for the shot this peer is still flying
+        private int _hurt;                    // every peer: the damage the last shot that struck this player did
+        private float _hurtShownUntil = -1f;
 
         private SpriteRenderer _body;
         private SpriteRenderer _barrel;
@@ -286,6 +304,15 @@ namespace Ricochet
         /// <summary>The whole volley this peer last saw fired (null before the first).</summary>
         public Volley LastVolley { get; private set; }
 
+        /// <summary>The shot number <see cref="LastVolley"/> is (the server's <see cref="Shots"/> count when it was fired).</summary>
+        public int LastVolleyShot { get; private set; }
+
+        /// <summary>What this player's last landed shot did in a match, as the server sent it (null before the first).</summary>
+        public ShotOutcome LastOutcome { get; private set; }
+
+        /// <summary>The shot number <see cref="LastOutcome"/> is about.</summary>
+        public int LastOutcomeShot { get; private set; }
+
         /// <summary>True while this peer is drawing an aim-assist beam for this player.</summary>
         public bool AssistShown => _assistShownUntil > Time.time;
 
@@ -355,13 +382,21 @@ namespace Ricochet
             }
 
             _seenShots = Shots; // a late joiner does not replay a shot fired before it arrived
-            _seenDetonation = ShotDetonation;
             _seenPickups = PickupCount;
             _seenAssists = Assists;
             _adoptedAssists = Assists;
             _shotView = ShotView.Create("Shot (" + name + ")");
             _shotView.Bounced += _ => GameAudio.Play(SoundCue.Bounce);
-            _shotView.Landed += volley => GameAudio.Play(volley.HasBlast ? SoundCue.Blast : SoundCue.Land);
+            _shotView.Landed += volley =>
+            {
+                GameAudio.Play(volley.HasBlast ? SoundCue.Blast : SoundCue.Land);
+                if (_pendingOutcome != null) // the server's result came in while this peer was still flying the shot
+                {
+                    ShotOutcome outcome = _pendingOutcome;
+                    _pendingOutcome = null;
+                    ShowOutcome(outcome);
+                }
+            };
             _assistLine = Lines.Create(_shotView.transform, "Aim assist", new UnityEngine.Color(0.55f, 0.95f, 1f, 1f), 0.08f, 3);
             if (LocallyControlled)
             {
@@ -571,7 +606,7 @@ namespace Ricochet
             ExtraBounces = 0;
             MirrorLoadout();
             Shots = Shots + 1;
-            _seenShots = Shots; // launched here, not by Update, so a second Fire in the same frame finds it in the air
+            _seenShots = Shots; // a second Fire in the same frame finds this one in the air
             LaunchShot();
             Arena.Current?.Fired(this);
         }
@@ -593,13 +628,13 @@ namespace Ricochet
             }
 
             ShotDetonation = at;
-            _seenDetonation = at;
             LastVolley = cut;
             if (_shotView != null)
             {
                 _shotView.Detonate(cut);
             }
 
+            SendResolved(Shots, cut); // every client cuts its flight at the server's own cut, striking whom it struck
             _serverFlight = new VolleyFlight(cut);
             _serverFlight.Advance(cut.Duration + 1.0);
             Arena.Current?.Landed(this, cut);
@@ -732,26 +767,8 @@ namespace Ricochet
                 OwnerInput();
             }
 
-            if (Shots != _seenShots)
-            {
-                _seenShots = Shots;
-                LaunchShot();
-            }
-
-            // A vortex its shooter set off: cut this peer's flight where the server cut its own (the server did so already).
-            if (!IsServer && ShotDetonation > 0f && ShotDetonation != _seenDetonation && LastVolley != null)
-            {
-                _seenDetonation = ShotDetonation;
-                Volley cut = Arsenal.Detonate(LastVolley, ShotDetonation, Arena.Targets(Session), Arena.ArsenalRules);
-                if (!ReferenceEquals(cut, LastVolley))
-                {
-                    LastVolley = cut;
-                    if (_shotView != null)
-                    {
-                        _shotView.Detonate(cut);
-                    }
-                }
-            }
+            // A shot reaches a client as the server's ShotResolved (OnShotResolved), never solved again here: the synced
+            // Shots count only tells a late joiner which shots were fired before it arrived.
 
             if (PickupCount != _seenPickups)
             {
@@ -902,24 +919,125 @@ namespace Ricochet
             get { return ShotInFlight && LastVolley != null && LastVolley.Weapon == Weapon.Vortex && LastVolley.HasBlast && ShotDetonation <= 0f; }
         }
 
-        // Every peer: draw the volley the server just took. The server's own solve is the one that lands.
+        // Server: solve the volley just fired, fly it, and send every client what was solved (UR-T12). The server's own solve
+        // is the one that lands; no client works it out again.
         private void LaunchShot()
         {
-            _assistShownUntil = -1f; // fire_weapon.gml: the aim-assist beam goes with the shot
-            _seenDetonation = 0f;
             Volley volley = SolveVolley((Weapon)Mathf.Clamp(ShotWeapon, 0, ArsenalRules.Kinds - 1), ShotHeading, ShotPower, ShotFuse, ShotExtraBounces);
-            LastVolley = volley;
-            if (IsServer)
-            {
-                _serverFlight = new VolleyFlight(volley);
-            }
+            _serverFlight = new VolleyFlight(volley);
+            Draw(Shots, volley);
+            SendResolved(Shots, volley);
+        }
 
+        // Server: ShotResolved for shot number `shot`.
+        private void SendResolved(int shot, Volley volley)
+        {
+            ShotWire.Encode(volley, out double[] numbers, out string ids);
+            ShotResolved(shot, numbers, ids ?? string.Empty);
+        }
+
+        // Every peer: draw a volley this player fired: its flight, the fire sound, and the aim-assist beam gone with it.
+        private void Draw(int shot, Volley volley)
+        {
+            _assistShownUntil = -1f; // fire_weapon.gml: the aim-assist beam goes with the shot
+            _pendingOutcome = null;
+            LastVolley = volley;
+            LastVolleyShot = shot;
             if (_shotView != null)
             {
                 _shotView.Launch(volley, Color);
             }
 
             GameAudio.Play(SoundCue.Fire); // UR-T10: at the profile's effect volume
+        }
+
+        // A client: the server solved shot number `shot`. A new shot is drawn as the server solved it; the same shot again is
+        // its vortex set off in the air, cut where the server cut it. (A host's own peer is the server: it drew it already.)
+        private void OnShotResolved(int shot, double[] numbers, string ids)
+        {
+            if (IsServer)
+            {
+                return;
+            }
+
+            Volley volley = ShotWire.Decode(numbers, ids);
+            if (volley == null)
+            {
+                Debug.LogWarning("[Ricochet] " + name + ": shot " + shot + " came over unreadable; nothing drawn.");
+                return;
+            }
+
+            if (shot > _seenShots)
+            {
+                _seenShots = shot;
+                Draw(shot, volley);
+            }
+            else if (shot == LastVolleyShot && LastVolley != null && volley.Main.End == ShotEndKind.Detonated)
+            {
+                LastVolley = volley;
+                if (_shotView != null)
+                {
+                    _shotView.Detonate(volley);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Server: what this player's volley did in a match once it landed (Arena.Landed). Every peer gets it: the struck
+        /// players float the damage they took over themselves once that peer's own flight lands.
+        /// </summary>
+        public void ServerResult(ShotOutcome outcome)
+        {
+            if (!IsServer || outcome == null)
+            {
+                return;
+            }
+
+            LastOutcome = outcome;
+            LastOutcomeShot = Shots;
+            outcome.Encode(out int[] seats, out int[] damage, out int[] knockedOut);
+            ShotResult(Shots, seats, damage, knockedOut);
+        }
+
+        // Every peer (the host's included): the server's result for shot number `shot`.
+        private void OnShotResult(int shot, int[] seats, int[] damage, int[] knockedOut)
+        {
+            ShotOutcome outcome = ShotOutcome.Decode(seats, damage, knockedOut, global::Ricochet.Core.MatchRules.MaxSeats);
+            if (outcome == null)
+            {
+                Debug.LogWarning("[Ricochet] " + name + ": the result of shot " + shot + " came over unreadable.");
+                return;
+            }
+
+            LastOutcome = outcome;
+            LastOutcomeShot = shot;
+            if (_shotView != null && _shotView.Flying && shot == LastVolleyShot)
+            {
+                _pendingOutcome = outcome; // shown when this peer's flight lands, not before the shot gets there
+            }
+            else
+            {
+                ShowOutcome(outcome);
+            }
+        }
+
+        // Every peer: each player the shot struck floats the damage it took.
+        private void ShowOutcome(ShotOutcome outcome)
+        {
+            foreach (Player player in In(Session))
+            {
+                int damage = player.Seat >= 0 ? outcome.DamageTo(player.Seat) : 0;
+                if (damage > 0)
+                {
+                    player.ShowHurt(damage);
+                }
+            }
+        }
+
+        private void ShowHurt(int damage)
+        {
+            _hurt = damage;
+            _hurtShownUntil = Time.time + HurtSeconds;
         }
 
         /// <summary>True for the human playing on this machine (not a bot, not an AI).</summary>
@@ -958,6 +1076,15 @@ namespace Ricochet
             {
                 float rise = (1f - (_pickupShownUntil - Time.time) / PickupSeconds) * 30f;
                 GUI.Label(new Rect(screen.x - 120f, Screen.height - screen.y - 70f - rise, 240f, 22f), PickupText(LastPickup), centered);
+            }
+
+            // The server's result for a shot that struck this player (UR-T12): the damage it took, rising and fading.
+            if (Time.time < _hurtShownUntil)
+            {
+                float left = (_hurtShownUntil - Time.time) / HurtSeconds;
+                var hurt = new GUIStyle(centered) { fontStyle = FontStyle.Bold };
+                hurt.normal.textColor = new UnityEngine.Color(1f, 0.3f, 0.25f, Mathf.Clamp01(left * 2f));
+                GUI.Label(new Rect(screen.x - 60f, Screen.height - screen.y - 50f - (1f - left) * 24f, 120f, 22f), "-" + _hurt, hurt);
             }
 
             // In a match, a small health bar under the name (the roster's bars along the top are MatchHud's).

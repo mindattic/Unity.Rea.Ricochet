@@ -120,5 +120,10 @@ copy of any of these is a bug.
   is over (`GameOver`, nobody fires) and every peer's endgame recap shows the champion and the leaderboard (obj_endgame) with
   a rematch vote (UR-T9; `Core/MenuFlow.cs`, `Maps.cs`, `Match`'s goal tested by `dotnet test Core.slnx`, the wire and the
   screens by `Tests/PlayMode/MenuFlowTests.cs`).
-- ⬜ Everything else — multiplayer polish (UR-T11–UR-T14) — is ticketed and unstarted. See
+- ✅ Server-authoritative shot sync: the server sends every client the volley it solved (every projectile's points,
+  contacts and end, and whom it strikes; packed exactly, doubles as doubles) and, once it lands in a match, the damage each
+  seat took and who it put out, both as `[ToClients]` calls on the shooter's `Player`; no client solves a shot again, so
+  every peer draws the same bounce and the struck players float the same damage (UR-T12; `Core/ShotWire.cs` tested by
+  `dotnet test Core.slnx`, the wire by `Tests/PlayMode/TurnTests.cs`).
+- ⬜ Everything else — reconnect and votes (UR-T13, UR-T14) — is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.

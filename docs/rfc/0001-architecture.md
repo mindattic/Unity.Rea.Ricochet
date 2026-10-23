@@ -175,6 +175,15 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
 8. **UR-T10**: Unity.Shared profile wiring — can land any time after UR-T3's scaffold exists.
 9. **UR-T11–UR-T14** (NET epic): host/join/lobby, then server-authoritative sync of the UR-T3/UR-T4 loop
    (the Core/Net split above is what makes this a wiring job, not a rewrite), then reconnect, then votes.
+   UR-T12 (done), as built: turn order, aim and fire intent were already the server's (`Turns`, `[ToServer] Aim`/`Fire`,
+   `MayFire`); what changed is that a client no longer solves a shot again from the synced aim in its own copy of the level
+   (hazards, players and crates that may lag the server's by a frame). The server packs the volley it solved with Core
+   `ShotWire` (every path's origin, aim, end, points and contacts, the strikes, the blast; doubles as doubles, so a client's
+   points are the server's to the bit; anything else decodes to nothing) and sends it as `Player`'s `[ToClients]
+   ShotResolved(shot, numbers, ids)`, again for the same shot with the cut-short volley when a vortex is set off. Once a
+   match shot lands, `Arena` gathers Core `ShotOutcome` (the damage each struck seat took, summed per seat, and who went
+   out) and sends it as `[ToClients] ShotResult`; every peer floats the damage over the struck players when its own flight
+   lands. The `[Synced]` shot count stays, so a late joiner skips shots fired before it arrived; health stays `[Synced]`.
 
 Single-player (UR-T3–UR-T10) is playable and testable before NET starts; NET's job is to put the same Core loop
 on the wire, not to change it.

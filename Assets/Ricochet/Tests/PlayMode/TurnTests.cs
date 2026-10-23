@@ -1,6 +1,7 @@
 // The match on the wire (UR-T4): a host and one client start a match, with or without an AI opponent, and every peer
 // sees the same seats, health, whose turn it is and the turn clock; the server refuses a shot out of turn, hurts whoever
-// a shot lands on, passes the turn when the shot lands or the clock runs out, and plays the AI seat's turn itself.
+// a shot lands on, passes the turn when the shot lands or the clock runs out, and plays the AI seat's turn itself; and
+// (UR-T12) the client flies the volley the server solved, point for point, and gets the server's damage for it.
 // The turn rules themselves are tested without Unity: dotnet test Core.slnx (Tests/Core.Tests/MatchTests.cs).
 using System.Collections;
 using System.Linq;
@@ -123,6 +124,35 @@ namespace Ricochet.Tests
             int expected = Arena.MatchRules.Damage(false, bounces, 0);
             Assert.That(damage, Is.InRange(expected - 1, expected + 1), "10 + 2 a bounce, +/- the dice");
             Assert.That(annOnHerClient.InRound, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator TheServerSendsTheBounceItSolvedAndTheDamageItDealt_AndTheClientShowsExactlyThat()
+        {
+            Arena arena = null;
+            Player host = null, ann = null;
+            yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
+            Assert.That(arena.StartMatch(0), Is.True);
+            yield return WaitUntil(() => Turns.For(Client) != null, "the client never got the match");
+
+            string target = Arena.SeatTarget(ann.Seat);
+            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), 1, target, Arena.Level, Arena.Targets(Server), Arena.Rules);
+            Assert.That(heading, Is.Not.Null, "no aim from " + host.Position + " reaches Ann at " + ann.Position);
+            host.ServerFire((float)heading.Value, 1f);
+            Assert.That(host.LastVolleyShot, Is.EqualTo(1));
+
+            Player hostOnClient = Player.In(Client).First(p => p.OwnerClientId == Server.LocalClientId);
+            yield return WaitUntil(() => hostOnClient.LastVolleyShot == 1, "the client never got the server's volley");
+            Assert.That(hostOnClient.LastShot.Points, Is.EqualTo(host.LastShot.Points), "the client flies the server's bounce, point for point");
+            Assert.That(hostOnClient.LastShot.TargetId, Is.EqualTo(target));
+
+            yield return WaitUntil(() => host.LastOutcome != null, "the server never landed the shot", 20f);
+            yield return WaitUntil(() => hostOnClient.LastOutcomeShot == 1, "the client never got the shot's result", 5f);
+            Assert.That(hostOnClient.LastOutcome.Seats, Is.EqualTo(new[] { ann.Seat }));
+            Assert.That(hostOnClient.LastOutcome.Damage, Is.EqualTo(host.LastOutcome.Damage), "the same damage on every peer");
+            Player annOnHerClient = Player.In(Client).First(p => p.OwnerClientId == Client.LocalClientId);
+            yield return WaitUntil(() => annOnHerClient.Health == Arena.MatchRules.MaxHealth - host.LastOutcome.DamageTo(ann.Seat),
+                () => "her client has her at " + annOnHerClient.Health + " after " + host.LastOutcome.DamageTo(ann.Seat) + " damage");
         }
 
         [UnityTest]

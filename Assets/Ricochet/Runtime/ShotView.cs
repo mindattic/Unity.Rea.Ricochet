@@ -1,9 +1,9 @@
 // Draws one player's volley in the air: each projectile walking its flight (one shell, a beam, a railgun slug, a
 // grenade, or a shotgun's fan of pellets), the trail behind it, and a brief flash where it lands; a grenade's flash is
-// its blast, drawn at the blast's size. Every peer runs its own flight from the same synced inputs (Player's ShotWeapon,
-// ShotHeading, ShotPower, ShotFuse, ShotExtraBounces), so this is presentation only; the server's own flight decides
-// what the volley struck. A vortex set off in mid-flight carries on along the cut-short volley (Detonate) and goes off
-// where the server set it off (UR-T6).
+// its blast, drawn at the blast's size. Every peer flies the volley the server solved (UR-T12: Player's ShotResolved
+// carries it, packed by Core's ShotWire), so this is presentation only; the server's own flight decides what the volley
+// struck. A vortex set off in mid-flight carries on along the cut-short volley the server sends again (Detonate) and
+// goes off where the server set it off (UR-T6).
 using System.Collections.Generic;
 using Ricochet.Core;
 using UnityEngine;

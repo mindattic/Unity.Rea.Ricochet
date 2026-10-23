@@ -503,6 +503,7 @@ namespace Ricochet
                 bool struckAPlayer = false;
                 int knockedOut = -1;
                 double flight = volley.Duration;
+                var outcome = new ShotOutcome(); // UR-T12: what it did, for every peer
                 foreach (Strike strike in volley.Strikes)
                 {
                     int hit = SeatOf(strike.TargetId);
@@ -510,13 +511,19 @@ namespace Ricochet
                     {
                         struckAPlayer = true;
                         bool wasIn = _match.TryGetSeat(hit, out MatchSeat before) && before.Alive;
-                        _match.Strike(player.Seat, hit, strike.Bounces, strike.Scale, flight);
-                        if (wasIn && hit != player.Seat && !_match.Seat(hit).Alive)
+                        outcome.Add(hit, _match.Strike(player.Seat, hit, strike.Bounces, strike.Scale, flight));
+                        if (wasIn && !_match.Seat(hit).Alive)
                         {
-                            knockedOut = hit;
+                            outcome.KnockOut(hit);
+                            if (hit != player.Seat)
+                            {
+                                knockedOut = hit;
+                            }
                         }
                     }
                 }
+
+                player.ServerResult(outcome);
 
                 if (_announcer != null)
                 {
