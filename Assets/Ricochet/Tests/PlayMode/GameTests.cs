@@ -19,6 +19,8 @@ namespace Ricochet.Tests
     {
         public static GameObject Player => Load("Game/Player");
         public static GameObject Dummy => Load("Game/Dummy");
+        public static GameObject Opponent => Load("Game/Opponent");
+        public static GameObject Turns => Load("Game/Turns");
 
         private static GameObject Load(string path)
         {

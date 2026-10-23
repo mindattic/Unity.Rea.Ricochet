@@ -81,7 +81,17 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    template's crates became keyed practice dummies to shoot at; power is the shot's range (the original had a
    fixed bullet speed and no power meter); a shot detonates on its fifth contact, as `bullet_step.gml` did.
    The server solves and flies every shot and lands the impact; clients replay the same path from the synced aim.
-3. **UR-T4**: turn order and the 16-seat roster with health bars — the loop that calls into UR-T3's shots.
+3. **UR-T4** (done): turn order and the 16-seat roster with health bars — the loop that calls into UR-T3's shots.
+   As built: the name guess above was half wrong. `obj_bar1`..`obj_bar16` are level obstacles (children of
+   `obj_polygon_parent`) and `obj_Controls` is the Controls screen; the roster and turns really live in
+   `setup_players.gml` (players, `obj_healthbar` row), `next_player.gml`, `turn_countdown.gml`/`reset_timer.gml`/
+   `draw_turntime.gml`, `hit.gml` and `check_endgame.gml`. Ported as Core `Match` (seats, turns in seat order skipping
+   the dead, a 20 s clock that beeps its last four seconds and passes the turn, hit.gml's damage of 10 + 2 a bounce
+   +/- 1 to an opponent or 10 a bounce to yourself out of 100 health, the last one standing wins and opens the next
+   round) and `Seating` (sixteen fixed spots, the HUD's two rows of eight bars around the clock). A match starts by
+   vote with N AI opponents (`Opponent` prefab, keyed `ai:n`); the server mirrors it through a keyed `Turns` object and
+   each Player's `[Synced]` seat/health; a late joiner sits the round out. AI seats fire a stand-in shot
+   (`SimpleAi`, nearest reachable opponent) until UR-T7.
 4. **UR-T5/UR-T6**: weapons/items and hazards — content on top of the turn loop, independent of each other.
 5. **UR-T7**: AI — depends on UR-T3's bounce solver (reused for targeting) and UR-T4's turn loop.
 6. **UR-T8**: announcer/HUD — presentation on top of whatever state exists by then.

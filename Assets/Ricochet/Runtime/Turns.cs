@@ -1,0 +1,98 @@
+// The match's turn state on the wire: one keyed object ("turns") the server spawns when a match starts, mirroring the
+// server's Core Match (whose turn, the phase, the turn clock, the round and its winner) for every peer's HUD and input.
+// Only the server writes it (UR-LAW-1); its server-side Update is what runs the match clock. Each player's own seat
+// and health live on their Player.
+using Ricochet.Core;          // MatchPhase, MatchRules
+using Unity.Multiplayer;      // NetEntity, NetSession
+using Unity.Multiplayer.Core; // [Synced]
+using UnityEngine;
+
+namespace Ricochet
+{
+    public partial class Turns : NetEntity
+    {
+        public const string Key = "turns";
+
+        // The turn clock goes out in tenths, not every frame; each peer counts down between updates.
+        private const float ClockStep = 0.1f;
+
+        [Synced] private int _phase;
+        [Synced] private int _current = -1;
+        [Synced] private float _timeLeft;
+        [Synced] private int _round;
+        [Synced] private int _winner = -1;
+
+        private float _shownTime;
+        private float _lastSyncedTime = -1f;
+
+        /// <summary>The arena running the match (server only).</summary>
+        internal Arena Arena { get; set; }
+
+        public MatchPhase MatchPhase => (MatchPhase)Phase;
+
+        /// <summary>The turn clock as this peer shows it: the synced tenths, counted down smoothly in between.</summary>
+        public float ShownTimeLeft => _shownTime;
+
+        /// <summary>The turn state <paramref name="session"/> has, or null before a match starts.</summary>
+        public static Turns For(NetSession session)
+        {
+            Turns turns = null;
+            return session != null && session.Objects != null && session.Objects.TryGet(Key, out turns) && turns != null && turns.IsSpawned ? turns : null;
+        }
+
+        /// <summary>
+        /// Whether <paramref name="seat"/> may fire now, as <paramref name="session"/> sees it: always in practice (no
+        /// match), otherwise only on its own turn while aiming. The server decides for real; this keeps a client from
+        /// sending a shot it would refuse.
+        /// </summary>
+        public static bool MayFire(NetSession session, int seat)
+        {
+            Turns turns = For(session);
+            return turns == null || turns.MatchPhase == MatchPhase.Practice || (turns.MatchPhase == MatchPhase.Aiming && turns.Current == seat);
+        }
+
+        /// <summary>Server: copies the match's state out (the clock only when it moves by a tenth, or jumps back up).</summary>
+        internal void Mirror(Match match)
+        {
+            Phase = (int)match.Phase;
+            Current = match.Current;
+            Round = match.Round;
+            Winner = match.Winner;
+            float time = (float)match.TimeLeft;
+            if (Mathf.Abs(time - TimeLeft) >= ClockStep || time > TimeLeft || time == 0f)
+            {
+                TimeLeft = time;
+            }
+        }
+
+        protected override void OnSpawned()
+        {
+            _shownTime = TimeLeft;
+            _lastSyncedTime = TimeLeft;
+        }
+
+        private void Update()
+        {
+            if (!IsSpawned)
+            {
+                return;
+            }
+
+            if (IsServer && Arena != null)
+            {
+                Arena.Tick(Time.deltaTime);
+            }
+
+            // Every peer: follow the synced clock, ticking down locally between its tenths.
+            if (TimeLeft != _lastSyncedTime)
+            {
+                _lastSyncedTime = TimeLeft;
+                _shownTime = TimeLeft;
+            }
+            else if (MatchPhase == MatchPhase.Aiming)
+            {
+                _shownTime = Mathf.Max(Mathf.Max(0f, TimeLeft - ClockStep), _shownTime - Time.deltaTime);
+            }
+        }
+    }
+}

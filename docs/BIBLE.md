@@ -79,6 +79,11 @@ copy of any of these is a bug.
 ## 6. Verified state {#UR-§6}
 - ✅ Repo created (`mindattic/Unity.Ricochet`, tagged `wip`), scaffolded with README, AGENTS/CLAUDE forwarders,
   `.gitignore`, `Packages/manifest.json` (the house kit as local packages), this Bible and RFC 0001 (UR-T2).
-- ⬜ Everything else — the Unity project itself (`Assets/`, `ProjectSettings/`), the single-player core rebuild
-  (UR-T3–UR-T10) and multiplayer (UR-T11–UR-T14) — is ticketed and unstarted. See
+- ✅ The Unity project and the first playable slice: aim, bounce preview and a server-solved shot (UR-T3).
+- ✅ Matches: up to 16 seats (the connected humans plus AI opponents), turns in seat order with a 20-second turn
+  clock, health and damage per hit.gml, the last one standing wins the round, and a HUD of per-seat health bars,
+  the clock and the turn order (UR-T4; `Core/Match.cs` tested by `dotnet test Core.slnx`, the wire by
+  `Tests/PlayMode/TurnTests.cs`). The AI seats play a stand-in turn until UR-T7.
+- ⬜ Everything else — weapons, hazards, the real AI, announcer/HUD, menus, profiles (UR-T5–UR-T10) and
+  multiplayer polish (UR-T11–UR-T14) — is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.

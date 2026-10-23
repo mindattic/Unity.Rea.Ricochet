@@ -2,24 +2,33 @@
 
 Scaffolded by **MindAttic ▸ Multiplayer ▸ New Game…** (Unity.Multiplayer's game template, UR-T3), then built into the
 first playable slice of Ricochet: aim, preview the bounce path, fire, and watch the shot bank off the border, the
-mirror walls and the rail redirectors onto a practice dummy. Turns, seats and health come next (UR-T4).
+mirror walls and the rail redirectors onto a practice dummy; then matches (UR-T4): up to 16 seats, humans and AI,
+taking turns against a 20-second clock until one is left standing.
 
 Open `Game.unity`, press **Play** and click **Host**. A second copy (Multiplayer Play Mode, or a build) clicks **Join by
 IP** (`127.0.0.1`) or **Join by code**. **Left/Right** (or A/D) turn your aim, **Up/Down** (or W/S) set the power,
 **Space** fires. The faint line is the whole path the shot will fly; the bottom-left line reads the angle, the power
-and `Bounces: n/5`. **Esc** opens the in-game menu: **Invite players**, **Settings** (name and colour), **Vote to
-restart** (stands every dummy back up).
+and `Bounces: n/5`. **Esc** opens the in-game menu: **Invite players**, **Settings** (name and colour), **AI
+opponents** (0-15) and **Vote to start a match**, and **Vote to restart** (the match from round one, or every dummy
+back up in practice).
+
+In a match the dummies go, everyone takes a seat (the humans in join order, then the AI) and plays in seat order: only
+the seat whose turn it is may fire, the yellow clock at the top gives them 20 seconds, and the turn passes when their
+shot lands or the clock runs out. A hit costs 10 health plus 2 a bounce (+/-1), or 10 a bounce if your own shot comes
+back to you; at 0 you are out. The bars along the top (two rows of eight around the clock) are every seat's health,
+the outlined one has the turn, and the line under the clock is the order the players still standing play in. The
+last one standing wins the round and opens the next. Someone who joins mid-round plays from the next one.
 
 ## Layers (docs/rfc/0001-architecture.md)
 
 | Folder | What lives there |
 |---|---|
-| `Core/` (`Ricochet.Core`, no engine references) | The rules as plain C#: `Geometry` (the original's `LineLineIntersection_X/_Y` and `lines_intersect`, the reflection rule from `bullet_step`), `Level` (border, mirror walls, redirectors), `BounceSolver` (the shot's whole path, and `FindHeading`, the original's `find_target_angle`), `ShotPath`, `ProjectileFlight`, `AimState`, `ShotRules`. Tested without Unity: `dotnet test Core.slnx`. |
-| `Runtime/` (`Ricochet`) | The networked game and its drawing. `Player` (a `NetEntity`: `[ToServer] Aim` and `Fire`, `[Synced]` aim and last shot; the server solves and flies the shot and knocks down what it lands on, every peer replays the same flight to draw it), `Dummy` (keyed practice targets), `Arena` (the server's rules, the level and the restart vote), `Game` (scene glue), `GameBot` (the bot), and presentation: `LevelView`, `ShotView`, `Lines`, `Shapes`, `GameInput`. |
-| `Tests/` | PlayMode tests on the kit's `NetSessionTest`/`NetBotTest` (aim round trip and clamping, a shot landing on a dummy with the client flying the server's path, one shot in the air at a time, dummies by key, the restart vote, two bots each banking a shot onto their dummy) and EditMode checks of the scene and prefabs. |
+| `Core/` (`Ricochet.Core`, no engine references) | The rules as plain C#: `Geometry` (the original's `LineLineIntersection_X/_Y` and `lines_intersect`, the reflection rule from `bullet_step`), `Level` (border, mirror walls, redirectors), `BounceSolver` (the shot's whole path, and `FindHeading`, the original's `find_target_angle`), `ShotPath`, `ProjectileFlight`, `AimState`, `ShotRules`; and the match: `Match` (seats, turn order, turn clock, health, rounds; the original's `next_player`, `turn_countdown`, `hit` and `check_endgame`), `MatchRules`, `Seating` (sixteen spots, the HUD's bar slots, the `SS.FF` clock), `SimpleAi` (the AI seats' stand-in shot until UR-T7). Tested without Unity: `dotnet test Core.slnx`. |
+| `Runtime/` (`Ricochet`) | The networked game and its drawing. `Player` (a `NetEntity`: `[ToServer] Aim` and `Fire`, `[Synced]` aim, last shot, seat, health and whether still in the round; the server solves and flies the shot, refuses one out of turn, and lands it, every peer replays the same flight to draw it; an AI seat is the same entity from the `Opponent` prefab), `Turns` (the keyed match state every peer reads: phase, whose turn, the clock, the round), `Dummy` (keyed practice targets), `Arena` (the server's rules: the level, the match and its AI turns, the start-match and restart votes), `Game` (scene glue), `GameBot` (the bot), and presentation: `MatchHud`, `LevelView`, `ShotView`, `Lines`, `Shapes`, `GameInput`. |
+| `Tests/` | PlayMode tests on the kit's `NetSessionTest`/`NetBotTest` (aim round trip and clamping, a shot landing on a dummy with the client flying the server's path, one shot in the air at a time, dummies by key, the restart vote, two bots each banking a shot onto their dummy; and in `TurnTests` a match seating two players and an AI, a shot out of turn refused, the turn passing on a landed shot and on the clock, a hit's damage seen by everyone, the AI taking its turn) and EditMode checks of the scene and prefabs. |
 
-`Resources/Game/*.prefab` and `GamePrefabs.asset` are the player and dummy prefabs and the `NetPrefabList` the
-NetBootstrap registers. The wizard also wrote `mp-host.json` and `.github/workflows/nightly.yml` at the project root,
+`Resources/Game/*.prefab` and `GamePrefabs.asset` are the player, AI opponent, turn-state and dummy prefabs and the
+`NetPrefabList` the NetBootstrap registers. The wizard also wrote `mp-host.json` and `.github/workflows/nightly.yml` at the project root,
 put `Game.unity` first in Build Settings and turned on Run In Background.
 
 ## Tests
