@@ -1,0 +1,14 @@
+# The nightly end-to-end smoke (Unity.Multiplayer's reusable game-smoke workflow): one Linux player of this game
+# runs as a dedicated server, the rendezvous service and two bots (GameBot) under Docker Compose until both pass.
+# Needs the UNITY_LICENSE secret (GameCI), and MINDATTIC_REPOS_TOKEN if a MindAttic repo is private.
+# mp-host.json gives the bots and scenario; see https://mindattic.github.io/Unity.Multiplayer/articles/bots.html
+name: Nightly smoke
+on:
+  schedule: [{ cron: '0 10 * * *' }]
+  workflow_dispatch: {}
+jobs:
+  smoke:
+    uses: mindattic/Unity.Multiplayer/.github/workflows/game-smoke.yml@main
+    with:
+      siblings: mindattic/MindAttic.Components mindattic/Unity.Shared
+    secrets: inherit
