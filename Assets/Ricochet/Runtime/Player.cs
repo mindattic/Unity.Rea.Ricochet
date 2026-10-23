@@ -211,33 +211,80 @@ namespace Ricochet
             }
         }
 
-        /// <summary>The name: the owner's, from the roster ("Player" until the roster has it), or "AI n".</summary>
-        public string DisplayName
-        {
-            get
-            {
-                if (IsAi)
-                {
-                    string key = _key.Key ?? string.Empty;
-                    return "AI " + (key.StartsWith(Arena.AiKeyPrefix, System.StringComparison.Ordinal) ? key.Substring(Arena.AiKeyPrefix.Length) : key);
-                }
+        /// <summary>The name: the owner's, from the roster ("Player" until the roster has it), or "AI n"; a name another
+        /// player in the match also has gets a number ("Default 2", UR-T21).</summary>
+        public string DisplayName => Look().Name;
 
-                return Roster(out NetPlayer player) ? player.DisplayName : "Player";
-            }
-        }
-
-        /// <summary>The colour: the owner's, from the roster (their pick, or their seat's palette colour); an AI's seat colour.</summary>
+        /// <summary>The colour: the owner's, from the roster (their pick, or their seat's palette colour); an AI's seat colour;
+        /// a colour another player also has is swapped for one nobody has (UR-T21).</summary>
         public Color32 Color
         {
             get
             {
-                if (IsAi)
+                int rgb = Look().Rgb;
+                return new Color32((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb, 255);
+            }
+        }
+
+        private string RawName()
+        {
+            if (IsAi)
+            {
+                string key = _key.Key ?? string.Empty;
+                return "AI " + (key.StartsWith(Arena.AiKeyPrefix, System.StringComparison.Ordinal) ? key.Substring(Arena.AiKeyPrefix.Length) : key);
+            }
+
+            return Roster(out NetPlayer player) ? player.DisplayName : "Player";
+        }
+
+        private int RawRgb()
+        {
+            Color32 c = IsAi ? PlayerColors.ForSeat(Mathf.Max(0, Seat)).ToColor32()
+                : Roster(out NetPlayer player) ? player.UnityColor() : new Color32(255, 255, 255, 255);
+            return (c.r << 16) | (c.g << 8) | c.b;
+        }
+
+        // The match's players resolved apart, once a frame per session: every peer sorts by the same keys.
+        private static NetSession s_lookSession;
+        private static int s_lookFrame = -1;
+        private static int s_lookCount = -1;
+        private static readonly Dictionary<Player, PlayerLook> s_looks = new Dictionary<Player, PlayerLook>();
+
+        private PlayerLook Look()
+        {
+            int count = s_spawned.Count;
+            if (s_lookFrame != Time.frameCount || s_lookSession != Session || s_lookCount != count)
+            {
+                var all = new List<Player>(In(Session));
+                all.Sort((x, y) =>
                 {
-                    return PlayerColors.ForSeat(Mathf.Max(0, Seat)).ToColor32();
+                    int c = x.KitSeat.CompareTo(y.KitSeat);
+                    if (c == 0)
+                    {
+                        c = x.Seat.CompareTo(y.Seat);
+                    }
+
+                    return c != 0 ? c : x.OwnerClientId.CompareTo(y.OwnerClientId);
+                });
+                var wanted = new List<PlayerLook>(all.Count);
+                foreach (Player p in all)
+                {
+                    wanted.Add(new PlayerLook(p.RawName(), p.RawRgb()));
                 }
 
-                return Roster(out NetPlayer player) ? player.UnityColor() : new Color32(255, 255, 255, 255);
+                PlayerLook[] resolved = PlayerLooks.Resolve(wanted);
+                s_looks.Clear();
+                for (int i = 0; i < all.Count; i++)
+                {
+                    s_looks[all[i]] = resolved[i];
+                }
+
+                s_lookFrame = Time.frameCount;
+                s_lookSession = Session;
+                s_lookCount = count;
             }
+
+            return s_looks.TryGetValue(this, out PlayerLook look) ? look : new PlayerLook(RawName(), RawRgb());
         }
 
         /// <summary>True when this is the player whose turn it is in a running match.</summary>
