@@ -5,6 +5,7 @@
 // round from the seed alone and only the seed goes over the wire (UR-LAW-1).
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ricochet.Core
 {
@@ -38,13 +39,17 @@ namespace Ricochet.Core
     /// <summary>One round's arena: the level and where each of the sixteen seats stands in it.</summary>
     public sealed class RoundLayout
     {
-        public RoundLayout(Level level, IReadOnlyList<Vec2> spots)
+        public RoundLayout(Level level, IReadOnlyList<Vec2> spots, int polygons = 0)
         {
+            Polygons = polygons;
             Level = level ?? throw new ArgumentNullException(nameof(level));
             Spots = spots ?? throw new ArgumentNullException(nameof(spots));
         }
 
         public Level Level { get; }
+
+        /// <summary>How many polygons were laid (0 for a hand-laid map).</summary>
+        public int Polygons { get; }
 
         /// <summary>Where seat i stands (any seat index wraps onto the spots).</summary>
         public IReadOnlyList<Vec2> Spots { get; }
@@ -83,7 +88,7 @@ namespace Ricochet.Core
         {
             settings = settings ?? LevelSettings.Default;
             var dice = new Random(seed);
-            var avoid = new List<Vec2>(keepClear ?? Seating.DummyStarts);
+            var avoid = new List<Vec2>(keepClear ?? DefaultKeepClear());
             var shapes = new List<(Vec2 Centre, double Radius)>();
             var walls = new List<Wall>();
             int minSides = Math.Max(3, settings.MinSides);
@@ -124,7 +129,25 @@ namespace Ricochet.Core
             }
 
             var level = new Level(MinX, MinY, MaxX, MaxY, walls);
-            return new RoundLayout(level, PickSpots(dice, shapes, avoid));
+            return new RoundLayout(level, PickSpots(dice, shapes, avoid), shapes.Count);
+        }
+
+        /// <summary>The practice dummies and, sampled along them, the electric arcs and laser gates every round lays.</summary>
+        private static List<Vec2> DefaultKeepClear()
+        {
+            var keep = new List<Vec2>(Seating.DummyStarts);
+            HazardRules hazards = HazardRules.Default;
+            foreach (Vec2[] segment in hazards.Arcs.Concat(hazards.Gates))
+            {
+                int steps = Math.Max(1, (int)Math.Ceiling(Vec2.Distance(segment[0], segment[1]) / 0.5));
+                for (int i = 0; i <= steps; i++)
+                {
+                    double t = (double)i / steps;
+                    keep.Add(new Vec2(segment[0].X + (segment[1].X - segment[0].X) * t, segment[0].Y + (segment[1].Y - segment[0].Y) * t));
+                }
+            }
+
+            return keep;
         }
 
         private static List<Vec2> PickSpots(Random dice, List<(Vec2 Centre, double Radius)> shapes, List<Vec2> avoid)
@@ -145,6 +168,14 @@ namespace Ricochet.Core
                         found = ClearOfAll(spot, SeatGap * scale, spots) && ClearOfAll(spot, DummyClearance, avoid)
                             && ClearOfShapes(spot, SeatClearance * scale, shapes);
                     }
+                }
+
+                // Last resort on a crowded level: only the bare minimum room, so a seat never lands inside a polygon.
+                for (int attempt = 0; attempt < 3000 && !found; attempt++)
+                {
+                    spot = new Vec2(Between(dice, MinX + edge, MaxX - edge), Between(dice, MinY + edge, MaxY - edge));
+                    found = ClearOfAll(spot, Seating.PlayerRadius * 2 + 0.05, spots) && ClearOfAll(spot, DummyClearance, avoid)
+                        && ClearOfShapes(spot, Seating.PlayerRadius + 0.05, shapes);
                 }
 
                 spots.Add(found ? spot : Seating.SpawnPoint(seat));

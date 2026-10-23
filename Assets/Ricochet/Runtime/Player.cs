@@ -888,11 +888,6 @@ namespace Ricochet
                 Arena.AdoptLayout(LevelMap, LevelSeed, LevelVersion);
             }
 
-            if (LocallyControlled && GameInput.Reroll())
-            {
-                Reroll();
-            }
-
             if (LocallyControlled) // a bot's driver calls Fire itself (GameBot.cs); Arena fires for an AI
             {
                 OwnerInput();
@@ -932,6 +927,11 @@ namespace Ricochet
 
         private void OwnerInput()
         {
+            if (GameInput.Reroll())
+            {
+                Reroll(); // R / PageUp / PageDown: the server only obeys it in practice
+            }
+
             // An aim assist the server just applied: the local aim follows it.
             bool assisted = Assists != _adoptedAssists;
             if (assisted)

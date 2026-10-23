@@ -120,7 +120,8 @@ namespace Ricochet
         /// <summary>The level hazards every peer plays with (UR-T6).</summary>
         public static readonly HazardRules HazardRules = HazardRules.Default;
 
-        private static readonly Vector2[] DummyStarts = { new Vector2(-7f, 1f), new Vector2(7f, -3f), new Vector2(0f, 3.5f) };
+        // One source with the level generator, which keeps its polygons clear of these.
+        private static readonly Vector2[] DummyStarts = System.Array.ConvertAll(Seating.DummyStarts, ToUnity);
 
         private readonly NetSession _session;
         private readonly GameObject _dummyPrefab;
@@ -438,7 +439,8 @@ namespace Ricochet
             _setup = setup;
             _setup.ApplyTo(ArsenalRules);
             _aiTurn = null;
-            RollLayout(_setup.Map); // the map room's choice; a random map lays a fresh level every round
+            UseMap(_setup.Map); // the map room's choice; a random map's level is rolled as round one starts (NewRound)
+            _hazards.UseLevel(Level);
             NewField();
             _match = new Match(MatchRules) { Goal = _setup.Goal };
             _match.RoundStarted += _ => NewRound();
@@ -704,9 +706,9 @@ namespace Ricochet
         /// </summary>
         public bool RerollLevel()
         {
-            if (MatchRunning)
+            if (_match != null && _match.Phase != MatchPhase.Practice)
             {
-                return false;
+                return false; // a match, or its recap, keeps its level
             }
 
             RollLayout(Maps.RandomIndex);
