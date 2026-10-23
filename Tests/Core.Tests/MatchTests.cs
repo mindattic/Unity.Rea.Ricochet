@@ -195,6 +195,101 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
+        public void ADroppedPlayerOnTheirTurn_KeepsSeatAndHealth_TheClockWaits_AndTheyResumeTheSameTurn()
+        {
+            Match match = Table(3); // humans at 0 and 2, an AI at 1
+            match.Start();
+            match.Fire(0);
+            match.ShotLanded(0, 2, 0);
+            int hurt = match.Seat(2).Health;
+            Assert.That(hurt, Is.LessThan(100));
+            match.Tick(match.Rules.EndTurnSeconds + 0.01);
+            match.Fire(1);
+            match.ShotOver(1);
+            match.Tick(match.Rules.EndTurnSeconds + 0.01);
+            Assert.That(match.Current, Is.EqualTo(2));
+            match.Tick(5);
+
+            var dropped = new List<int>();
+            var back = new List<int>();
+            match.Dropped += dropped.Add;
+            match.Rejoined += back.Add;
+            Assert.That(match.Drop(2, 60), Is.True);
+            Assert.That(dropped, Is.EqualTo(new[] { 2 }));
+            Assert.That(match.WaitingForCurrent, Is.True);
+            Assert.That(match.MayFire(2), Is.False, "nobody fires for them while they are away");
+
+            match.Tick(30); // longer than a whole turn
+            Assert.That(match.Current, Is.EqualTo(2), "the turn waits");
+            Assert.That(match.TimeLeft, Is.EqualTo(15).Within(1e-9), "the clock stopped where they dropped");
+            Assert.That(match.Seat(2).AwayLeft, Is.EqualTo(30).Within(1e-9));
+            Assert.That(match.Seat(2).Health, Is.EqualTo(hurt), "health held");
+            Assert.That(match.Seat(2).Alive, Is.True);
+            Assert.That(match.TurnOrder(), Is.EqualTo(new[] { 2, 0, 1 }), "still in the turn order");
+
+            Assert.That(match.Rejoin(2), Is.True);
+            Assert.That(back, Is.EqualTo(new[] { 2 }));
+            Assert.That(match.Rejoin(2), Is.False, "already back");
+            Assert.That(match.WaitingForCurrent, Is.False);
+            Assert.That(match.Current, Is.EqualTo(2), "the same turn");
+            Assert.That(match.MayFire(2), Is.True);
+            match.Tick(1);
+            Assert.That(match.TimeLeft, Is.EqualTo(14).Within(1e-9), "the clock runs on from where it stopped");
+        }
+
+        [Test]
+        public void ADroppedPlayerOffTheirTurn_StaysInTheRound_AndTheTurnWaitsWhenItComesToThem()
+        {
+            Match match = Table(3);
+            match.Start();
+            Assert.That(match.Drop(2, 60), Is.True);
+            Assert.That(match.WaitingForCurrent, Is.False, "seat 0's turn goes on");
+            match.Fire(0);
+            match.ShotLanded(0, 2, 0);
+            Assert.That(match.Seat(2).Health, Is.LessThan(100), "an away seat can still be hit");
+            match.Tick(match.Rules.EndTurnSeconds + 0.01);
+            match.Fire(1);
+            match.ShotOver(1);
+            match.Tick(match.Rules.EndTurnSeconds + 0.01);
+
+            Assert.That(match.Current, Is.EqualTo(2));
+            Assert.That(match.WaitingForCurrent, Is.True);
+            match.Tick(match.Rules.TurnSeconds + 1);
+            Assert.That(match.Current, Is.EqualTo(2), "no time-out while they are away");
+            Assert.That(match.TimeLeft, Is.EqualTo(match.Rules.TurnSeconds));
+        }
+
+        [Test]
+        public void ADroppedPlayerWhoDoesNotComeBackLeaves_PassingTheTurn()
+        {
+            Match match = Table(3);
+            match.Start();
+            match.Drop(0, 60);
+            match.Tick(10);
+            Assert.That(match.Current, Is.EqualTo(0));
+
+            match.Leave(0); // the kit gave the seat up
+            Assert.That(match.Seat(0).Away, Is.False);
+            Assert.That(match.Seat(0).Alive, Is.False);
+            Assert.That(match.Current, Is.EqualTo(1));
+            Assert.That(match.Rejoin(0), Is.False, "too late to come back to the match seat");
+        }
+
+        [Test]
+        public void OnlyAPresentHumanCanDrop()
+        {
+            Match match = Table(3);
+            match.Start();
+            Assert.That(match.Drop(1, 60), Is.False, "an AI never drops");
+            Assert.That(match.Drop(5, 60), Is.False, "nobody in seat 5");
+            Assert.That(match.Drop(0, 60), Is.True);
+            Assert.That(match.Drop(0, 60), Is.False, "already away");
+            match.Leave(2);
+            Assert.That(match.Drop(2, 60), Is.False, "gone already");
+            Assert.That(match.Seat(0).ToString(), Does.EndWith(", away)"));
+        }
+
+        [Test]
         public void ALateJoinerSitsOutTheRound_AndPlaysTheNext()
         {
             var rules = new MatchRules { MaxHealth = 10 };

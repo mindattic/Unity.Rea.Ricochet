@@ -20,7 +20,10 @@
 // (Match.Strike, for the bounces and the volley's time in the air), mirrored to each Player's score. The menu flow (UR-T9):
 // the match vote's setup also carries the map (Core's Maps: the level every peer builds from its index, mirrored through
 // Turns) and the game's goal; once a round ends with the goal reached the match is over (MatchPhase.GameOver), nobody fires
-// and every peer's HUD shows the endgame recap until a new match (or a rematch vote) starts.
+// and every peer's HUD shows the endgame recap until a new match (or a rematch vote) starts. Reconnects (UR-T13): when the
+// kit holds a dropped player's seat (NetSession.SeatHeld) their Player waits, marked Away, and their match seat keeps its
+// health and score (Match.Drop); on their turn the clock waits for them, and every peer's HUD says so through Turns. Back
+// in time (SeatReclaimed) they resume the same turn (Match.Rejoin); once the kit gives the seat up (SeatReleased) they leave.
 using System;
 using System.Collections.Generic;
 using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, Ai, AiTurn, MatchSetup, HazardField
@@ -151,6 +154,8 @@ namespace Ricochet
                     arena.ResetHazards();
                 }
             };
+            session.SeatHeld += seat => arena.SeatHeld(seat.Index);
+            session.SeatReclaimed += seat => arena.SeatReclaimed(seat.Index);
             session.SeatReleased += seat => arena.SeatReleased(seat.Index);
             session.Ended += _ =>
             {
@@ -425,6 +430,10 @@ namespace Ricochet
                     _match.Join(seat, SeatKind.Human, human.DisplayName);
                     _humanSeats[human.KitSeat] = seat;
                     human.Position = SpawnPoint(seat);
+                    if (human.Away)
+                    {
+                        _match.Drop(seat, HoldLeft(human.KitSeat)); // dropped before the match: their seat waits for them too
+                    }
                 }
             }
 
@@ -669,6 +678,76 @@ namespace Ricochet
         }
 
         /// <summary>
+        /// Server: a player's connection dropped and the kit holds their seat for the reconnect grace (UR-T13): their
+        /// Player waits, Away (nobody plays it, not even the host it now belongs to), and in a match their seat keeps its
+        /// health and score while the turn clock waits on their turn.
+        /// </summary>
+        public void SeatHeld(int kitSeat)
+        {
+            Player player = HumanAt(kitSeat);
+            if (player != null)
+            {
+                player.Away = true;
+            }
+
+            if (_match != null && _humanSeats.TryGetValue(kitSeat, out int seat))
+            {
+                _match.Drop(seat, HoldLeft(kitSeat));
+            }
+
+            Mirror();
+        }
+
+        /// <summary>
+        /// Server: a dropped player reconnected within the grace and the kit gave them their seat and Player back
+        /// (UR-T13): in a match they resume where they were, on the same turn if it was theirs.
+        /// </summary>
+        public void SeatReclaimed(int kitSeat)
+        {
+            Player player = HumanAt(kitSeat);
+            if (player != null)
+            {
+                player.Away = false;
+            }
+
+            if (_match != null && _humanSeats.TryGetValue(kitSeat, out int seat))
+            {
+                _match.Rejoin(seat);
+            }
+
+            Mirror();
+        }
+
+        // The human Player of a kit seat (held ones included), or null.
+        private Player HumanAt(int kitSeat)
+        {
+            foreach (Player player in Player.In(_session))
+            {
+                if (!player.IsAi && player.KitSeat == kitSeat)
+                {
+                    return player;
+                }
+            }
+
+            return null;
+        }
+
+        // Seconds left before the kit gives up a held seat (the whole grace when it is not held yet).
+        private double HoldLeft(int kitSeat)
+        {
+            foreach (Unity.Multiplayer.Core.Seat seat in _session.Seats)
+            {
+                if (seat.Index == kitSeat && seat.Status == SeatStatus.Held)
+                {
+                    return Math.Max(0, seat.HeldUntil - Time.realtimeSinceStartupAsDouble);
+                }
+            }
+
+            NetConfig config = _session.Config;
+            return config != null ? config.ReconnectGraceSeconds : NetConfig.DefaultReconnectGraceSeconds;
+        }
+
+        /// <summary>
         /// Server: the kit released a connection's seat (the player left, or did not come back in time): their match seat
         /// drops out, passing the turn if it was theirs. A dropped player whose seat is only held keeps it.
         /// </summary>
@@ -816,6 +895,7 @@ namespace Ricochet
             {
                 _turns.Mirror(_match);
                 _turns.MirrorAi(_aiTurn != null && _aiTurn.Seat == _match.Current && _match.Phase == MatchPhase.Aiming ? _aiTurn.Message : -1);
+                _turns.MirrorWait(_match.WaitingForCurrent ? (int)Math.Ceiling(_match.Seat(_match.Current).AwayLeft) : -1);
             }
 
             foreach (Player player in Player.In(_session))

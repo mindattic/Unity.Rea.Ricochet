@@ -30,6 +30,9 @@
 // The profile (UR-T10): a human's name and colour are the ones their MindAttic profile (Unity.Shared) holds; the kit's
 // front end sends them with the connection, so they reach the roster this reads. A shot's fire, bounces and landing
 // play through GameAudio at the profile's effect volume.
+// Reconnects (UR-T13): a dropped human's Player waits with their seat (the kit hands it to the server, then back to them
+// when they reconnect in time), marked Away: nobody plays it meanwhile, not even a host it now belongs to, and its name
+// and colour stay theirs because the roster is read by the connection seat it was spawned for, not by its current owner.
 using System.Collections.Generic;
 using Ricochet.Core;          // AimState, Arsenal, Loadout, Volley, VolleyFlight, ShotPath, MatchPhase, Ai
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
@@ -111,6 +114,11 @@ namespace Ricochet
         [Synced] private int _health = StartHealth;
         [Synced] private bool _inRound;
 
+        // Reconnects (UR-T13): the kit seat a human's connection sits in (kept while they are away, when the server owns
+        // this object), and whether their connection has dropped and the seat is held for them.
+        [Synced] private int _connectionSeat = -1;
+        [Synced] private bool _away;
+
         // Points scored this match (UR-T8: hit.gml's pScore), carried from round to round.
         [Synced] private int _score;
 
@@ -186,10 +194,21 @@ namespace Ricochet
             }
         }
 
-        /// <summary>A human's connection seat (the kit's), which orders the table when a match starts.</summary>
+        /// <summary>
+        /// A human's connection seat (the kit's), which orders the table when a match starts: the one this player object
+        /// was spawned for, kept while they are away (UR-T13).
+        /// </summary>
         public int KitSeat
         {
-            get { return !IsAi && Owner.HasSeat ? Owner.SeatIndex : int.MaxValue; }
+            get
+            {
+                if (IsAi)
+                {
+                    return int.MaxValue;
+                }
+
+                return ConnectionSeat >= 0 ? ConnectionSeat : Owner.HasSeat ? Owner.SeatIndex : int.MaxValue;
+            }
         }
 
         /// <summary>The name: the owner's, from the roster ("Player" until the roster has it), or "AI n".</summary>
@@ -338,12 +357,10 @@ namespace Ricochet
         protected override void OnSpawned()
         {
             _body = Shapes.Square(gameObject, 0.8f, 0);
-            var barrel = new GameObject("Barrel");
-            barrel.transform.SetParent(transform, false);
+            GameObject barrel = Child("Barrel"); // the same ones again when the kit respawns this object on a reconnect
             _barrel = Shapes.Square(barrel, 1f, 1);
             barrel.transform.localScale = new Vector3(0.9f, 0.18f, 1f);
-            var marker = new GameObject("Turn marker");
-            marker.transform.SetParent(transform, false);
+            GameObject marker = Child("Turn marker");
             _turnMarker = Shapes.Square(marker, 1f, 2);
             marker.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
             marker.transform.localPosition = new Vector3(0f, 0.95f, 0f);
@@ -354,6 +371,13 @@ namespace Ricochet
             if (!s_spawned.Contains(this))
             {
                 s_spawned.Add(this);
+            }
+
+            // The connection seat this object is for: its owner's now (a first spawn, or the kit handing it back on a
+            // reconnect), so it still names them after a drop, when the server owns it.
+            if (IsServer && !IsAi && Owner.HasSeat)
+            {
+                ConnectionSeat = Owner.SeatIndex;
             }
 
             // Server: a human sits at their connection's seat in practice, or takes a free one mid-match (Arena). A player
@@ -403,6 +427,19 @@ namespace Ricochet
                 _aim.Set(Heading, Power);
                 _previewLine = Lines.Create(_shotView.transform, "Preview", new UnityEngine.Color(1f, 1f, 1f, 0.45f), 0.05f, 2);
             }
+        }
+
+        private GameObject Child(string childName)
+        {
+            Transform existing = transform.Find(childName);
+            if (existing != null)
+            {
+                return existing.gameObject;
+            }
+
+            var child = new GameObject(childName);
+            child.transform.SetParent(transform, false);
+            return child;
         }
 
         protected override void OnDespawned()
@@ -746,10 +783,11 @@ namespace Ricochet
             MirrorLoadout();
         }
 
-        // A human on their own machine: not a bot (its driver fires for it) and not an AI (Arena plays its turns).
+        // A human on their own machine: not a bot (its driver fires for it) and not an AI (Arena plays its turns). A dropped
+        // player's object belongs to the server while their seat is held, so a host owns it then, but does not play it.
         private bool LocallyControlled
         {
-            get { return IsOwner && !IsAi && !NetBots.IsBot; }
+            get { return IsOwner && !IsAi && !NetBots.IsBot && !(IsServer && Away); }
         }
 
         private void Update()
@@ -1069,7 +1107,7 @@ namespace Ricochet
             Vector3 screen = camera.WorldToScreenPoint(transform.position + Vector3.down * 0.55f);
             var label = new Rect(screen.x - 80f, Screen.height - screen.y, 160f, 22f);
             var centered = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
-            GUI.Label(label, DisplayName + (LocallyControlled ? " (you)" : string.Empty), centered);
+            GUI.Label(label, DisplayName + (LocallyControlled ? " (you)" : Away ? " (reconnecting...)" : string.Empty), centered);
 
             // show_float_text: what the last crate gave, rising over the player for a moment.
             if (Time.time < _pickupShownUntil)
@@ -1124,7 +1162,13 @@ namespace Ricochet
         private bool Roster(out NetPlayer player)
         {
             player = null;
-            return Session != null && Session.Roster != null && Session.Roster.TryGet(OwnerClientId, out player);
+            if (Session == null || Session.Roster == null)
+            {
+                return false;
+            }
+
+            // By the connection seat when it is known (it outlives a drop); otherwise by the owner's connection.
+            return (ConnectionSeat >= 0 && Session.Roster.TryGetBySeat(ConnectionSeat, out player)) || Session.Roster.TryGet(OwnerClientId, out player);
         }
     }
 }

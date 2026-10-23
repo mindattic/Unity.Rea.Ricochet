@@ -6,7 +6,9 @@
 // Each slot also carries the seat's match score (draw_scores.gml's "name: score", UR-T8). The announcer's portrait and
 // name box and the turn card (whose turn, their weapon, item and combo) are MindAttic Components widgets (HudOverlay,
 // added with this); the bars, clock and turn order stay IMGUI, drawn in each player's own colour. Once the game's goal is
-// reached (UR-T9) the caption names the champion and the endgame recap (EndgameRecap, added with this) comes up.
+// reached (UR-T9) the caption names the champion and the endgame recap (EndgameRecap, added with this) comes up. A seat
+// whose player dropped reads "away" (UR-T13), and while the turn waits for them the line under the clock says so, with
+// the seconds they have left to reconnect.
 using System.Collections.Generic;
 using System.Text;
 using Ricochet.Core;     // MatchPhase, Seating, Ai
@@ -120,7 +122,7 @@ namespace Ricochet
             }
 
             string tag = player.IsAi ? "[AI] " : string.Empty;
-            string state = player.InRound ? player.Health.ToString() : turns.MatchPhase == MatchPhase.RoundOver || turns.MatchPhase == MatchPhase.GameOver || player.Health <= 0 ? "OUT" : "next round";
+            string state = player.InRound ? player.Health + (player.Away ? " away" : string.Empty) : turns.MatchPhase == MatchPhase.RoundOver || turns.MatchPhase == MatchPhase.GameOver || player.Health <= 0 ? "OUT" : "next round";
             _nameStyle.normal.textColor = player.InRound ? color : new Color(color.r, color.g, color.b, 0.45f);
             GUI.Label(new Rect(x, y, BarWidth, 18f), tag + player.DisplayName + "  " + state, _nameStyle);
             GUI.Label(new Rect(x, y, BarWidth, 18f), player.Score.ToString(), _scoreStyle); // draw_scores.gml
@@ -139,6 +141,13 @@ namespace Ricochet
             {
                 Player winner = Find(turns.Winner);
                 return winner != null ? winner.DisplayName + " wins round " + turns.Round + "!" : "Nobody survived round " + turns.Round + ".";
+            }
+
+            // The turn waits for its dropped player to reconnect (UR-T13).
+            if (turns.Waiting)
+            {
+                Player away = Find(turns.Current);
+                return "Waiting for " + (away != null ? away.DisplayName : "a player") + " to reconnect (" + turns.WaitingSeconds + "s)";
             }
 
             // The living seats from the current one round the table: the turn order.

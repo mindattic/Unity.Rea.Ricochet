@@ -6,6 +6,7 @@
 // (its kind, which of the ten, the seats it names) with a count that goes up by one per line, so every peer's HUD slides
 // the portrait and name box in with it. And the menu flow (UR-T9): the map the match is played on (every peer builds its
 // level from the index), the game's goal, and once the goal is reached the champion, for every peer's endgame recap.
+// And reconnects (UR-T13): while the turn waits for its dropped player to come back, the whole seconds they have left.
 using Ricochet.Core;          // MatchPhase, MatchRules, Announcement
 using Unity.Multiplayer;      // NetEntity, NetSession
 using Unity.Multiplayer.Core; // [Synced]
@@ -40,6 +41,9 @@ namespace Ricochet
         [Synced] private int _goal;
         [Synced] private int _champion = -1;
 
+        // Reconnects (UR-T13): the seconds the current seat's dropped player has left to come back, or -1 (not waiting).
+        [Synced] private int _waitSeconds = -1;
+
         private float _shownTime;
         private float _lastSyncedTime = -1f;
 
@@ -66,7 +70,7 @@ namespace Ricochet
         public static bool MayFire(NetSession session, int seat)
         {
             Turns turns = For(session);
-            return turns == null || turns.MatchPhase == MatchPhase.Practice || (turns.MatchPhase == MatchPhase.Aiming && turns.Current == seat);
+            return turns == null || turns.MatchPhase == MatchPhase.Practice || (turns.MatchPhase == MatchPhase.Aiming && turns.Current == seat && !turns.Waiting);
         }
 
         /// <summary>The map this match is played on (an index into Maps.All).</summary>
@@ -84,6 +88,24 @@ namespace Ricochet
             if (Map != map)
             {
                 Map = map;
+            }
+        }
+
+        /// <summary>
+        /// While the turn waits for its player to reconnect (UR-T13), about how many seconds they have left to come back;
+        /// -1 when the turn is not waiting. The clock stands still meanwhile.
+        /// </summary>
+        public int WaitingSeconds => WaitSeconds;
+
+        /// <summary>True while the turn waits for its dropped player to reconnect.</summary>
+        public bool Waiting => WaitSeconds >= 0 && MatchPhase == MatchPhase.Aiming;
+
+        /// <summary>Server: the seconds the current seat's dropped player has left, or -1.</summary>
+        internal void MirrorWait(int seconds)
+        {
+            if (WaitSeconds != seconds)
+            {
+                WaitSeconds = seconds;
             }
         }
 
@@ -167,7 +189,7 @@ namespace Ricochet
                 _lastSyncedTime = TimeLeft;
                 _shownTime = TimeLeft;
             }
-            else if (MatchPhase == MatchPhase.Aiming)
+            else if (MatchPhase == MatchPhase.Aiming && !Waiting)
             {
                 _shownTime = Mathf.Max(Mathf.Max(0f, TimeLeft - ClockStep), _shownTime - Time.deltaTime);
             }

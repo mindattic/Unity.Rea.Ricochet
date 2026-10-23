@@ -7,6 +7,10 @@
 // The game's goal (UR-T9): check_endgame.gml went to the endgame room instead of the next round once anyone's score had
 // reached the goal (globals.gml's goal of 500 points; 1 meant a single round). Here the round's result stays up for its
 // pause, then the match is over (GameOver) and its champion is the top score, as the endgame room's leaderboard ranked it.
+// Reconnects (UR-T13): the original was hotseat and never lost a player; here a human whose connection drops is Away
+// (Drop) for the kit's reconnect grace: their seat, health and score are kept, and while it is their turn the turn
+// clock waits for them, so a player back in time (Rejoin) resumes the same turn with the time it had left. One who does
+// not come back in time leaves (Leave), which passes the turn.
 using System;
 using System.Collections.Generic;
 
@@ -67,7 +71,16 @@ namespace Ricochet.Core
         /// <summary>False once a human has left (their seat sits out until the next match).</summary>
         public bool Present { get; internal set; } = true;
 
-        public override string ToString() => Name + " (seat " + Index + ", " + Kind + ", " + Health + " hp" + (Alive ? string.Empty : ", out") + ")";
+        /// <summary>
+        /// True while a human's connection has dropped and their seat is held for them to reconnect (UR-T13): still in
+        /// the round, health and score kept, and the turn clock waits on their turn.
+        /// </summary>
+        public bool Away { get; internal set; }
+
+        /// <summary>While <see cref="Away"/>, about how many seconds are left for them to come back (counted down by <see cref="Match.Tick"/>).</summary>
+        public double AwayLeft { get; internal set; }
+
+        public override string ToString() => Name + " (seat " + Index + ", " + Kind + ", " + Health + " hp" + (Alive ? string.Empty : ", out") + (Away ? ", away" : string.Empty) + ")";
     }
 
     public sealed class Match
@@ -143,6 +156,18 @@ namespace Ricochet.Core
 
         /// <summary>The goal was reached and the match is over: the champion's seat (UR-T9).</summary>
         public event Action<int> GameEnded;
+
+        /// <summary>A human's connection dropped and their seat is held (UR-T13).</summary>
+        public event Action<int> Dropped;
+
+        /// <summary>A dropped human reconnected in time and is back in their seat (UR-T13).</summary>
+        public event Action<int> Rejoined;
+
+        /// <summary>
+        /// True while the turn is waiting for its seat's player to reconnect: it is an <see cref="MatchSeat.Away"/> seat's
+        /// turn and the clock is stopped.
+        /// </summary>
+        public bool WaitingForCurrent => Phase == MatchPhase.Aiming && _seats.TryGetValue(Current, out MatchSeat seat) && seat.Away;
 
         /// <summary>True when the goal has been reached: a single-round game, or anyone's score at or above it.</summary>
         public bool GoalReached
@@ -231,6 +256,8 @@ namespace Ricochet.Core
 
             seat.Present = false;
             seat.Alive = false;
+            seat.Away = false;
+            seat.AwayLeft = 0;
             if (CheckRoundOver())
             {
                 return;
@@ -240,6 +267,41 @@ namespace Ricochet.Core
             {
                 NextTurn();
             }
+        }
+
+        /// <summary>
+        /// A human's connection dropped and the kit holds their seat for <paramref name="holdSeconds"/> (UR-T13): the seat
+        /// stays in the match with its health and score, and on its turn the clock waits for them. False (and nothing
+        /// changes) for an AI, a seat that has left, or one already away.
+        /// </summary>
+        public bool Drop(int index, double holdSeconds)
+        {
+            if (!_seats.TryGetValue(index, out MatchSeat seat) || seat.Kind != SeatKind.Human || !seat.Present || seat.Away)
+            {
+                return false;
+            }
+
+            seat.Away = true;
+            seat.AwayLeft = double.IsNaN(holdSeconds) ? 0 : Math.Max(0, holdSeconds);
+            Dropped?.Invoke(index);
+            return true;
+        }
+
+        /// <summary>
+        /// A dropped human reconnected in time (UR-T13): back in their seat as they left it, and on their turn the clock
+        /// runs on from where it stopped. False (and nothing changes) when the seat was not away.
+        /// </summary>
+        public bool Rejoin(int index)
+        {
+            if (!_seats.TryGetValue(index, out MatchSeat seat) || !seat.Away)
+            {
+                return false;
+            }
+
+            seat.Away = false;
+            seat.AwayLeft = 0;
+            Rejoined?.Invoke(index);
+            return true;
         }
 
         /// <summary>Starts round one with every seat at full health; the lowest seat goes first.</summary>
@@ -270,10 +332,13 @@ namespace Ricochet.Core
             TimeLeft = 0;
         }
 
-        /// <summary>Only the seat whose turn it is may fire, and only while aiming (anyone may in practice; nobody once the game is over).</summary>
+        /// <summary>
+        /// Only the seat whose turn it is may fire, and only while aiming (anyone may in practice; nobody once the game is
+        /// over, and nobody for a seat that is away).
+        /// </summary>
         public bool MayFire(int seat)
         {
-            return Phase == MatchPhase.Practice || (Phase == MatchPhase.Aiming && seat == Current);
+            return Phase == MatchPhase.Practice || (Phase == MatchPhase.Aiming && seat == Current && !WaitingForCurrent);
         }
 
         /// <summary>The current seat fired: the timer stops until the shot lands. False (and nothing changes) when it may not.</summary>
@@ -377,9 +442,22 @@ namespace Ricochet.Core
                 return;
             }
 
+            foreach (MatchSeat seat in _seats.Values)
+            {
+                if (seat.Away)
+                {
+                    seat.AwayLeft = Math.Max(0, seat.AwayLeft - seconds);
+                }
+            }
+
             switch (Phase)
             {
                 case MatchPhase.Aiming:
+                    if (WaitingForCurrent)
+                    {
+                        break; // the turn waits for its player to reconnect (or for the kit to give their seat up)
+                    }
+
                     double before = TimeLeft;
                     TimeLeft = Math.Max(0, TimeLeft - seconds);
                     for (int beep = Math.Min(Rules.CountdownBeeps, (int)Math.Ceiling(before) - 1); beep >= 1 && TimeLeft <= beep; beep--)
