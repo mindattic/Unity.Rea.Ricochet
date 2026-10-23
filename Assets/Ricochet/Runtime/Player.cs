@@ -16,6 +16,11 @@
 // turns their aim onto the shot a fully skilled AI would take (Core's Ai.Assist), the owner's aim follows, and every
 // peer draws that path as a fading beam (obj_aimassist) until the shot is fired. An AI seat aims (ServerAim), picks its
 // weapon (ServerSelectWeapon) and fires through the same server calls; Arena plays its turn.
+// Level hazards (UR-T6): every shot, preview and item flight is solved in the level as this player's shot sees it
+// (Arena.LevelFor: the hazards on it, less this player's own shield walls). The shield wall item stands a wall in front
+// of you and the redirector item sets a redirector down where it lands (both Arena's HazardField); fire again while your
+// vortex is in the air to set it off there (Detonate, vortex_detonate.gml): the server cuts the volley short and syncs
+// the distance it went off at, so every peer cuts its own flight there too.
 using System.Collections.Generic;
 using Ricochet.Core;          // AimState, Arsenal, Loadout, Volley, VolleyFlight, ShotPath, MatchPhase, Ai
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
@@ -60,6 +65,10 @@ namespace Ricochet
         [ToServer(RateLimit = 4)]
         public partial void UseItem(float heading, float power);
 
+        // client -> server: set off this player's vortex where it is now (vortex_detonate.gml: fire again after firing it).
+        [ToServer(RateLimit = 4)]
+        public partial void Detonate();
+
         // Only the server writes these; every peer, late joiners included, reads the same values.
         [Synced] private Vector2 _position;
         [Synced] private float _heading = StartHeading;
@@ -73,6 +82,9 @@ namespace Ricochet
         [Synced] private int _shotWeapon;
         [Synced] private float _shotFuse = 2f;
         [Synced] private int _shotExtraBounces;
+
+        // How far from the muzzle the last shot (a vortex) was set off; 0 when it was not.
+        [Synced] private float _shotDetonation;
 
         // The match: the seat (turn order and spot; -1 for none), health, and whether still in the round.
         [Synced] private int _seat = -1;
@@ -121,6 +133,7 @@ namespace Ricochet
 
         private VolleyFlight _serverFlight; // server only: the volley it is flying, to land the impact
         private int _seenShots;             // every peer: the last shot it has drawn
+        private float _seenDetonation;      // every peer: the last detonation it has cut its flight at
         private Volley _preview;            // owner only: the shot as it would fly right now
 
         private SpriteRenderer _body;
@@ -252,6 +265,12 @@ namespace Ricochet
             get { return IsServer ? _serverFlight != null && !_serverFlight.Landed : _shotView != null && _shotView.Flying; }
         }
 
+        /// <summary>Server: how far the shot in the air (its first projectile) has flown from the muzzle; 0 with none.</summary>
+        public double ShotTravelled
+        {
+            get { return IsServer && _serverFlight != null && _serverFlight.Flights.Count > 0 ? _serverFlight.Flights[0].Travelled : 0; }
+        }
+
         /// <summary>The main path of the shot this peer last saw fired (null before the first).</summary>
         public ShotPath LastShot => LastVolley != null ? LastVolley.Main : null;
 
@@ -273,9 +292,12 @@ namespace Ricochet
         /// <summary>Solves what <paramref name="weapon"/> would do from this player's spot, as things stand.</summary>
         public Volley SolveVolley(Weapon weapon, float heading, float power, double fuse, int extraBounces)
         {
-            return Arsenal.Fire(weapon, Arena.ToCore(Position), heading, power, fuse, extraBounces, Arena.Level, Arena.Targets(Session),
+            return Arsenal.Fire(weapon, Arena.ToCore(Position), heading, power, fuse, extraBounces, ShotLevel, Arena.Targets(Session),
                 Arena.Rules, Arena.ArsenalRules);
         }
+
+        /// <summary>The level this player's shots fly in now: the hazards on it, less their own shield walls (UR-T6).</summary>
+        public Level ShotLevel => Arena.LevelFor(Session, Seat);
 
         protected override void OnSpawned()
         {
@@ -324,6 +346,7 @@ namespace Ricochet
             }
 
             _seenShots = Shots; // a late joiner does not replay a shot fired before it arrived
+            _seenDetonation = ShotDetonation;
             _seenPickups = PickupCount;
             _seenAssists = Assists;
             _adoptedAssists = Assists;
@@ -455,6 +478,15 @@ namespace Ricochet
             }
         }
 
+        /// <summary>Server: sets off this player's vortex for a test, through the same checks as a client's.</summary>
+        public void ServerDetonate()
+        {
+            if (IsServer)
+            {
+                OnDetonate();
+            }
+        }
+
         /// <summary>Server: uses the selected item for an AI seat (or a test), through the same checks as a client's.</summary>
         public void ServerUseItem(float heading, float power)
         {
@@ -524,12 +556,42 @@ namespace Ricochet
             ShotWeapon = (int)weapon;
             ShotFuse = (float)loadout.Fuse;
             ShotExtraBounces = ExtraBounces;
+            ShotDetonation = 0f;
             ExtraBounces = 0;
             MirrorLoadout();
             Shots = Shots + 1;
             _seenShots = Shots; // launched here, not by Update, so a second Fire in the same frame finds it in the air
             LaunchShot();
             Arena.Current?.Fired(this);
+        }
+
+        // Server: vortex_detonate.gml. Only this player's own vortex, only while it is still in the air, and only once: the
+        // volley is cut short where it is now and lands at once (the implosion strikes, swallows and breaches there).
+        private void OnDetonate()
+        {
+            if (_serverFlight == null || _serverFlight.Landed || _serverFlight.Volley.Weapon != Weapon.Vortex || ShotDetonation > 0f)
+            {
+                return;
+            }
+
+            float at = Mathf.Max(0.001f, (float)_serverFlight.Flights[0].Travelled);
+            Volley cut = Arsenal.Detonate(_serverFlight.Volley, at, Arena.Targets(Session), Arena.ArsenalRules);
+            if (ReferenceEquals(cut, _serverFlight.Volley))
+            {
+                return;
+            }
+
+            ShotDetonation = at;
+            _seenDetonation = at;
+            LastVolley = cut;
+            if (_shotView != null)
+            {
+                _shotView.Detonate(cut);
+            }
+
+            _serverFlight = new VolleyFlight(cut);
+            _serverFlight.Advance(cut.Duration + 1.0);
+            Arena.Current?.Landed(this, cut);
         }
 
         private void OnCycleWeapon(int direction)
@@ -599,11 +661,18 @@ namespace Ricochet
                     ExtraBounces = ExtraBounces + 1;
                     break;
                 case Item.Teleporter:
-                    Vec2 spot = Arsenal.Teleport(Arena.ToCore(Position), Heading, Power, Arena.Level, Arena.Rules, Radius, out _);
+                    Vec2 spot = Arsenal.Teleport(Arena.ToCore(Position), Heading, Power, ShotLevel, Arena.Rules, Radius, out _);
                     Position = Arena.ToUnity(spot);
                     break;
+                case Item.ShieldWall:
+                    Arena.Current?.PlaceShieldWall(this); // spawn_shieldwall.gml
+                    break;
+                case Item.Redirector:
+                    Vec2 placed = Arsenal.PlaceRedirector(Arena.ToCore(Position), Heading, Power, ShotLevel, Arena.Rules, out double redirectorHeading, out _);
+                    Arena.Current?.PlaceRedirector(this, placed, redirectorHeading);
+                    break;
                 case Item.ShrinkRay:
-                    string hit = Arsenal.ShrinkRay(Arena.ToCore(Position), Heading, Arena.SeatTarget(Seat), Arena.Level, Arena.Targets(Session),
+                    string hit = Arsenal.ShrinkRay(Arena.ToCore(Position), Heading, Arena.SeatTarget(Seat), ShotLevel, Arena.Targets(Session),
                         Arena.Rules, out _);
                     int seat = Arena.SeatOf(hit);
                     Arena arena = Arena.Current;
@@ -616,7 +685,7 @@ namespace Ricochet
                     break;
                 case Item.AimAssist:
                     // obj_aimassist, with the AI's targeting: onto the shot that reaches an opponent, if any does.
-                    AiPlan assist = Ai.Assist(Arena.ToCore(Position), Arena.SeatTarget(Seat), Arena.Level, Arena.Targets(Session), Power, Arena.Rules);
+                    AiPlan assist = Ai.Assist(Arena.ToCore(Position), Arena.SeatTarget(Seat), ShotLevel, Arena.Targets(Session), Power, Arena.Rules);
                     if (assist != null)
                     {
                         OnAim((float)assist.Heading, (float)assist.Power);
@@ -656,6 +725,21 @@ namespace Ricochet
             {
                 _seenShots = Shots;
                 LaunchShot();
+            }
+
+            // A vortex its shooter set off: cut this peer's flight where the server cut its own (the server did so already).
+            if (!IsServer && ShotDetonation > 0f && ShotDetonation != _seenDetonation && LastVolley != null)
+            {
+                _seenDetonation = ShotDetonation;
+                Volley cut = Arsenal.Detonate(LastVolley, ShotDetonation, Arena.Targets(Session), Arena.ArsenalRules);
+                if (!ReferenceEquals(cut, LastVolley))
+                {
+                    LastVolley = cut;
+                    if (_shotView != null)
+                    {
+                        _shotView.Detonate(cut);
+                    }
+                }
             }
 
             if (PickupCount != _seenPickups)
@@ -737,6 +821,10 @@ namespace Ricochet
             {
                 Fire(heading, power);
             }
+            else if (GameInput.Fire() && VortexInFlight)
+            {
+                Detonate(); // vortex_detonate.gml: fire again to set it off
+            }
 
             // The preview: the whole path of the selected weapon as it would fly now, hidden while the shot is in the air.
             Loadout loadout = Loadout;
@@ -797,10 +885,17 @@ namespace Ricochet
             _assistLine.endColor = color;
         }
 
+        // This player's own vortex is in the air and may still be set off.
+        private bool VortexInFlight
+        {
+            get { return ShotInFlight && LastVolley != null && LastVolley.Weapon == Weapon.Vortex && LastVolley.HasBlast && ShotDetonation <= 0f; }
+        }
+
         // Every peer: draw the volley the server just took. The server's own solve is the one that lands.
         private void LaunchShot()
         {
             _assistShownUntil = -1f; // fire_weapon.gml: the aim-assist beam goes with the shot
+            _seenDetonation = 0f;
             Volley volley = SolveVolley((Weapon)Mathf.Clamp(ShotWeapon, 0, ArsenalRules.Kinds - 1), ShotHeading, ShotPower, ShotFuse, ShotExtraBounces);
             LastVolley = volley;
             if (IsServer)
@@ -848,7 +943,10 @@ namespace Ricochet
                 bool flying = ShotInFlight && _shotView != null && _shotView.Flight != null;
                 ShotPath shown = flying ? _shotView.Flight.Volley.Main : _preview != null ? _preview.Main : null;
                 int bounces = flying ? _shotView.Flight.Flights[0].Contacts : shown != null ? shown.Contacts.Count : 0;
-                string end = shown == null || (_preview != null && _preview.HasBlast) ? string.Empty
+                string end = shown == null ? string.Empty
+                    : shown.End == ShotEndKind.Absorbed ? "  -> blocked"
+                    : shown.End == ShotEndKind.Escaped ? "  -> out through the breach"
+                    : _preview != null && _preview.HasBlast ? string.Empty
                     : shown.End == ShotEndKind.Target ? "  -> HIT"
                     : shown.End == ShotEndKind.Spent ? "  -> falls short" : string.Empty;
                 GUI.Label(new Rect(12f, Screen.height - 34f, 900f, 24f),
@@ -862,6 +960,15 @@ namespace Ricochet
                     + (ExtraBounces > 0 ? "   +" + ExtraBounces + " bounce" + (ExtraBounces == 1 ? string.Empty : "s") : string.Empty) + "  (Z/C, F to use)";
                 GUI.Label(new Rect(12f, Screen.height - 76f, 900f, 22f), weapon);
                 GUI.Label(new Rect(12f, Screen.height - 56f, 900f, 22f), item);
+
+                // draw_vortexdetonate.gml: tell the player how to set the vortex off.
+                if ((loadout.Weapon == Weapon.Vortex && Turns.MayFire(Session, Seat)) || VortexInFlight)
+                {
+                    var hint = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
+                    hint.normal.textColor = new UnityEngine.Color(1f, 0.35f, 0.3f);
+                    GUI.Label(new Rect(0f, Screen.height - 28f, Screen.width, 24f),
+                        VortexInFlight ? "Press [SPACE] to detonate the Vortex Device" : "After you fire, press [SPACE] to detonate the Vortex Device", hint);
+                }
             }
         }
 

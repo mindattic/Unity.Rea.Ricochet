@@ -89,8 +89,7 @@ copy of any of these is a bug.
   (1/2/3 set a 0.5–6 s fuse; it passes through players and blasts everyone near where it goes off) and railgun; the
   extra bounce, teleporter and shrink ray; and weapon/item/health/powerup crates that fall during a match on
   obj_drop_emitter's random timers and go to whoever's shot passes over one (UR-T5; `Core/Loadout.cs`, `Volley.cs`,
-  `Drops.cs` tested by `dotnet test Core.slnx`, the wire by `Tests/PlayMode/WeaponTests.cs`). The vortex, shield wall
-  and redirector wait for UR-T6's hazards: nobody carries them and no crate gives them yet.
+  `Drops.cs` tested by `dotnet test Core.slnx`, the wire by `Tests/PlayMode/WeaponTests.cs`).
 - ✅ AI opponents and aim assist: the start-match vote carries the AI count, one AI skill (0–10) and the aim assists
   each player starts with (0 = none, 10 = unlimited; obj_btn_ai_*/obj_btn_aimassist_*); on its turn an AI shows one
   of check_ai's thirty "is thinking..." lines to every peer, looks for a straight shot, then a bank shot, then a
@@ -98,6 +97,12 @@ copy of any of these is a bug.
   to 10 − skill degrees, turns its barrel onto it and fires; the aim-assist item turns a human's aim onto the shot a
   fully skilled AI would take and draws it as a fading beam (UR-T7; `Core/Ai.cs`, `MatchSetup.cs` tested by
   `dotnet test Core.slnx`, the wire by `Tests/PlayMode/AiOpponentTests.cs`).
-- ⬜ Everything else — hazards, announcer/HUD, menus, profiles (UR-T6, UR-T8–UR-T10) and
+- ✅ Level hazards: an electric arc and a laser gate (on every other turn) that stop a shot, foliage a shot cuts down,
+  the shield wall item (only its owner's shots pass; anyone else's shatters it; it decays after 20–120 s), the
+  redirector item, and the vortex device set off in mid-flight (vortex_detonate.gml), which hurts everyone in its pull,
+  swallows the destructible hazards it reaches and breaches the border it reaches, so later shots fly out (UR-T6;
+  `Core/Hazards.cs` with `Level`'s barriers and breaches tested by `dotnet test Core.slnx`, the wire by
+  `Tests/PlayMode/HazardTests.cs`).
+- ⬜ Everything else — announcer/HUD, menus, profiles (UR-T8–UR-T10) and
   multiplayer polish (UR-T11–UR-T14) — is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.

@@ -96,7 +96,9 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Turns.For(Client).Current == ann.Seat && Turns.For(Client).MatchPhase == MatchPhase.Aiming,
                 "the turn never passed to Ann");
 
-            annOnHerClient.CycleItem(-1);                          // left from the extra bounce: aim assist
+            annOnHerClient.CycleItem(-1);                          // left from the extra bounce: the redirector (UR-T6),
+            yield return WaitUntil(() => ann.Loadout.Item == Item.Redirector, () => "her item is " + ann.Loadout.Item);
+            annOnHerClient.CycleItem(-1);                          // then aim assist
             yield return WaitUntil(() => ann.Loadout.Item == Item.AimAssist, () => "her item is " + ann.Loadout.Item);
             annOnHerClient.UseItem(270f, 0.2f);                    // aimed at the floor, nearly no power
             yield return WaitUntil(() => annOnHerClient.Assists == 1, "the assist never came back to her client");

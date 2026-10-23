@@ -12,10 +12,11 @@ namespace Ricochet.Core.Tests
             Assert.That(loadout.Count(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
             Assert.That(loadout.Count(Weapon.Laser), Is.EqualTo(3));
             Assert.That(loadout.Count(Weapon.Grenade), Is.EqualTo(3));
-            Assert.That(loadout.Count(Weapon.Vortex), Is.EqualTo(0), "the vortex waits for its detonation (UR-T6)");
+            Assert.That(loadout.Count(Weapon.Vortex), Is.EqualTo(3), "the vortex came into play with its detonation (UR-T6)");
             Assert.That(loadout.Item, Is.EqualTo(Item.ExtraBounce));
             Assert.That(loadout.Count(Item.ExtraBounce), Is.EqualTo(3));
-            Assert.That(loadout.Count(Item.ShieldWall), Is.EqualTo(0));
+            Assert.That(loadout.Count(Item.ShieldWall), Is.EqualTo(3));
+            Assert.That(loadout.Count(Item.Redirector), Is.EqualTo(3));
             Assert.That(loadout.Count(Item.AimAssist), Is.EqualTo(3), "count_AimAssist = 3 (UR-T7)");
             Assert.That(loadout.Fuse, Is.EqualTo(2));
         }
@@ -23,7 +24,9 @@ namespace Ricochet.Core.Tests
         [Test]
         public void CyclingRightAndLeftWalksTheWeaponsInOrder_SkippingWhatThePlayerHasNoneOf()
         {
-            var loadout = new Loadout();
+            var rules = new ArsenalRules();
+            rules.SetStartCount(Weapon.Vortex, 0);
+            var loadout = new Loadout(rules);
             Assert.That(loadout.CycleWeapon(1), Is.True);
             Assert.That(loadout.Weapon, Is.EqualTo(Weapon.Laser));
             loadout.CycleWeapon(1);
@@ -40,7 +43,7 @@ namespace Ricochet.Core.Tests
         public void CyclingWithNothingElseCarriedKeepsTheSelection()
         {
             var rules = new ArsenalRules();
-            foreach (Weapon w in new[] { Weapon.Laser, Weapon.Shotgun, Weapon.Grenade, Weapon.Railgun })
+            foreach (Weapon w in new[] { Weapon.Laser, Weapon.Shotgun, Weapon.Grenade, Weapon.Railgun, Weapon.Vortex })
             {
                 rules.SetStartCount(w, 0);
             }
@@ -54,7 +57,10 @@ namespace Ricochet.Core.Tests
         [Test]
         public void ItemsCycleTheSameWay()
         {
-            var loadout = new Loadout();
+            var rules = new ArsenalRules();
+            rules.SetStartCount(Item.ShieldWall, 0);
+            rules.SetStartCount(Item.Redirector, 0);
+            var loadout = new Loadout(rules);
             loadout.CycleItem(1);
             Assert.That(loadout.Item, Is.EqualTo(Item.ShrinkRay), "the shield wall (none) is skipped");
             loadout.CycleItem(1);
@@ -109,7 +115,7 @@ namespace Ricochet.Core.Tests
             Assert.That(loadout.Use(), Is.EqualTo(Item.ExtraBounce));
             Assert.That(loadout.Use(), Is.EqualTo(Item.ExtraBounce));
             Assert.That(loadout.Use(), Is.EqualTo(Item.ExtraBounce));
-            Assert.That(loadout.Item, Is.EqualTo(Item.ShrinkRay));
+            Assert.That(loadout.Item, Is.EqualTo(Item.ShieldWall));
             Assert.That(loadout.Count(Item.ExtraBounce), Is.EqualTo(0));
         }
 
@@ -123,8 +129,8 @@ namespace Ricochet.Core.Tests
             Assert.That(loadout.Count(Weapon.Grenade), Is.EqualTo(ArsenalRules.MaxCount), "never counted up into unlimited");
             loadout.Add(Weapon.Cannon);
             Assert.That(loadout.Count(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
-            loadout.Add(Item.ShieldWall);
-            Assert.That(loadout.Count(Item.ShieldWall), Is.EqualTo(1));
+            loadout.Add(Item.AimAssist);
+            Assert.That(loadout.Count(Item.AimAssist), Is.EqualTo(4));
         }
 
         [Test]
@@ -167,7 +173,7 @@ namespace Ricochet.Core.Tests
                 Assert.That(copy.Count((Item)i), Is.EqualTo(loadout.Count((Item)i)), ((Item)i).ToString());
             }
 
-            Assert.That(copy.Weapon, Is.EqualTo(Weapon.Railgun));
+            Assert.That(copy.Weapon, Is.EqualTo(Weapon.Vortex));
             Assert.That(copy.Item, Is.EqualTo(loadout.Item));
             Assert.That(copy.Fuse, Is.EqualTo(4.5));
             Assert.That(loadout.PackWeapons(), Is.GreaterThan(0));

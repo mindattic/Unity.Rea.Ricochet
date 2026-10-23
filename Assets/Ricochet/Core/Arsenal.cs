@@ -4,10 +4,9 @@
 // count of 10 as unlimited (fire_weapon.gml and use_item.gml only spend one "if count < 10"), set a grenade's fuse with
 // keys 1-3 between 0.5 and 6 seconds in half-second steps (default 2), and named them in draw_weaponinfo.gml /
 // draw_iteminfo.gml. What differs here: the cannon is unlimited by default, so a player who has spent everything else
-// can still take their turn (the original's empty-handed player could only let the clock run out), and the weapons and
-// items whose real behaviour belongs to a later ticket (the vortex's detonation and the shield wall and redirector,
-// which are level hazards, UR-T6) are not in play yet: nobody starts with them and no drop gives them. Aim assist (UR-T7)
-// starts at the original's count_AimAssist of 3; a match's setup (MatchSetup) changes that, or takes it out of play.
+// can still take their turn (the original's empty-handed player could only let the clock run out). Aim assist (UR-T7)
+// starts at the original's count_AimAssist of 3; a match's setup (MatchSetup) changes that, or takes it out of play. The
+// vortex, the shield wall and the redirector came into play with the level hazards (UR-T6).
 using System;
 
 namespace Ricochet.Core
@@ -45,10 +44,10 @@ namespace Ricochet.Core
         /// <summary>The most a finite count can reach by picking up drops (one short of <see cref="Unlimited"/>).</summary>
         public const int MaxCount = 9;
 
-        private readonly int[] _startWeapons = { Unlimited, 3, 3, 3, 3, 0 };
-        private readonly int[] _startItems = { 3, 0, 3, 3, 3, 0 };
-        private readonly bool[] _weaponsInPlay = { true, true, true, true, true, false };
-        private readonly bool[] _itemsInPlay = { true, false, true, true, true, false };
+        private readonly int[] _startWeapons = { Unlimited, 3, 3, 3, 3, 3 };
+        private readonly int[] _startItems = { 3, 3, 3, 3, 3, 3 };
+        private readonly bool[] _weaponsInPlay = { true, true, true, true, true, true };
+        private readonly bool[] _itemsInPlay = { true, true, true, true, true, true };
 
         /// <summary>A grenade's fuse at the start, in seconds (player.fuseTime = 2).</summary>
         public double DefaultFuse { get; set; } = 2;

@@ -2,7 +2,8 @@
 // grenade, or a shotgun's fan of pellets), the trail behind it, and a brief flash where it lands; a grenade's flash is
 // its blast, drawn at the blast's size. Every peer runs its own flight from the same synced inputs (Player's ShotWeapon,
 // ShotHeading, ShotPower, ShotFuse, ShotExtraBounces), so this is presentation only; the server's own flight decides
-// what the volley struck.
+// what the volley struck. A vortex set off in mid-flight carries on along the cut-short volley (Detonate) and goes off
+// where the server set it off (UR-T6).
 using System.Collections.Generic;
 using Ricochet.Core;
 using UnityEngine;
@@ -78,6 +79,34 @@ namespace Ricochet
             _blast.enabled = false;
             _blastRing.positionCount = 0;
             _flashLeft = 0f;
+        }
+
+        /// <summary>
+        /// The volley in the air was set off early (a vortex, vortex_detonate.gml): it carries on from where it is along
+        /// <paramref name="cut"/>, the volley cut short, and goes off where that ends.
+        /// </summary>
+        public void Detonate(Volley cut)
+        {
+            if (_flight == null || cut == null)
+            {
+                return;
+            }
+
+            double travelled = _flight.Flights.Count > 0 ? _flight.Flights[0].Travelled : 0;
+            var flight = new VolleyFlight(cut);
+            double upTo = System.Math.Min(travelled, cut.Main.Length * 0.999);
+            if (upTo > 0)
+            {
+                flight.Advance(upTo / cut.Speed);
+            }
+
+            _flight = flight;
+            for (int i = 0; i < _parts.Count; i++)
+            {
+                bool used = i < cut.Paths.Count;
+                _parts[i].Landed = !used;
+                _parts[i].Projectile.enabled = used;
+            }
         }
 
         private void Update()

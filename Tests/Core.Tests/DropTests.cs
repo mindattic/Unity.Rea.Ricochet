@@ -110,7 +110,7 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void AWeaponCrateGivesAWeaponInPlay_NeverTheUnlimitedCannonOrTheVortex()
+        public void AWeaponCrateGivesAWeaponInPlay_NeverTheUnlimitedCannon()
         {
             var dice = new Random(11);
             var seen = new HashSet<Weapon>();
@@ -121,7 +121,7 @@ namespace Ricochet.Core.Tests
                 seen.Add(weapon.Value);
             }
 
-            Assert.That(seen, Is.EquivalentTo(new[] { Weapon.Laser, Weapon.Shotgun, Weapon.Grenade, Weapon.Railgun }));
+            Assert.That(seen, Is.EquivalentTo(new[] { Weapon.Laser, Weapon.Shotgun, Weapon.Grenade, Weapon.Railgun, Weapon.Vortex }));
         }
 
         [Test]
@@ -134,7 +134,7 @@ namespace Ricochet.Core.Tests
                 seen.Add(Pickups.RandomItem(dice, ArsenalRules.Default).Value);
             }
 
-            Assert.That(seen, Is.EquivalentTo(new[] { Item.ExtraBounce, Item.ShrinkRay, Item.Teleporter, Item.AimAssist }));
+            Assert.That(seen, Is.EquivalentTo(new[] { Item.ExtraBounce, Item.ShieldWall, Item.ShrinkRay, Item.Teleporter, Item.AimAssist, Item.Redirector }));
 
             var none = new ArsenalRules();
             for (int i = 0; i < ArsenalRules.Kinds; i++)

@@ -2,7 +2,8 @@
 // and redirectors until it hits a target, reaches its bounce limit or runs out of range. The 2013 original stepped a
 // point one pixel at a time (find_target_angle_from_bounce.gml) and asked collision_point/collision_line what it was
 // touching; this casts exact rays instead, with the original's intersection math (Geometry), so the preview and the
-// flight are the same path to the last decimal and the server and every client agree on it.
+// flight are the same path to the last decimal and the server and every client agree on it. A level's hazards (UR-T6)
+// take part too: a barrier stops the shot where it touches it (Absorbed), and a border breach lets it fly out (Escaped).
 using System;
 using System.Collections.Generic;
 
@@ -70,6 +71,18 @@ namespace Ricochet.Core
                 }
 
                 Vec2 point = position + direction * surface.Distance;
+                if (surface.Barrier)
+                {
+                    points.Add(point);
+                    return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.Absorbed, null, surface.Index);
+                }
+
+                if (surface.Escape)
+                {
+                    points.Add(point);
+                    return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.Escaped, null);
+                }
+
                 travelled += surface.Distance;
                 remaining -= surface.Distance;
                 double headingIn = direction.Angle;
@@ -165,6 +178,28 @@ namespace Ricochet.Core
                 }
             }
 
+            for (int i = 0; i < level.Barriers.Count; i++)
+            {
+                Barrier barrier = level.Barriers[i];
+                double t;
+                bool touches;
+                if (barrier.IsRound)
+                {
+                    touches = Geometry.RayCircle(position, direction, barrier.A, barrier.Radius, out t);
+                }
+                else
+                {
+                    touches = Geometry.SegmentIntersection(position, far, barrier.A, barrier.B, false, out t, out double u)
+                        && u >= 0 && u <= 1 && t >= 0;
+                }
+
+                // A barrier level with another surface wins: the shot stops on it rather than bouncing past.
+                if (touches && (!best.Found || t <= best.Distance))
+                {
+                    best = new Hit { Found = true, Distance = t, Barrier = true, Index = barrier.Id };
+                }
+            }
+
             return best;
         }
 
@@ -199,14 +234,25 @@ namespace Ricochet.Core
                 return default;
             }
 
+            bool flipX = tx - t <= Corner;
+            bool flipY = ty - t <= Corner;
+            bool escape = false;
+            if (level.Breaches.Count > 0)
+            {
+                Vec2 point = position + direction * t;
+                escape = (flipX && level.IsBreached(new Vec2(direction.X > 0 ? level.MaxX : level.MinX, point.Y), true))
+                    || (flipY && level.IsBreached(new Vec2(point.X, direction.Y > 0 ? level.MaxY : level.MinY), false));
+            }
+
             return new Hit
             {
                 Found = true,
                 Distance = t,
                 Kind = ContactKind.Border,
                 Index = -1,
-                FlipX = tx - t <= Corner,
-                FlipY = ty - t <= Corner,
+                FlipX = flipX,
+                FlipY = flipY,
+                Escape = escape,
             };
         }
 
@@ -255,6 +301,8 @@ namespace Ricochet.Core
             public bool FlipX;
             public bool FlipY;
             public string TargetId;
+            public bool Barrier;
+            public bool Escape;
         }
     }
 }

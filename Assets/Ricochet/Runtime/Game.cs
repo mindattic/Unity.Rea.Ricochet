@@ -38,8 +38,9 @@ namespace Ricochet
             LevelView.Create(Arena.Level);
             MatchHud.Create();
 
-            // Server rules: dummies spawn when the session runs as a host or dedicated server.
-            _arena = Arena.Serve(bootstrap.Session, dummyPrefab);
+            // Server rules: dummies spawn when the session runs as a host or dedicated server, and the level is laid with its
+            // hazards (UR-T6): electric arcs, laser gates and foliage.
+            _arena = Arena.Serve(bootstrap.Session, dummyPrefab, layHazards: true);
 
             // Votes: NetVotes (beside the NetBootstrap) spawns the vote board; the front end shows the overlay in game.
             if (NetVotes.Instance != null)
@@ -75,6 +76,13 @@ namespace Ricochet
                     + "(skill 10 fires exactly where it means to; each step down nudges its aim up to a degree more either way) "
                     + "and how many aim assists everyone starts with (0 for none, 10 for unlimited). On its turn an AI thinks, "
                     + "looks for a straight shot, then a bank shot, then a railgun shot through the walls, and fires.");
+                s.AddText("The vortex device flies like a shell: press Space again while it is in the air to set it off. It hurts "
+                    + "everyone in its pull, swallows shield walls, redirectors and foliage, and tears a breach in any border it "
+                    + "reaches; shots fly out through a breach instead of bouncing. The shield wall item stands a wall in front of "
+                    + "you that only your own shots pass; anyone else's shatters it. The redirector item sets a redirector down "
+                    + "where it lands, sending shots on the way it flew.");
+                s.AddText("Hazards: the blue electric arc stops any shot that touches it; the red laser gate does too, but it is "
+                    + "only on every other turn; a shot cuts down the first tuft of grass it touches and stops there.");
             }, MenuPlacement.Both);
 
             frontEnd.AddPauseMenuItems(s =>

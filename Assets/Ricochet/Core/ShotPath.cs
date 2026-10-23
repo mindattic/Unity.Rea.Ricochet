@@ -27,6 +27,15 @@ namespace Ricochet.Core
 
         /// <summary>The shot ran out of range (power) in mid-air.</summary>
         Spent,
+
+        /// <summary>The shot ran into a barrier (a hazard, UR-T6) and stopped there; see <see cref="ShotPath.HazardId"/>.</summary>
+        Absorbed,
+
+        /// <summary>The shot reached the border where a breach is and flew out of the level.</summary>
+        Escaped,
+
+        /// <summary>The shot was set off in mid-flight (a vortex detonated by its shooter).</summary>
+        Detonated,
     }
 
     /// <summary>One contact on the path.</summary>
@@ -68,8 +77,10 @@ namespace Ricochet.Core
         private readonly List<Contact> _contacts;
         private readonly double[] _cumulative;
 
-        internal ShotPath(Vec2 origin, double heading, double power, List<Vec2> points, List<Contact> contacts, ShotEndKind end, string targetId)
+        internal ShotPath(Vec2 origin, double heading, double power, List<Vec2> points, List<Contact> contacts, ShotEndKind end, string targetId,
+            int hazardId = -1)
         {
+            HazardId = hazardId;
             Origin = origin;
             Heading = heading;
             Power = power;
@@ -101,6 +112,9 @@ namespace Ricochet.Core
 
         /// <summary>The target hit (<see cref="ShotEndKind.Target"/> only), else null.</summary>
         public string TargetId { get; }
+
+        /// <summary>The barrier's hazard id the shot ran into (<see cref="ShotEndKind.Absorbed"/> only), else -1.</summary>
+        public int HazardId { get; }
 
         public Vec2 Start => _points[0];
 
@@ -166,6 +180,37 @@ namespace Ricochet.Core
             }
 
             return _points.Count == 1 && Vec2.Distance(_points[0], center) <= radius ? 0 : (double?)null;
+        }
+
+        /// <summary>
+        /// The path cut short <paramref name="distance"/> from the muzzle, ending <see cref="ShotEndKind.Detonated"/> there
+        /// (a vortex set off in mid-flight, detonate_vortex.gml); this path itself when the distance is not short of its end.
+        /// </summary>
+        public ShotPath Truncate(double distance)
+        {
+            if (double.IsNaN(distance) || distance >= Length - Geometry.Epsilon)
+            {
+                return this;
+            }
+
+            distance = Math.Max(0, distance);
+            var points = new List<Vec2> { _points[0] };
+            for (int i = 1; i < _points.Count && _cumulative[i] < distance; i++)
+            {
+                points.Add(_points[i]);
+            }
+
+            points.Add(PositionAt(distance, out _));
+            var contacts = new List<Contact>();
+            foreach (Contact contact in _contacts)
+            {
+                if (contact.Distance < distance)
+                {
+                    contacts.Add(contact);
+                }
+            }
+
+            return new ShotPath(Origin, Heading, Power, points, contacts, ShotEndKind.Detonated, null);
         }
 
         /// <summary>Contacts at or before <paramref name="distance"/> along the path.</summary>

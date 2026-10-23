@@ -106,6 +106,22 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    gives them) until those land; a crate's roll gives the kind it names (the original's
    cannon roll gave a laser, its aim-assist roll a teleporter); a grenade's blast hurts everyone in it, not just the
    first player it touches.
+   UR-T6 (done), as built: Core `HazardField` (`Hazards.cs`) holds the level's hazards and `Level` gained barriers (a shot
+   stops where it touches one: `ShotEndKind.Absorbed`) and breaches (a shot reaching the border there leaves the level:
+   `Escaped`). The shield wall item (spawn_shieldwall.gml: a unit ahead, across the aim, 2.2 long; its owner's shots pass,
+   anyone else's shatters it; it decays after 20–120 s), the redirector item (shoot_redirector.gml, set down where its
+   flight stops), and the vortex device set off by firing again while it flies (vortex_detonate.gml: `Arsenal.Detonate`
+   cuts the volley short; the server syncs the distance so every peer cuts its own flight there) came into play. The
+   original's implosion dragged every polygon in reach about, the border pieces included; here it swallows the
+   destructible hazards it reaches and breaches each border side it reaches along the chord it cuts, until the round
+   ends. draw_electricity.gml and check_source_laser.gml were never called in the original; they became an electric
+   arc between pylons that stops any shot and a laser gate that does while it is on, switching every turn (its beam
+   sweeping out from the emitter as it comes on), and create_random_foliage.gml's tufts (commented out of
+   randomize_level.gml) became a few each round that a shot cuts down and stops in. A shot stopped by a hazard strikes
+   nothing; a grenade or vortex stopped by one is lost without going off (obj_shieldwall destroyed them). The server
+   mirrors each hazard as a keyed `LevelHazard`; every peer builds the level a shot sees from them (`Arena.LevelFor`),
+   so the preview, the AI and the server agree. The arcs, gates and foliage are laid only when the scene asks
+   (`Arena.Serve(..., layHazards: true)`, as `Game` does), so the other tests' shots fly in the bare level.
 5. **UR-T7** (done): AI — depends on UR-T3's bounce solver (reused for targeting) and UR-T4's turn loop.
    As built: Core `MatchSetup` (AI count, one AI skill 0–10 for every AI seat where the original had a pSkill per
    player, and the aim assists each player starts with, 0–10 with 0 taking the item out of play and 10 unlimited;

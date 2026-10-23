@@ -9,10 +9,15 @@
 // over collects for its shooter: a random weapon, a random item or some health. AI opponents (UR-T7): the match vote
 // carries a MatchSetup (AI count, AI skill, aim assists each); on an AI seat's turn Core's AiTurn thinks (its "is
 // thinking..." line mirrored through Turns), plans the shot with Ai.Plan (a straight shot, a bank shot or a railgun
-// shot, nudged by its skill), turns the barrel onto it and fires through the same checks as a human.
+// shot, nudged by its skill), turns the barrel onto it and fires through the same checks as a human. Level hazards
+// (UR-T6): Core's HazardField holds the electric arcs, laser gates and foliage each round is laid with (when the scene
+// asks for them), the shield walls and redirectors players place, and the breaches a vortex tears in the border; each is
+// mirrored as a keyed LevelHazard object, and every peer builds the level a shot sees from them (LevelFor). A landed
+// volley shatters the shield wall or cuts down the tuft it ran into, and a vortex's implosion swallows what it reaches
+// and breaches the border.
 using System;
 using System.Collections.Generic;
-using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, Ai, AiTurn, MatchSetup
+using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, Ai, AiTurn, MatchSetup, HazardField
 using Unity.Multiplayer;      // NetSession, NetKey
 using Unity.Multiplayer.Core; // VoteKind
 using UnityEngine;
@@ -46,12 +51,16 @@ namespace Ricochet
         /// <summary>How crates drop during a match (UR-T5).</summary>
         public static readonly DropRules DropRules = DropRules.Default;
 
+        /// <summary>The level hazards every peer plays with (UR-T6).</summary>
+        public static readonly HazardRules HazardRules = HazardRules.Default;
+
         private static readonly Vector2[] DummyStarts = { new Vector2(-7f, 1f), new Vector2(7f, -3f), new Vector2(0f, 3.5f) };
 
         private readonly NetSession _session;
         private readonly GameObject _dummyPrefab;
         private readonly System.Random _aiDice = new System.Random();
         private readonly System.Random _dropDice = new System.Random();
+        private readonly HazardField _hazards;
         private Match _match;
         private DropField _field;
         private Turns _turns;
@@ -64,7 +73,20 @@ namespace Ricochet
         {
             _session = session ?? throw new ArgumentNullException(nameof(session));
             _dummyPrefab = dummyPrefab ?? throw new ArgumentNullException(nameof(dummyPrefab));
+            _hazards = new HazardField(Level, HazardRules, new System.Random());
+            _hazards.Added += SpawnHazard;
+            _hazards.Changed += MirrorHazard;
+            _hazards.Removed += hazard => _session.Objects.Despawn(LevelHazard.KeyFor(hazard.Id));
         }
+
+        /// <summary>
+        /// True when each round (and practice) is laid with the rules' electric arcs, laser gates and foliage. The game's
+        /// scene turns it on; off, the only hazards are the ones players make (shield walls, redirectors, breaches).
+        /// </summary>
+        public bool LaysHazards { get; set; }
+
+        /// <summary>The hazards on the level now (server only).</summary>
+        public IReadOnlyList<Hazard> HazardsOnField => _hazards.Hazards;
 
         /// <summary>The arena the server is running, for Player to land shots on (null on a client).</summary>
         public static Arena Current { get; private set; }
@@ -81,16 +103,20 @@ namespace Ricochet
         /// <summary>The AI seat's turn being played (server only; null on a human's turn).</summary>
         public AiTurn AiTurn => _aiTurn;
 
-        /// <summary>Serves the rules on <paramref name="session"/>: dummies spawn as soon as it runs as a server.</summary>
-        public static Arena Serve(NetSession session, GameObject dummyPrefab)
+        /// <summary>
+        /// Serves the rules on <paramref name="session"/>: dummies spawn as soon as it runs as a server, and with
+        /// <paramref name="layHazards"/> the level's arcs, gates and foliage too (UR-T6).
+        /// </summary>
+        public static Arena Serve(NetSession session, GameObject dummyPrefab, bool layHazards = false)
         {
-            var arena = new Arena(session, dummyPrefab);
+            var arena = new Arena(session, dummyPrefab) { LaysHazards = layHazards };
             session.Started += () =>
             {
                 if (session.IsServer)
                 {
                     Current = arena;
                     arena.SpawnDummies();
+                    arena.ResetHazards();
                 }
             };
             session.SeatReleased += seat => arena.SeatReleased(seat.Index);
@@ -105,6 +131,7 @@ namespace Ricochet
             {
                 Current = arena;
                 arena.SpawnDummies();
+                arena.ResetHazards();
             }
 
             return arena;
@@ -172,6 +199,95 @@ namespace Ricochet
             }
 
             return targets;
+        }
+
+        /// <summary>
+        /// The level <paramref name="shooter"/>'s shot sees in <paramref name="session"/> now: the level with every hazard
+        /// on it that stops their shot (not their own shield walls), the breaches and the placed redirectors. The server
+        /// reads its own HazardField; every other peer builds it from the LevelHazard objects it has (the same hazards).
+        /// </summary>
+        public static Level LevelFor(NetSession session, int shooter)
+        {
+            Arena current = Current;
+            if (current != null && current._session == session)
+            {
+                return current._hazards.LevelFor(shooter);
+            }
+
+            return session != null ? HazardField.Build(Level, LevelHazard.Collect(session), shooter) : Level;
+        }
+
+        /// <summary>
+        /// Server: every hazard goes, and the level is laid again when <see cref="LaysHazards"/> (the arcs and gates, and
+        /// create_random_foliage's tufts kept clear of every seat's spot, every player and the practice dummies).
+        /// </summary>
+        public void ResetHazards()
+        {
+            _hazards.Clear();
+            if (!LaysHazards)
+            {
+                return;
+            }
+
+            var keepClear = new List<Vec2>();
+            for (int i = 0; i < MatchRules.MaxSeats; i++)
+            {
+                keepClear.Add(Seating.SpawnPoint(i));
+            }
+
+            for (int i = 0; i < DummyCount; i++)
+            {
+                keepClear.Add(ToCore(DummyStart(i)));
+            }
+
+            foreach (Player player in Player.In(_session))
+            {
+                keepClear.Add(ToCore(player.Position));
+            }
+
+            _hazards.LayOut(keepClear);
+        }
+
+        /// <summary>Server: spawn_shieldwall.gml: <paramref name="player"/>'s shield wall, across their aim, in front of them.</summary>
+        public Hazard PlaceShieldWall(Player player)
+        {
+            return player == null ? null : _hazards.AddShieldWall(player.Seat, ToCore(player.Position), player.Heading);
+        }
+
+        /// <summary>Server: the redirector item set down at <paramref name="spot"/>, sending shots along <paramref name="heading"/>.</summary>
+        public Hazard PlaceRedirector(Player player, Vec2 spot, double heading)
+        {
+            return player == null ? null : _hazards.AddRedirector(player.Seat, spot, heading);
+        }
+
+        private void SpawnHazard(Hazard hazard)
+        {
+            GameObject spawned = _session.Objects.Spawn(HazardPrefab(), LevelHazard.KeyFor(hazard.Id), Vector2.zero);
+            spawned.GetComponent<LevelHazard>().Mirror(hazard);
+        }
+
+        private void MirrorHazard(Hazard hazard)
+        {
+            if (_session.Objects.TryGet(LevelHazard.KeyFor(hazard.Id), out LevelHazard entity) && entity != null)
+            {
+                entity.Mirror(hazard);
+            }
+        }
+
+        // A landed volley's mark on the level: every shield wall or tuft it ran into goes (obj_shieldwall's collision
+        // events), and a vortex that went off swallows what it reaches and breaches the border near it (vortex_step's pull).
+        private void Scar(Player player, Volley volley)
+        {
+            int shooter = player != null ? player.Seat : -1;
+            foreach (int id in volley.HazardsHit)
+            {
+                _hazards.Struck(id, shooter);
+            }
+
+            if (volley.Weapon == Weapon.Vortex && volley.HasBlast)
+            {
+                _hazards.Implode(volley.BlastCenter, volley.BlastRadius);
+            }
         }
 
         /// <summary>Spawns every dummy at its start, keyed dummy:0, dummy:1, ... (server only).</summary>
@@ -255,6 +371,7 @@ namespace Ricochet
             _match.TurnStarted += seat =>
             {
                 ClearExtraBounces();
+                _hazards.NextTurn(); // the laser gates switch
                 BeginAiTurn(seat);
             };
             _humanSeats.Clear();
@@ -326,6 +443,7 @@ namespace Ricochet
                 return;
             }
 
+            Scar(player, volley);
             foreach (Strike strike in volley.Strikes)
             {
                 if (strike.TargetId != null && strike.TargetId.StartsWith(DummyKeyPrefix, StringComparison.Ordinal))
@@ -424,6 +542,7 @@ namespace Ricochet
         private void NewRound()
         {
             _field?.Clear();
+            ResetHazards();
             foreach (Player player in Player.In(_session))
             {
                 player.ResetForRound();
@@ -497,6 +616,7 @@ namespace Ricochet
                 if (_match.IsRunning && _match.Phase != MatchPhase.RoundOver)
                 {
                     _field.Tick(seconds);
+                    _hazards.Tick(seconds); // shield walls decay
                 }
                 else if (!_match.IsRunning && _field.Drops.Count > 0)
                 {
@@ -533,7 +653,7 @@ namespace Ricochet
             switch (_aiTurn.Step(seconds, ai.Heading, _match.TimeLeft, out double next))
             {
                 case AiStep.Plan:
-                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), Level, Targets(_session), _setup.AiSkill, _aiDice,
+                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), _setup.AiSkill, _aiDice,
                         Rules, ArsenalRules, ai.Loadout);
                     _aiTurn.SetPlan(plan);
                     ai.ServerSelectWeapon(plan.Weapon);
@@ -564,7 +684,7 @@ namespace Ricochet
         /// <summary>The vote this game offers: restart the round (in a match) or stand every dummy back up.</summary>
         public VoteKind CreateRestartVote() => new VoteKind(RestartVote, "Restart the round?")
         {
-            Description = _ => _match != null && _match.IsRunning ? "Everyone back to full health; the match starts over." : "Every practice dummy stands back up.",
+            Description = _ => _match != null && _match.IsRunning ? "Everyone back to full health; the match starts over." : "Every practice dummy stands back up and the level is laid again.",
             Passed = _ =>
             {
                 if (_match != null && _match.IsRunning)
@@ -574,6 +694,7 @@ namespace Ricochet
                 else
                 {
                     ResetDummies();
+                    ResetHazards();
                 }
             },
         };
@@ -650,6 +771,8 @@ namespace Ricochet
         private static GameObject TurnsPrefab() => LoadPrefab("Game/Turns");
 
         private static GameObject CratePrefab() => LoadPrefab("Game/Crate");
+
+        private static GameObject HazardPrefab() => LoadPrefab("Game/Hazard");
 
         private static GameObject LoadPrefab(string path)
         {

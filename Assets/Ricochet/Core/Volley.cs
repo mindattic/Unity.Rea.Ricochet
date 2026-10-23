@@ -9,7 +9,10 @@
 //            or on its bounce limit (grenade_step.gml), hurting everyone within its blast (check_grenade_intersection.gml).
 //   Railgun  a slug in a straight line through walls and redirectors to the border (shoot_railgun.gml's 2000 px line),
 //            hitting every player on the way.
-//   Vortex   (not in play until its detonation lands with UR-T6) flies like a shell and implodes where it stops.
+//   Vortex   flies like a shell and implodes where it stops, or where its shooter sets it off in mid-flight
+//            (vortex_detonate.gml, Detonate), hurting everyone within its pull and swallowing hazards (UR-T6, Hazards.cs).
+// A shot that runs into a barrier (a hazard, UR-T6) stops there and strikes nothing: a grenade or vortex stopped by one
+// is lost without going off, as obj_shieldwall destroyed them.
 using System;
 using System.Collections.Generic;
 
@@ -70,6 +73,24 @@ namespace Ricochet.Core
         public Vec2 BlastCenter { get; }
 
         public double BlastRadius { get; }
+
+        /// <summary>The hazards (barrier ids) the volley's projectiles ran into, each once, in path order.</summary>
+        public IReadOnlyList<int> HazardsHit
+        {
+            get
+            {
+                var ids = new List<int>();
+                foreach (ShotPath path in _paths)
+                {
+                    if (path.End == ShotEndKind.Absorbed && path.HazardId >= 0 && !ids.Contains(path.HazardId))
+                    {
+                        ids.Add(path.HazardId);
+                    }
+                }
+
+                return ids;
+            }
+        }
 
         /// <summary>Seconds until the last projectile lands.</summary>
         public double Duration
@@ -214,13 +235,18 @@ namespace Ricochet.Core
                     shot.MaxRange = range;
                     ShotPath path = BounceSolver.Solve(origin, heading, 1, level, null, shot);
                     paths.Add(path);
+                    if (path.End == ShotEndKind.Absorbed)
+                    {
+                        return new Volley(weapon, paths, shot.Speed, strikes, false, default, 0);
+                    }
+
                     AddBlastStrikes(path.Impact, arsenal.GrenadeRadius, path.Bounces, targets, strikes);
                     return new Volley(weapon, paths, shot.Speed, strikes, true, path.Impact, arsenal.GrenadeRadius);
                 }
 
                 case Weapon.Railgun:
                 {
-                    var open = new Level(level.MinX, level.MinY, level.MaxX, level.MaxY);
+                    var open = new Level(level.MinX, level.MinY, level.MaxX, level.MaxY, null, null, null, level.Breaches);
                     shot.MaxBounces = 1;
                     shot.MinRange = shot.MaxRange = 2 * ((level.MaxX - level.MinX) + (level.MaxY - level.MinY));
                     ShotPath path = BounceSolver.Solve(origin, heading, 1, open, null, shot);
@@ -243,9 +269,7 @@ namespace Ricochet.Core
                 case Weapon.Vortex:
                 {
                     ShotPath path = BounceSolver.Solve(origin, heading, power, level, targets, shot);
-                    paths.Add(path);
-                    AddBlastStrikes(path.Impact, arsenal.VortexRadius, path.Bounces, targets, strikes);
-                    return new Volley(weapon, paths, shot.Speed, strikes, true, path.Impact, arsenal.VortexRadius);
+                    return Implode(path, shot.Speed, targets, arsenal);
                 }
 
                 default:
@@ -256,6 +280,45 @@ namespace Ricochet.Core
                     return new Volley(Weapon.Cannon, paths, shot.Speed, strikes, false, default, 0);
                 }
             }
+        }
+
+        /// <summary>
+        /// vortex_detonate.gml: a vortex in the air set off <paramref name="distance"/> from the muzzle. Returns the volley
+        /// cut short there, imploding at that point (and striking whoever is within its pull then); the volley unchanged
+        /// when it is not a vortex, was stopped by a barrier, or the distance is not short of where it lands anyway.
+        /// </summary>
+        public static Volley Detonate(Volley volley, double distance, IReadOnlyList<Target> targets, ArsenalRules arsenal = null)
+        {
+            if (volley == null || volley.Weapon != Weapon.Vortex || !volley.HasBlast)
+            {
+                return volley;
+            }
+
+            ShotPath cut = volley.Main.Truncate(distance);
+            return ReferenceEquals(cut, volley.Main) ? volley : Implode(cut, volley.Speed, targets, arsenal ?? ArsenalRules.Default);
+        }
+
+        /// <summary>
+        /// shoot_redirector.gml: a redirector flies along the aim like a shell (through players, as far as the power sends
+        /// it) and becomes a rail redirector where it stops, sending shots on along the heading it was last flying in.
+        /// Returns that spot; <paramref name="heading"/> is the redirector's, <paramref name="path"/> its flight.
+        /// </summary>
+        public static Vec2 PlaceRedirector(Vec2 origin, double aim, double power, Level level, ShotRules rules, out double heading, out ShotPath path)
+        {
+            if (level == null)
+            {
+                throw new ArgumentNullException(nameof(level));
+            }
+
+            rules = rules ?? ShotRules.Default;
+            path = BounceSolver.Solve(origin, aim, power, level, null, rules);
+            path.PositionAt(path.Length, out heading);
+
+            // Stopped on a surface: set it down a little short, so it does not sit on what it hit.
+            Vec2 spot = path.End == ShotEndKind.Spent ? path.Impact : path.Impact - Vec2.FromAngle(heading) * rules.MuzzleOffset;
+            double x = Math.Max(level.MinX + rules.MuzzleOffset, Math.Min(level.MaxX - rules.MuzzleOffset, spot.X));
+            double y = Math.Max(level.MinY + rules.MuzzleOffset, Math.Min(level.MaxY - rules.MuzzleOffset, spot.Y));
+            return new Vec2(x, y);
         }
 
         /// <summary>
@@ -299,6 +362,20 @@ namespace Ricochet.Core
 
             path = BounceSolver.Solve(origin, heading, 1, level, others, rules);
             return path.End == ShotEndKind.Target ? path.TargetId : null;
+        }
+
+        // A vortex's end: lost without going off when a barrier stopped it, else an implosion that strikes everyone in reach.
+        private static Volley Implode(ShotPath path, double speed, IReadOnlyList<Target> targets, ArsenalRules arsenal)
+        {
+            var paths = new List<ShotPath> { path };
+            var strikes = new List<Strike>();
+            if (path.End == ShotEndKind.Absorbed)
+            {
+                return new Volley(Weapon.Vortex, paths, speed, strikes, false, default, 0);
+            }
+
+            AddBlastStrikes(path.Impact, arsenal.VortexRadius, path.Bounces, targets, strikes);
+            return new Volley(Weapon.Vortex, paths, speed, strikes, true, path.Impact, arsenal.VortexRadius);
         }
 
         private static void AddTargetStrike(ShotPath path, double scale, List<Strike> strikes)

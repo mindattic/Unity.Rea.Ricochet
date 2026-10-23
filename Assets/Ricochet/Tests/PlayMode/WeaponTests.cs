@@ -68,7 +68,9 @@ namespace Ricochet.Tests
             annOnHerClient.Fuse(-1);
             yield return WaitUntil(() => annOnHerClient.Loadout.Fuse == 5.5, () => "her fuse is " + annOnHerClient.Loadout.Fuse);
 
-            annOnHerClient.CycleItem(-1);                         // left from the extra bounce: aim assist (the redirector, none, skipped)
+            annOnHerClient.CycleItem(-1);                         // left from the extra bounce wraps to the redirector (UR-T6)
+            yield return WaitUntil(() => annOnHerClient.Loadout.Item == Item.Redirector, () => "her item is " + annOnHerClient.Loadout.Item);
+            annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => annOnHerClient.Loadout.Item == Item.AimAssist, () => "her item is " + annOnHerClient.Loadout.Item);
             annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => annOnHerClient.Loadout.Item == Item.Teleporter, () => "her item is " + annOnHerClient.Loadout.Item);
@@ -86,6 +88,8 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => annOnHerClient.ExtraBounces == 1, "the extra bounce never came back");
             Assert.That(ann.Loadout.Count(Item.ExtraBounce), Is.EqualTo(3), "practice is free: nothing spent");
 
+            annOnHerClient.CycleItem(-1);                         // the redirector, then (aim assist, none, skipped) the teleporter
+            yield return WaitUntil(() => ann.Loadout.Item == Item.Redirector, "the redirector was never selected");
             annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.AimAssist, "aim assist was never selected");
             annOnHerClient.CycleItem(-1);
@@ -119,6 +123,7 @@ namespace Ricochet.Tests
             yield return new WaitForSeconds(0.3f);
             Assert.That(ann.Loadout.Weapon, Is.EqualTo(Weapon.Cannon), "the server let her cycle out of turn");
 
+            host.ServerCycleWeapon(-1);                           // the vortex, the railgun, the grenade
             host.ServerCycleWeapon(-1);
             host.ServerCycleWeapon(-1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Grenade));
