@@ -132,5 +132,17 @@ copy of any of these is a bug.
   kit's own kind with the game's lines, and passing disconnects them, frees their seat at once and drops it out of the
   round, passing the turn if it was theirs (UR-T14; `Core/VoteMenu.cs` tested by `dotnet test Core.slnx`, the wire by
   `Tests/PlayMode/KickVoteTests.cs`).
+- 🟡 End-to-end port check (UR-T15, 2026-10-23): the Windows player builds (`-buildWindows64Player`) and launches;
+  title → main menu → Players → map room → lobby → Start plays a match against an AI to its goal, the endgame recap
+  shows the champion and leaderboard, Main menu leads back, and a rematch vote replays it; Settings, Controls, How to
+  play and Credits open and close; a second build joins by IP into practice and plays the vote-started match. hit.gml's
+  damage, check_endgame's goal and the score-ranked recap match the source. Gaps filed as fix tickets: the build's
+  `UR-T3` branding (UR-T16), the HUD at narrow widths and over menus (UR-T17, UR-T18, UR-T19), the vote overlay never
+  showing on a client (UR-T20), identical default names and colours (UR-T21), join by code without Relay (UR-T22),
+  randomised levels and spots (UR-T23), driving and ending a turn (UR-T24), the settings room's match rules (UR-T25),
+  fog of war (UR-T26), music (UR-T27), per-AI skill and names (UR-T28), mouse and numpad controls (UR-T29), and in the
+  kit, bots joining from a player build (UM-T76) and a second copy taking over the host's player (UM-T77). Left out on
+  purpose: the hotseat and multiplayer rooms (§3), the studio splash and startup credits (the title screen stands in),
+  and the original's unused rooms (`room0`, the empty `intro`, and the campaign `maproom` no button reached).
 - ⬜ Anything not above is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.
