@@ -19,10 +19,13 @@ namespace Ricochet
 {
     public sealed class MatchHud : MonoBehaviour
     {
-        private const float BarWidth = 150f;
+        // Design-width sizes; UR-T17 scales these down (via Seating.BarScale) when the window is narrower than the
+        // ~1414px four-columns-a-side layout needs, so seat 1's bar stays on screen instead of running off the left edge.
+        private const float BaseBarWidth = 150f;
         private const float BarHeight = 10f;
         private const float SlotHeight = 34f;
-        private const float ClockGap = 150f;
+        private const float BaseBarGap = 8f;
+        private const float BaseClockGap = 150f;
 
         private static Texture2D s_white;
         private readonly List<Player> _seated = new List<Player>();
@@ -75,6 +78,14 @@ namespace Ricochet
             EnsureStyles();
             float centre = Screen.width / 2f;
 
+            // UR-T17: shrink the bars, their gaps and the clock's own gap together so all eight columns fit the window.
+            float scale = (float)Seating.BarScale(Screen.width, BaseBarWidth, BaseBarGap, BaseClockGap);
+            float barWidth = BaseBarWidth * scale;
+            float barGap = BaseBarGap * scale;
+            float clockGap = BaseClockGap * scale;
+            _nameStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(12f * scale));
+            _scoreStyle.fontSize = _nameStyle.fontSize;
+
             // The clock, or the round's result.
             string clock = turns.MatchPhase == MatchPhase.RoundOver || turns.MatchPhase == MatchPhase.GameOver ? "--.--" : Seating.FormatClock(turns.ShownTimeLeft);
             GUI.Label(new Rect(centre - 70f, 4f, 140f, 34f), clock, _clockStyle);
@@ -91,7 +102,7 @@ namespace Ricochet
             _seated.Sort((a, b) => a.Seat.CompareTo(b.Seat));
             for (int i = 0; i < _seated.Count && i < Ricochet.Core.MatchRules.MaxSeats; i++)
             {
-                DrawSlot(i, _seated[i], turns, centre);
+                DrawSlot(i, _seated[i], turns, centre, barWidth, barGap, clockGap);
             }
 
             GUI.Label(new Rect(centre - 300f, 38f + SlotHeight * 2f, 600f, 22f), Caption(turns), _centerStyle);
@@ -106,27 +117,24 @@ namespace Ricochet
             }
         }
 
-        private void DrawSlot(int slot, Player player, Turns turns, float centre)
+        private void DrawSlot(int slot, Player player, Turns turns, float centre, float barWidth, float barGap, float clockGap)
         {
             Seating.BarSlot(slot, out int column, out int row);
-            float half = Seating.BarsPerRow / 2f;
-            float x = column < half
-                ? centre - ClockGap / 2f - (half - column) * (BarWidth + 8f)
-                : centre + ClockGap / 2f + (column - half) * (BarWidth + 8f);
+            float x = (float)Seating.BarX(centre, column, barWidth, barGap, clockGap);
             float y = 6f + row * SlotHeight;
             Color color = player.Color;
 
             if (player.HasTurn)
             {
-                Fill(new Rect(x - 3f, y - 2f, BarWidth + 6f, SlotHeight - 2f), new Color(1f, 0.92f, 0.2f, 0.35f));
+                Fill(new Rect(x - 3f, y - 2f, barWidth + 6f, SlotHeight - 2f), new Color(1f, 0.92f, 0.2f, 0.35f));
             }
 
             string tag = player.IsAi ? "[AI] " : string.Empty;
             string state = player.InRound ? player.Health + (player.Away ? " away" : string.Empty) : turns.MatchPhase == MatchPhase.RoundOver || turns.MatchPhase == MatchPhase.GameOver || player.Health <= 0 ? "OUT" : "next round";
             _nameStyle.normal.textColor = player.InRound ? color : new Color(color.r, color.g, color.b, 0.45f);
-            GUI.Label(new Rect(x, y, BarWidth, 18f), tag + player.DisplayName + "  " + state, _nameStyle);
-            GUI.Label(new Rect(x, y, BarWidth, 18f), player.Score.ToString(), _scoreStyle); // draw_scores.gml
-            Bar(new Rect(x, y + 17f, BarWidth, BarHeight), player.Health / (float)Arena.MatchRules.MaxHealth, color, player.InRound);
+            GUI.Label(new Rect(x, y, barWidth, 18f), tag + player.DisplayName + "  " + state, _nameStyle);
+            GUI.Label(new Rect(x, y, barWidth, 18f), player.Score.ToString(), _scoreStyle); // draw_scores.gml
+            Bar(new Rect(x, y + 17f, barWidth, BarHeight), player.Health / (float)Arena.MatchRules.MaxHealth, color, player.InRound);
         }
 
         private string Caption(Turns turns)
