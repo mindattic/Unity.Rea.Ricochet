@@ -273,24 +273,6 @@ namespace Ricochet.Core.Tests
             Assert.That((column, row), Is.EqualTo((7, 1)), "clamped to the sixteenth");
         }
 
-        [Test]
-        public void TheStandInAiAimsAtTheNearestOpponentItCanReach_NeverItself()
-        {
-            Level level = Level.Default();
-            Vec2 me = Seating.SpawnPoint(0);
-            var targets = new List<Target>
-            {
-                new Target("seat:0", me, Seating.PlayerRadius),
-                new Target("seat:1", Seating.SpawnPoint(1), Seating.PlayerRadius),
-                new Target("seat:4", Seating.SpawnPoint(4), Seating.PlayerRadius),
-            };
-
-            double heading = SimpleAi.ChooseHeading(me, "seat:0", level, targets, ShotRules.Default, new Random(1), out string expected);
-            Assert.That(expected, Is.EqualTo("seat:1"), "seat 1 is nearer than seat 4");
-            ShotPath path = BounceSolver.Solve(me, heading, SimpleAi.Power, level, targets);
-            Assert.That(path.TargetId, Is.EqualTo("seat:1"));
-        }
-
         private static void PlayTurn(Match match, int seat)
         {
             Assert.That(match.Current, Is.EqualTo(seat));

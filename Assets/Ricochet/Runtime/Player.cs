@@ -12,9 +12,12 @@
 // (Core's Arsenal: cannon, laser, shotgun, grenade, railgun) and spends one in a match (practice is free fire); its
 // weapon, fuse and extra bounces are synced with the aim so every peer flies the same volley. The items: an extra
 // bounce for this turn's shot, a teleporter that moves you to where it lands, and a shrink ray that shrinks the first
-// player it reaches for the rest of the round.
+// player it reaches for the rest of the round. Aim assist (UR-T7) is the AI's targeting offered to a human: the server
+// turns their aim onto the shot a fully skilled AI would take (Core's Ai.Assist), the owner's aim follows, and every
+// peer draws that path as a fading beam (obj_aimassist) until the shot is fired. An AI seat aims (ServerAim), picks its
+// weapon (ServerSelectWeapon) and fires through the same server calls; Arena plays its turn.
 using System.Collections.Generic;
-using Ricochet.Core;          // AimState, Arsenal, Loadout, Volley, VolleyFlight, ShotPath, MatchPhase
+using Ricochet.Core;          // AimState, Arsenal, Loadout, Volley, VolleyFlight, ShotPath, MatchPhase, Ai
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
 using Unity.Multiplayer.Core; // [ToServer], [Synced]
 using UnityEngine;
@@ -88,6 +91,12 @@ namespace Ricochet
         [Synced] private int _pickupCount;
         [Synced] private int _lastPickup;
 
+        // The last aim assist: the aim the server turned this player onto, and a count that goes up by one per use so the
+        // owner's aim follows it and every peer draws its beam.
+        [Synced] private int _assists;
+        [Synced] private float _assistHeading;
+        [Synced] private float _assistPower;
+
         private readonly AimState _aim = new AimState(StartHeading, StartPower); // owner only: the local, responsive aim
         private float _aimSentAt = -1f;
         private float _sentHeading = float.NaN;
@@ -99,6 +108,14 @@ namespace Ricochet
         private int _shownItems = -1;
 
         private const float PickupSeconds = 2.5f;
+
+        /// <summary>Seconds an aim-assist beam takes to fade (obj_aimassist lost 0.003 of its alpha a frame at 60).</summary>
+        public const float AssistSeconds = 5.5f;
+
+        private int _seenAssists;        // every peer: the last assist whose beam it drew
+        private int _adoptedAssists;     // owner: the last assist its local aim followed
+        private float _assistShownUntil = -1f;
+        private LineRenderer _assistLine;
         private int _seenPickups;
         private float _pickupShownUntil = -1f;
 
@@ -241,6 +258,9 @@ namespace Ricochet
         /// <summary>The whole volley this peer last saw fired (null before the first).</summary>
         public Volley LastVolley { get; private set; }
 
+        /// <summary>True while this peer is drawing an aim-assist beam for this player.</summary>
+        public bool AssistShown => _assistShownUntil > Time.time;
+
         /// <summary>The owner's current preview: what would fly if they fired now (null on other peers).</summary>
         public Volley Preview => _preview;
 
@@ -305,7 +325,10 @@ namespace Ricochet
 
             _seenShots = Shots; // a late joiner does not replay a shot fired before it arrived
             _seenPickups = PickupCount;
+            _seenAssists = Assists;
+            _adoptedAssists = Assists;
             _shotView = ShotView.Create("Shot (" + name + ")");
+            _assistLine = Lines.Create(_shotView.transform, "Aim assist", new UnityEngine.Color(0.55f, 0.95f, 1f, 1f), 0.08f, 3);
             if (LocallyControlled)
             {
                 _aim.Set(Heading, Power);
@@ -384,6 +407,34 @@ namespace Ricochet
         {
             Heading = (float)Angles.Normalize(float.IsNaN(heading) ? Heading : heading);
             Power = (float)ShotRules.ClampPower(power);
+        }
+
+        /// <summary>Server: turns the barrel for an AI seat (or a test), clamped like a client's Aim.</summary>
+        public void ServerAim(float heading, float power)
+        {
+            if (IsServer)
+            {
+                OnAim(heading, power);
+            }
+        }
+
+        /// <summary>
+        /// Server: cycles right until <paramref name="weapon"/> is selected, for an AI seat (or a test). False when the
+        /// player has none of it (or may not cycle now); the selection is then wherever the cycling stopped.
+        /// </summary>
+        public bool ServerSelectWeapon(Weapon weapon)
+        {
+            if (!IsServer)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < ArsenalRules.Kinds && ServerLoadout.Weapon != weapon; i++)
+            {
+                OnCycleWeapon(1);
+            }
+
+            return ServerLoadout.Weapon == weapon;
         }
 
         /// <summary>Server: fires for an AI seat (or a test), through the same checks as a client's Fire.</summary>
@@ -563,6 +614,18 @@ namespace Ricochet
                     }
 
                     break;
+                case Item.AimAssist:
+                    // obj_aimassist, with the AI's targeting: onto the shot that reaches an opponent, if any does.
+                    AiPlan assist = Ai.Assist(Arena.ToCore(Position), Arena.SeatTarget(Seat), Arena.Level, Arena.Targets(Session), Power, Arena.Rules);
+                    if (assist != null)
+                    {
+                        OnAim((float)assist.Heading, (float)assist.Power);
+                    }
+
+                    AssistHeading = Heading;
+                    AssistPower = Power;
+                    Assists = Assists + 1;
+                    break;
             }
 
             MirrorLoadout();
@@ -601,6 +664,8 @@ namespace Ricochet
                 _pickupShownUntil = Time.time + PickupSeconds;
             }
 
+            DrawAssist();
+
             if (IsServer && _serverFlight != null && !_serverFlight.Landed)
             {
                 _serverFlight.Advance(Time.deltaTime);
@@ -624,7 +689,15 @@ namespace Ricochet
 
         private void OwnerInput()
         {
-            bool changed = _aim.Step(GameInput.Turn(), GameInput.Charge(), Time.deltaTime, Arena.Rules);
+            // An aim assist the server just applied: the local aim follows it.
+            bool assisted = Assists != _adoptedAssists;
+            if (assisted)
+            {
+                _adoptedAssists = Assists;
+                _aim.Set(AssistHeading, AssistPower);
+            }
+
+            bool changed = _aim.Step(GameInput.Turn(), GameInput.Charge(), Time.deltaTime, Arena.Rules) || assisted;
             float heading = (float)_aim.Heading;
             float power = (float)_aim.Power;
             if ((heading != _sentHeading || power != _sentPower) && Time.unscaledTime - _aimSentAt >= 0.05f)
@@ -691,9 +764,43 @@ namespace Ricochet
             }
         }
 
+        // Every peer: obj_aimassist's beam along the assisted path, fading out, gone once the shot is fired.
+        private void DrawAssist()
+        {
+            if (_assistLine == null)
+            {
+                return;
+            }
+
+            if (Assists != _seenAssists)
+            {
+                _seenAssists = Assists;
+                _assistShownUntil = Time.time + AssistSeconds;
+                ShotPath path = SolveVolley(Weapon.Cannon, AssistHeading, AssistPower, Arena.ArsenalRules.DefaultFuse, ExtraBounces).Main;
+                _assistLine.positionCount = path.Points.Count + 1;
+                _assistLine.SetPosition(0, Position);
+                for (int i = 0; i < path.Points.Count; i++)
+                {
+                    _assistLine.SetPosition(i + 1, Arena.ToUnity(path.Points[i]));
+                }
+            }
+
+            if (!AssistShown)
+            {
+                _assistLine.positionCount = 0;
+                return;
+            }
+
+            float alpha = Mathf.Clamp01((_assistShownUntil - Time.time) / AssistSeconds);
+            var color = new UnityEngine.Color(0.55f, 0.95f, 1f, alpha);
+            _assistLine.startColor = color;
+            _assistLine.endColor = color;
+        }
+
         // Every peer: draw the volley the server just took. The server's own solve is the one that lands.
         private void LaunchShot()
         {
+            _assistShownUntil = -1f; // fire_weapon.gml: the aim-assist beam goes with the shot
             Volley volley = SolveVolley((Weapon)Mathf.Clamp(ShotWeapon, 0, ArsenalRules.Kinds - 1), ShotHeading, ShotPower, ShotFuse, ShotExtraBounces);
             LastVolley = volley;
             if (IsServer)

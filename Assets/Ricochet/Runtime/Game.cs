@@ -1,7 +1,7 @@
 // The game's one scene component: it draws the level, serves the rules (Arena) on the server, registers the votes the game offers, and
 // adds the game's own items to the drop-in front end. The menus, lobby, join codes, reconnect, roster and vote overlay
 // are the kit's; this is the only glue a game writes. Runs on every peer: a dedicated server and a bot run this scene too.
-using Ricochet.Core;        // MatchRules
+using Ricochet.Core;        // MatchRules, MatchSetup, Ai, ArsenalRules
 using Unity.Multiplayer;    // NetBootstrap, NetVotes
 using Unity.Multiplayer.UI; // NetFrontEnd, MenuPlacement
 using UnityEngine;
@@ -17,7 +17,7 @@ namespace Ricochet
         [SerializeField] private GameObject dummyPrefab;
 
         private Arena _arena;
-        private int _aiOpponents = 1;
+        private readonly MatchSetup _setup = new MatchSetup(); // what the start-match vote proposes (obj_btn_ai_*, obj_btn_aimassist_*)
 
         /// <summary>The rules this scene serves (null before Start).</summary>
         public Arena Rules
@@ -68,13 +68,21 @@ namespace Ricochet
                     + "grenade (passes through players and goes off when its fuse runs out: 1 shorter, 2 longer, 3 longest) and "
                     + "railgun (straight through walls, hitting everyone on the line). You start each round with three of each.");
                 s.AddText("Items: Z/C cycle, F uses: an extra bounce for this turn's shot, a teleporter that moves you to where it "
-                    + "lands, and a shrink ray that shrinks the first player it reaches. Crates fall during a match: shoot across "
-                    + "one to collect it (W a weapon, I an item, + health, ? a mystery weapon).");
+                    + "lands, a shrink ray that shrinks the first player it reaches, and aim assist, which turns your aim onto a "
+                    + "shot that reaches an opponent (at your power if it can, else at full) and lights its path. Crates fall "
+                    + "during a match: shoot across one to collect it (W a weapon, I an item, + health, ? a mystery weapon).");
+                s.AddText("AI opponents fill the empty seats. Before you vote to start a match, pick how many, how well they aim "
+                    + "(skill 10 fires exactly where it means to; each step down nudges its aim up to a degree more either way) "
+                    + "and how many aim assists everyone starts with (0 for none, 10 for unlimited). On its turn an AI thinks, "
+                    + "looks for a straight shot, then a bank shot, then a railgun shot through the walls, and fires.");
             }, MenuPlacement.Both);
 
             frontEnd.AddPauseMenuItems(s =>
             {
-                s.AddRange("AI opponents", 0, MatchRules.MaxSeats - 1, _aiOpponents, v => _aiOpponents = Mathf.RoundToInt(v), wholeNumbers: true);
+                s.AddRange("AI opponents", 0, MatchRules.MaxSeats - 1, _setup.AiCount, v => _setup.AiCount = Mathf.RoundToInt(v), wholeNumbers: true);
+                s.AddRange("AI skill", Ai.MinSkill, Ai.MaxSkill, _setup.AiSkill, v => _setup.AiSkill = Mathf.RoundToInt(v), wholeNumbers: true);
+                s.AddRange("Aim assists each (10 = unlimited)", 0, ArsenalRules.Unlimited, _setup.AimAssists, v => _setup.AimAssists = Mathf.RoundToInt(v),
+                    wholeNumbers: true);
                 s.AddButton("Vote to start a match", StartMatchVote);
                 s.AddButton("Vote to restart", StartRestartVote);
             });
@@ -86,7 +94,7 @@ namespace Ricochet
         {
             if (NetVotes.Instance != null && NetVotes.Instance.Board != null)
             {
-                NetVotes.Instance.Board.StartVote(Arena.MatchVote, _aiOpponents);
+                NetVotes.Instance.Board.StartVote(Arena.MatchVote, _setup.AiCount, _setup.Format());
             }
         }
 

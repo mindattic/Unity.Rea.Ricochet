@@ -90,8 +90,8 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    +/- 1 to an opponent or 10 a bounce to yourself out of 100 health, the last one standing wins and opens the next
    round) and `Seating` (sixteen fixed spots, the HUD's two rows of eight bars around the clock). A match starts by
    vote with N AI opponents (`Opponent` prefab, keyed `ai:n`); the server mirrors it through a keyed `Turns` object and
-   each Player's `[Synced]` seat/health; a late joiner sits the round out. AI seats fire a stand-in shot
-   (`SimpleAi`, nearest reachable opponent) until UR-T7.
+   each Player's `[Synced]` seat/health; a late joiner sits the round out. AI seats fired a stand-in shot
+   (nearest reachable opponent) until UR-T7.
 4. **UR-T5/UR-T6**: weapons/items and hazards — content on top of the turn loop, independent of each other.
    UR-T5 (done), as built: Core `Loadout` (counts, selection, fuse; cycle_weapon/item_left/right, the spend rule of
    fire_weapon/use_item with 10 = unlimited, packed into two ints for the wire), `Arsenal.Fire` solving each weapon's
@@ -102,11 +102,24 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    20–120 s, collected by a shot passing over, add_random_weapon/item/health). The server keeps each Player's loadout
    and mirrors it; the client cycles, fuses and uses items through `[ToServer]` calls checked like a shot; crates are
    keyed `Crate` objects. Departures: the cannon is unlimited (an empty-handed player could only time out); the vortex,
-   shield wall and redirector belong with UR-T6's hazards and aim assist with UR-T7, so they are out of play (nobody
-   starts with them, no crate gives them) until those land; a crate's roll gives the kind it names (the original's
+   shield wall and redirector belong with UR-T6's hazards, so they are out of play (nobody starts with them, no crate
+   gives them) until those land; a crate's roll gives the kind it names (the original's
    cannon roll gave a laser, its aim-assist roll a teleporter); a grenade's blast hurts everyone in it, not just the
    first player it touches.
-5. **UR-T7**: AI — depends on UR-T3's bounce solver (reused for targeting) and UR-T4's turn loop.
+5. **UR-T7** (done): AI — depends on UR-T3's bounce solver (reused for targeting) and UR-T4's turn loop.
+   As built: Core `MatchSetup` (AI count, one AI skill 0–10 for every AI seat where the original had a pSkill per
+   player, and the aim assists each player starts with, 0–10 with 0 taking the item out of play and 10 unlimited;
+   the vote's number and text), `Ai` (one half-degree sweep of the preview's solver finds every heading that reaches
+   an opponent: a straight shot beats a bank shot, which beats a railgun shot through the walls when the AI carries
+   one, then the nearest opponent and the middle of the widest run of headings; skill nudges it by up to 10 − skill
+   whole degrees; nothing in reach fires blind) and `AiTurn` (think, plan once, turn the barrel at 180°/s or faster
+   when the clock is short, fire). Arena plays an AI seat's turn through the same server calls a human's goes
+   through; `Turns` carries the "is thinking..." line every HUD pulses along the bottom (obj_ai_gui). Aim assist,
+   whose original was only a fading straight beam along the aim (the preview already shows more), is the AI's
+   targeting at full skill offered to a human: it turns their aim onto a shot that reaches an opponent (at their
+   power if it can, else at full) and every peer draws that path as a beam that fades over 5.5 s or goes with the
+   shot. Departures: the railgun choice is new (the original AI only fired bullets); the original took the first
+   degree that touched a target, often a graze.
 6. **UR-T8**: announcer/HUD — presentation on top of whatever state exists by then.
 7. **UR-T9**: full menu/room flow connecting everything built so far.
 8. **UR-T10**: Unity.Shared profile wiring — can land any time after UR-T3's scaffold exists.

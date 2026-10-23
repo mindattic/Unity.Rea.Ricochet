@@ -33,6 +33,9 @@ namespace Ricochet.Core
         /// <summary>Seconds an AI seat "thinks" before it fires (the original's "is thinking..." pause).</summary>
         public double AiThinkSeconds { get; set; } = 1.5;
 
+        /// <summary>Degrees a second an AI seat turns its barrel towards its aim (rotate_left/right); faster when the clock is short.</summary>
+        public double AiDegreesPerSecond { get; set; } = 180;
+
         public static MatchRules Default => new MatchRules();
 
         /// <summary>

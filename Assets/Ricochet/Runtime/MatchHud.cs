@@ -1,11 +1,12 @@
 // The match HUD on every peer, read from the synced state only (Turns and each Player): the turn clock at the top
 // centre (draw_turntime.gml's yellow "SS.FF"), a health bar per seat in two rows of eight either side of it, each in
 // the player's colour with their name and an AI tag (setup_players.gml's obj_healthbar row and draw_scores.gml's
-// icons), the seat whose turn it is outlined, and under the clock the order the living seats play in from now.
+// icons), the seat whose turn it is outlined, and under the clock the order the living seats play in from now. On an AI
+// seat's turn, obj_ai_gui's line along the bottom: "AI 2 is plotting and scheming...", pulsing between half and full.
 // IMGUI keeps the template free of fonts and canvases; the HUD proper moves to MindAttic Components widgets in UR-T8.
 using System.Collections.Generic;
 using System.Text;
-using Ricochet.Core;     // MatchPhase, Seating
+using Ricochet.Core;     // MatchPhase, Seating, Ai
 using Unity.Multiplayer; // NetBootstrap, NetSession
 using UnityEngine;
 
@@ -23,6 +24,7 @@ namespace Ricochet
         private GUIStyle _clockStyle;
         private GUIStyle _nameStyle;
         private GUIStyle _centerStyle;
+        private GUIStyle _thinkingStyle;
 
         /// <summary>Adds the HUD to the scene; it draws whatever match <paramref name="session"/> (or the bootstrap's) is in.</summary>
         public static MatchHud Create(NetSession session = null)
@@ -76,6 +78,15 @@ namespace Ricochet
             }
 
             GUI.Label(new Rect(centre - 300f, 38f + SlotHeight * 2f, 600f, 22f), Caption(turns), _centerStyle);
+
+            Player thinking = turns.ThinkingLine >= 0 && turns.MatchPhase == MatchPhase.Aiming ? Find(turns.Current) : null;
+            if (thinking != null)
+            {
+                Color previous = GUI.color;
+                GUI.color = new Color(1f, 1f, 1f, 0.5f + Mathf.PingPong(Time.time * 0.6f, 0.5f));
+                GUI.Label(new Rect(centre - 350f, Screen.height - 110f, 700f, 26f), thinking.DisplayName + Ai.ThinkingLine(turns.ThinkingLine), _thinkingStyle);
+                GUI.color = previous;
+            }
         }
 
         private void DrawSlot(int slot, Player player, Turns turns, float centre)
@@ -154,6 +165,7 @@ namespace Ricochet
             _clockStyle.normal.textColor = new Color(1f, 0.92f, 0.2f); // draw_turntime's c_yellow
             _nameStyle = new GUIStyle(GUI.skin.label) { fontSize = 12, clipping = TextClipping.Clip };
             _centerStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
+            _thinkingStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter, fontSize = 18, fontStyle = FontStyle.Bold };
         }
 
         private static void Fill(Rect rect, Color color)

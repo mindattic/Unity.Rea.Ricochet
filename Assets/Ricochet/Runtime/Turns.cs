@@ -1,7 +1,8 @@
 // The match's turn state on the wire: one keyed object ("turns") the server spawns when a match starts, mirroring the
 // server's Core Match (whose turn, the phase, the turn clock, the round and its winner) for every peer's HUD and input.
 // Only the server writes it (UR-LAW-1); its server-side Update is what runs the match clock. Each player's own seat
-// and health live on their Player.
+// and health live on their Player. On an AI seat's turn it also carries which of check_ai's "is thinking..." lines is up
+// (UR-T7), for every peer's HUD.
 using Ricochet.Core;          // MatchPhase, MatchRules
 using Unity.Multiplayer;      // NetEntity, NetSession
 using Unity.Multiplayer.Core; // [Synced]
@@ -21,6 +22,7 @@ namespace Ricochet
         [Synced] private float _timeLeft;
         [Synced] private int _round;
         [Synced] private int _winner = -1;
+        [Synced] private int _aiLine = -1;
 
         private float _shownTime;
         private float _lastSyncedTime = -1f;
@@ -49,6 +51,18 @@ namespace Ricochet
         {
             Turns turns = For(session);
             return turns == null || turns.MatchPhase == MatchPhase.Practice || (turns.MatchPhase == MatchPhase.Aiming && turns.Current == seat);
+        }
+
+        /// <summary>The "is thinking..." line (Ai.ThinkingLine) the AI whose turn it is shows, or -1 on a human's turn.</summary>
+        public int ThinkingLine => AiLine;
+
+        /// <summary>Server: the AI's "is thinking..." line for this turn, or -1.</summary>
+        internal void MirrorAi(int line)
+        {
+            if (AiLine != line)
+            {
+                AiLine = line;
+            }
         }
 
         /// <summary>Server: copies the match's state out (the clock only when it moves by a tenth, or jumps back up).</summary>

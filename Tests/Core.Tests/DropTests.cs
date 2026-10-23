@@ -134,7 +134,7 @@ namespace Ricochet.Core.Tests
                 seen.Add(Pickups.RandomItem(dice, ArsenalRules.Default).Value);
             }
 
-            Assert.That(seen, Is.EquivalentTo(new[] { Item.ExtraBounce, Item.ShrinkRay, Item.Teleporter }));
+            Assert.That(seen, Is.EquivalentTo(new[] { Item.ExtraBounce, Item.ShrinkRay, Item.Teleporter, Item.AimAssist }));
 
             var none = new ArsenalRules();
             for (int i = 0; i < ArsenalRules.Kinds; i++)

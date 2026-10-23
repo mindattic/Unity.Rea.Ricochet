@@ -6,10 +6,13 @@
 // match (with a number of AI opponents) and restart (the round's health, or the practice dummies). Weapons and items
 // (UR-T5): a landed volley strikes everyone it reached (Core's Arsenal), every player's loadout is reset at the start of
 // each round, and during a round Core's DropField drops crates (spawned as keyed Crate objects) that a shot passing
-// over collects for its shooter: a random weapon, a random item or some health.
+// over collects for its shooter: a random weapon, a random item or some health. AI opponents (UR-T7): the match vote
+// carries a MatchSetup (AI count, AI skill, aim assists each); on an AI seat's turn Core's AiTurn thinks (its "is
+// thinking..." line mirrored through Turns), plans the shot with Ai.Plan (a straight shot, a bank shot or a railgun
+// shot, nudged by its skill), turns the barrel onto it and fires through the same checks as a human.
 using System;
 using System.Collections.Generic;
-using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, SimpleAi
+using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, Ai, AiTurn, MatchSetup
 using Unity.Multiplayer;      // NetSession, NetKey
 using Unity.Multiplayer.Core; // VoteKind
 using UnityEngine;
@@ -53,7 +56,8 @@ namespace Ricochet
         private DropField _field;
         private Turns _turns;
         private readonly Dictionary<int, int> _humanSeats = new Dictionary<int, int>(); // kit seat -> match seat
-        private int _aiCount;
+        private MatchSetup _setup = new MatchSetup();
+        private AiTurn _aiTurn;
         private bool _dummiesUp;
 
         public Arena(NetSession session, GameObject dummyPrefab)
@@ -69,7 +73,13 @@ namespace Ricochet
         public Match Match => _match;
 
         /// <summary>The AI opponents the current match was started with.</summary>
-        public int AiCount => _aiCount;
+        public int AiCount => _setup.AiCount;
+
+        /// <summary>What the current (or last) match was started with: AI count, AI skill, aim assists.</summary>
+        public MatchSetup Setup => _setup.Clone();
+
+        /// <summary>The AI seat's turn being played (server only; null on a human's turn).</summary>
+        public AiTurn AiTurn => _aiTurn;
 
         /// <summary>Serves the rules on <paramref name="session"/>: dummies spawn as soon as it runs as a server.</summary>
         public static Arena Serve(NetSession session, GameObject dummyPrefab)
@@ -195,14 +205,19 @@ namespace Ricochet
             return true;
         }
 
+        /// <summary>Starts a match with <paramref name="aiCount"/> AI opponents and the default skill and aim assists.</summary>
+        public bool StartMatch(int aiCount) => StartMatch(new MatchSetup { AiCount = aiCount });
+
         /// <summary>
-        /// Starts a match (server only): every connected player takes a seat in join order, then
-        /// <paramref name="aiCount"/> AI opponents fill the next seats, up to sixteen in all; the practice dummies are
-        /// cleared away and seat 0 takes the first turn. A match already running starts over.
+        /// Starts a match (server only): every connected player takes a seat in join order, then the setup's AI opponents
+        /// fill the next seats, up to sixteen in all; everyone starts each round with the setup's aim assists; the
+        /// practice dummies are cleared away and seat 0 takes the first turn. A match already running starts over.
         /// </summary>
         /// <returns>False (and nothing changes) when fewer than two seats would play.</returns>
-        public bool StartMatch(int aiCount)
+        public bool StartMatch(MatchSetup setup)
         {
+            setup = setup != null ? setup.Clone() : new MatchSetup();
+            int aiCount = setup.AiCount;
             var humans = new List<Player>();
             foreach (Player player in Player.In(_session))
             {
@@ -226,7 +241,10 @@ namespace Ricochet
                 RemoveDummies();
             }
 
-            _aiCount = aiCount;
+            setup.AiCount = aiCount;
+            _setup = setup;
+            _setup.ApplyTo(ArsenalRules);
+            _aiTurn = null;
             _field?.Clear();
             _field = new DropField(Level, DropRules, _dropDice);
             _field.Spawned += SpawnCrate;
@@ -234,7 +252,11 @@ namespace Ricochet
             _field.Removed += drop => _session.Objects.Despawn(Crate.KeyFor(drop.Id));
             _match = new Match(MatchRules);
             _match.RoundStarted += _ => NewRound();
-            _match.TurnStarted += _ => ClearExtraBounces();
+            _match.TurnStarted += seat =>
+            {
+                ClearExtraBounces();
+                BeginAiTurn(seat);
+            };
             _humanSeats.Clear();
             for (int i = 0; i < humans.Count; i++)
             {
@@ -482,18 +504,47 @@ namespace Ricochet
                 }
             }
 
-            if (_match.Phase == MatchPhase.Aiming && _match.TryGetSeat(_match.Current, out MatchSeat seat) && seat.Kind == SeatKind.Ai
-                && _match.Rules.TurnSeconds - _match.TimeLeft >= _match.Rules.AiThinkSeconds)
+            PlayAi(seconds);
+            Mirror();
+        }
+
+        // obj_CheckAI: a new turn; an AI seat starts thinking, with one of check_ai's thirty lines.
+        private void BeginAiTurn(int seat)
+        {
+            _aiTurn = _match.TryGetSeat(seat, out MatchSeat sitting) && sitting.Kind == SeatKind.Ai
+                ? new AiTurn(seat, _aiDice.Next(Ai.ThinkingLineCount), MatchRules.AiThinkSeconds, MatchRules.AiDegreesPerSecond)
+                : null;
+        }
+
+        // An AI seat's turn, a frame at a time: think, plan (and pick the weapon), turn the barrel, fire.
+        private void PlayAi(float seconds)
+        {
+            if (_aiTurn == null || _match.Phase != MatchPhase.Aiming || _match.Current != _aiTurn.Seat)
             {
-                Player ai = PlayerAt(seat.Index);
-                if (ai != null && !ai.ShotInFlight)
-                {
-                    double heading = SimpleAi.ChooseHeading(ToCore(ai.Position), SeatTarget(seat.Index), Level, Targets(_session), Rules, _aiDice, out _);
-                    ai.ServerFire((float)heading, (float)SimpleAi.Power);
-                }
+                return;
             }
 
-            Mirror();
+            Player ai = PlayerAt(_aiTurn.Seat);
+            if (ai == null || ai.ShotInFlight)
+            {
+                return;
+            }
+
+            switch (_aiTurn.Step(seconds, ai.Heading, _match.TimeLeft, out double next))
+            {
+                case AiStep.Plan:
+                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), Level, Targets(_session), _setup.AiSkill, _aiDice,
+                        Rules, ArsenalRules, ai.Loadout);
+                    _aiTurn.SetPlan(plan);
+                    ai.ServerSelectWeapon(plan.Weapon);
+                    break;
+                case AiStep.Turn:
+                    ai.ServerAim((float)next, (float)_aiTurn.Plan.Power);
+                    break;
+                case AiStep.Fire:
+                    ai.ServerFire((float)_aiTurn.Plan.Heading, (float)_aiTurn.Plan.Power);
+                    break;
+            }
         }
 
         /// <summary>The player sitting in <paramref name="seat"/>, or null.</summary>
@@ -518,7 +569,7 @@ namespace Ricochet
             {
                 if (_match != null && _match.IsRunning)
                 {
-                    StartMatch(_aiCount);
+                    StartMatch(_setup);
                 }
                 else
                 {
@@ -527,12 +578,15 @@ namespace Ricochet
             },
         };
 
-        /// <summary>The vote that starts a match; its number is how many AI opponents to add.</summary>
+        /// <summary>
+        /// The vote that starts a match; its number is how many AI opponents to add and its text the rest of the setup
+        /// (<see cref="MatchSetup.Format"/>: the AI skill and the aim assists each).
+        /// </summary>
         public VoteKind CreateMatchVote() => new VoteKind(MatchVote, r => "Start a match with " + r.Number + " AI opponent" + (r.Number == 1 ? "?" : "s?"))
         {
-            Description = _ => "Everyone takes a seat and plays in turn; the last one standing wins the round.",
+            Description = r => MatchSetup.Parse(r.Number, r.Text).Describe() + ". Everyone takes a seat and plays in turn; the last one standing wins the round.",
             Check = r => HumanCount() + Math.Max(0, r.Number) < 2 ? "A match needs two players: add an AI opponent." : null,
-            Passed = v => StartMatch((int)v.Number),
+            Passed = v => StartMatch(MatchSetup.Parse(v.Number, v.Text)),
         };
 
         private int HumanCount()
@@ -556,6 +610,7 @@ namespace Ricochet
             if (_turns != null && _turns.IsSpawned)
             {
                 _turns.Mirror(_match);
+                _turns.MirrorAi(_aiTurn != null && _aiTurn.Seat == _match.Current && _match.Phase == MatchPhase.Aiming ? _aiTurn.Message : -1);
             }
 
             foreach (Player player in Player.In(_session))

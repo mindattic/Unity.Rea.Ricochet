@@ -4,7 +4,7 @@ project: Unity.Ricochet
 code: UR
 layer: bible
 status: living
-updated: 2026-10-21
+updated: 2026-10-23
 ---
 
 # Unity.Ricochet — Project Bible
@@ -83,14 +83,21 @@ copy of any of these is a bug.
 - ✅ Matches: up to 16 seats (the connected humans plus AI opponents), turns in seat order with a 20-second turn
   clock, health and damage per hit.gml, the last one standing wins the round, and a HUD of per-seat health bars,
   the clock and the turn order (UR-T4; `Core/Match.cs` tested by `dotnet test Core.slnx`, the wire by
-  `Tests/PlayMode/TurnTests.cs`). The AI seats play a stand-in turn until UR-T7.
+  `Tests/PlayMode/TurnTests.cs`).
 - ✅ Weapons and items: a per-player loadout of six weapons and six items cycled left/right (cycle_weapon/item_*.gml),
   a count of 10 meaning unlimited, the cannon unlimited, three of the rest each round; the laser, shotgun, fused grenade
   (1/2/3 set a 0.5–6 s fuse; it passes through players and blasts everyone near where it goes off) and railgun; the
   extra bounce, teleporter and shrink ray; and weapon/item/health/powerup crates that fall during a match on
   obj_drop_emitter's random timers and go to whoever's shot passes over one (UR-T5; `Core/Loadout.cs`, `Volley.cs`,
   `Drops.cs` tested by `dotnet test Core.slnx`, the wire by `Tests/PlayMode/WeaponTests.cs`). The vortex, shield wall
-  and redirector wait for UR-T6's hazards and aim assist for UR-T7: nobody carries them and no crate gives them yet.
-- ⬜ Everything else — hazards, the real AI, announcer/HUD, menus, profiles (UR-T6–UR-T10) and
+  and redirector wait for UR-T6's hazards: nobody carries them and no crate gives them yet.
+- ✅ AI opponents and aim assist: the start-match vote carries the AI count, one AI skill (0–10) and the aim assists
+  each player starts with (0 = none, 10 = unlimited; obj_btn_ai_*/obj_btn_aimassist_*); on its turn an AI shows one
+  of check_ai's thirty "is thinking..." lines to every peer, looks for a straight shot, then a bank shot, then a
+  railgun shot through the walls (find_target_angle(_from_bounce), on the preview's own solver), nudges its aim by up
+  to 10 − skill degrees, turns its barrel onto it and fires; the aim-assist item turns a human's aim onto the shot a
+  fully skilled AI would take and draws it as a fading beam (UR-T7; `Core/Ai.cs`, `MatchSetup.cs` tested by
+  `dotnet test Core.slnx`, the wire by `Tests/PlayMode/AiOpponentTests.cs`).
+- ⬜ Everything else — hazards, announcer/HUD, menus, profiles (UR-T6, UR-T8–UR-T10) and
   multiplayer polish (UR-T11–UR-T14) — is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.

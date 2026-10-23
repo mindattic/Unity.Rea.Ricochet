@@ -16,6 +16,7 @@ namespace Ricochet.Core.Tests
             Assert.That(loadout.Item, Is.EqualTo(Item.ExtraBounce));
             Assert.That(loadout.Count(Item.ExtraBounce), Is.EqualTo(3));
             Assert.That(loadout.Count(Item.ShieldWall), Is.EqualTo(0));
+            Assert.That(loadout.Count(Item.AimAssist), Is.EqualTo(3), "count_AimAssist = 3 (UR-T7)");
             Assert.That(loadout.Fuse, Is.EqualTo(2));
         }
 
@@ -59,9 +60,11 @@ namespace Ricochet.Core.Tests
             loadout.CycleItem(1);
             Assert.That(loadout.Item, Is.EqualTo(Item.Teleporter));
             loadout.CycleItem(1);
-            Assert.That(loadout.Item, Is.EqualTo(Item.ExtraBounce));
+            Assert.That(loadout.Item, Is.EqualTo(Item.AimAssist));
+            loadout.CycleItem(1);
+            Assert.That(loadout.Item, Is.EqualTo(Item.ExtraBounce), "past aim assist the redirector (none) is skipped and it wraps");
             loadout.CycleItem(-1);
-            Assert.That(loadout.Item, Is.EqualTo(Item.Teleporter));
+            Assert.That(loadout.Item, Is.EqualTo(Item.AimAssist));
         }
 
         [Test]
