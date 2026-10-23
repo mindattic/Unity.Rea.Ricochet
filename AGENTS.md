@@ -13,6 +13,10 @@ are the reference architectures: read their AGENTS.md, README and docs/BIBLE.md 
 1. **REA the original in its totality first.** Every object, script, room, sprite, sound and data file is
    reverse-engineered and recorded in docs/RECONSTRUCTION.md before it is rebuilt. Gameplay matches the original;
    where the rebuild deviates, the BIBLE says so and why.
+   **Broken things are fixed.** Where the original's source is plainly broken (a random that is not random, a draw
+   call commented out, a feature that can never be reached, sound that ships switched off), the rebuild plays the way
+   the game was clearly meant to, not the way the bug made it, and the BIBLE records each one as a fixed defect.
+   Everything that is not broken matches the original exactly: never substitute or approximate a working behaviour.
 2. **Core is pure C#.** The rules live in an engine-free Core assembly (`noEngineReferences`, no `UnityEngine`),
    tested with `dotnet test` outside Unity. State changes only through commands that produce events;
    presentation reads state and plays events, and never mutates the game.
