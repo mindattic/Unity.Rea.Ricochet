@@ -3,6 +3,7 @@
     "rootNamespace": "Ricochet.Tests",
     "references": [
         "Ricochet",
+        "Ricochet.Core",
         "Unity.Multiplayer",
         "Unity.Multiplayer.Core",
         "Unity.Multiplayer.Testing",

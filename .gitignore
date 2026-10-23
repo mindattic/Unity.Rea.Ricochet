@@ -12,6 +12,7 @@
 *.csproj
 *.sln
 *.slnx
+!Core.slnx
 *.suo
 *.user
 *.pidb

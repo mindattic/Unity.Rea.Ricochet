@@ -40,9 +40,10 @@ namespace Ricochet.EditorTests
             Assert.That(manager.NetworkConfig.PlayerPrefab.GetComponent<Player>(), Is.Not.Null, "the player prefab has a Player");
 
             Game game = roots.Select(r => r.GetComponentInChildren<Game>()).First(g => g != null);
-            var crate = new SerializedObject(game).FindProperty("cratePrefab").objectReferenceValue as GameObject;
-            Assert.That(crate, Is.Not.Null, "Game's crate prefab");
-            Assert.That(crate.GetComponent<NetKey>(), Is.Not.Null, "the crate prefab has a NetKey");
+            var dummy = new SerializedObject(game).FindProperty("dummyPrefab").objectReferenceValue as GameObject;
+            Assert.That(dummy, Is.Not.Null, "Game's practice dummy prefab");
+            Assert.That(dummy.GetComponent<NetKey>(), Is.Not.Null, "the dummy prefab has a NetKey");
+            Assert.That(dummy.GetComponent<Dummy>(), Is.Not.Null, "the dummy prefab has a Dummy");
         }
 
         [Test]

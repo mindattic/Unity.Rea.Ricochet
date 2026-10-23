@@ -2,6 +2,7 @@
     "name": "Ricochet",
     "rootNamespace": "Ricochet",
     "references": [
+        "Ricochet.Core",
         "Unity.Multiplayer.Core",
         "Unity.Multiplayer",
         "Unity.Multiplayer.UI",

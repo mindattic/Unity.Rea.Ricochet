@@ -73,10 +73,14 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
 ## Build order
 
 1. **UR-T2** (done): repo, docs, package manifest.
-2. **UR-T3**: run the Unity.Multiplayer *New Game* wizard to get a working scaffold (`NetBootstrap`,
+2. **UR-T3** (done): run the Unity.Multiplayer *New Game* wizard to get a working scaffold (`NetBootstrap`,
    `NetFrontEnd`, `NetVotes`, one networked player), then build the Core bounce solver and aim/fire loop on top
    of it, single-player-against-nothing first (no AI, no turns yet) so the physics is provably right
    (unit tests on BounceSolver) before anything else depends on it.
+   As built: Core lives in `Assets/Ricochet/Core` (`Ricochet.Core`, tested by `dotnet test Core.slnx`); the
+   template's crates became keyed practice dummies to shoot at; power is the shot's range (the original had a
+   fixed bullet speed and no power meter); a shot detonates on its fifth contact, as `bullet_step.gml` did.
+   The server solves and flies every shot and lands the impact; clients replay the same path from the synced aim.
 3. **UR-T4**: turn order and the 16-seat roster with health bars — the loop that calls into UR-T3's shots.
 4. **UR-T5/UR-T6**: weapons/items and hazards — content on top of the turn loop, independent of each other.
 5. **UR-T7**: AI — depends on UR-T3's bounce solver (reused for targeting) and UR-T4's turn loop.

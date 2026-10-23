@@ -414,7 +414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94a95a7e196c4744bf208ae472972e2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Ricochet::Ricochet.Game
-  cratePrefab: {fileID: 5685898560119567001, guid: f80ef406c4af44f69cbf960da5633a6f, type: 3}
+  dummyPrefab: {fileID: 5685898560119567001, guid: f80ef406c4af44f69cbf960da5633a6f, type: 3}
 --- !u!4 &1175785380
 Transform:
   m_ObjectHideFlags: 0

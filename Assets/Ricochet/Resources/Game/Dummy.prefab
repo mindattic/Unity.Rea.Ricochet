@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7894676711737431992}
   - component: {fileID: 7271799470141465004}
   m_Layer: 0
-  m_Name: Crate
+  m_Name: Dummy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -84,5 +84,5 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e60cd814095a496cbc761abfdcbb8731, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Ricochet::Ricochet.Crate
+  m_EditorClassIdentifier: Ricochet::Ricochet.Dummy
   ShowTopMostFoldoutHeaderGroup: 1
