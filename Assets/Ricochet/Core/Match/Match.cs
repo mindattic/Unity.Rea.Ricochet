@@ -368,7 +368,7 @@ namespace Ricochet.Core.Match
         /// </summary>
         public bool EndTurn(int seat)
         {
-            if (Phase != MatchPhase.Aiming || seat != Current || WaitingForCurrent)
+            if (!MayEndTurn(seat))
             {
                 return false;
             }
@@ -376,6 +376,9 @@ namespace Ricochet.Core.Match
             NextTurn();
             return true;
         }
+
+        /// <summary>True when <see cref="EndTurn"/> would pass the turn: it is this seat's turn, aiming, and the seat is not away.</summary>
+        public bool MayEndTurn(int seat) => Phase == MatchPhase.Aiming && seat == Current && !WaitingForCurrent;
 
         /// <summary>The current seat fired: the timer stops until the shot lands. False (and nothing changes) when it may not.</summary>
         public bool Fire(int seat)

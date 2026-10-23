@@ -401,7 +401,7 @@ namespace Ricochet.Core.Commands
                 switch (command)
                 {
                     case AimCommand aim:
-                        state.Heading = Quantize(Angles.Normalize(double.IsNaN(aim.Heading) ? state.Heading : aim.Heading));
+                        state.Heading = Quantize(Angles.Normalize(Finite(aim.Heading) ? aim.Heading : state.Heading));
                         Emit(new Aimed(state.Id, state.Heading, state.Power));
                         break;
                     case SetPowerCommand power:
@@ -727,7 +727,7 @@ namespace Ricochet.Core.Commands
                 return;
             }
 
-            if (Match.Phase == MatchPhase.Aiming && Match.Current == state.Seat && !Match.WaitingForCurrent)
+            if (Match.MayEndTurn(state.Seat))
             {
                 Emit(new TurnPassed(state.Seat, TurnPassReason.EndedEarly));
                 Match.EndTurn(state.Seat);
@@ -932,6 +932,20 @@ namespace Ricochet.Core.Commands
             Emit(new LayoutChanged(MapIndex, LayoutSeed, LayoutVersion, true));
         }
 
+        /// <summary>
+        /// Plays the level a peer already has (a new authority joining an arena whose map, seed and version are not the
+        /// first map's): the version never goes backwards, so peers still adopt what comes next.
+        /// </summary>
+        public void AdoptLayout(int map, int seed, int version)
+        {
+            map = Maps.Clamp(map);
+            MapIndex = map;
+            LayoutSeed = seed;
+            LayoutVersion = version;
+            Layout = Maps.At(map).Layout(seed);
+            Hazards.UseLevel(Layout.Level);
+        }
+
         // A new crate field on the current level, the old one's crates gone.
         private void NewField()
         {
@@ -970,9 +984,12 @@ namespace Ricochet.Core.Commands
         // Never trusted as-is: NaN or an out-of-range power would be garbage on every peer.
         private static void SetAim(PlayerState state, double heading, double power)
         {
-            state.Heading = Quantize(Angles.Normalize(double.IsNaN(heading) ? state.Heading : heading));
+            state.Heading = Quantize(Angles.Normalize(Finite(heading) ? heading : state.Heading));
             state.Power = Quantize(ShotRules.ClampPower(power));
         }
+
+        // NaN and infinity are garbage a client could send: the last good value stays.
+        private static bool Finite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 
         private void MoveTo(PlayerState state, Vec2 to, MoveCause cause)
         {

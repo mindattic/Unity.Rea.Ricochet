@@ -72,6 +72,9 @@ namespace Ricochet.Core.Tests
 
             authority.Apply(new AimCommand(1, double.NaN));
             Assert.That(ann.Heading, Is.EqualTo(270), "a NaN heading keeps the last good one");
+            authority.Apply(new AimCommand(1, double.PositiveInfinity));
+            authority.Apply(new FireCommand(1, double.NegativeInfinity, 1));
+            Assert.That(ann.Heading, Is.EqualTo(270), "an infinite heading is garbage too");
         }
 
         [Test]
@@ -634,6 +637,19 @@ namespace Ricochet.Core.Tests
             int version = authority.LayoutVersion;
             Assert.That(authority.Apply(new RerollCommand(1)), Is.Empty);
             Assert.That(authority.LayoutVersion, Is.EqualTo(version));
+        }
+
+        [Test]
+        public void AdoptLayout_PlaysTheLevelAPeerAlreadyHas_AndTheVersionNeverGoesBack()
+        {
+            GameAuthority authority = Practice(out _, out _);
+            authority.AdoptLayout(Maps.RandomIndex, 1234, 7);
+            Assert.That(authority.MapIndex, Is.EqualTo(Maps.RandomIndex));
+            Assert.That(authority.LayoutSeed, Is.EqualTo(1234));
+            Assert.That(authority.Layout.SpawnPoint(0), Is.EqualTo(Maps.At(Maps.RandomIndex).Layout(1234).SpawnPoint(0)));
+
+            IReadOnlyList<GameEvent> events = authority.Reroll(1);
+            Assert.That(Of<LayoutChanged>(events).Single().Version, Is.EqualTo(8));
         }
 
         private static Vec2 Quantised(Vec2 v) => new Vec2((float)v.X, (float)v.Y);

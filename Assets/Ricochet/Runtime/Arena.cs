@@ -151,6 +151,7 @@ namespace Ricochet
             _session = session ?? throw new ArgumentNullException(nameof(session));
             _dummyPrefab = dummyPrefab ?? throw new ArgumentNullException(nameof(dummyPrefab));
             _authority = new Cmd.GameAuthority(new World(session), Rules, MatchRules, ArsenalRules, DropRules, HazardRules);
+            _authority.AdoptLayout(MapIndex, LevelSeed, LevelVersion); // the level this peer is already on
             _authority.Published += OnEvent;
             _hazards.Added += SpawnHazard;
             _hazards.Changed += MirrorHazard;
@@ -218,6 +219,7 @@ namespace Ricochet
             session.Started += () =>
             {
                 ResetLayout(); // every session opens on the practice range
+                arena._authority.AdoptLayout(0, 0, 0);
                 if (session.IsServer)
                 {
                     Current = arena;
@@ -240,6 +242,7 @@ namespace Ricochet
             if (session.IsServer && session.IsLive)
             {
                 ResetLayout();
+                arena._authority.AdoptLayout(0, 0, 0);
                 Current = arena;
                 arena.SpawnDummies();
                 arena.ResetHazards();
