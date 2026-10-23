@@ -4,7 +4,7 @@ project: Unity.Ricochet
 code: UR
 layer: rfc
 status: draft
-updated: 2026-10-21
+updated: 2026-10-23
 ---
 
 # RFC 0001 — Architecture and build order
@@ -152,7 +152,26 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    clock and turn order stay IMGUI (MaProgressBar has no per-player colour). Departures: no audio (the recordings are the
    original's), and the turn does not wait for a line to finish as check_endgame waited for the recording; the score
    goal that ended a game (goal = 500) belongs with UR-T9's endgame.
-7. **UR-T9**: full menu/room flow connecting everything built so far.
+7. **UR-T9** (done): full menu/room flow connecting everything built so far.
+   As built: no scenes, and no `NetSceneFlow`: the game is one scene, and every room but the game itself is a screen. Core
+   `MenuFlow` holds the room graph (`Next`: title → main menu → players → map room → game → endgame → main menu; `Back`: the
+   main menu from every room off it, the players room from the map room), the controls, the how-to-play slides (obj_slide's
+   Last/Next, wrapping, with its "3/9" counter; rewritten for this game) and the credits; `Recap` ranks the endgame's
+   leaderboard (score high to low, the lower seat on a tie, obj_endgame's ds_grid_sort) with its places and "X wins!".
+   `TitleScreen` keeps the kit's menus hidden until Play; `Menus` fills the Players, map room, controls, how-to-play and
+   credits screens added to the kit's main and in-game menus (`NetFrontEnd.AddScreen`), and the announcer under its Settings.
+   The map room: the original's was a world map with one campaign mission, and each round's level came from
+   randomize_level.gml's polygon/shape/rotation/overlap settings; here Core `Maps` is four hand-laid levels on the same 22 x 12
+   border, with walls and redirectors kept clear of the sixteen seats, the dummies and the laid arcs and gates (a test checks
+   it, and that every seat can reach someone). `Arena.Level` became the current map's level (`Arena.UseMap`), every peer
+   following the index `Turns` carries; `LevelView` redraws on a change. The goal (globals.gml's 500; obj_btn_goal_less/more's
+   steps of 500 to 10000, 1 meaning one round) rides in `MatchSetup` with the map; `Match.Goal` ends the match after the round
+   in which it is reached (the round's result first), in a new `GameOver` phase with the top score as `Champion`; nobody fires
+   until a new match or the restart vote's rematch. The endgame recap (`EndgameRecap`, on every peer's HUD) lists every seat
+   with its place, name and score. Departures: the Start on the map room hosts a game and starts the match at once (the
+   original's start went straight to the game screen on the one PC); in a game it is the match vote; the original's endgame
+   pedestal, victory music and fades are not here; settings the original had that this game has no rule for yet (turn time,
+   weapon counts, drop frequencies, fog of war) are not offered.
 8. **UR-T10**: Unity.Shared profile wiring — can land any time after UR-T3's scaffold exists.
 9. **UR-T11–UR-T14** (NET epic): host/join/lobby, then server-authoritative sync of the UR-T3/UR-T4 loop
    (the Core/Net split above is what makes this a wiring job, not a rewrite), then reconnect, then votes.

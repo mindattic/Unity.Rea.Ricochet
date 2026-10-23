@@ -4,7 +4,8 @@
 // and health live on their Player. On an AI seat's turn it also carries which of check_ai's "is thinking..." lines is up
 // (UR-T7), for every peer's HUD. And the announcer (UR-T8): which personality is on the air, and the last line it said
 // (its kind, which of the ten, the seats it names) with a count that goes up by one per line, so every peer's HUD slides
-// the portrait and name box in with it.
+// the portrait and name box in with it. And the menu flow (UR-T9): the map the match is played on (every peer builds its
+// level from the index), the game's goal, and once the goal is reached the champion, for every peer's endgame recap.
 using Ricochet.Core;          // MatchPhase, MatchRules, Announcement
 using Unity.Multiplayer;      // NetEntity, NetSession
 using Unity.Multiplayer.Core; // [Synced]
@@ -34,6 +35,11 @@ namespace Ricochet
         [Synced] private int _lineSubject = -1;
         [Synced] private int _lineOther = -1;
 
+        // The game (UR-T9): the map (an index into Maps.All), the points that win, and the champion once it is over.
+        [Synced] private int _map;
+        [Synced] private int _goal;
+        [Synced] private int _champion = -1;
+
         private float _shownTime;
         private float _lastSyncedTime = -1f;
 
@@ -61,6 +67,24 @@ namespace Ricochet
         {
             Turns turns = For(session);
             return turns == null || turns.MatchPhase == MatchPhase.Practice || (turns.MatchPhase == MatchPhase.Aiming && turns.Current == seat);
+        }
+
+        /// <summary>The map this match is played on (an index into Maps.All).</summary>
+        public int MapIndex => Map;
+
+        /// <summary>The points that win the game (MatchSetup.OneRound for a single round).</summary>
+        public int GoalPoints => Goal;
+
+        /// <summary>The game's champion's seat once the goal is reached (MatchPhase.GameOver), else -1.</summary>
+        public int ChampionSeat => Champion;
+
+        /// <summary>Server: the map the match is played on.</summary>
+        internal void MirrorMap(int map)
+        {
+            if (Map != map)
+            {
+                Map = map;
+            }
         }
 
         /// <summary>The "is thinking..." line (Ai.ThinkingLine) the AI whose turn it is shows, or -1 on a human's turn.</summary>
@@ -104,6 +128,8 @@ namespace Ricochet
             Current = match.Current;
             Round = match.Round;
             Winner = match.Winner;
+            Goal = match.Goal;
+            Champion = match.Champion;
             float time = (float)match.TimeLeft;
             if (Mathf.Abs(time - TimeLeft) >= ClockStep || time > TimeLeft || time == 0f)
             {
@@ -127,6 +153,12 @@ namespace Ricochet
             if (IsServer && Arena != null)
             {
                 Arena.Tick(Time.deltaTime);
+            }
+
+            // A client in a process of its own plays on the map the server chose (a host's peers share its Arena.Level).
+            if (!IsServer && global::Ricochet.Arena.Current == null && Map != global::Ricochet.Arena.MapIndex)
+            {
+                global::Ricochet.Arena.UseMap(Map);
             }
 
             // Every peer: follow the synced clock, ticking down locally between its tenths.

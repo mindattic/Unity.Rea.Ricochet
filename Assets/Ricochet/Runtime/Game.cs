@@ -1,8 +1,11 @@
 // The game's one scene component: it draws the level, serves the rules (Arena) on the server, registers the votes the game offers, and
-// adds the game's own items to the drop-in front end. The menus, lobby, join codes, reconnect, roster and vote overlay
+// adds the game's own rooms to the drop-in front end (UR-T9: the title, players, map, controls, how-to-play and credits rooms,
+// Menus/TitleScreen; the endgame recap is the HUD's). The menus, lobby, join codes, reconnect, roster and vote overlay
 // are the kit's; this is the only glue a game writes. Runs on every peer: a dedicated server and a bot run this scene too.
-using Ricochet.Core;        // MatchRules, MatchSetup, Ai, ArsenalRules, Announcer, AudioMix, SoundCue
-using Unity.Multiplayer;    // NetBootstrap, NetVotes
+using System.Collections;
+using MindAttic.Components.Unity; // MenuScreen
+using Ricochet.Core;        // MatchSetup, MenuFlow, Room, AudioMix, SoundCue
+using Unity.Multiplayer;    // NetBootstrap, NetVotes, NetSession
 using Unity.Multiplayer.UI; // NetFrontEnd, MenuPlacement
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -17,7 +20,7 @@ namespace Ricochet
         [SerializeField] private GameObject dummyPrefab;
 
         private Arena _arena;
-        private readonly MatchSetup _setup = new MatchSetup(); // what the start-match vote proposes (obj_btn_ai_*, obj_btn_aimassist_*)
+        private readonly MatchSetup _setup = new MatchSetup(); // what the start-match vote proposes: the players, map and settings rooms' choices
 
         /// <summary>The rules this scene serves (null before Start).</summary>
         public Arena Rules
@@ -62,59 +65,20 @@ namespace Ricochet
             // since that package is installed), then the profile's audio settings, saved the moment they change.
             frontEnd.AddSettingsItems(AddAudioSettings);
 
-            frontEnd.AddScreen("How to play", s =>
-            {
-                s.AddText("Left/Right (or A/D) turn your aim, Up/Down (or W/S) set the power, Space fires.");
-                s.AddText("The faint line shows where the shot will bounce: off the border, off the white walls, and along "
-                    + "the orange redirectors' arrows. It explodes on its fifth contact. Knock the dummies down.");
-                s.AddText("Your name, colour and sound volumes come from your MindAttic profile, so you set them once: change "
-                    + "them under Settings and every session (and every MindAttic game) after keeps them.");
-                s.AddText("Esc opens the menu: invite players, change your name and colour, pick how many AI opponents to add "
-                    + "(up to 16 seats in all) and vote to start a match.");
-                s.AddText("In a match you play in turn: the yellow clock at the top is your 20 seconds to fire, the bars are "
-                    + "everyone's health, and the line under the clock is the order the players still standing take their turns. "
-                    + "A shot hurts more for every bounce (and hurts you, if it comes back). The last one standing wins the round.");
-                s.AddText("Weapons: Q/E cycle the cannon (unlimited), laser (full range, fast), shotgun (a fan of five pellets), "
-                    + "grenade (passes through players and goes off when its fuse runs out: 1 shorter, 2 longer, 3 longest) and "
-                    + "railgun (straight through walls, hitting everyone on the line). You start each round with three of each.");
-                s.AddText("Items: Z/C cycle, F uses: an extra bounce for this turn's shot, a teleporter that moves you to where it "
-                    + "lands, a shrink ray that shrinks the first player it reaches, and aim assist, which turns your aim onto a "
-                    + "shot that reaches an opponent (at your power if it can, else at full) and lights its path. Crates fall "
-                    + "during a match: shoot across one to collect it (W a weapon, I an item, + health, ? a mystery weapon).");
-                s.AddText("AI opponents fill the empty seats. Before you vote to start a match, pick how many, how well they aim "
-                    + "(skill 10 fires exactly where it means to; each step down nudges its aim up to a degree more either way) "
-                    + "and how many aim assists everyone starts with (0 for none, 10 for unlimited). On its turn an AI thinks, "
-                    + "looks for a straight shot, then a bank shot, then a railgun shot through the walls, and fires.");
-                s.AddText("The vortex device flies like a shell: press Space again while it is in the air to set it off. It hurts "
-                    + "everyone in its pull, swallows shield walls, redirectors and foliage, and tears a breach in any border it "
-                    + "reaches; shots fly out through a breach instead of bouncing. The shield wall item stands a wall in front of "
-                    + "you that only your own shots pass; anyone else's shatters it. The redirector item sets a redirector down "
-                    + "where it lands, sending shots on the way it flew.");
-                s.AddText("The announcer (pick who and how often before you vote to start a match) welcomes everyone, cheers a "
-                    + "shot that knocks someone out and heckles one that hits nobody. A hit on an opponent scores 100 points, 25 "
-                    + "more a bounce and 5 for every tenth of a second the shot was in the air; scores last the whole match. The "
-                    + "card at the bottom right shows whose turn it is, their score, weapon, item and the combo the shot in the "
-                    + "air would score.");
-                s.AddText("Hazards: the blue electric arc stops any shot that touches it; the red laser gate does too, but it is "
-                    + "only on every other turn; a shot cuts down the first tuft of grass it touches and stops there.");
-            }, MenuPlacement.Both);
+            // The original's room graph (UR-T9): the title first, then the kit's main menu with the setup rooms (players,
+            // then the map room, then into the game) and the controls, how-to-play and credits rooms off it; the same rooms
+            // in the in-game menu, where the map room's button asks everyone by the match vote. The settings room's
+            // announcer box sits under the kit's Settings, beside the name and colour.
+            StartCoroutine(ShowTitle(frontEnd));
 
+            frontEnd.AddScreen(MenuFlow.Title(Room.Players), s => Menus.BuildPlayers(s, _setup, frontEnd.Identity.DisplayName,
+                frontEnd.OpenSettings, from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), BuildMapRoom)), MenuPlacement.Both);
+            frontEnd.AddScreen(MenuFlow.Title(Room.Controls), Menus.BuildControls, MenuPlacement.Both);
+            frontEnd.AddScreen(MenuFlow.Title(Room.HowToPlay), s => Menus.BuildHowToPlay(s), MenuPlacement.Both);
+            frontEnd.AddScreen(MenuFlow.Title(Room.Credits), Menus.BuildCredits, MenuPlacement.MainMenu);
+            frontEnd.AddSettingsItems(s => Menus.AddGameSettings(s, _setup));
             frontEnd.AddPauseMenuItems(s =>
             {
-                s.AddRange("AI opponents", 0, MatchRules.MaxSeats - 1, _setup.AiCount, v => _setup.AiCount = Mathf.RoundToInt(v), wholeNumbers: true);
-                s.AddRange("AI skill", Ai.MinSkill, Ai.MaxSkill, _setup.AiSkill, v => _setup.AiSkill = Mathf.RoundToInt(v), wholeNumbers: true);
-                s.AddRange("Aim assists each (10 = unlimited)", 0, ArsenalRules.Unlimited, _setup.AimAssists, v => _setup.AimAssists = Mathf.RoundToInt(v),
-                    wholeNumbers: true);
-                // The settings screen's announcements box (UR-T8): the personality, and how often it speaks.
-                var voices = new System.Collections.Generic.List<string>();
-                foreach (AnnouncerVoice voice in Announcer.Voices)
-                {
-                    voices.Add(voice.Name);
-                }
-
-                s.AddSelect("Announcer", voices, _setup.AnnouncerVoice, v => _setup.AnnouncerVoice = v);
-                s.AddRange("Announcements (0 off, 1 every time, 4 rarely)", 0, Announcer.MaxFrequency, _setup.Announcements,
-                    v => _setup.Announcements = Mathf.RoundToInt(v), wholeNumbers: true);
                 s.AddButton("Vote to start a match", StartMatchVote);
                 s.AddButton("Vote to restart", StartRestartVote);
             });
@@ -157,11 +121,81 @@ namespace Ricochet
             };
         }
 
+        // The title comes up over the kit's main menu once the front end has built its menus (it builds none in a headless
+        // process, a bot or a session already running, and then there is no title either).
+        private static IEnumerator ShowTitle(NetFrontEnd frontEnd)
+        {
+            yield return null;
+            if (frontEnd != null && frontEnd.HasMenus && frontEnd.State == FrontEndState.Menu)
+            {
+                TitleScreen.Show(frontEnd, Application.version);
+            }
+        }
+
+        // The map room, one step on from the players room: its button goes into the game. From the main menu that hosts a
+        // game straight into play with the setup (others can still join by the invite); in a game it is the match vote.
+        private void BuildMapRoom(MenuScreen s)
+        {
+            NetFrontEnd frontEnd = NetFrontEnd.Instance;
+            bool inGame = frontEnd != null && frontEnd.State == FrontEndState.InGame;
+            Menus.BuildMap(s, _setup, inGame ? "Vote to start a match" : "Start", inGame ? (System.Action)StartMatchVote : HostAndPlay);
+        }
+
+        // titlescreen -> mainmenu -> players -> maproom -> gamescreen, for a player on their own: host, skip the lobby, start
+        // the match with the setup (no one to ask yet).
+        private async void HostAndPlay()
+        {
+            NetFrontEnd frontEnd = NetFrontEnd.Instance;
+            if (frontEnd == null || frontEnd.State != FrontEndState.Menu)
+            {
+                return;
+            }
+
+            if (!await frontEnd.HostAsync() || this == null)
+            {
+                return;
+            }
+
+            if (frontEnd.State == FrontEndState.Lobby)
+            {
+                frontEnd.StartGame();
+            }
+
+            // The host's own player spawns a frame or so after the host starts; the match seats it.
+            for (int frame = 0; frame < 300 && this != null && !HasHuman(frontEnd.Session); frame++)
+            {
+                await System.Threading.Tasks.Task.Yield();
+            }
+
+            if (this != null && _arena != null && !_arena.StartMatch(_setup.Clone()))
+            {
+                Debug.Log("[Game] A match needs two players: add an AI opponent on the Players screen.");
+            }
+        }
+
+        private static bool HasHuman(NetSession session)
+        {
+            foreach (Player player in Player.In(session))
+            {
+                if (!player.IsAi)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void StartMatchVote()
         {
             if (NetVotes.Instance != null && NetVotes.Instance.Board != null)
             {
                 NetVotes.Instance.Board.StartVote(Arena.MatchVote, _setup.AiCount, _setup.Format());
+                NetFrontEnd frontEnd = NetFrontEnd.Instance;
+                if (frontEnd != null && frontEnd.PauseMenu != null)
+                {
+                    frontEnd.PauseMenu.Close(); // back to the game, where the vote's overlay is
+                }
             }
         }
 

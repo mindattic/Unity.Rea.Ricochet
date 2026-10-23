@@ -5,7 +5,8 @@
 // seat's turn, obj_ai_gui's line along the bottom: "AI 2 is plotting and scheming...", pulsing between half and full.
 // Each slot also carries the seat's match score (draw_scores.gml's "name: score", UR-T8). The announcer's portrait and
 // name box and the turn card (whose turn, their weapon, item and combo) are MindAttic Components widgets (HudOverlay,
-// added with this); the bars, clock and turn order stay IMGUI, drawn in each player's own colour.
+// added with this); the bars, clock and turn order stay IMGUI, drawn in each player's own colour. Once the game's goal is
+// reached (UR-T9) the caption names the champion and the endgame recap (EndgameRecap, added with this) comes up.
 using System.Collections.Generic;
 using System.Text;
 using Ricochet.Core;     // MatchPhase, Seating, Ai
@@ -35,6 +36,7 @@ namespace Ricochet
             var hud = new GameObject("Match HUD").AddComponent<MatchHud>();
             hud.Session = session;
             hud.Overlay = HudOverlay.Create(hud);
+            hud.Recap = EndgameRecap.Create(hud);
             return hud;
         }
 
@@ -43,6 +45,9 @@ namespace Ricochet
 
         /// <summary>The Components half: the announcer's card and the turn card.</summary>
         public HudOverlay Overlay { get; private set; }
+
+        /// <summary>The endgame recap: the leaderboard once the game's goal is reached (UR-T9).</summary>
+        public EndgameRecap Recap { get; private set; }
 
         /// <summary>The session drawn now: <see cref="Session"/>, or the bootstrap's.</summary>
         public NetSession CurrentSession => Session ?? (NetBootstrap.Instance != null ? NetBootstrap.Instance.Session : null);
@@ -69,7 +74,7 @@ namespace Ricochet
             float centre = Screen.width / 2f;
 
             // The clock, or the round's result.
-            string clock = turns.MatchPhase == MatchPhase.RoundOver ? "--.--" : Seating.FormatClock(turns.ShownTimeLeft);
+            string clock = turns.MatchPhase == MatchPhase.RoundOver || turns.MatchPhase == MatchPhase.GameOver ? "--.--" : Seating.FormatClock(turns.ShownTimeLeft);
             GUI.Label(new Rect(centre - 70f, 4f, 140f, 34f), clock, _clockStyle);
 
             _seated.Clear();
@@ -115,7 +120,7 @@ namespace Ricochet
             }
 
             string tag = player.IsAi ? "[AI] " : string.Empty;
-            string state = player.InRound ? player.Health.ToString() : turns.MatchPhase == MatchPhase.RoundOver || player.Health <= 0 ? "OUT" : "next round";
+            string state = player.InRound ? player.Health.ToString() : turns.MatchPhase == MatchPhase.RoundOver || turns.MatchPhase == MatchPhase.GameOver || player.Health <= 0 ? "OUT" : "next round";
             _nameStyle.normal.textColor = player.InRound ? color : new Color(color.r, color.g, color.b, 0.45f);
             GUI.Label(new Rect(x, y, BarWidth, 18f), tag + player.DisplayName + "  " + state, _nameStyle);
             GUI.Label(new Rect(x, y, BarWidth, 18f), player.Score.ToString(), _scoreStyle); // draw_scores.gml
@@ -124,6 +129,12 @@ namespace Ricochet
 
         private string Caption(Turns turns)
         {
+            if (turns.MatchPhase == MatchPhase.GameOver)
+            {
+                Player champion = Find(turns.ChampionSeat);
+                return "Game over" + (champion != null ? ": " + champion.DisplayName + " wins the game!" : ".");
+            }
+
             if (turns.MatchPhase == MatchPhase.RoundOver)
             {
                 Player winner = Find(turns.Winner);
@@ -131,7 +142,7 @@ namespace Ricochet
             }
 
             // The living seats from the current one round the table: the turn order.
-            var order = new StringBuilder("Round " + turns.Round + "   Turn: ");
+            var order = new StringBuilder("Round " + turns.Round + "   " + MatchSetup.DescribeGoal(turns.GoalPoints) + "   Turn: ");
             int start = turns.Current;
             bool first = true;
             for (int pass = 0; pass < 2; pass++)

@@ -10,6 +10,7 @@
         "Unity.Multiplayer.UI",
         "Unity.Shared",
         "Unity.Shared.Core",
+        "MindAttic.Components.Unity",
         "Unity.Netcode.Runtime",
         "Unity.Netcode.Runtime.Tests",
         "UnityEngine.TestRunner",

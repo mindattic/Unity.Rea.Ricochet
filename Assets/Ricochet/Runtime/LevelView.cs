@@ -1,5 +1,6 @@
 // Draws Arena.Level on every peer: the border, the mirror walls, and the redirectors with a tick pointing the way
-// they send a shot. Presentation only: the level itself is Core data, the same everywhere.
+// they send a shot. Presentation only: the level itself is Core data, the same everywhere. When a match is played on
+// another map (UR-T9), the drawing is rebuilt from the new level.
 using Ricochet.Core;
 using UnityEngine;
 
@@ -17,11 +18,36 @@ namespace Ricochet
             var go = new GameObject("Level");
             var view = go.AddComponent<LevelView>();
             view.Draw(level);
+            Arena.LevelChanged += view.Redraw;
             return view;
+        }
+
+        /// <summary>The level drawn now.</summary>
+        public Level Shown { get; private set; }
+
+        private void OnDestroy()
+        {
+            Arena.LevelChanged -= Redraw;
+        }
+
+        private void Redraw(Level level)
+        {
+            if (this == null)
+            {
+                return;
+            }
+
+            for (int i = transform.childCount - 1; i >= 0; i--)
+            {
+                Destroy(transform.GetChild(i).gameObject);
+            }
+
+            Draw(level);
         }
 
         private void Draw(Level level)
         {
+            Shown = level;
             var corners = new[]
             {
                 new Vector3((float)level.MinX, (float)level.MinY), new Vector3((float)level.MaxX, (float)level.MinY),

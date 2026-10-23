@@ -17,7 +17,10 @@
 // and breaches the border. The announcer and scores (UR-T8): the match vote's setup also names the personality on the air
 // and how often it speaks; Core's Announcer welcomes everyone when the match starts, cheers a shot that knocks an
 // opponent out and heckles one that hits nobody, each line mirrored through Turns; a hit on an opponent scores the shooter
-// (Match.Strike, for the bounces and the volley's time in the air), mirrored to each Player's score.
+// (Match.Strike, for the bounces and the volley's time in the air), mirrored to each Player's score. The menu flow (UR-T9):
+// the match vote's setup also carries the map (Core's Maps: the level every peer builds from its index, mirrored through
+// Turns) and the game's goal; once a round ends with the goal reached the match is over (MatchPhase.GameOver), nobody fires
+// and every peer's HUD shows the endgame recap until a new match (or a rematch vote) starts.
 using System;
 using System.Collections.Generic;
 using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, Ai, AiTurn, MatchSetup, HazardField
@@ -39,8 +42,31 @@ namespace Ricochet
         /// <summary>A dummy's hit radius (its square is drawn 0.8 wide).</summary>
         public const float DummyRadius = 0.45f;
 
-        /// <summary>The level every peer plays in.</summary>
-        public static readonly Level Level = Level.Default();
+        /// <summary>
+        /// The level every peer plays in: the current map's (UR-T9). The first map (the practice range) until a match is
+        /// started on another; each peer follows the map Turns carries.
+        /// </summary>
+        public static Level Level { get; private set; } = Maps.At(0).Build();
+
+        /// <summary>The map <see cref="Level"/> was built from (an index into Maps.All).</summary>
+        public static int MapIndex { get; private set; }
+
+        /// <summary>Raised on this peer when <see cref="Level"/> changes to another map's (the level view redraws).</summary>
+        public static event Action<Level> LevelChanged;
+
+        /// <summary>Plays on map <paramref name="index"/> from now on, on this peer (the server's match start, a client's Turns).</summary>
+        public static void UseMap(int index)
+        {
+            index = Maps.Clamp(index);
+            if (index == MapIndex)
+            {
+                return;
+            }
+
+            MapIndex = index;
+            Level = Maps.At(index).Build();
+            LevelChanged?.Invoke(Level);
+        }
 
         /// <summary>The shot rules every peer plays by.</summary>
         public static readonly ShotRules Rules = ShotRules.Default;
@@ -117,6 +143,7 @@ namespace Ricochet
             var arena = new Arena(session, dummyPrefab) { LaysHazards = layHazards };
             session.Started += () =>
             {
+                UseMap(0); // every session opens on the practice range
                 if (session.IsServer)
                 {
                     Current = arena;
@@ -131,9 +158,12 @@ namespace Ricochet
                 {
                     Current = null;
                 }
+
+                UseMap(0);
             };
             if (session.IsServer && session.IsLive)
             {
+                UseMap(0);
                 Current = arena;
                 arena.SpawnDummies();
                 arena.ResetHazards();
@@ -366,13 +396,16 @@ namespace Ricochet
             _setup = setup;
             _setup.ApplyTo(ArsenalRules);
             _aiTurn = null;
+            UseMap(_setup.Map); // the map room's choice: every round of this match is laid on it
+            _hazards.UseLevel(Level);
             _field?.Clear();
             _field = new DropField(Level, DropRules, _dropDice);
             _field.Spawned += SpawnCrate;
             _field.Landed += LandCrate;
             _field.Removed += drop => _session.Objects.Despawn(Crate.KeyFor(drop.Id));
-            _match = new Match(MatchRules);
+            _match = new Match(MatchRules) { Goal = _setup.Goal };
             _match.RoundStarted += _ => NewRound();
+            _match.GameEnded += _ => GameOver();
             _match.TurnStarted += seat =>
             {
                 ClearExtraBounces();
@@ -411,6 +444,7 @@ namespace Ricochet
             }
 
             _turns.Arena = this;
+            _turns.MirrorMap(MapIndex);
             _announcer = new Announcer(_setup.AnnouncerVoice, _setup.Announcements, _announcerDice);
             _turns.MirrorVoice(_announcer.Voice);
             _match.Start();
@@ -580,6 +614,14 @@ namespace Ricochet
             }
         }
 
+        // check_endgame's room_goto(endgame): the goal was reached. The crates go and no AI plays on; the recap is every
+        // peer's HUD's, from Turns' phase and champion.
+        private void GameOver()
+        {
+            _field?.Clear();
+            _aiTurn = null;
+        }
+
         private void ClearExtraBounces()
         {
             foreach (Player player in Player.In(_session))
@@ -644,12 +686,12 @@ namespace Ricochet
             // obj_drop_emitter: crates fall while a round is being played; none outlive the match.
             if (_field != null)
             {
-                if (_match.IsRunning && _match.Phase != MatchPhase.RoundOver)
+                if (_match.IsRunning && _match.Phase != MatchPhase.RoundOver && _match.Phase != MatchPhase.GameOver)
                 {
                     _field.Tick(seconds);
                     _hazards.Tick(seconds); // shield walls decay
                 }
-                else if (!_match.IsRunning && _field.Drops.Count > 0)
+                else if ((!_match.IsRunning || _match.Phase == MatchPhase.GameOver) && _field.Drops.Count > 0)
                 {
                     _field.Clear();
                 }
@@ -715,7 +757,8 @@ namespace Ricochet
         /// <summary>The vote this game offers: restart the round (in a match) or stand every dummy back up.</summary>
         public VoteKind CreateRestartVote() => new VoteKind(RestartVote, "Restart the round?")
         {
-            Description = _ => _match != null && _match.IsRunning ? "Everyone back to full health; the match starts over." : "Every practice dummy stands back up and the level is laid again.",
+            Description = _ => _match != null && _match.Phase == MatchPhase.GameOver ? "A rematch: the same players, map and goal, from round one."
+                : _match != null && _match.IsRunning ? "Everyone back to full health; the match starts over." : "Every practice dummy stands back up and the level is laid again.",
             Passed = _ =>
             {
                 if (_match != null && _match.IsRunning)
@@ -736,7 +779,8 @@ namespace Ricochet
         /// </summary>
         public VoteKind CreateMatchVote() => new VoteKind(MatchVote, r => "Start a match with " + r.Number + " AI opponent" + (r.Number == 1 ? "?" : "s?"))
         {
-            Description = r => MatchSetup.Parse(r.Number, r.Text).Describe() + ". " + MatchSetup.Parse(r.Number, r.Text).DescribeAnnouncer() + ". Everyone takes a seat and plays in turn; the last one standing wins the round.",
+            Description = r => MatchSetup.Parse(r.Number, r.Text).DescribeGame() + ". " + MatchSetup.Parse(r.Number, r.Text).Describe() + ". "
+                + MatchSetup.Parse(r.Number, r.Text).DescribeAnnouncer() + ". Everyone takes a seat and plays in turn; the last one standing wins the round.",
             Check = r => HumanCount() + Math.Max(0, r.Number) < 2 ? "A match needs two players: add an AI opponent." : null,
             Passed = v => StartMatch(MatchSetup.Parse(v.Number, v.Text)),
         };

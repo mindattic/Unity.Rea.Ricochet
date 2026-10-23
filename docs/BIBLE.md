@@ -111,6 +111,14 @@ copy of any of these is a bug.
   turn it is with their score, weapon, item and combo (draw_weaponinfo/draw_iteminfo). The cards are MindAttic Components
   widgets; the per-colour health bars stay IMGUI (UR-T8; `Core/Announcer.cs`, `MatchRules.Points` and `Match`'s scores
   tested by `dotnet test Core.slnx`, the wire and HUD by `Tests/PlayMode/AnnouncerTests.cs`).
-- ⬜ Everything else — menus, profiles (UR-T9–UR-T10) and
-  multiplayer polish (UR-T11–UR-T14) — is ticketed and unstarted. See
+- ✅ Menu flow and rooms: the original's room graph (titlescreen → mainmenu → players → maproom → gamescreen → endgame,
+  with settings, controls, howtoplay and credits off the main menu) as a title screen and MindAttic Components screens on the
+  kit's front end: Players (name and colour, AI count, skill, aim assists), the map room (four hand-laid maps on the same
+  border, seats and laid hazards, and the goal: one round or first to 500–10000 points, check_endgame/obj_btn_goal_*), the
+  announcer under Settings, Controls, How to play (obj_slide's slides) and Credits; the match vote carries the map and goal,
+  every peer builds the map's level from its index (synced on `Turns`), and once a round ends with the goal reached the match
+  is over (`GameOver`, nobody fires) and every peer's endgame recap shows the champion and the leaderboard (obj_endgame) with
+  a rematch vote (UR-T9; `Core/MenuFlow.cs`, `Maps.cs`, `Match`'s goal tested by `dotnet test Core.slnx`, the wire and the
+  screens by `Tests/PlayMode/MenuFlowTests.cs`).
+- ⬜ Everything else — multiplayer polish (UR-T11–UR-T14) — is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.

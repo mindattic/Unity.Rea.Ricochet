@@ -177,7 +177,16 @@ namespace Ricochet.Core
         }
 
         /// <summary>The level without its hazards.</summary>
-        public Level Level { get; }
+        public Level Level { get; private set; }
+
+        /// <summary>
+        /// Lays future hazards out on <paramref name="level"/> instead (a match on another map, UR-T9); the hazards already
+        /// down stay until <see cref="Clear"/>.
+        /// </summary>
+        public void UseLevel(Level level)
+        {
+            Level = level ?? throw new ArgumentNullException(nameof(level));
+        }
 
         public HazardRules Rules { get; }
 

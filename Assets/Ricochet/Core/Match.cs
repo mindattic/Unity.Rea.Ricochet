@@ -4,6 +4,9 @@
 // reset_timer.gml (a per-turn timer that passes the turn when it runs out, beeping over the last four seconds),
 // hit.gml (damage, self-hits, a kill when health reaches zero) and check_endgame.gml (the round is over when all but
 // one are dead). Plain C# so every rule is unit-tested; the server runs one Match and the network layer mirrors it.
+// The game's goal (UR-T9): check_endgame.gml went to the endgame room instead of the next round once anyone's score had
+// reached the goal (globals.gml's goal of 500 points; 1 meant a single round). Here the round's result stays up for its
+// pause, then the match is over (GameOver) and its champion is the top score, as the endgame room's leaderboard ranked it.
 using System;
 using System.Collections.Generic;
 
@@ -31,6 +34,9 @@ namespace Ricochet.Core
 
         /// <summary>One seat (or none) is left standing; the next round starts after <see cref="MatchRules.RoundOverSeconds"/>.</summary>
         RoundOver,
+
+        /// <summary>The goal was reached (UR-T9): the match is over and <see cref="Match.Champion"/> won it; nobody fires.</summary>
+        GameOver,
     }
 
     /// <summary>One seat at the table.</summary>
@@ -76,6 +82,7 @@ namespace Ricochet.Core
             _dice = seed == 0 ? new Random() : new Random(seed);
             Current = -1;
             Winner = -1;
+            Champion = -1;
         }
 
         public MatchRules Rules { get; }
@@ -93,6 +100,15 @@ namespace Ricochet.Core
 
         /// <summary>The last round's winner, or -1 (no round over yet, or nobody survived).</summary>
         public int Winner { get; private set; }
+
+        /// <summary>
+        /// The points that win the game (goal): once a round ends with anyone's score at or above it, the match is over.
+        /// <see cref="MatchSetup.OneRound"/> (1) ends it after the first round whatever the scores; 0 or less never ends it.
+        /// </summary>
+        public int Goal { get; set; }
+
+        /// <summary>The game's champion (the top score, the lowest seat on a tie) once it is over, else -1.</summary>
+        public int Champion { get; private set; }
 
         /// <summary>Every seat, in turn (seat) order.</summary>
         public IEnumerable<MatchSeat> Seats => _seats.Values;
@@ -124,6 +140,36 @@ namespace Ricochet.Core
 
         /// <summary>The round ended; the winner's seat, or -1 when nobody survived.</summary>
         public event Action<int> RoundEnded;
+
+        /// <summary>The goal was reached and the match is over: the champion's seat (UR-T9).</summary>
+        public event Action<int> GameEnded;
+
+        /// <summary>True when the goal has been reached: a single-round game, or anyone's score at or above it.</summary>
+        public bool GoalReached
+        {
+            get
+            {
+                if (Goal <= 0)
+                {
+                    return false;
+                }
+
+                if (Goal == MatchSetup.OneRound)
+                {
+                    return Round >= 1;
+                }
+
+                foreach (MatchSeat seat in _seats.Values)
+                {
+                    if (seat.Score >= Goal)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
 
         public bool TryGetSeat(int index, out MatchSeat seat) => _seats.TryGetValue(index, out seat);
 
@@ -207,6 +253,7 @@ namespace Ricochet.Core
 
             Round = 0;
             Winner = -1;
+            Champion = -1;
             foreach (MatchSeat seat in _seats.Values)
             {
                 seat.Score = 0; // reset_scores.gml: a new match starts everyone at nothing
@@ -223,7 +270,7 @@ namespace Ricochet.Core
             TimeLeft = 0;
         }
 
-        /// <summary>Only the seat whose turn it is may fire, and only while aiming (anyone may in practice).</summary>
+        /// <summary>Only the seat whose turn it is may fire, and only while aiming (anyone may in practice; nobody once the game is over).</summary>
         public bool MayFire(int seat)
         {
             return Phase == MatchPhase.Practice || (Phase == MatchPhase.Aiming && seat == Current);
@@ -265,7 +312,7 @@ namespace Ricochet.Core
         /// </summary>
         public int Strike(int shooter, int hitSeat, int bounces, double scale = 1, double flightSeconds = 0)
         {
-            if (!IsRunning || Phase == MatchPhase.RoundOver || !_seats.TryGetValue(hitSeat, out MatchSeat hit) || !hit.Alive)
+            if (!IsRunning || Phase == MatchPhase.RoundOver || Phase == MatchPhase.GameOver || !_seats.TryGetValue(hitSeat, out MatchSeat hit) || !hit.Alive)
             {
                 return 0;
             }
@@ -298,7 +345,7 @@ namespace Ricochet.Core
         /// </summary>
         public int Heal(int seat, int amount)
         {
-            if (!IsRunning || amount <= 0 || !_seats.TryGetValue(seat, out MatchSeat healed) || !healed.Alive)
+            if (!IsRunning || Phase == MatchPhase.GameOver || amount <= 0 || !_seats.TryGetValue(seat, out MatchSeat healed) || !healed.Alive)
             {
                 return 0;
             }
@@ -359,7 +406,14 @@ namespace Ricochet.Core
                     _phaseTime -= seconds;
                     if (_phaseTime <= 0)
                     {
-                        StartRound(Winner);
+                        if (GoalReached)
+                        {
+                            EndGame();
+                        }
+                        else
+                        {
+                            StartRound(Winner);
+                        }
                     }
 
                     break;
@@ -396,13 +450,35 @@ namespace Ricochet.Core
         /// <summary>next_player.gml: the turn passes to the next living seat, wrapping past the last.</summary>
         public void NextTurn()
         {
-            if (!IsRunning || CheckRoundOver())
+            if (!IsRunning || Phase == MatchPhase.GameOver || CheckRoundOver())
             {
                 return;
             }
 
             int next = NextLiving(Current);
             BeginTurn(next);
+        }
+
+        /// <summary>
+        /// The seats ranked for the endgame recap: the highest score first, the lower seat first on a tie (the endgame
+        /// room's ds_grid_sort of pScore).
+        /// </summary>
+        public List<MatchSeat> Standings()
+        {
+            var ranked = new List<MatchSeat>(_seats.Values);
+            ranked.Sort((a, b) => a.Score != b.Score ? b.Score.CompareTo(a.Score) : a.Index.CompareTo(b.Index));
+            return ranked;
+        }
+
+        // check_endgame.gml's room_goto(endgame): the match is over, and the top score is its champion.
+        private void EndGame()
+        {
+            List<MatchSeat> ranked = Standings();
+            Champion = ranked.Count > 0 ? ranked[0].Index : -1;
+            Phase = MatchPhase.GameOver;
+            Current = -1;
+            TimeLeft = 0;
+            GameEnded?.Invoke(Champion);
         }
 
         private void StartRound(int firstSeat)
@@ -461,9 +537,9 @@ namespace Ricochet.Core
         // check_endgame.gml: all but one (or all) are out: the round is over.
         private bool CheckRoundOver()
         {
-            if (Phase == MatchPhase.RoundOver || !IsRunning)
+            if (Phase == MatchPhase.RoundOver || Phase == MatchPhase.GameOver || !IsRunning)
             {
-                return Phase == MatchPhase.RoundOver;
+                return Phase == MatchPhase.RoundOver || Phase == MatchPhase.GameOver;
             }
 
             int living = 0;

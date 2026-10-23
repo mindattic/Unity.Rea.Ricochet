@@ -156,7 +156,7 @@ namespace Ricochet
                     }
                 }
             }
-            else if (turns.MatchPhase != MatchPhase.RoundOver && turns.MatchPhase != MatchPhase.Practice)
+            else if (turns.MatchPhase != MatchPhase.RoundOver && turns.MatchPhase != MatchPhase.Practice && turns.MatchPhase != MatchPhase.GameOver)
             {
                 foreach (Player player in _players)
                 {
