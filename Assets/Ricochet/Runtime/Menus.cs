@@ -6,6 +6,7 @@
 //     seats, how well they aim and how many aim assists everyone starts with; Next goes on to the map room.
 //   Map (maproom): which map, what it is like, and the goal (one round, or first to 500 ... 10000 points); its button
 //     starts the game: hosts one from the main menu, or asks the others by the match vote in a game.
+//   Vote to kick (UR-T14, in game only): a button for each player who may be voted out.
 //   Controls, How to play (obj_slide's slides with Last/Next and a "3/9" counter), Credits.
 using System;
 using System.Collections.Generic;
@@ -139,6 +140,22 @@ namespace Ricochet
                 Show();
             }, ButtonVariant.Primary);
             Show();
+        }
+
+        /// <summary>
+        /// The kick room (UR-T14), off the in-game menu: a button for each player this peer may vote to kick (Core's
+        /// <see cref="VoteMenu.KickTargets"/>: not themselves, not the host, not an AI), each starting that vote through
+        /// <paramref name="startKick"/> with their client id; or a line saying there is nobody.
+        /// </summary>
+        public static void BuildKick(MenuScreen s, IEnumerable<VoteMember> roster, Action<ulong> startKick)
+        {
+            IReadOnlyList<VoteMember> targets = VoteMenu.KickTargets(roster);
+            s.Subtitle = targets.Count == 0 ? VoteMenu.NobodyToKick : VoteMenu.KickSubtitle;
+            foreach (VoteMember target in targets)
+            {
+                ulong clientId = target.ClientId;
+                s.AddButton(VoteMenu.KickButton(target.Name), () => startKick?.Invoke(clientId), ButtonVariant.Danger);
+            }
         }
 
         /// <summary>The credits room.</summary>

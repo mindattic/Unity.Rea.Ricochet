@@ -24,6 +24,7 @@
 // kit holds a dropped player's seat (NetSession.SeatHeld) their Player waits, marked Away, and their match seat keeps its
 // health and score (Match.Drop); on their turn the clock waits for them, and every peer's HUD says so through Turns. Back
 // in time (SeatReclaimed) they resume the same turn (Match.Rejoin); once the kit gives the seat up (SeatReleased) they leave.
+// Votes (UR-T14): a third vote, the kit's kick, removes a player; the kit frees their seat at once, so they leave the same way.
 using System;
 using System.Collections.Generic;
 using Ricochet.Core;         // Level, ShotRules, Vec2, Target, Match, Seating, Ai, AiTurn, MatchSetup, HazardField
@@ -843,10 +844,9 @@ namespace Ricochet
         }
 
         /// <summary>The vote this game offers: restart the round (in a match) or stand every dummy back up.</summary>
-        public VoteKind CreateRestartVote() => new VoteKind(RestartVote, "Restart the round?")
+        public VoteKind CreateRestartVote() => new VoteKind(RestartVote, VoteMenu.RestartTitle)
         {
-            Description = _ => _match != null && _match.Phase == MatchPhase.GameOver ? "A rematch: the same players, map and goal, from round one."
-                : _match != null && _match.IsRunning ? "Everyone back to full health; the match starts over." : "Every practice dummy stands back up and the level is laid again.",
+            Description = _ => VoteMenu.RestartDescription(_match != null ? _match.Phase : MatchPhase.Practice),
             Passed = _ =>
             {
                 if (_match != null && _match.IsRunning)
@@ -860,6 +860,19 @@ namespace Ricochet
                 }
             },
         };
+
+        /// <summary>
+        /// The kick vote (UR-T14): the kit's own (<see cref="VoteBoard.CreateKickKind"/>: "Kick Bob?", voted on by everyone
+        /// but Bob, never the host or the starter's self), with a line saying what passing does here. Passing disconnects
+        /// them; the kit frees their seat at once (no reconnect grace), so in a match <see cref="SeatReleased"/> drops their
+        /// seat out of the round and passes the turn if it was theirs.
+        /// </summary>
+        public VoteKind CreateKickVote()
+        {
+            VoteKind kick = VoteBoard.CreateKickKind(() => _session, VoteMenu.KickedLine);
+            kick.Description = _ => VoteMenu.KickDescription(MatchRunning);
+            return kick;
+        }
 
         /// <summary>
         /// The vote that starts a match; its number is how many AI opponents to add and its text the rest of the setup

@@ -125,5 +125,12 @@ copy of any of these is a bug.
   seat took and who it put out, both as `[ToClients]` calls on the shooter's `Player`; no client solves a shot again, so
   every peer draws the same bounce and the struck players float the same damage (UR-T12; `Core/ShotWire.cs` tested by
   `dotnet test Core.slnx`, the wire by `Tests/PlayMode/TurnTests.cs`).
-- ⬜ Everything else — reconnect and votes (UR-T13, UR-T14) — is ticketed and unstarted. See
+- ✅ Votes: the original had none (whoever held the one keyboard restarted or quit); the kit's NetVotes runs them and its
+  vote overlay asks everyone else Yes or No with the tally and the clock, passing on two thirds. The in-game menu offers
+  the match vote, **Vote to restart** (the match from round one, a rematch once it is over, the dummies in practice) and
+  **Vote to kick**, a room listing everyone who may be voted out (not yourself, not the host, never an AI); the kick is the
+  kit's own kind with the game's lines, and passing disconnects them, frees their seat at once and drops it out of the
+  round, passing the turn if it was theirs (UR-T14; `Core/VoteMenu.cs` tested by `dotnet test Core.slnx`, the wire by
+  `Tests/PlayMode/KickVoteTests.cs`).
+- ⬜ Anything not above is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.

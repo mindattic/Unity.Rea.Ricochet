@@ -4,7 +4,7 @@
 // menus, Host / Join by IP / Join by code, the lobby's join code and roster, reconnect and the vote overlay are the kit's. Runs on every peer: a dedicated server and a bot run this scene too.
 using System.Collections;
 using MindAttic.Components.Unity; // MenuScreen
-using Ricochet.Core;        // MatchSetup, MenuFlow, Room, AudioMix, SoundCue
+using Ricochet.Core;        // MatchSetup, MenuFlow, Room, AudioMix, SoundCue, VoteMenu, VoteMember
 using Unity.Multiplayer;    // NetBootstrap, NetVotes, NetSession
 using Unity.Multiplayer.UI; // NetFrontEnd, MenuPlacement
 using UnityEngine;
@@ -49,11 +49,13 @@ namespace Ricochet
             // hazards (UR-T6): electric arcs, laser gates and foliage.
             _arena = Arena.Serve(bootstrap.Session, dummyPrefab, layHazards: true);
 
-            // Votes: NetVotes (beside the NetBootstrap) spawns the vote board; the front end shows the overlay in game.
+            // Votes: NetVotes (beside the NetBootstrap) spawns the vote board; the front end shows the overlay in game. The
+            // kick vote (UR-T14) is the kit's own with this game's line under it, in place of the one NetVotes adds.
             if (NetVotes.Instance != null)
             {
                 NetVotes.Instance.AddKind(_arena.CreateRestartVote());
                 NetVotes.Instance.AddKind(_arena.CreateMatchVote());
+                NetVotes.Instance.AddKind(_arena.CreateKickVote());
             }
 
             // Sound (UR-T10): the volumes and mutes are the active MindAttic profile's (none on a headless peer).
@@ -84,8 +86,10 @@ namespace Ricochet
             frontEnd.AddPauseMenuItems(s =>
             {
                 s.AddButton("Vote to start a match", StartMatchVote);
-                s.AddButton("Vote to restart", StartRestartVote);
+                s.AddButton(VoteMenu.RestartButton, StartRestartVote);
             });
+            // The kick room (UR-T14): built afresh each time it opens, from who is in the game now.
+            frontEnd.AddScreen(VoteMenu.KickRoom, s => Menus.BuildKick(s, KickRoster(frontEnd.Session), StartKickVote), MenuPlacement.PauseMenu);
             // The host's lobby (UR-T11): the kit's join code and roster, with the match Start will begin.
             _lobby = LobbyRoom.Attach(frontEnd, this, setup => _arena != null && _arena.StartMatch(setup));
             frontEnd.GameStarted += () => Debug.Log("[Game] In the game as " + frontEnd.Session.Identity.DisplayName + ".");
@@ -169,11 +173,7 @@ namespace Ricochet
             if (NetVotes.Instance != null && NetVotes.Instance.Board != null)
             {
                 NetVotes.Instance.Board.StartVote(Arena.MatchVote, _setup.AiCount, _setup.Format());
-                NetFrontEnd frontEnd = NetFrontEnd.Instance;
-                if (frontEnd != null && frontEnd.PauseMenu != null)
-                {
-                    frontEnd.PauseMenu.Close(); // back to the game, where the vote's overlay is
-                }
+                BackToTheGame();
             }
         }
 
@@ -182,6 +182,40 @@ namespace Ricochet
             if (NetVotes.Instance != null && NetVotes.Instance.Board != null)
             {
                 NetVotes.Instance.Board.StartVote(Arena.RestartVote);
+                BackToTheGame();
+            }
+        }
+
+        private static void StartKickVote(ulong clientId)
+        {
+            if (NetVotes.Instance != null && NetVotes.Instance.Board != null)
+            {
+                NetVotes.Instance.Board.StartKickVote(clientId);
+                BackToTheGame();
+            }
+        }
+
+        // Closes the in-game menu, so the vote overlay (shown in game, under the menus) is in view.
+        private static void BackToTheGame()
+        {
+            NetFrontEnd frontEnd = NetFrontEnd.Instance;
+            if (frontEnd != null && frontEnd.PauseMenu != null)
+            {
+                frontEnd.PauseMenu.Close();
+            }
+        }
+
+        // The kit's roster as the kick room sees it.
+        private static System.Collections.Generic.IEnumerable<VoteMember> KickRoster(NetSession session)
+        {
+            if (session == null || session.Roster == null)
+            {
+                yield break;
+            }
+
+            foreach (Unity.Multiplayer.Core.NetPlayer player in session.Roster.All)
+            {
+                yield return new VoteMember(player.ClientId, player.DisplayName, player.IsHost, player.IsLocal, player.IsConnected);
             }
         }
     }
