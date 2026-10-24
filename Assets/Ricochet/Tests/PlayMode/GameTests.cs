@@ -43,7 +43,9 @@ namespace Ricochet.Tests
         {
             SetPlayerPrefab(GamePrefabs.Player);
             RegisterPrefab(GamePrefabs.Dummy);
-            Client.Identity = new PlayerIdentity("ann-token", "Ann", new PlayerColor(230, 80, 60));
+            // Not red: the host has no pick, so it is drawn in seat 0's palette red (230,75,60), and a colour that near it
+            // would be swapped for one nobody has (PlayerLooks, UR-T21), which is not what this test is about.
+            Client.Identity = new PlayerIdentity("ann-token", "Ann", new PlayerColor(200, 60, 220));
         }
 
         [UnityTest]
@@ -62,7 +64,7 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Mathf.Approximately(annOnHerClient.Result.Power, 0.8f), () => "her own client has her power at " + annOnHerClient.Result.Power);
 
             yield return WaitUntil(() => annOnHost.Result.DisplayName == "Ann", () => "the host sees her as " + annOnHost.Result.DisplayName);
-            Assert.That(annOnHost.Result.Color, Is.EqualTo(new Color32(230, 80, 60, 255)));
+            Assert.That(annOnHost.Result.Color, Is.EqualTo(new Color32(200, 60, 220, 255)));
         }
 
         [UnityTest]
