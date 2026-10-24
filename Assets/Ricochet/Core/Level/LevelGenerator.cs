@@ -1,7 +1,7 @@
 // A freshly randomised level for every round (UR-T23). The 2013 original's randomize_level.gml rebuilt the arena each
 // round from the setup's polygon count (20), shapes (abstract), rotation (360) and overlap (no) settings via
 // setup_shapes.gml, and randomize_player_position.gml dropped every player at a random spot. Here the same inputs make
-// a Level of polygon-shaped mirror walls and sixteen seat spots from one seed, so every peer rebuilds the identical
+// a Level of mirror walls shaped like the original's sixteen-a-kind sprites and sixteen seat spots from one seed, so every peer rebuilds the identical
 // round from the seed alone and only the seed goes over the wire (UR-LAW-1).
 using System;
 using System.Collections.Generic;
@@ -11,29 +11,38 @@ namespace Ricochet.Core.Level
 {
     using Ricochet.Core.Aim;
     using Ricochet.Core.Match;
+    /// <summary>Which of the original's five shape sets the walls are drawn from (its shapetype setting), or a mix.</summary>
+    public enum ShapeKind
+    {
+        /// <summary>obj_polygon1..16: the hand-made irregular outlines (the original's default).</summary>
+        Abstract,
+        Triangles,
+        Bars,
+        Circles,
+        Squares,
+
+        /// <summary>Each wall picks one of the five sets at random, then one of its sixteen shapes.</summary>
+        Random,
+    }
+
     /// <summary>The setup screen's level settings, with the original's defaults.</summary>
     public sealed class LevelSettings
     {
-        /// <summary>How many polygons to lay (the original's 20).</summary>
+        /// <summary>How many shapes to lay (the original's 20).</summary>
         public int PolygonCount { get; set; } = 20;
 
-        /// <summary>The widest a polygon may be turned, in degrees (the original's 360: any way round).</summary>
+        /// <summary>
+        /// The original's rotation setting in degrees: 0 leaves every shape as drawn, 45 turns it to one of eight
+        /// multiples of 45, 90 to one of four multiples of 90, and anything else (the original's 360) any whole angle up
+        /// to that many degrees.
+        /// </summary>
         public double Rotation { get; set; } = 360;
 
-        /// <summary>True lets polygons overlap each other (the original's "no").</summary>
+        /// <summary>True lets shapes overlap each other (the original's "no").</summary>
         public bool Overlap { get; set; }
 
-        /// <summary>Fewest sides of an abstract shape.</summary>
-        public int MinSides { get; set; } = 3;
-
-        /// <summary>Most sides of an abstract shape.</summary>
-        public int MaxSides { get; set; } = 6;
-
-        /// <summary>Smallest distance from a polygon's centre to its corners.</summary>
-        public double MinRadius { get; set; } = 0.6;
-
-        /// <summary>Largest distance from a polygon's centre to its corners.</summary>
-        public double MaxRadius { get; set; } = 1.3;
+        /// <summary>Which shape set the walls come from (the original's "abstract").</summary>
+        public ShapeKind Shapes { get; set; } = ShapeKind.Abstract;
 
         public static LevelSettings Default => new LevelSettings();
     }
@@ -70,7 +79,7 @@ namespace Ricochet.Core.Level
         /// <summary>The border's inset a polygon's centre keeps (so its walls stay inside).</summary>
         private const double EdgeGap = 0.3;
 
-        /// <summary>The room a seat's spot keeps from every polygon's corners circle.</summary>
+        /// <summary>The room a seat's spot (and a hazard's end) keeps from every shape's outline.</summary>
         private const double SeatClearance = Seating.PlayerRadius + 0.35;
 
         /// <summary>The room a seat's spot keeps from a practice dummy (never relaxed).</summary>
@@ -79,59 +88,116 @@ namespace Ricochet.Core.Level
         /// <summary>Seats stand at least this far apart.</summary>
         private const double SeatGap = 1.6;
 
-        private const int Attempts = 60;
+        /// <summary>Shapes keep this far from each other when overlap is off.</summary>
+        private const double ShapeGap = 0.1;
+
+        private const int Attempts = 150;
+
+        /// <summary>How many shapes are tried for a wall before it is given up.</summary>
+        private const int Picks = 12;
 
         /// <summary>
-        /// The round for <paramref name="seed"/>: polygons laid per <paramref name="settings"/> clear of
-        /// <paramref name="keepClear"/> (the practice dummies), then sixteen seat spots clear of every polygon, the border,
-        /// the dummies and each other. The same seed and settings always give the same round.
+        /// The round for <paramref name="seed"/>: shapes picked and turned the way setup_shapes.gml does and laid per
+        /// <paramref name="settings"/> clear of <paramref name="keepClear"/> (the practice dummies), then sixteen seat spots
+        /// clear of every shape, the border, the dummies and each other. The same seed and settings always give the same round.
         /// </summary>
         public static RoundLayout Generate(int seed, LevelSettings settings = null, IEnumerable<Vec2> keepClear = null)
         {
             settings = settings ?? LevelSettings.Default;
             var dice = new Random(seed);
             var avoid = new List<Vec2>(keepClear ?? DefaultKeepClear());
-            var shapes = new List<(Vec2 Centre, double Radius)>();
+            var shapes = new List<PlacedShape>();
             var walls = new List<Wall>();
-            int minSides = Math.Max(3, settings.MinSides);
-            int maxSides = Math.Max(minSides, settings.MaxSides);
-            double minRadius = Math.Max(0.1, settings.MinRadius);
-            double maxRadius = Math.Max(minRadius, settings.MaxRadius);
-            double rotation = Math.Max(0, Math.Min(360, settings.Rotation));
 
             for (int i = 0; i < settings.PolygonCount; i++)
             {
-                for (int attempt = 0; attempt < Attempts; attempt++)
+                for (int pick = 0; pick < Picks; pick++)
                 {
-                    double radius = Between(dice, minRadius, maxRadius);
-                    double gap = radius + EdgeGap;
-                    var centre = new Vec2(Between(dice, MinX + gap, MaxX - gap), Between(dice, MinY + gap, MaxY - gap));
-                    if (!ClearOfAll(centre, radius + SeatClearance, avoid) || (!settings.Overlap && Overlaps(centre, radius, shapes)))
+                    // A shape that will not fit anywhere is swapped for another pick (the original would retry forever).
+                    Vec2[] outline = Turn(ShapeLibrary.Outline(ShapeLibrary.Pick(settings.Shapes, dice)), RotationDegrees(settings.Rotation, dice));
+                    PlacedShape placed = default;
+                    bool found = false;
+                    for (int attempt = 0; attempt < Attempts && !found; attempt++)
+                    {
+                        placed = PlacedShape.At(outline, RandomOrigin(outline, dice));
+                        found = placed.InsideBorder(MinX, MinY, MaxX, MaxY) && ClearOfPoints(placed, SeatClearance, avoid)
+                            && (settings.Overlap || !Overlaps(placed, shapes));
+                    }
+
+                    if (!found)
                     {
                         continue;
                     }
 
-                    int sides = dice.Next(minSides, maxSides + 1);
-                    double turn = Between(dice, 0, rotation);
-                    var corners = new Vec2[sides];
-                    for (int k = 0; k < sides; k++)
+                    Vec2[] c = placed.Corners;
+                    for (int k = 0; k < c.Length; k++)
                     {
-                        double angle = (turn + 360.0 * k / sides) * Math.PI / 180.0;
-                        corners[k] = new Vec2(centre.X + radius * Math.Cos(angle), centre.Y + radius * Math.Sin(angle));
+                        walls.Add(new Wall(c[k], c[(k + 1) % c.Length]));
                     }
 
-                    for (int k = 0; k < sides; k++)
-                    {
-                        walls.Add(new Wall(corners[k], corners[(k + 1) % sides]));
-                    }
-
-                    shapes.Add((centre, radius));
+                    shapes.Add(placed);
                     break;
                 }
             }
 
             var level = new Level(MinX, MinY, MaxX, MaxY, walls);
             return new RoundLayout(level, PickSpots(dice, shapes, avoid), shapes.Count);
+        }
+
+        /// <summary>setup_shapes.gml's rotation switch: none, one of eight, one of four or any whole angle.</summary>
+        private static double RotationDegrees(double rotation, Random dice)
+        {
+            if (rotation <= 0)
+            {
+                return 0;
+            }
+
+            if (rotation == 45)
+            {
+                return 45 * dice.Next(0, 8);
+            }
+
+            if (rotation == 90)
+            {
+                return 90 * dice.Next(0, 4);
+            }
+
+            return dice.Next(0, (int)Math.Min(360, Math.Ceiling(rotation)));
+        }
+
+        private static Vec2[] Turn(Vec2[] outline, double degrees)
+        {
+            if (degrees == 0)
+            {
+                return outline;
+            }
+
+            double r = degrees * Math.PI / 180.0, cos = Math.Cos(r), sin = Math.Sin(r);
+            var turned = new Vec2[outline.Length];
+            for (int i = 0; i < outline.Length; i++)
+            {
+                turned[i] = new Vec2(outline[i].X * cos - outline[i].Y * sin, outline[i].X * sin + outline[i].Y * cos);
+            }
+
+            return turned;
+        }
+
+        /// <summary>A random spot for the shape's origin (its middle) that keeps the whole outline inside the border.</summary>
+        private static Vec2 RandomOrigin(Vec2[] outline, Random dice)
+        {
+            double minX = double.MaxValue, maxX = double.MinValue, minY = double.MaxValue, maxY = double.MinValue;
+            foreach (Vec2 v in outline)
+            {
+                minX = Math.Min(minX, v.X);
+                maxX = Math.Max(maxX, v.X);
+                minY = Math.Min(minY, v.Y);
+                maxY = Math.Max(maxY, v.Y);
+            }
+
+            double lowX = MinX + EdgeGap - minX, highX = MaxX - EdgeGap - maxX;
+            double lowY = MinY + EdgeGap - minY, highY = MaxY - EdgeGap - maxY;
+            // A shape wider than the border cannot fit: aim for the middle and let the border check refuse it.
+            return new Vec2(highX > lowX ? Between(dice, lowX, highX) : 0, highY > lowY ? Between(dice, lowY, highY) : 0);
         }
 
         /// <summary>The practice dummies and, sampled along them, the electric arcs and laser gates every round lays.</summary>
@@ -152,7 +218,7 @@ namespace Ricochet.Core.Level
             return keep;
         }
 
-        private static List<Vec2> PickSpots(Random dice, List<(Vec2 Centre, double Radius)> shapes, List<Vec2> avoid)
+        private static List<Vec2> PickSpots(Random dice, List<PlacedShape> shapes, List<Vec2> avoid)
         {
             var spots = new List<Vec2>(MatchRules.MaxSeats);
             double edge = Seating.PlayerRadius + 0.3;
@@ -199,11 +265,11 @@ namespace Ricochet.Core.Level
             return true;
         }
 
-        private static bool ClearOfShapes(Vec2 point, double clearance, List<(Vec2 Centre, double Radius)> shapes)
+        private static bool ClearOfShapes(Vec2 point, double clearance, List<PlacedShape> shapes)
         {
-            foreach ((Vec2 centre, double radius) in shapes)
+            foreach (PlacedShape shape in shapes)
             {
-                if (Vec2.Distance(point, centre) < radius + clearance)
+                if (!shape.ClearOfPoint(point, clearance))
                 {
                     return false;
                 }
@@ -212,11 +278,25 @@ namespace Ricochet.Core.Level
             return true;
         }
 
-        private static bool Overlaps(Vec2 centre, double radius, List<(Vec2 Centre, double Radius)> shapes)
+        private static bool ClearOfPoints(PlacedShape shape, double clearance, List<Vec2> points)
         {
-            foreach ((Vec2 other, double otherRadius) in shapes)
+            foreach (Vec2 point in points)
             {
-                if (Vec2.Distance(centre, other) < radius + otherRadius + 0.1)
+                if (!shape.ClearOfPoint(point, clearance))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>True when the shape crosses another, lies inside it or comes within <see cref="ShapeGap"/> of it.</summary>
+        private static bool Overlaps(PlacedShape shape, List<PlacedShape> others)
+        {
+            foreach (PlacedShape other in others)
+            {
+                if (Vec2.Distance(shape.Centre, other.Centre) < shape.Radius + other.Radius + ShapeGap && shape.Touches(other, ShapeGap))
                 {
                     return true;
                 }

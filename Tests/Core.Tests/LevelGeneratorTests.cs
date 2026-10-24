@@ -29,7 +29,7 @@ namespace Ricochet.Core.Tests
                 RoundLayout round = LevelGenerator.Generate(seed);
                 Level level = round.Level;
                 Assert.That(round.Polygons, Is.EqualTo(20), "seed " + seed);
-                Assert.That(level.Walls.Count, Is.InRange(20 * 3, 20 * 6), "seed " + seed);
+                Assert.That(level.Walls.Count, Is.GreaterThanOrEqualTo(20 * 3), "seed " + seed);
                 Assert.That(level.Walls.All(w => level.Contains(w.A) && level.Contains(w.B)), Is.True, "seed " + seed);
             }
         }
@@ -39,8 +39,8 @@ namespace Ricochet.Core.Tests
         {
             var none = new LevelSettings { PolygonCount = 0 };
             Assert.That(LevelGenerator.Generate(5, none).Level.Walls, Is.Empty);
-            var triangles = new LevelSettings { PolygonCount = 3, MinSides = 3, MaxSides = 3 };
-            Assert.That(LevelGenerator.Generate(5, triangles).Level.Walls.Count, Is.EqualTo(9));
+            var three = new LevelSettings { PolygonCount = 3, Shapes = ShapeKind.Triangles };
+            Assert.That(LevelGenerator.Generate(5, three).Polygons, Is.EqualTo(3));
         }
 
         [Test]
@@ -116,7 +116,7 @@ namespace Ricochet.Core.Tests
         public void WithoutOverlap_PolygonsKeepApart_AndWithItTheyMay()
         {
             // Two polygons never touch when overlap is off: no wall of one comes near another's walls' circle.
-            var tight = new LevelSettings { PolygonCount = 12, MinSides = 4, MaxSides = 4, Overlap = false };
+            var tight = new LevelSettings { PolygonCount = 12, Shapes = ShapeKind.Squares, Overlap = false };
             for (int seed = 0; seed < 30; seed++)
             {
                 var walls = LevelGenerator.Generate(seed, tight).Level.Walls;
@@ -134,6 +134,123 @@ namespace Ricochet.Core.Tests
                     }
                 }
             }
+        }
+
+        [Test]
+        public void TheLibraryHoldsSixteenSimpleOutlinesOfEachOfTheFiveKinds()
+        {
+            foreach (ShapeKind kind in new[] { ShapeKind.Abstract, ShapeKind.Triangles, ShapeKind.Bars, ShapeKind.Circles, ShapeKind.Squares })
+            {
+                for (int i = 0; i < ShapeLibrary.PerKind; i++)
+                {
+                    Vec2[] outline = ShapeLibrary.Outline(new ShapeId(kind, i));
+                    string name = kind + " " + (i + 1);
+                    Assert.That(outline.Length, Is.GreaterThanOrEqualTo(3), name);
+                    for (int a = 0; a < outline.Length; a++)
+                    {
+                        for (int b = a + 1; b < outline.Length; b++)
+                        {
+                            if (b == a + 1 || (a == 0 && b == outline.Length - 1))
+                            {
+                                continue;
+                            }
+
+                            Assert.That(
+                                Geometry.SegmentIntersection(outline[a], outline[(a + 1) % outline.Length], outline[b], outline[(b + 1) % outline.Length], true, out _, out _),
+                                Is.False,
+                                name + " crosses itself");
+                        }
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void TheKindsAreTheOriginalsOwnShapes()
+        {
+            // obj_square1 is a 140 x 140 pixel square, obj_bar1 a 26 x 381 pixel bar, obj_circle1 a 92 pixel round one.
+            double px = ShapeLibrary.UnitsPerPixel;
+            Vec2[] square = ShapeLibrary.Outline(new ShapeId(ShapeKind.Squares, 0));
+            Assert.That(square.Length, Is.EqualTo(4));
+            Assert.That(square.Max(v => v.X) - square.Min(v => v.X), Is.EqualTo(140 * px).Within(1e-9));
+            Vec2[] bar = ShapeLibrary.Outline(new ShapeId(ShapeKind.Bars, 0));
+            Assert.That(bar.Max(v => v.Y) - bar.Min(v => v.Y), Is.EqualTo(381 * px).Within(1e-9));
+            Vec2[] circle = ShapeLibrary.Outline(new ShapeId(ShapeKind.Circles, 0));
+            Assert.That(circle.Length, Is.GreaterThan(8));
+            Assert.That(circle.Max(v => v.X) - circle.Min(v => v.X), Is.EqualTo(92 * px).Within(3 * px));
+        }
+
+        [Test]
+        public void EachShapeSettingPicksItsOwnKind_AndRandomMixesAllFive()
+        {
+            foreach (ShapeKind kind in new[] { ShapeKind.Triangles, ShapeKind.Bars, ShapeKind.Squares })
+            {
+                var dice = new System.Random(3);
+                for (int i = 0; i < 100; i++)
+                {
+                    Assert.That(ShapeLibrary.Pick(kind, dice).Kind, Is.EqualTo(kind));
+                }
+            }
+
+            var mixer = new System.Random(4);
+            var seen = new System.Collections.Generic.HashSet<ShapeKind>();
+            var indexes = new System.Collections.Generic.HashSet<int>();
+            for (int i = 0; i < 400; i++)
+            {
+                ShapeId id = ShapeLibrary.Pick(ShapeKind.Random, mixer);
+                Assert.That(id.Kind, Is.Not.EqualTo(ShapeKind.Random));
+                seen.Add(id.Kind);
+                indexes.Add(id.Index);
+            }
+
+            Assert.That(seen.Count, Is.EqualTo(5));
+            Assert.That(indexes.Count, Is.EqualTo(ShapeLibrary.PerKind));
+        }
+
+        [Test]
+        public void EveryShapeSetting_LaysShapesInsideTheBorder_WithSeatsClear()
+        {
+            foreach (ShapeKind kind in System.Enum.GetValues(typeof(ShapeKind)))
+            {
+                var settings = new LevelSettings { Shapes = kind };
+                for (int seed = 0; seed < 15; seed++)
+                {
+                    RoundLayout round = LevelGenerator.Generate(seed, settings);
+                    string name = kind + " seed " + seed;
+                    Assert.That(round.Polygons, Is.GreaterThanOrEqualTo(18), name);
+                    Assert.That(round.Level.Walls.All(w => round.Level.Contains(w.A) && round.Level.Contains(w.B)), Is.True, name);
+                    foreach (Vec2 spot in round.Spots)
+                    {
+                        foreach (Wall wall in round.Level.Walls)
+                        {
+                            Assert.That(Geometry.SegmentDistance(wall.A, wall.B, spot, out _), Is.GreaterThan(Seating.PlayerRadius), name);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void RotationNone_KeepsBarsUpright_AndNinetyTurnsThemInQuarters()
+        {
+            var upright = new LevelSettings { PolygonCount = 5, Shapes = ShapeKind.Bars, Rotation = 0 };
+            var quarter = new LevelSettings { PolygonCount = 5, Shapes = ShapeKind.Bars, Rotation = 90 };
+            bool sideways = false;
+            for (int seed = 0; seed < 20; seed++)
+            {
+                foreach (Wall w in LevelGenerator.Generate(seed, upright).Level.Walls)
+                {
+                    Assert.That(w.A.X == w.B.X || w.A.Y == w.B.Y, Is.True);
+                }
+
+                foreach (Wall w in LevelGenerator.Generate(seed, quarter).Level.Walls)
+                {
+                    Assert.That(System.Math.Min(System.Math.Abs(w.A.X - w.B.X), System.Math.Abs(w.A.Y - w.B.Y)), Is.LessThan(1e-9), "bars turn in quarters");
+                    sideways |= w.A.Y == w.B.Y && System.Math.Abs(w.A.X - w.B.X) > 100 * ShapeLibrary.UnitsPerPixel;
+                }
+            }
+
+            Assert.That(sideways, Is.True, "some bar lies on its side");
         }
 
         [Test]
