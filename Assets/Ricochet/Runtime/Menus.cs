@@ -8,6 +8,8 @@
 //     starts the game: hosts one from the main menu, or asks the others by the match vote in a game.
 //   Vote to kick (UR-T14, in game only): a button for each player who may be voted out.
 //   Controls, How to play (obj_slide's slides with Last/Next and a "3/9" counter), Credits.
+//   Rebind controls (UR-T36): one row per key, mouse button or gamepad control the RicochetControls asset binds;
+//     clicking a row's button starts an interactive rebind, saved to the active Unity.Shared profile at once.
 using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MenuScreen, MaText, MaSelect, TextStyle
@@ -18,6 +20,7 @@ using Ricochet.Core.Level;
 using Ricochet.Core.Match;
 using Ricochet.Core.Menu;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Ricochet
 {
@@ -114,6 +117,70 @@ namespace Ricochet
             {
                 s.AddText(binding.Keys + "   " + binding.Action);
             }
+        }
+
+        /// <summary>
+        /// The rebind screen (UR-T36): one row per control the RicochetControls asset binds (a composite action's
+        /// keyboard half and its gamepad half as separate rows, since each is its own control to press), the button
+        /// showing what triggers it now and starting an interactive rebind on click, and a Reset to defaults. A
+        /// change is saved to the active Unity.Shared profile the moment it completes, so it is kept for every
+        /// session (<see cref="InputBindings"/>).
+        /// </summary>
+        public static void BuildRebind(MenuScreen s)
+        {
+            s.Subtitle = "Click a control, then press, click or move the one you want instead. Esc cancels.";
+            s.AddButton("Reset to defaults", () =>
+            {
+                InputBindings.ResetToDefaults();
+                s.Clear();
+                BuildRebind(s);
+            }, ButtonVariant.Danger);
+
+            foreach (InputAction action in InputBindings.Gameplay.actions)
+            {
+                for (int i = 0; i < action.bindings.Count; i++)
+                {
+                    if (action.bindings[i].isComposite)
+                    {
+                        continue; // the composite's own entry carries no control; its parts (below) are what rebinds
+                    }
+
+                    int bindingIndex = i;
+                    MaRow row = s.AddRow(equalWidths: false);
+                    row.AddText(action.name, TextStyle.Label);
+                    row.AddFlexibleSpace();
+                    MaButton button = null;
+                    button = row.AddButton(DescribeBinding(action, bindingIndex), () => StartRebind(action, bindingIndex, button));
+                }
+            }
+        }
+
+        private static string DescribeBinding(InputAction action, int bindingIndex) =>
+            action.bindings[bindingIndex].ToDisplayString(InputBinding.DisplayStringOptions.DontIncludeInteractions);
+
+        private static void StartRebind(InputAction action, int bindingIndex, MaButton button)
+        {
+            InputActionMap map = action.actionMap;
+            map.Disable();
+            button.Label = "Press a control...";
+            action.PerformInteractiveRebinding(bindingIndex)
+                .WithControlsExcluding("<Mouse>/position")
+                .WithControlsExcluding("<Mouse>/delta")
+                .WithCancelingThrough("<Keyboard>/escape")
+                .OnComplete(op =>
+                {
+                    op.Dispose();
+                    InputBindings.Save();
+                    button.Label = DescribeBinding(action, bindingIndex);
+                    map.Enable();
+                })
+                .OnCancel(op =>
+                {
+                    op.Dispose();
+                    button.Label = DescribeBinding(action, bindingIndex);
+                    map.Enable();
+                })
+                .Start();
         }
 
         /// <summary>The how-to-play room: one slide at a time, with its counter and Last / Next (wrapping).</summary>

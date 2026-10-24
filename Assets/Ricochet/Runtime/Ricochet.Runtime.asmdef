@@ -29,11 +29,6 @@
             "name": "com.mindattic.components.unity",
             "expression": "1.0.0",
             "define": "MINDATTIC_COMPONENTS"
-        },
-        {
-            "name": "com.unity.inputsystem",
-            "expression": "1.0.0",
-            "define": "GAME_INPUT_SYSTEM"
         }
     ],
     "noEngineReferences": false

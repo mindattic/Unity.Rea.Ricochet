@@ -10,6 +10,7 @@
         "Unity.Multiplayer.Editor",
         "Unity.Multiplayer.UI",
         "Unity.Netcode.Runtime",
+        "Unity.InputSystem",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

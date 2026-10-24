@@ -82,6 +82,8 @@ namespace Ricochet
             frontEnd.AddScreen(MenuFlow.Title(Room.Players), s => Menus.BuildPlayers(s, _setup, frontEnd.Identity.DisplayName,
                 frontEnd.OpenSettings, from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), BuildMapRoom)), MenuPlacement.Both);
             frontEnd.AddScreen(MenuFlow.Title(Room.Controls), Menus.BuildControls, MenuPlacement.Both);
+            // UR-T36: the Input System's RicochetControls asset, rebindable and saved to the Unity.Shared profile.
+            frontEnd.AddScreen("Rebind controls", Menus.BuildRebind, MenuPlacement.Both);
             frontEnd.AddScreen(MenuFlow.Title(Room.HowToPlay), s => Menus.BuildHowToPlay(s), MenuPlacement.Both);
             frontEnd.AddScreen(MenuFlow.Title(Room.Credits), Menus.BuildCredits, MenuPlacement.MainMenu);
             frontEnd.AddSettingsItems(s => Menus.AddGameSettings(s, _setup));
