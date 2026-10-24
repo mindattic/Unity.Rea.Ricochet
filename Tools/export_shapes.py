@@ -1,6 +1,6 @@
 """Exports the original's 80 level shapes (UR-T60) as Assets/Ricochet/Core/Level/ShapeData.cs.
 
-Each shape's outline is the boundary of its sprite's collision mask (alpha > 0, GameMaker's precise mask), traced pixel
+Each shape's outline is the boundary of its sprite's collision mask (alpha > the sprite's tolerance, GameMaker's precise mask; it refuses any shape whose object overrides the mask or whose sprite is not precise), traced pixel
 edge by pixel edge, then simplified to within 1.5 px. Coordinates are pixels from the sprite's origin, y up.
 Usage: python Tools/export_shapes.py <Ricochet.gmx folder>
 """
@@ -83,11 +83,16 @@ def main(root):
             meta = open("%s/sprites/spr_%s%d.sprite.gmx" % (root, prefix, i)).read()
             ox = int(re.search(r"<xorig>(-?\d+)", meta).group(1))
             oy = int(re.search(r"<yorigin>(-?\d+)", meta).group(1))
+            obj = open("%s/objects/obj_%s%d.object.gmx" % (root, prefix, i)).read()
+            kind = int(re.search(r"<colkind>(-?\d+)", meta).group(1))
+            tolerance = int(re.search(r"<coltolerance>(-?\d+)", meta).group(1))
+            if "<maskName>&lt;undefined&gt;</maskName>" not in obj or kind != 0 or tolerance != 0:
+                raise SystemExit("obj_%s%d has a mask override, a non-precise collision kind or a tolerance: trace it by hand" % (prefix, i))
             im = Image.open("%s/sprites/images/spr_%s%d_0.png" % (root, prefix, i)).convert("RGBA")
             alpha = im.getchannel("A")
             w, h = im.size
             px = alpha.load()
-            mask = [[px[x, y] > 0 for x in range(w)] for y in range(h)]
+            mask = [[px[x, y] > tolerance for x in range(w)] for y in range(h)]
             loop = simplify(trace(mask))
             pts = [(x - ox, oy - y) for x, y in loop]
             if area(pts) < 0:

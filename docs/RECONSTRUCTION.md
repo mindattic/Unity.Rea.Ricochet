@@ -89,7 +89,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Vote overlay never shows on a joined client | UR-T20 (open) |
 | Default players indistinguishable; no default or random names | UR-T21 (open) |
 | Join by code needs Relay linked | UR-T22 (open, owner's Unity Cloud account) |
-| Level not randomised each round (polygons, shapes, rotation, overlap, spots, backgrounds' placement) | UR-T23 (open) |
+| Random levels use the original's 80 shapes (16 each of abstract, triangle, bar, circle, square outlines exported from the sprites' collision masks into `Core/Level/ShapeData`), picked as setup_shapes.gml does with the shape-type setting (five kinds plus random) and its none/45/90/360 rotation; the setup screen's controls for these settings come with UR-T41 | built (UR-T60) |
 | Cannot drive the tank or end a turn early | UR-T24 (open) |
 | Settings room's match rules missing | UR-T25 (open) |
 | Fog of war missing | UR-T26 (open) |

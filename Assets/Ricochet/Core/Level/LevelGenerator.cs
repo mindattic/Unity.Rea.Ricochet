@@ -2,7 +2,8 @@
 // round from the setup's polygon count (20), shapes (abstract), rotation (360) and overlap (no) settings via
 // setup_shapes.gml, and randomize_player_position.gml dropped every player at a random spot. Here the same inputs make
 // a Level of mirror walls shaped like the original's sixteen-a-kind sprites and sixteen seat spots from one seed, so every peer rebuilds the identical
-// round from the seed alone and only the seed goes over the wire (UR-LAW-1).
+// round from the seed alone (UR-LAW-1). Peers must share the LevelSettings too: today every round uses the defaults, and
+// when the setup screen can change them (UR-T41) they travel with the seed.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -173,6 +174,14 @@ namespace Ricochet.Core.Level
             }
 
             double r = degrees * Math.PI / 180.0, cos = Math.Cos(r), sin = Math.Sin(r);
+            if (degrees % 90 == 0)
+            {
+                // Quarter turns are exact, so turned bars and squares stay square to the axes.
+                int quarter = (int)(degrees / 90) % 4;
+                cos = new[] { 1.0, 0.0, -1.0, 0.0 }[quarter];
+                sin = new[] { 0.0, 1.0, 0.0, -1.0 }[quarter];
+            }
+
             var turned = new Vec2[outline.Length];
             for (int i = 0; i < outline.Length; i++)
             {
