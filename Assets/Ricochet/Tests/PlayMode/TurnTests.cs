@@ -2,6 +2,7 @@
 // sees the same seats, health, whose turn it is and the turn clock; the server refuses a shot out of turn, hurts whoever
 // a shot lands on, passes the turn when the shot lands or the clock runs out, and plays the AI seat's turn itself; and
 // (UR-T12) the client flies the volley the server solved, point for point, and gets the server's damage for it.
+// The tests that aim at a seat play the fixed Practice Range (TestMatches), since the random arena moves every seat (UR-T68).
 // The turn rules themselves are tested without Unity: dotnet test Core.slnx (Tests/Core.Tests/MatchTests.cs).
 using System.Collections;
 using System.Linq;
@@ -110,7 +111,7 @@ namespace Ricochet.Tests
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(0), Is.True);
+            Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange()), Is.True);
             yield return WaitUntil(() => Turns.For(Client) != null, "the client never got the match");
 
             string target = Arena.SeatTarget(ann.Seat);
@@ -134,7 +135,7 @@ namespace Ricochet.Tests
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(0), Is.True);
+            Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange()), Is.True);
             yield return WaitUntil(() => Turns.For(Client) != null, "the client never got the match");
 
             string target = Arena.SeatTarget(ann.Seat);
