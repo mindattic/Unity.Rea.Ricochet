@@ -1281,7 +1281,6 @@ namespace Ricochet
                 if (damage > 0)
                 {
                     player.ShowHurt(damage);
-                    Presentation.Raise(player, new Cmd.Damaged(player.Seat, damage, Seat)); // the HUD flashes their bar
                 }
             }
         }
