@@ -87,7 +87,7 @@ namespace Ricochet.Tests
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, Announcements = 1 }), Is.True);
+            Assert.That(arena.StartMatch(Practice()), Is.True);
             Turns turns = null;
             yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.Announced == 1, "the client never heard the welcome");
 
@@ -141,6 +141,14 @@ namespace Ricochet.Tests
             yield return new WaitForSeconds(1.5f);
             Assert.That(turns.Announced, Is.EqualTo(0));
             Assert.That(Turns.For(Server).Announced, Is.EqualTo(0));
+        }
+
+        // The fixed Practice Range, so the shot at nobody is not aimed across a random level (UR-T23).
+        private static MatchSetup Practice()
+        {
+            MatchSetup setup = TestMatches.OnThePracticeRange();
+            setup.Announcements = 1;
+            return setup;
         }
 
         // Starts both sessions, serves the arena, and waits for both players to have their seats.
