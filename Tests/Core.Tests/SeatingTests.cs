@@ -12,6 +12,23 @@ namespace Ricochet.Core.Tests
         private const double BarGap = 8;
         private const double ClockGap = 150;
 
+        // UR-T67: obj_healthbar eases 1 hp per 2 steps at 60 steps a second.
+        [Test]
+        public void EaseHealth_DrainsThirtyPointsASecondWithoutOvershooting()
+        {
+            Assert.That(Seating.EaseHealth(100, 40, 1.0 / 60), Is.EqualTo(99.5).Within(1e-9));
+            Assert.That(Seating.EaseHealth(100, 40, 1), Is.EqualTo(70).Within(1e-9));
+            Assert.That(Seating.EaseHealth(100, 90, 1), Is.EqualTo(90));
+        }
+
+        [Test]
+        public void EaseHealth_RisesTheSameWayAndHoldsWhenArrived()
+        {
+            Assert.That(Seating.EaseHealth(0, 100, 1), Is.EqualTo(30).Within(1e-9));
+            Assert.That(Seating.EaseHealth(95, 100, 1), Is.EqualTo(100));
+            Assert.That(Seating.EaseHealth(50, 50, 1), Is.EqualTo(50));
+        }
+
         [Test]
         public void BarScale_AtDesignWidthOrWider_IsFull()
         {

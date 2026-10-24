@@ -51,6 +51,23 @@ namespace Ricochet.Core.Match
         /// How much to shrink the HUD's bars so four columns a side, the gaps between them and the clock's own gap
         /// all fit within <paramref name="screenWidth"/> (UR-T17: below ~1400px wide, unscaled bars ran off the left
         /// edge). 1 at design width or wider; smaller on a narrower window, never below <paramref name="minScale"/>.
+        /// <summary>obj_healthbar's drain: its alarm moves the drawn value one hit point toward the real one every 2 steps of a
+        /// 60-steps-a-second room, 30 points a second, up as well as down, never overshooting (UR-T67).</summary>
+        public const double HealthEaseRate = 30;
+
+        /// <summary>The bar's drawn health after <paramref name="dt"/> seconds easing from <paramref name="shown"/> toward <paramref name="health"/>.</summary>
+        public static double EaseHealth(double shown, double health, double dt)
+        {
+            double step = HealthEaseRate * (dt > 0 ? dt : 0);
+            if (shown < health)
+            {
+                return System.Math.Min(health, shown + step);
+            }
+
+            return System.Math.Max(health, shown - step);
+        }
+
+
         /// </summary>
         public static double BarScale(double screenWidth, double barWidth, double barGap, double clockGap, double sidePadding = 40)
         {

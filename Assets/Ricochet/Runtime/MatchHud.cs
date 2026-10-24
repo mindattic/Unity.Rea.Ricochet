@@ -34,6 +34,7 @@ namespace Ricochet
 
         private static Texture2D s_white;
         private readonly List<Player> _seated = new List<Player>();
+        private readonly Dictionary<int, double> _shownHealth = new Dictionary<int, double>(); // UR-T67: each seat's drawn health, view-only
         private GUIStyle _clockStyle;
         private GUIStyle _nameStyle;
         private GUIStyle _scoreStyle;
@@ -157,7 +158,15 @@ namespace Ricochet
             _nameStyle.normal.textColor = player.InRound ? color : new Color(color.r, color.g, color.b, 0.45f);
             GUI.Label(new Rect(x, y, barWidth, 18f), tag + player.DisplayName + "  " + state, _nameStyle);
             GUI.Label(new Rect(x, y, barWidth, 18f), player.Score.ToString(), _scoreStyle); // draw_scores.gml
-            Bar(new Rect(x, y + 17f, barWidth, BarHeight), player.Health / (float)Arena.MatchRules.MaxHealth, color, player.InRound);
+            // UR-T67: obj_healthbar eases its drawn value toward the real health instead of snapping to it.
+            double shown = _shownHealth.TryGetValue(player.Seat, out double previous) ? previous : player.Health;
+            if (Event.current.type == EventType.Repaint)
+            {
+                shown = Seating.EaseHealth(shown, player.Health, Time.unscaledDeltaTime);
+            }
+
+            _shownHealth[player.Seat] = shown;
+            Bar(new Rect(x, y + 17f, barWidth, BarHeight), (float)shown / Arena.MatchRules.MaxHealth, color, player.InRound);
         }
 
         private string Caption(Turns turns)
