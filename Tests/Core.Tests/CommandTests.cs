@@ -853,5 +853,56 @@ namespace Ricochet.Core.Tests
             Assert.That(authority.Apply(new AimCommand(1, 10)), Is.Empty);
             Assert.That(authority.Player(1), Is.Null);
         }
+    
+
+        // ---- Seat lifecycle (UR-T65)
+
+        [Test]
+        public void JoinSeat_SeatsAHumanOrAnAi_AndRefusesATakenOrMissingSeat()
+        {
+            var authority = new GameAuthority(new World(), seed: 5);
+            PlayerState a = authority.AddPlayer(1);
+            PlayerState b = authority.AddPlayer(2, true);
+            Assert.That(authority.Apply(new JoinSeatCommand(1, 0, false, "A")), Is.Empty, "no match yet");
+
+            authority.BeginMatch(0, MatchSetup.OneRound);
+            SeatJoined joined = Of<SeatJoined>(authority.Apply(new JoinSeatCommand(1, 0, false, "A"))).Single();
+            Assert.That(joined.Seat, Is.EqualTo(0));
+            Assert.That(joined.IsAi, Is.False);
+            Assert.That(a.Seat, Is.EqualTo(0));
+            Assert.That(authority.Match.Seat(0).Kind, Is.EqualTo(SeatKind.Human));
+
+            Assert.That(authority.Apply(new JoinSeatCommand(2, 0, true, "AI")), Is.Empty, "the seat is taken");
+            Assert.That(authority.Apply(new JoinSeatCommand(2, 99, true, "AI")), Is.Empty, "no such seat");
+            Assert.That(Of<SeatJoined>(authority.Apply(new JoinSeatCommand(2, 1, true, "AI"))).Single().IsAi, Is.True);
+            Assert.That(b.Seat, Is.EqualTo(1));
+            Assert.That(authority.Match.Seat(1).Kind, Is.EqualTo(SeatKind.Ai));
+        }
+
+        [Test]
+        public void DropAndRejoin_HoldTheSeat_AndOnlyForAHumanWhoIsSeated()
+        {
+            GameAuthority authority = TwoSeats(out _, out _);
+            Assert.That(Of<SeatDropped>(authority.Apply(new DropSeatCommand(1, 30))).Single().Seat, Is.EqualTo(0));
+            Assert.That(authority.Match.Seat(0).Away, Is.True);
+            Assert.That(authority.Apply(new DropSeatCommand(1, 30)), Is.Empty, "already away");
+
+            Assert.That(Of<SeatRejoined>(authority.Apply(new RejoinSeatCommand(1))).Single().Seat, Is.EqualTo(0));
+            Assert.That(authority.Match.Seat(0).Away, Is.False);
+            Assert.That(authority.Apply(new RejoinSeatCommand(1)), Is.Empty, "not away any more");
+            Assert.That(authority.Apply(new DropSeatCommand(77, 30)), Is.Empty, "unknown player");
+        }
+
+        [Test]
+        public void LeaveSeat_DropsTheSeatOut_EvenForAPlayerAlreadyRemoved()
+        {
+            GameAuthority authority = TwoSeats(out _, out _);
+            authority.RemovePlayer(2); // the kit despawns the player with its connection, before or after the seat is released
+            IReadOnlyList<GameEvent> events = authority.Apply(new LeaveSeatCommand(2, 1));
+            Assert.That(Of<SeatLeft>(events).Single().Seat, Is.EqualTo(1));
+            Assert.That(authority.Match.Seat(1).Present, Is.False);
+            Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.RoundOver), "one seat left standing ends the round");
+            Assert.That(authority.Apply(new LeaveSeatCommand(2, 5)), Is.Empty, "no such seat");
+        }
     }
 }

@@ -375,6 +375,9 @@ namespace Ricochet.Core.Commands
             _votes[kind ?? string.Empty] = new VoteTally(Math.Max(1, electorate), fraction);
         }
 
+        /// <summary>Calls off a vote of this kind that was not decided (a no-op when none is open).</summary>
+        public void CloseVote(string kind) => _votes.Remove(kind ?? string.Empty);
+
         /// <summary>True while a vote of this kind is open.</summary>
         public bool VoteOpen(string kind) => _votes.ContainsKey(kind ?? string.Empty);
 
@@ -395,6 +398,11 @@ namespace Ricochet.Core.Commands
             {
                 if (!_players.TryGetValue(command.PlayerId, out PlayerState state))
                 {
+                    if (command is LeaveSeatCommand gone)
+                    {
+                        DoLeaveSeat(null, gone); // the player was removed with their connection: the command still names the seat
+                    }
+
                     return;
                 }
 
@@ -445,6 +453,18 @@ namespace Ricochet.Core.Commands
                         break;
                     case VoteCommand vote:
                         DoVote(state, vote);
+                        break;
+                    case JoinSeatCommand join:
+                        DoJoinSeat(state, join);
+                        break;
+                    case DropSeatCommand drop:
+                        DoDropSeat(state, drop);
+                        break;
+                    case RejoinSeatCommand _:
+                        DoRejoinSeat(state);
+                        break;
+                    case LeaveSeatCommand leave:
+                        DoLeaveSeat(state, leave);
                         break;
                 }
             });
@@ -732,6 +752,48 @@ namespace Ricochet.Core.Commands
                 Emit(new TurnPassed(state.Seat, TurnPassReason.EndedEarly));
                 Match.EndTurn(state.Seat);
             }
+        }
+
+        // ------------------------------------------------------------------ seat lifecycle (UR-T65)
+
+        private void DoJoinSeat(PlayerState state, JoinSeatCommand join)
+        {
+            if (Match == null || join.Seat < 0 || join.Seat >= MatchRules.MaxSeats || Match.TryGetSeat(join.Seat, out _))
+            {
+                return;
+            }
+
+            Match.Join(join.Seat, join.IsAi ? SeatKind.Ai : SeatKind.Human, join.Name);
+            state.Seat = join.Seat;
+            Emit(new SeatJoined(state.Id, join.Seat, join.IsAi));
+        }
+
+        private void DoDropSeat(PlayerState state, DropSeatCommand drop)
+        {
+            if (Match != null && state.Seat >= 0 && Match.Drop(state.Seat, drop.HoldSeconds))
+            {
+                Emit(new SeatDropped(state.Id, state.Seat));
+            }
+        }
+
+        private void DoRejoinSeat(PlayerState state)
+        {
+            if (Match != null && state.Seat >= 0 && Match.Rejoin(state.Seat))
+            {
+                Emit(new SeatRejoined(state.Id, state.Seat));
+            }
+        }
+
+        private void DoLeaveSeat(PlayerState state, LeaveSeatCommand leave)
+        {
+            int seat = state != null && state.Seat >= 0 ? state.Seat : leave.Seat;
+            if (Match == null || !Match.TryGetSeat(seat, out _))
+            {
+                return;
+            }
+
+            Match.Leave(seat);
+            Emit(new SeatLeft(leave.PlayerId, seat));
         }
 
         private void DoVote(PlayerState state, VoteCommand vote)

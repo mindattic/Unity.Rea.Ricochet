@@ -155,4 +155,60 @@ namespace Ricochet.Core.Commands
 
         public bool Yes { get; }
     }
+
+    /// <summary>
+    /// The player takes a match seat (UR-T65): a human at the start of a match or arriving in one (they play from the next round),
+    /// or an AI opponent. A taken or out-of-range seat, or no match, changes nothing.
+    /// </summary>
+    public sealed class JoinSeatCommand : Command
+    {
+        public JoinSeatCommand(int playerId, int seat, bool isAi, string name) : base(playerId)
+        {
+            Seat = seat;
+            IsAi = isAi;
+            Name = name ?? string.Empty;
+        }
+
+        public int Seat { get; }
+
+        public bool IsAi { get; }
+
+        public string Name { get; }
+    }
+
+    /// <summary>
+    /// The player's connection dropped and the kit holds their seat for <see cref="HoldSeconds"/> (UR-T13): the seat keeps its
+    /// health and score and the turn clock waits for them.
+    /// </summary>
+    public sealed class DropSeatCommand : Command
+    {
+        public DropSeatCommand(int playerId, double holdSeconds) : base(playerId)
+        {
+            HoldSeconds = holdSeconds;
+        }
+
+        public double HoldSeconds { get; }
+    }
+
+    /// <summary>The dropped player reconnected within the grace: back in their seat as they left it.</summary>
+    public sealed class RejoinSeatCommand : Command
+    {
+        public RejoinSeatCommand(int playerId) : base(playerId)
+        {
+        }
+    }
+
+    /// <summary>
+    /// The kit gave up the player's seat (they left, or did not come back in time, or were kicked): it drops out of the round,
+    /// passing the turn if it was theirs. <see cref="Seat"/> names the seat for a player already removed from the authority.
+    /// </summary>
+    public sealed class LeaveSeatCommand : Command
+    {
+        public LeaveSeatCommand(int playerId, int seat) : base(playerId)
+        {
+            Seat = seat;
+        }
+
+        public int Seat { get; }
+    }
 }

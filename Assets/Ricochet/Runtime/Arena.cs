@@ -445,12 +445,12 @@ namespace Ricochet
                 human.AssignSeat(seat);
                 if (seat >= 0)
                 {
-                    _match.Join(seat, SeatKind.Human, human.DisplayName);
+                    _authority.Apply(new Cmd.JoinSeatCommand(human.PlayerId, seat, false, human.DisplayName));
                     _humanSeats[human.KitSeat] = seat;
                     human.Place(SpawnPoint(seat));
                     if (human.Away)
                     {
-                        _match.Drop(seat, HoldLeft(human.KitSeat)); // dropped before the match: their seat waits for them too
+                        _authority.Apply(new Cmd.DropSeatCommand(human.PlayerId, HoldLeft(human.KitSeat))); // dropped before the match: their seat waits for them too
                     }
                 }
             }
@@ -463,7 +463,7 @@ namespace Ricochet
                 Player ai = spawned.GetComponent<Player>();
                 ai.AssignSeat(seat);
                 ai.Place(SpawnPoint(seat));
-                _match.Join(seat, SeatKind.Ai, ai.DisplayName);
+                _authority.Apply(new Cmd.JoinSeatCommand(ai.PlayerId, seat, true, ai.DisplayName));
             }
 
             _turns = Turns.For(_session);
@@ -529,6 +529,9 @@ namespace Ricochet
                     break;
                 case Cmd.DriveStarted _:
                     Mirror(); // only the first drive of a turn changes what peers see
+                    break;
+                case Cmd.VotePassed passed when passed.Kind == _votingKind:
+                    _votePassedInCore = true;
                     break;
             }
         }
@@ -616,7 +619,7 @@ namespace Ricochet
             player.AssignSeat(seat);
             if (seat >= 0)
             {
-                _match.Join(seat, SeatKind.Human, player.DisplayName);
+                _authority.Apply(new Cmd.JoinSeatCommand(player.PlayerId, seat, false, player.DisplayName));
                 _humanSeats[player.KitSeat] = seat;
                 player.Place(SpawnPoint(seat));
             }
@@ -637,9 +640,9 @@ namespace Ricochet
                 player.Away = true;
             }
 
-            if (_match != null && _humanSeats.TryGetValue(kitSeat, out int seat))
+            if (player != null && _humanSeats.ContainsKey(kitSeat))
             {
-                _match.Drop(seat, HoldLeft(kitSeat));
+                _authority.Apply(new Cmd.DropSeatCommand(player.PlayerId, HoldLeft(kitSeat)));
             }
 
             Mirror();
@@ -657,9 +660,9 @@ namespace Ricochet
                 player.Away = false;
             }
 
-            if (_match != null && _humanSeats.TryGetValue(kitSeat, out int seat))
+            if (player != null && _humanSeats.ContainsKey(kitSeat))
             {
-                _match.Rejoin(seat);
+                _authority.Apply(new Cmd.RejoinSeatCommand(player.PlayerId));
             }
 
             Mirror();
@@ -703,7 +706,8 @@ namespace Ricochet
             if (_match != null && _humanSeats.TryGetValue(kitSeat, out int seat))
             {
                 _humanSeats.Remove(kitSeat);
-                _match.Leave(seat);
+                Player player = HumanAt(kitSeat); // already gone with the connection, perhaps: the command names the seat too
+                _authority.Apply(new Cmd.LeaveSeatCommand(player != null ? player.PlayerId : 0, seat));
                 Mirror();
             }
         }
@@ -779,7 +783,7 @@ namespace Ricochet
         public VoteKind CreateRestartVote() => new VoteKind(RestartVote, VoteMenu.RestartTitle)
         {
             Description = _ => VoteMenu.RestartDescription(_match != null ? _match.Phase : MatchPhase.Practice),
-            Passed = _ =>
+            Passed = vote => RouteVote(vote, _ =>
             {
                 if (_match != null && _match.IsRunning)
                 {
@@ -790,7 +794,7 @@ namespace Ricochet
                     ResetDummies();
                     ResetHazards();
                 }
-            },
+            }),
         };
 
         /// <summary>
@@ -803,6 +807,8 @@ namespace Ricochet
         {
             VoteKind kick = VoteBoard.CreateKickKind(() => _session, VoteMenu.KickedLine);
             kick.Description = _ => VoteMenu.KickDescription(MatchRunning);
+            Action<Vote> disconnect = kick.Passed;
+            kick.Passed = vote => RouteVote(vote, disconnect);
             return kick;
         }
 
@@ -815,8 +821,49 @@ namespace Ricochet
             Description = r => MatchSetup.Parse(r.Number, r.Text).DescribeGame() + ". " + MatchSetup.Parse(r.Number, r.Text).Describe() + ". "
                 + MatchSetup.Parse(r.Number, r.Text).DescribeAnnouncer() + ". Everyone takes a seat and plays in turn; the last one standing wins the round.",
             Check = r => HumanCount() + Math.Max(0, r.Number) < 2 ? "A match needs two players: add an AI opponent." : null,
-            Passed = v => StartMatch(MatchSetup.Parse(v.Number, v.Text)),
+            Passed = vote => RouteVote(vote, v => StartMatch(MatchSetup.Parse(v.Number, v.Text))),
         };
+
+        // The kit counts the ballots (its overlay and quorum are its own); what they decided goes through Core (UR-T65): the
+        // vote opens on the authority, every ballot is a VoteCommand from the player who cast it, and the authority's
+        // VotePassed is what carries the effect out. A voter with no Player on this peer cannot be mirrored: the kit's
+        // verdict stands then, and the effect still runs rather than be lost.
+        private string _votingKind;
+        private bool _votePassedInCore;
+
+        private void RouteVote(Vote vote, Action<Vote> effect)
+        {
+            string kind = vote.Kind.Id;
+            int electorate = Math.Max(1, vote.Voters.Count);
+            _authority.OpenVote(kind, electorate, Math.Min(1.0, (double)Math.Max(1, vote.Quorum) / electorate));
+            _votingKind = kind;
+            _votePassedInCore = false;
+            CastBallots(vote.Yes, kind, true);
+            CastBallots(vote.No, kind, false);
+            _votingKind = null;
+            if (!_votePassedInCore)
+            {
+                _authority.CloseVote(kind);
+                Debug.LogWarning("[Ricochet] The " + kind + " vote passed on the kit's board but not in Core (a voter has no player here); carrying it out anyway.");
+            }
+
+            effect?.Invoke(vote);
+        }
+
+        private void CastBallots(IReadOnlyList<ulong> voters, string kind, bool yes)
+        {
+            foreach (ulong voter in voters)
+            {
+                foreach (Player player in Player.In(_session))
+                {
+                    if (!player.IsAi && player.OwnerClientId == voter)
+                    {
+                        _authority.Apply(new Cmd.VoteCommand(player.PlayerId, kind, yes));
+                        break;
+                    }
+                }
+            }
+        }
 
         private int HumanCount()
         {

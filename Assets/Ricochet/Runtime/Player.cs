@@ -686,11 +686,9 @@ namespace Ricochet
             _seenPickups = PickupCount;
             _seenAssists = Assists;
             _adoptedAssists = Assists;
-            _shotView = ShotView.Create("Shot (" + name + ")");
-            _shotView.Bounced += _ => GameAudio.Play(SoundCue.Bounce);
-            _shotView.Landed += volley =>
+            _shotView = ShotView.Create("Shot (" + name + ")", this);
+            _shotView.Landed += _ =>
             {
-                GameAudio.Play(volley.HasBlast ? SoundCue.Blast : SoundCue.Land);
                 if (_pendingOutcome != null) // the server's result came in while this peer was still flying the shot
                 {
                     ShotOutcome outcome = _pendingOutcome;
@@ -1175,10 +1173,7 @@ namespace Ricochet
         {
             SyncFromAuthority();
             LastVolley = cut.Volley;
-            if (_shotView != null)
-            {
-                _shotView.Detonate(cut.Volley);
-            }
+            Presentation.Raise(this, cut);
 
             SendResolved(cut.Shot, cut.Volley); // every client cuts its flight at the server's own cut, striking whom it struck
         }
@@ -1206,12 +1201,8 @@ namespace Ricochet
             _pendingOutcome = null;
             LastVolley = volley;
             LastVolleyShot = shot;
-            if (_shotView != null)
-            {
-                _shotView.Launch(volley, Color);
-            }
-
-            GameAudio.Play(SoundCue.Fire); // UR-T10: at the profile's effect volume
+            // The view draws it and GameAudio plays the fire sound (UR-T10), each from the feed.
+            Presentation.Raise(this, new Cmd.ShotFired(PlayerId, Seat, shot, volley.Weapon, ShotHeading, ShotPower, ShotFuse, ShotExtraBounces, volley));
         }
 
         // A client: the server solved shot number `shot`. A new shot is drawn as the server solved it; the same shot again is
@@ -1238,10 +1229,7 @@ namespace Ricochet
             else if (shot == LastVolleyShot && LastVolley != null && volley.Main.End == ShotEndKind.Detonated)
             {
                 LastVolley = volley;
-                if (_shotView != null)
-                {
-                    _shotView.Detonate(volley);
-                }
+                Presentation.Raise(this, new Cmd.ShotCut(PlayerId, shot, 0, volley));
             }
         }
 
@@ -1293,6 +1281,7 @@ namespace Ricochet
                 if (damage > 0)
                 {
                     player.ShowHurt(damage);
+                    Presentation.Raise(player, new Cmd.Damaged(player.Seat, damage, Seat)); // the HUD flashes their bar
                 }
             }
         }

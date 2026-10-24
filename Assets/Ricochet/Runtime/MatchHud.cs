@@ -9,11 +9,14 @@
 // reached (UR-T9) the caption names the champion and the endgame recap (EndgameRecap, added with this) comes up. A seat
 // whose player dropped reads "away" (UR-T13), and while the turn waits for them the line under the clock says so, with
 // the seconds they have left to reconnect. IMGUI always draws over the kit's uGUI menus and dialogs, so this goes quiet
-// while one is open (UR-T18): the Esc menu, the main menu (and the lobby pushed on it), or a modal.
+// while one is open (UR-T18): the Esc menu, the main menu (and the lobby pushed on it), or a modal. What happens in the
+// match reaches it as events on the Presentation feed (UR-T65), the way it reaches the audio and the shot view: a seat that
+// takes damage has its bar flash red, and the HUD never asks Core's match anything.
 using System.Collections.Generic;
 using System.Text;
 using MindAttic.Components.Unity; // MaModal (a dialog over the menus)
 using Ricochet.Core.Ai;
+using Ricochet.Core.Commands;
 using Ricochet.Core.Match;
 using Ricochet.Core.Menu;
 using Unity.Multiplayer;          // NetBootstrap, NetSession
@@ -39,6 +42,8 @@ namespace Ricochet
         private GUIStyle _scoreStyle;
         private GUIStyle _centerStyle;
         private GUIStyle _thinkingStyle;
+        private const float HurtFlashSeconds = 0.6f;
+        private readonly Dictionary<int, float> _hurtUntil = new Dictionary<int, float>(); // seat -> when its bar stops flashing
 
         /// <summary>Adds the HUD to the scene; it draws whatever match <paramref name="session"/> (or the bootstrap's) is in.</summary>
         public static MatchHud Create(NetSession session = null)
@@ -69,6 +74,24 @@ namespace Ricochet
             Color fill = color;
             fill.a = alive ? 1f : 0.3f;
             Fill(new Rect(rect.x + 1f, rect.y + 1f, Mathf.Max(0f, (rect.width - 2f) * Mathf.Clamp01(fraction)), rect.height - 2f), fill);
+        }
+
+        private void OnEnable()
+        {
+            Presentation.Raised += OnEvent;
+        }
+
+        private void OnDisable()
+        {
+            Presentation.Raised -= OnEvent;
+        }
+
+        private void OnEvent(Player who, GameEvent e)
+        {
+            if (e is Damaged damaged && damaged.Seat >= 0 && damaged.Damage > 0)
+            {
+                _hurtUntil[damaged.Seat] = Time.time + HurtFlashSeconds;
+            }
         }
 
         private void OnGUI()
@@ -158,6 +181,10 @@ namespace Ricochet
             GUI.Label(new Rect(x, y, barWidth, 18f), tag + player.DisplayName + "  " + state, _nameStyle);
             GUI.Label(new Rect(x, y, barWidth, 18f), player.Score.ToString(), _scoreStyle); // draw_scores.gml
             Bar(new Rect(x, y + 17f, barWidth, BarHeight), player.Health / (float)Arena.MatchRules.MaxHealth, color, player.InRound);
+            if (_hurtUntil.TryGetValue(player.Seat, out float until) && until > Time.time)
+            {
+                Fill(new Rect(x, y + 17f, barWidth, BarHeight), new Color(1f, 0.15f, 0.1f, 0.7f * ((until - Time.time) / HurtFlashSeconds)));
+            }
         }
 
         private string Caption(Turns turns)

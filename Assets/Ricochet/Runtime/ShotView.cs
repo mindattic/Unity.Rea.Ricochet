@@ -3,12 +3,15 @@
 // its blast, drawn at the blast's size. Every peer flies the volley the server solved (UR-T12: Player's ShotResolved
 // carries it, packed by Core's ShotWire), so this is presentation only; the server's own flight decides what the volley
 // struck. A vortex set off in mid-flight carries on along the cut-short volley the server sends again (Detonate) and
-// goes off where the server set it off (UR-T6).
+// goes off where the server set it off (UR-T6). It never reaches into Core's state (UR-T65): it plays the events its owner's
+// shot raises on the Presentation feed (ShotFired launches it, ShotCut cuts it short) and says what its own flight does
+// there (a bounce, a landing) for the audio and anything else listening.
 using System.Collections.Generic;
 using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
 using Ricochet.Core.Net;
 using UnityEngine;
+using Cmd = Ricochet.Core.Commands;
 
 namespace Ricochet
 {
@@ -22,6 +25,7 @@ namespace Ricochet
         private LineRenderer _blastRing;
         private float _flashLeft;
         private Color _color = Color.white;
+        private Player _owner;
 
         /// <summary>The volley being drawn (null before the first).</summary>
         public VolleyFlight Flight => _flight;
@@ -29,19 +33,47 @@ namespace Ricochet
         /// <summary>True while any projectile is in the air.</summary>
         public bool Flying => _flight != null && !_flight.Landed;
 
-        /// <summary>Raised once per contact passed, with the contact point (a bounce sound or puff hangs off this).</summary>
-        public event System.Action<Vector2> Bounced;
-
         /// <summary>Raised when the whole volley has landed.</summary>
         public event System.Action<Volley> Landed;
 
-        /// <summary>A new, unparented view (the player's own transform is scaled to its square); the player destroys it.</summary>
-        public static ShotView Create(string name)
+        /// <summary>A new, unparented view of <paramref name="owner"/>'s shots (the player's own transform is scaled to its square); the player destroys it.</summary>
+        public static ShotView Create(string name, Player owner)
         {
-            return new GameObject(name).AddComponent<ShotView>();
+            var view = new GameObject(name).AddComponent<ShotView>();
+            view._owner = owner;
+            return view;
         }
 
-        public void Launch(Volley volley, Color color)
+        private void OnEnable()
+        {
+            Presentation.Raised += OnEvent;
+        }
+
+        private void OnDisable()
+        {
+            Presentation.Raised -= OnEvent;
+        }
+
+        // The events about this view's owner: a shot fired is drawn in their colour, a vortex set off cuts it short.
+        private void OnEvent(Player who, Cmd.GameEvent e)
+        {
+            if (who != _owner)
+            {
+                return;
+            }
+
+            switch (e)
+            {
+                case Cmd.ShotFired fired:
+                    Launch(fired.Volley, _owner.Color);
+                    break;
+                case Cmd.ShotCut cut:
+                    Detonate(cut.Volley);
+                    break;
+            }
+        }
+
+        private void Launch(Volley volley, Color color)
         {
             EnsureBlast();
             _flight = new VolleyFlight(volley);
@@ -87,7 +119,7 @@ namespace Ricochet
         /// The volley in the air was set off early (a vortex, vortex_detonate.gml): it carries on from where it is along
         /// <paramref name="cut"/>, the volley cut short, and goes off where that ends.
         /// </summary>
-        public void Detonate(Volley cut)
+        private void Detonate(Volley cut)
         {
             if (_flight == null || cut == null)
             {
@@ -130,7 +162,7 @@ namespace Ricochet
                     {
                         Vec2 point = flight.Path.Contacts[before + c].Point;
                         part.Points.Add(Arena.ToUnity(point));
-                        Bounced?.Invoke(Arena.ToUnity(point));
+                        Presentation.Raise(_owner, new Cmd.Bounced(_owner.PlayerId, _owner.LastVolleyShot, before + c + 1, point));
                     }
 
                     Place(part.Projectile.transform, flight.Position);
@@ -162,6 +194,7 @@ namespace Ricochet
                         Ring(_flight.Volley.BlastCenter, _flight.Volley.BlastRadius);
                     }
 
+                    Presentation.Raise(_owner, new Cmd.ShotLanded(_owner.PlayerId, _owner.Seat, _owner.LastVolleyShot, _flight.Volley, null, false, -1));
                     Landed?.Invoke(_flight.Volley);
                 }
             }

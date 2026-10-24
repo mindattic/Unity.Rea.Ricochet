@@ -540,4 +540,63 @@ namespace Ricochet.Core.Commands
 
         public int No { get; }
     }
+
+    /// <summary>A player took a match seat (UR-T65).</summary>
+    public sealed class SeatJoined : GameEvent
+    {
+        public SeatJoined(int playerId, int seat, bool isAi)
+        {
+            PlayerId = playerId;
+            Seat = seat;
+            IsAi = isAi;
+        }
+
+        public int PlayerId { get; }
+
+        public int Seat { get; }
+
+        public bool IsAi { get; }
+    }
+
+    /// <summary>A human's connection dropped; their seat is held for them (UR-T13).</summary>
+    public sealed class SeatDropped : GameEvent
+    {
+        public SeatDropped(int playerId, int seat)
+        {
+            PlayerId = playerId;
+            Seat = seat;
+        }
+
+        public int PlayerId { get; }
+
+        public int Seat { get; }
+    }
+
+    /// <summary>A dropped human is back in their seat.</summary>
+    public sealed class SeatRejoined : GameEvent
+    {
+        public SeatRejoined(int playerId, int seat)
+        {
+            PlayerId = playerId;
+            Seat = seat;
+        }
+
+        public int PlayerId { get; }
+
+        public int Seat { get; }
+    }
+
+    /// <summary>A seat left the match (the player left, timed out or was kicked).</summary>
+    public sealed class SeatLeft : GameEvent
+    {
+        public SeatLeft(int playerId, int seat)
+        {
+            PlayerId = playerId;
+            Seat = seat;
+        }
+
+        public int PlayerId { get; }
+
+        public int Seat { get; }
+    }
 }

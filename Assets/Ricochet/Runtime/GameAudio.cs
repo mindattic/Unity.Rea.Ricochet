@@ -3,9 +3,11 @@
 // every MindAttic game reads, so they are set once and kept from session to session and from game to game; the
 // Settings screen's sliders and toggles (Game adds them beside the kit's name and colour, which the kit already reads
 // from and saves to the same profile) write straight back to it. The effects are Core's Tones rendered into clips once;
-// a player's shot plays them as it fires, bounces and lands. Music plays from the music source at the music volume
+// a player's shot plays them as it fires, bounces and lands, heard from the Presentation feed's ShotFired, Bounced and
+// ShotLanded events (UR-T65), not by being called from the player. Music plays from the music source at the music volume
 // when the game gives it a clip. Nothing is created on a headless peer (a dedicated server or a bot).
 using System.Collections.Generic;
+using Ricochet.Core.Commands;
 using Ricochet.Core.Menu;
 using Unity.Shared;
 using Unity.Shared.Core;
@@ -183,6 +185,7 @@ namespace Ricochet
             }
 
             Instance = this;
+            Presentation.Raised += OnEvent;
             _effects = gameObject.AddComponent<AudioSource>();
             _effects.playOnAwake = false;
             _effects.spatialBlend = 0f;
@@ -207,8 +210,26 @@ namespace Ricochet
             }
         }
 
+        // What the game shows and says: a shot fired, a contact passed, a volley landed (with a blast or without).
+        private void OnEvent(Player who, GameEvent e)
+        {
+            switch (e)
+            {
+                case ShotFired _:
+                    PlayCue(SoundCue.Fire); // UR-T10: at the profile's effect volume
+                    break;
+                case Bounced _:
+                    PlayCue(SoundCue.Bounce);
+                    break;
+                case ShotLanded landed when landed.Volley != null:
+                    PlayCue(landed.Volley.HasBlast ? SoundCue.Blast : SoundCue.Land);
+                    break;
+            }
+        }
+
         private void OnDestroy()
         {
+            Presentation.Raised -= OnEvent;
             if (Instance == this)
             {
                 Instance = null;
