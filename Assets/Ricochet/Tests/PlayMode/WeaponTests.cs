@@ -117,7 +117,7 @@ namespace Ricochet.Tests
             Arena arena = null;                                   // goes off at x -9.6, 5.6 from Ann and 9.6 from the host
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(0), Is.True);
+            Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange()), Is.True);
             Player annOnHerClient = Mine();
             yield return WaitUntil(() => Turns.For(Client) != null && annOnHerClient.Seat == ann.Seat, "her client never got the match");
             Assert.That(Turns.For(Server).Current, Is.EqualTo(host.Seat));
@@ -151,7 +151,7 @@ namespace Ricochet.Tests
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(0), Is.True);
+            Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange()), Is.True);
             yield return WaitUntil(() => Turns.For(Client) != null, "the client never got the match");
 
             // Straight up from seat 0 at (0, -4.5): the shot passes (0, -2) on its way to the middle wall.
