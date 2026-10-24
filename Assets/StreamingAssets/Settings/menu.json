@@ -1,0 +1,157 @@
+{
+  "_source": "The menu flow's text (see MenuFlow.cs): tagline, room titles, the main menu's buttons, controls, how-to-play slides and credits.",
+  "tagline": "Bank it off the walls. Land it on your friends.",
+  "titles": {
+    "Title": "Ricochet",
+    "MainMenu": "Main menu",
+    "Players": "Players",
+    "MapRoom": "Map",
+    "Game": "Game",
+    "Endgame": "Game over",
+    "Settings": "Game settings",
+    "Controls": "Controls",
+    "HowToPlay": "How to play",
+    "Credits": "Credits",
+    "Lobby": "Lobby"
+  },
+  "offTheMainMenu": [
+    "Players",
+    "Settings",
+    "Controls",
+    "HowToPlay",
+    "Credits"
+  ],
+  "controls": [
+    {
+      "keys": "Left / Right (A / D)",
+      "action": "Turn your tank and its aim"
+    },
+    {
+      "keys": "W / S",
+      "action": "Drive your tank forward / backward (driving forfeits that turn's shot)"
+    },
+    {
+      "keys": "Up / Down",
+      "action": "Set the power"
+    },
+    {
+      "keys": "Space",
+      "action": "Fire (again, while your vortex device flies: set it off)"
+    },
+    {
+      "keys": "Q / E",
+      "action": "Cycle your weapon"
+    },
+    {
+      "keys": "Z / C",
+      "action": "Cycle your item"
+    },
+    {
+      "keys": "Ctrl",
+      "action": "Use your item"
+    },
+    {
+      "keys": "F",
+      "action": "End your turn early"
+    },
+    {
+      "keys": "1 / 2 / 3",
+      "action": "Grenade fuse: shorter, longer, longest"
+    },
+    {
+      "keys": "Esc",
+      "action": "The in-game menu: players, map, settings, votes, invite, leave"
+    }
+  ],
+  "slides": [
+    {
+      "title": "Introduction",
+      "lines": [
+        "Ricochet is a game of angles: every player has a cannon, and the shortest way to an opponent is rarely a straight line.",
+        "The faint line in front of you is the whole path your shot will fly, bounce by bounce."
+      ]
+    },
+    {
+      "title": "Attacking",
+      "lines": [
+        "Players take turns firing at each other. Bank a shot off the border and the white walls, and the orange redirectors send it along their arrows.",
+        "A shot goes off on its fifth contact. Every bounce before a hit adds to the damage, and to the points it scores.",
+        "Careful: a shot that comes back to you hurts you, ten health a bounce."
+      ]
+    },
+    {
+      "title": "Time limit",
+      "lines": [
+        "Each turn has a 20-second clock at the top of the screen. Fire before it runs out, or the turn passes to the next player."
+      ]
+    },
+    {
+      "title": "Rounds and the goal",
+      "lines": [
+        "A round goes on until one player is left standing. A hit on an opponent scores 100 points, 25 more for each bounce and 5 for every tenth of a second the shot was in the air.",
+        "Scores last the whole game. Once a round ends with someone at the goal (500 points unless you change it), the game is over and the top score wins."
+      ]
+    },
+    {
+      "title": "Crates",
+      "lines": [
+        "Crates fall into the arena during a round. Shoot across one to collect it: W a weapon, I an item, + some health, ? a mystery weapon."
+      ]
+    },
+    {
+      "title": "Weapons",
+      "lines": [
+        "Q and E cycle your weapon. You carry three of each, and the cannon never runs out.",
+        "Cannon: one shell. Laser: the full range, three times as fast. Shotgun: a fan of five pellets.",
+        "Grenade: passes through players and goes off when its fuse runs out (1, 2 and 3 set it). Railgun: straight through the walls, hitting everyone on the line.",
+        "Vortex device: press Space again while it flies to set it off; it hurts everyone in its pull, swallows the shield walls, redirectors and grass it reaches and tears a breach in the border."
+      ]
+    },
+    {
+      "title": "Items",
+      "lines": [
+        "Z and C cycle your item, F uses it before you fire.",
+        "Extra bounce: one more contact for this turn's shot. Shield wall: a wall in front of you only your own shots pass.",
+        "Shrink ray: shrinks the first player it reaches. Teleporter: moves you to where it lands.",
+        "Aim assist: turns your aim onto a shot that reaches an opponent. Redirector: sets a redirector down where it lands."
+      ]
+    },
+    {
+      "title": "Hazards",
+      "lines": [
+        "The blue electric arc stops any shot that touches it. The red laser gate does too, but only on every other turn.",
+        "A shot cuts down the first tuft of grass it touches, and stops there."
+      ]
+    },
+    {
+      "title": "Opponents and the announcer",
+      "lines": [
+        "AI opponents fill the empty seats: choose how many and how well they aim on the Players screen. On its turn an AI thinks out loud, then looks for a straight shot, a bank shot or a railgun shot.",
+        "The announcer welcomes everyone, cheers a knock-out and heckles a shot that hits nobody. Choose who, and how often, under Game settings."
+      ]
+    },
+    {
+      "title": "Playing together",
+      "lines": [
+        "Everyone plays on their own computer. One player hosts: Players, then the map, then Start opens the lobby with a join code to share (or the address to join at).",
+        "The others click Join by code and type it in, or Join by IP with the host's address. When everyone is in the lobby, the host presses Start and the match begins.",
+        "Someone who joins later plays from the next round; Esc > Invite players shows the code again."
+      ]
+    },
+    {
+      "title": "Your profile",
+      "lines": [
+        "Your name, colour and sound volumes come from your MindAttic profile, so you set them once: change them under Settings and every session, and every MindAttic game, keeps them."
+      ]
+    }
+  ],
+  "credits": [
+    "Ricochet",
+    "Based on the 2013 GameMaker game of the same name.",
+    "Rebuilt in Unity 6 by MindAttic, with real network play in place of the original's one shared keyboard.",
+    "Networking, lobby, join codes and votes: Unity.Multiplayer.",
+    "Menus and HUD cards: MindAttic Components.",
+    "Player profiles: Unity.Shared.",
+    "Thanks for playing."
+  ]
+}

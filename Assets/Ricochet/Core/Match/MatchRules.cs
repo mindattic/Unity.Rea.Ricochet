@@ -16,45 +16,71 @@ namespace Ricochet.Core.Match
         public const int MaxSeats = 16;
 
         /// <summary>Health a player starts each round with (maxhp).</summary>
-        public int MaxHealth { get; set; } = 100;
+        public int MaxHealth { get; set; }
 
         /// <summary>Seconds a player has to fire (turnTime).</summary>
-        public double TurnSeconds { get; set; } = 20;
+        public double TurnSeconds { get; set; }
 
         /// <summary>The last this-many whole seconds of a turn each beep (turn_countdown's 4, 3, 2, 1).</summary>
-        public int CountdownBeeps { get; set; } = 4;
+        public int CountdownBeeps { get; set; }
 
         /// <summary>A hit's base damage (weapon_damage, the same for every weapon; a shotgun pellet does a share, Match.Strike).</summary>
-        public int WeaponDamage { get; set; } = 10;
+        public int WeaponDamage { get; set; }
 
         /// <summary>Seconds between a shot landing and the next player's turn (obj_endturn's pause).</summary>
-        public double EndTurnSeconds { get; set; } = 1.25;
+        public double EndTurnSeconds { get; set; }
 
         /// <summary>Seconds the round's result stays up before the next round starts.</summary>
-        public double RoundOverSeconds { get; set; } = 4;
+        public double RoundOverSeconds { get; set; }
 
         /// <summary>Seconds an AI seat "thinks" before it fires (the original's "is thinking..." pause).</summary>
-        public double AiThinkSeconds { get; set; } = 1.5;
+        public double AiThinkSeconds { get; set; }
 
         /// <summary>Degrees a second an AI seat turns its barrel towards its aim (rotate_left/right); faster when the clock is short.</summary>
-        public double AiDegreesPerSecond { get; set; } = 180;
+        public double AiDegreesPerSecond { get; set; }
 
         /// <summary>Points for landing a hit on an opponent (points_kill; hit.gml paid it on every hit, not only a kill).</summary>
-        public int PointsHit { get; set; } = 100;
+        public int PointsHit { get; set; }
 
         /// <summary>Points for every bounce the striking shot made first (points_bounce).</summary>
-        public int PointsBounce { get; set; } = 25;
+        public int PointsBounce { get; set; }
 
         /// <summary>Points for every <see cref="FlightBonusSeconds"/> the shot was in the air (points_flighttime).</summary>
-        public int PointsFlightTime { get; set; } = 5;
+        public int PointsFlightTime { get; set; }
 
         /// <summary>
         /// How often the flight bonus ticks: obj_bullet's alarm added points_flighttime every 100 steps at shootFPS (1020),
         /// about a tenth of a second.
         /// </summary>
-        public double FlightBonusSeconds { get; set; } = 100.0 / 1020.0;
+        public double FlightBonusSeconds { get; set; }
+
+        /// <summary>The stock rules, from match.json (UR-T35): a new set starts as a copy of them.</summary>
+        public MatchRules()
+        {
+            CopyFrom(Ricochet.Core.Data.GameData.Current.Match);
+        }
+
+        internal MatchRules(bool blank)
+        {
+        }
 
         public static MatchRules Default => new MatchRules();
+
+        internal void CopyFrom(MatchRules other)
+        {
+            MaxHealth = other.MaxHealth;
+            TurnSeconds = other.TurnSeconds;
+            CountdownBeeps = other.CountdownBeeps;
+            WeaponDamage = other.WeaponDamage;
+            EndTurnSeconds = other.EndTurnSeconds;
+            RoundOverSeconds = other.RoundOverSeconds;
+            AiThinkSeconds = other.AiThinkSeconds;
+            AiDegreesPerSecond = other.AiDegreesPerSecond;
+            PointsHit = other.PointsHit;
+            PointsBounce = other.PointsBounce;
+            PointsFlightTime = other.PointsFlightTime;
+            FlightBonusSeconds = other.FlightBonusSeconds;
+        }
 
         /// <summary>
         /// draw_potential.gml's point_combo: what a hit on an opponent scores, points_kill + points_bounce a bounce + the

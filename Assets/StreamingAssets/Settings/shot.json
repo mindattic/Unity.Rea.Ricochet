@@ -1,0 +1,11 @@
+{
+  "_source": "ShotRules: the numbers a shot plays by (2013 original globals.gml, bullet_step.gml, shoot_bullet.gml; see ShotRules.cs).",
+  "maxBounces": 5,
+  "muzzleOffset": 0.6,
+  "minRange": 6,
+  "maxRange": 70,
+  "speed": 18,
+  "powerPerSecond": 0.5,
+  "degreesPerSecond": 90,
+  "driveSpeed": 3
+}

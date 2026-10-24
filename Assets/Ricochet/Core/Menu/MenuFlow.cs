@@ -6,7 +6,8 @@
 // The kit's host lobby (the join code and who is in, UR-T11) stands between the map room and the game as the Lobby room.
 // Here every room but the game is a screen: the title is shown first, the kit's main menu is the main menu, and the
 // setup rooms are screens on it and on the in-game menu (the setup is only proposed to the others by the match vote).
-// The how-to-play slides, the controls and the credits are written for this game, in this project's own words.
+// The how-to-play slides, the controls and the credits are written for this game, in this project's own words, and are
+// data (menu.json, UR-T35).
 using System;
 using System.Collections.Generic;
 
@@ -70,7 +71,9 @@ namespace Ricochet.Core.Menu
     public static class MenuFlow
     {
         /// <summary>What the title screen says under the name.</summary>
-        public const string Tagline = "Bank it off the walls. Land it on your friends.";
+        public static string Tagline => Data.Menu.Tagline;
+
+        private static Ricochet.Core.Data.GameData Data => Ricochet.Core.Data.GameData.Current;
 
         /// <summary>The room a room's main button goes on to: the original's titlescreen -> mainmenu -> ... -> endgame -> mainmenu.</summary>
         public static Room Next(Room room)
@@ -115,95 +118,16 @@ namespace Ricochet.Core.Menu
         }
 
         /// <summary>The rooms the main menu opens directly (mainmenu's buttons), in its order.</summary>
-        public static IReadOnlyList<Room> OffTheMainMenu { get; } = new[] { Room.Players, Room.Settings, Room.Controls, Room.HowToPlay, Room.Credits };
+        public static IReadOnlyList<Room> OffTheMainMenu => Data.Menu.OffTheMainMenu;
 
         /// <summary>A room's name on its button and at the top of its screen.</summary>
-        public static string Title(Room room)
-        {
-            switch (room)
-            {
-                case Room.Title:
-                    return "Ricochet";
-                case Room.MainMenu:
-                    return "Main menu";
-                case Room.Players:
-                    return "Players";
-                case Room.MapRoom:
-                    return "Map";
-                case Room.Game:
-                    return "Game";
-                case Room.Endgame:
-                    return "Game over";
-                case Room.Settings:
-                    return "Game settings";
-                case Room.Controls:
-                    return "Controls";
-                case Room.HowToPlay:
-                    return "How to play";
-                case Room.Credits:
-                    return "Credits";
-                case Room.Lobby:
-                    return "Lobby";
-                default:
-                    return room.ToString();
-            }
-        }
+        public static string Title(Room room) => Data.Menu.Titles.TryGetValue(room, out string title) ? title : room.ToString();
 
         /// <summary>The controls screen (the original's keyboard-layout picture), as lines.</summary>
-        public static IReadOnlyList<ControlBinding> Controls { get; } = new[]
-        {
-            new ControlBinding("Left / Right (A / D)", "Turn your tank and its aim"),
-            new ControlBinding("W / S", "Drive your tank forward / backward (driving forfeits that turn's shot)"),
-            new ControlBinding("Up / Down", "Set the power"),
-            new ControlBinding("Space", "Fire (again, while your vortex device flies: set it off)"),
-            new ControlBinding("Q / E", "Cycle your weapon"),
-            new ControlBinding("Z / C", "Cycle your item"),
-            new ControlBinding("Ctrl", "Use your item"),
-            new ControlBinding("F", "End your turn early"),
-            new ControlBinding("1 / 2 / 3", "Grenade fuse: shorter, longer, longest"),
-            new ControlBinding("Esc", "The in-game menu: players, map, settings, votes, invite, leave"),
-        };
+        public static IReadOnlyList<ControlBinding> Controls => Data.Menu.Controls;
 
         /// <summary>The how-to-play slides, in order.</summary>
-        public static IReadOnlyList<Slide> Slides { get; } = new[]
-        {
-            new Slide("Introduction",
-                "Ricochet is a game of angles: every player has a cannon, and the shortest way to an opponent is rarely a straight line.",
-                "The faint line in front of you is the whole path your shot will fly, bounce by bounce."),
-            new Slide("Attacking",
-                "Players take turns firing at each other. Bank a shot off the border and the white walls, and the orange redirectors send it along their arrows.",
-                "A shot goes off on its fifth contact. Every bounce before a hit adds to the damage, and to the points it scores.",
-                "Careful: a shot that comes back to you hurts you, ten health a bounce."),
-            new Slide("Time limit",
-                "Each turn has a 20-second clock at the top of the screen. Fire before it runs out, or the turn passes to the next player."),
-            new Slide("Rounds and the goal",
-                "A round goes on until one player is left standing. A hit on an opponent scores 100 points, 25 more for each bounce and 5 for every tenth of a second the shot was in the air.",
-                "Scores last the whole game. Once a round ends with someone at the goal (500 points unless you change it), the game is over and the top score wins."),
-            new Slide("Crates",
-                "Crates fall into the arena during a round. Shoot across one to collect it: W a weapon, I an item, + some health, ? a mystery weapon."),
-            new Slide("Weapons",
-                "Q and E cycle your weapon. You carry three of each, and the cannon never runs out.",
-                "Cannon: one shell. Laser: the full range, three times as fast. Shotgun: a fan of five pellets.",
-                "Grenade: passes through players and goes off when its fuse runs out (1, 2 and 3 set it). Railgun: straight through the walls, hitting everyone on the line.",
-                "Vortex device: press Space again while it flies to set it off; it hurts everyone in its pull, swallows the shield walls, redirectors and grass it reaches and tears a breach in the border."),
-            new Slide("Items",
-                "Z and C cycle your item, F uses it before you fire.",
-                "Extra bounce: one more contact for this turn's shot. Shield wall: a wall in front of you only your own shots pass.",
-                "Shrink ray: shrinks the first player it reaches. Teleporter: moves you to where it lands.",
-                "Aim assist: turns your aim onto a shot that reaches an opponent. Redirector: sets a redirector down where it lands."),
-            new Slide("Hazards",
-                "The blue electric arc stops any shot that touches it. The red laser gate does too, but only on every other turn.",
-                "A shot cuts down the first tuft of grass it touches, and stops there."),
-            new Slide("Opponents and the announcer",
-                "AI opponents fill the empty seats: choose how many and how well they aim on the Players screen. On its turn an AI thinks out loud, then looks for a straight shot, a bank shot or a railgun shot.",
-                "The announcer welcomes everyone, cheers a knock-out and heckles a shot that hits nobody. Choose who, and how often, under Game settings."),
-            new Slide("Playing together",
-                "Everyone plays on their own computer. One player hosts: Players, then the map, then Start opens the lobby with a join code to share (or the address to join at).",
-                "The others click Join by code and type it in, or Join by IP with the host's address. When everyone is in the lobby, the host presses Start and the match begins.",
-                "Someone who joins later plays from the next round; Esc > Invite players shows the code again."),
-            new Slide("Your profile",
-                "Your name, colour and sound volumes come from your MindAttic profile, so you set them once: change them under Settings and every session, and every MindAttic game, keeps them."),
-        };
+        public static IReadOnlyList<Slide> Slides => Data.Menu.Slides;
 
         /// <summary>obj_btn_nextslide: the next slide, wrapping from the last to the first.</summary>
         public static int NextSlide(int slide) => (ClampSlide(slide) + 1) % Slides.Count;
@@ -217,16 +141,7 @@ namespace Ricochet.Core.Menu
         public static int ClampSlide(int slide) => slide >= 0 && slide < Slides.Count ? slide : 0;
 
         /// <summary>The credits screen, a line each.</summary>
-        public static IReadOnlyList<string> Credits { get; } = new[]
-        {
-            "Ricochet",
-            "Based on the 2013 GameMaker game of the same name.",
-            "Rebuilt in Unity 6 by MindAttic, with real network play in place of the original's one shared keyboard.",
-            "Networking, lobby, join codes and votes: Unity.Multiplayer.",
-            "Menus and HUD cards: MindAttic Components.",
-            "Player profiles: Unity.Shared.",
-            "Thanks for playing.",
-        };
+        public static IReadOnlyList<string> Credits => Data.Menu.Credits;
     }
 
     /// <summary>One line of the endgame recap.</summary>

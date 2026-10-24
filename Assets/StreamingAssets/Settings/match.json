@@ -1,0 +1,15 @@
+{
+  "_source": "MatchRules: the numbers a match plays by (2013 original globals.gml, hit.gml, turn_countdown.gml; see MatchRules.cs).",
+  "maxHealth": 100,
+  "turnSeconds": 20,
+  "countdownBeeps": 4,
+  "weaponDamage": 10,
+  "endTurnSeconds": 1.25,
+  "roundOverSeconds": 4,
+  "aiThinkSeconds": 1.5,
+  "aiDegreesPerSecond": 180,
+  "pointsHit": 100,
+  "pointsBounce": 25,
+  "pointsFlightTime": 5,
+  "flightBonusSeconds": 0.09803921568627451
+}

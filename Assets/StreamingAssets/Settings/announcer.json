@@ -1,0 +1,126 @@
+{
+  "_source": "The announcer (see Announcer.cs): personalities, how often each setting speaks, and the lines. In a line {0} is the subject's name and {1} the other's.",
+  "voices": [
+    {
+      "id": "sly",
+      "name": "Kurt Sly",
+      "color": [
+        214,
+        158,
+        46
+      ]
+    },
+    {
+      "id": "rye",
+      "name": "Rye Wheatley",
+      "color": [
+        196,
+        120,
+        60
+      ]
+    },
+    {
+      "id": "sid",
+      "name": "Sid Steinburger",
+      "color": [
+        72,
+        150,
+        210
+      ]
+    },
+    {
+      "id": "vlad",
+      "name": "Vlad",
+      "color": [
+        150,
+        60,
+        170
+      ]
+    },
+    {
+      "id": "baxter",
+      "name": "Matt Baxter",
+      "color": [
+        70,
+        170,
+        110
+      ]
+    },
+    {
+      "id": "doctor",
+      "name": "Doctor",
+      "color": [
+        200,
+        70,
+        80
+      ]
+    },
+    {
+      "id": "scottish",
+      "name": "Haggis McKnight",
+      "color": [
+        60,
+        120,
+        90
+      ]
+    }
+  ],
+  "frequencies": [
+    {
+      "name": "Off",
+      "odds": 0
+    },
+    {
+      "name": "Every time",
+      "odds": 1
+    },
+    {
+      "name": "Often",
+      "odds": 3
+    },
+    {
+      "name": "Sometimes",
+      "odds": 6
+    },
+    {
+      "name": "Rarely",
+      "odds": 9
+    }
+  ],
+  "welcome": [
+    "Welcome, one and all, to another night of Ricochet!",
+    "Good evening, and welcome to the bounce house. Mind the walls.",
+    "Pick your angles, everybody: Ricochet is on the air!",
+    "Welcome back! The shortest way to a target is rarely a straight line.",
+    "A beautiful night for geometry. Welcome to Ricochet!",
+    "The arena is set and the walls are polished. Let's play!",
+    "Welcome, contestants. Everything bounces, and nothing forgives.",
+    "Live from the arena, it's Ricochet! Keep your heads down.",
+    "Greetings, sharpshooters. Tonight we find out who really knows their angles.",
+    "Welcome to the show where every wall is a second chance."
+  ],
+  "win": [
+    "{0} sends {1} packing!",
+    "And {1} is out! A beautiful shot from {0}.",
+    "What a bank shot! {0} takes {1} out of the round!",
+    "{1} never saw it coming. Well played, {0}.",
+    "Down goes {1}! {0} makes it look easy.",
+    "Textbook! {0} puts {1} on the bench.",
+    "{0} has been studying the angles. {1} has not.",
+    "Off the wall and right into {1}! Take a bow, {0}.",
+    "That's the end of the line for {1}, courtesy of {0}.",
+    "Ricochet! {0} knocks {1} clean out of the round!"
+  ],
+  "lose": [
+    "Oh, so close, {0}. So very close.",
+    "{0} hits... absolutely nothing.",
+    "The walls thank you for your contribution, {0}.",
+    "That one's going to need some work, {0}.",
+    "{0} finds the only empty spot in the arena.",
+    "A bold choice of angle, {0}. A wrong one, but bold.",
+    "Somewhere a geometry teacher is weeping, {0}.",
+    "Not even close, {0}! The crowd goes mild.",
+    "{0} may want to check that aim.",
+    "And it fizzles out. Better luck next turn, {0}."
+  ]
+}

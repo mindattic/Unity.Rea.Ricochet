@@ -1,5 +1,5 @@
 // The original's level shapes (UR-T60): sixteen hand-made outlines per kind (obj_polygon1..16, obj_triangle1..16,
-// obj_bar1..16, obj_circle1..16, obj_square1..16), exported from their sprites' collision masks into ShapeData, and the
+// obj_bar1..16, obj_circle1..16, obj_square1..16), exported from their sprites' collision masks into shapes.json (UR-T35), and the
 // pick setup_shapes.gml makes: the chosen kind's sixteen with choose(), or for "random" one pick from each kind and then
 // choose() among the five.
 using System;
@@ -64,18 +64,7 @@ namespace Ricochet.Core.Level
             return outline;
         }
 
-        private static int[][] Table(ShapeKind kind)
-        {
-            switch (kind)
-            {
-                case ShapeKind.Abstract: return ShapeData.Abstract;
-                case ShapeKind.Triangles: return ShapeData.Triangles;
-                case ShapeKind.Bars: return ShapeData.Bars;
-                case ShapeKind.Circles: return ShapeData.Circles;
-                case ShapeKind.Squares: return ShapeData.Squares;
-                default: throw new ArgumentOutOfRangeException(nameof(kind), kind, "a concrete shape kind");
-            }
-        }
+        private static int[][] Table(ShapeKind kind) => Ricochet.Core.Data.GameData.Current.Shapes.Table(kind);
     }
 
     /// <summary>A shape's outline laid at a spot in the arena.</summary>

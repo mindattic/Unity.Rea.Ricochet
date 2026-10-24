@@ -46,48 +46,78 @@ namespace Ricochet.Core.Arsenal
         /// <summary>The most a finite count can reach by picking up drops (one short of <see cref="Unlimited"/>).</summary>
         public const int MaxCount = 9;
 
-        private readonly int[] _startWeapons = { Unlimited, 3, 3, 3, 3, 3 };
-        private readonly int[] _startItems = { 3, 3, 3, 3, 3, 3 };
-        private readonly bool[] _weaponsInPlay = { true, true, true, true, true, true };
-        private readonly bool[] _itemsInPlay = { true, true, true, true, true, true };
+        private readonly int[] _startWeapons = new int[Kinds];
+        private readonly int[] _startItems = new int[Kinds];
+        private readonly bool[] _weaponsInPlay = new bool[Kinds];
+        private readonly bool[] _itemsInPlay = new bool[Kinds];
 
         /// <summary>A grenade's fuse at the start, in seconds (player.fuseTime = 2).</summary>
-        public double DefaultFuse { get; set; } = 2;
+        public double DefaultFuse { get; set; }
 
         /// <summary>The shortest fuse (key 1 stops at 0.5).</summary>
-        public double MinFuse { get; set; } = 0.5;
+        public double MinFuse { get; set; }
 
         /// <summary>The longest fuse (maxFuse = 6).</summary>
-        public double MaxFuse { get; set; } = 6;
+        public double MaxFuse { get; set; }
 
         /// <summary>One press of the fuse keys (fuseIncrement = 0.5).</summary>
-        public double FuseStep { get; set; } = 0.5;
+        public double FuseStep { get; set; }
 
         /// <summary>A grenade's blast radius (grenadeRadius = 150 px; the original's room was about 58 px a unit).</summary>
-        public double GrenadeRadius { get; set; } = 2.5;
+        public double GrenadeRadius { get; set; }
 
         /// <summary>The vortex's pull radius (vortexRadius = 200 px).</summary>
-        public double VortexRadius { get; set; } = 3.4;
+        public double VortexRadius { get; set; }
 
         /// <summary>Shotgun pellets, fanned evenly (pelletCount was 12 at random angles; five, one along the aim, read better).</summary>
-        public int Pellets { get; set; } = 5;
+        public int Pellets { get; set; }
 
         /// <summary>Degrees either side of the aim the pellets fan across (shotgunSpread = 4).</summary>
-        public double PelletSpread { get; set; } = 4;
+        public double PelletSpread { get; set; }
 
         /// <summary>The share of a hit's damage one pellet does.</summary>
-        public double PelletDamage { get; set; } = 0.35;
+        public double PelletDamage { get; set; }
 
         /// <summary>The laser flies this many times a shell's speed.</summary>
-        public double LaserSpeed { get; set; } = 3;
+        public double LaserSpeed { get; set; }
 
         /// <summary>The railgun's slug flies this many times a shell's speed (near enough instant).</summary>
-        public double RailgunSpeed { get; set; } = 8;
+        public double RailgunSpeed { get; set; }
 
         /// <summary>What a shrink ray leaves of the player it hits (their hit radius and size), for the rest of the round.</summary>
-        public double ShrinkScale { get; set; } = 0.6;
+        public double ShrinkScale { get; set; }
+
+        /// <summary>The stock rules, from arsenal.json (UR-T35): a new set starts as a copy of them.</summary>
+        public ArsenalRules()
+        {
+            CopyFrom(Ricochet.Core.Data.GameData.Current.Arsenal);
+        }
+
+        internal ArsenalRules(bool blank)
+        {
+        }
 
         public static ArsenalRules Default => new ArsenalRules();
+
+        internal void CopyFrom(ArsenalRules other)
+        {
+            DefaultFuse = other.DefaultFuse;
+            MinFuse = other.MinFuse;
+            MaxFuse = other.MaxFuse;
+            FuseStep = other.FuseStep;
+            GrenadeRadius = other.GrenadeRadius;
+            VortexRadius = other.VortexRadius;
+            Pellets = other.Pellets;
+            PelletSpread = other.PelletSpread;
+            PelletDamage = other.PelletDamage;
+            LaserSpeed = other.LaserSpeed;
+            RailgunSpeed = other.RailgunSpeed;
+            ShrinkScale = other.ShrinkScale;
+            Array.Copy(other._startWeapons, _startWeapons, Kinds);
+            Array.Copy(other._startItems, _startItems, Kinds);
+            Array.Copy(other._weaponsInPlay, _weaponsInPlay, Kinds);
+            Array.Copy(other._itemsInPlay, _itemsInPlay, Kinds);
+        }
 
         public int StartCount(Weapon weapon) => _startWeapons[(int)weapon];
 
@@ -120,34 +150,20 @@ namespace Ricochet.Core.Arsenal
 
         public static int ClampCount(int count) => Math.Max(0, Math.Min(Unlimited, count));
 
-        /// <summary>draw_weaponinfo.gml's names.</summary>
+        /// <summary>draw_weaponinfo.gml's names (arsenal.json).</summary>
         public static string Name(Weapon weapon)
         {
-            switch (weapon)
-            {
-                case Weapon.Cannon: return "Cannon";
-                case Weapon.Laser: return "Laser";
-                case Weapon.Shotgun: return "Shotgun";
-                case Weapon.Grenade: return "Grenade";
-                case Weapon.Railgun: return "Railgun";
-                case Weapon.Vortex: return "Vortex Device";
-                default: return weapon.ToString();
-            }
+            int index = (int)weapon;
+            var names = Ricochet.Core.Data.GameData.Current.WeaponNames;
+            return index >= 0 && index < names.Count ? names[index] : weapon.ToString();
         }
 
-        /// <summary>draw_iteminfo.gml's names.</summary>
+        /// <summary>draw_iteminfo.gml's names (arsenal.json).</summary>
         public static string Name(Item item)
         {
-            switch (item)
-            {
-                case Item.ExtraBounce: return "Extra Bounce";
-                case Item.ShieldWall: return "Shield Wall";
-                case Item.ShrinkRay: return "Shrink Ray";
-                case Item.Teleporter: return "Teleporter";
-                case Item.AimAssist: return "Aim Assist";
-                case Item.Redirector: return "Redirector";
-                default: return item.ToString();
-            }
+            int index = (int)item;
+            var names = Ricochet.Core.Data.GameData.Current.ItemNames;
+            return index >= 0 && index < names.Count ? names[index] : item.ToString();
         }
 
         /// <summary>"x3", or "unlimited" (the original drew an infinity sign; the default HUD font may lack the glyph).</summary>

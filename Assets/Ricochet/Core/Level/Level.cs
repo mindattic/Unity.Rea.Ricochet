@@ -237,22 +237,11 @@ namespace Ricochet.Core.Level
         /// <summary>
         /// The practice level the game opens on: a 22 x 12 border (fits a 16:9 orthographic camera of size 7), a mirror
         /// wall angled across each upper corner, a flat wall in the middle, and two redirectors, one sending shots
-        /// straight up and one sending them down-left, so a single shot can show every kind of contact.
+        /// straight up and one sending them down-left, so a single shot can show every kind of contact. Its geometry is map 0 of maps.json (UR-T35).
         /// </summary>
         public static Level Default()
         {
-            return new Level(-11, -6, 11, 6,
-                new[]
-                {
-                    new Wall(new Vec2(-11, 3), new Vec2(-8, 6)),
-                    new Wall(new Vec2(8, 6), new Vec2(11, 3)),
-                    new Wall(new Vec2(-2, 0.5), new Vec2(2, 0.5)),
-                },
-                new[]
-                {
-                    new Redirector(new Vec2(-6.5, -1.5), new Vec2(-5.5, -1.5), 90),
-                    new Redirector(new Vec2(6, 2.5), new Vec2(6, 3.5), 225),
-                });
+            return Ricochet.Core.Data.GameData.Current.Maps[0].Build();
         }
     }
 }

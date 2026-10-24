@@ -16,10 +16,11 @@ namespace Ricochet.Core.Level
     {
         private readonly Func<Level> _build;
 
-        internal MapInfo(int index, string name, string description, Func<Level> build, bool random = false)
+        internal MapInfo(int index, string id, string name, string description, Func<Level> build, bool random = false)
         {
             IsRandom = random;
             Index = index;
+            Id = id;
             Name = name;
             Description = description;
             _build = build;
@@ -27,6 +28,9 @@ namespace Ricochet.Core.Level
 
         /// <summary>Its place in <see cref="Maps.All"/>: what the match vote carries.</summary>
         public int Index { get; }
+
+        /// <summary>The map's id in maps.json ("crossfire").</summary>
+        public string Id { get; }
 
         public string Name { get; }
 
@@ -62,96 +66,26 @@ namespace Ricochet.Core.Level
 
     public static class Maps
     {
-        private static readonly MapInfo[] s_all =
-        {
-            new MapInfo(0, "Practice Range",
-                "Mirror walls across the upper corners, a wall in the middle and two redirectors: every kind of bounce in one room.",
-                Level.Default),
-            new MapInfo(1, "Crossfire",
-                "Two walls lean in over the middle, the lower corners are cut off, and a redirector under the centre sends shots straight up.",
-                Crossfire),
-            new MapInfo(2, "Pillars",
-                "Short standing walls all over the room: plenty to bank off, little to hide behind.",
-                Pillars),
-            new MapInfo(3, "Funnel",
-                "Long walls slope down from the upper corners towards the middle; a redirector on the right wall throws shots back up and in.",
-                Funnel),
-            new MapInfo(4, "Random Arena",
-                "A new level every round, as in the original: twenty abstract polygons turned any way, none overlapping, and everyone starts at a random spot. R in practice rolls another.",
-                Level.Default, random: true),
-        };
-
         /// <summary>The random arena's index (the default map).</summary>
-        public static int RandomIndex => s_all.Length - 1;
+        public static int RandomIndex => Data.RandomMapIndex;
 
-        /// <summary>Every map, in the order the map room lists them.</summary>
-        public static IReadOnlyList<MapInfo> All => s_all;
+        /// <summary>Every map, in the order the map room lists them (maps.json).</summary>
+        public static IReadOnlyList<MapInfo> All => Data.Maps;
 
-        public static int Count => s_all.Length;
+        public static int Count => Data.Maps.Count;
+
+        private static Ricochet.Core.Data.GameData Data => Ricochet.Core.Data.GameData.Current;
 
         /// <summary>A map index the map room can show: anything out of range is the first map.</summary>
-        public static int Clamp(int index) => index >= 0 && index < s_all.Length ? index : 0;
+        public static int Clamp(int index) => index >= 0 && index < Count ? index : 0;
 
         /// <summary>The map at <paramref name="index"/> (the first one when it is out of range).</summary>
-        public static MapInfo At(int index) => s_all[Clamp(index)];
+        public static MapInfo At(int index) => Data.Maps[Clamp(index)];
 
         /// <summary>The next map, wrapping (the map room's arrows).</summary>
-        public static int Next(int index) => (Clamp(index) + 1) % s_all.Length;
+        public static int Next(int index) => (Clamp(index) + 1) % Count;
 
         /// <summary>The previous map, wrapping.</summary>
-        public static int Previous(int index) => (Clamp(index) + s_all.Length - 1) % s_all.Length;
-
-        private static Level Crossfire()
-        {
-            return new Level(-11, -6, 11, 6,
-                new[]
-                {
-                    new Wall(new Vec2(-3, -0.5), new Vec2(-1, 1.5)),
-                    new Wall(new Vec2(1, 1.5), new Vec2(3, -0.5)),
-                    new Wall(new Vec2(-11, -3), new Vec2(-9, -6)),
-                    new Wall(new Vec2(9, -6), new Vec2(11, -3)),
-                },
-                new[]
-                {
-                    new Redirector(new Vec2(-0.5, -1), new Vec2(0.5, -1), 90),
-                    new Redirector(new Vec2(5.9, -3.6), new Vec2(5.9, -2.6), 180),
-                });
-        }
-
-        private static Level Pillars()
-        {
-            return new Level(-11, -6, 11, 6,
-                new[]
-                {
-                    new Wall(new Vec2(-7.5, -2), new Vec2(-7.5, -0.5)),
-                    new Wall(new Vec2(7, -1.6), new Vec2(7, -0.2)),
-                    new Wall(new Vec2(-2, 0.3), new Vec2(-2, 1.5)),
-                    new Wall(new Vec2(2, 0.3), new Vec2(2, 1.5)),
-                    new Wall(new Vec2(-3, -4.2), new Vec2(-3, -3.2)),
-                    new Wall(new Vec2(3, -4.2), new Vec2(3, -3.2)),
-                    new Wall(new Vec2(-5, 3.5), new Vec2(-5, 4.5)),
-                },
-                new[]
-                {
-                    new Redirector(new Vec2(0, 1.5), new Vec2(1, 1.5), 270),
-                });
-        }
-
-        private static Level Funnel()
-        {
-            return new Level(-11, -6, 11, 6,
-                new[]
-                {
-                    new Wall(new Vec2(-10, 3.4), new Vec2(-5.2, 1.6)),
-                    new Wall(new Vec2(5, 1.4), new Vec2(9.6, 3.2)),
-                    new Wall(new Vec2(-1.2, -1), new Vec2(1.2, -1)),
-                    new Wall(new Vec2(-1, 2), new Vec2(1, 2)),
-                },
-                new[]
-                {
-                    new Redirector(new Vec2(-6, -1.2), new Vec2(-4.6, -0.4), 45),
-                    new Redirector(new Vec2(10, -4), new Vec2(10, -3), 135),
-                });
-        }
+        public static int Previous(int index) => (Clamp(index) + Count - 1) % Count;
     }
 }

@@ -1,0 +1,7 @@
+{
+  "_source": "LevelSettings: the random arena's setup (2013 original setup_shapes.gml defaults). shapes is a ShapeKind name.",
+  "polygonCount": 20,
+  "rotation": 360,
+  "overlap": false,
+  "shapes": "Abstract"
+}

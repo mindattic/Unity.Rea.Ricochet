@@ -55,43 +55,71 @@ namespace Ricochet.Core.Level
         public const int KindCount = 6;
 
         /// <summary>How far in front of the player a shield wall stands (spawn_shieldwall's Len = 60 px).</summary>
-        public double ShieldWallOffset { get; set; } = 1.0;
+        public double ShieldWallOffset { get; set; }
 
         /// <summary>A shield wall's length (spr_shieldwall is 128 px tall).</summary>
-        public double ShieldWallLength { get; set; } = 2.2;
+        public double ShieldWallLength { get; set; }
 
         /// <summary>The shortest a shield wall lasts before it decays, in seconds (decayDelay's 20 * normalFPS).</summary>
-        public double ShieldWallMinLife { get; set; } = 20;
+        public double ShieldWallMinLife { get; set; }
 
         /// <summary>The longest a shield wall lasts (120 * normalFPS).</summary>
-        public double ShieldWallMaxLife { get; set; } = 120;
+        public double ShieldWallMaxLife { get; set; }
 
         /// <summary>A placed redirector's length.</summary>
-        public double RedirectorLength { get; set; } = 1.0;
+        public double RedirectorLength { get; set; }
 
         /// <summary>Foliage tufts laid each round.</summary>
-        public int FoliageCount { get; set; } = 6;
+        public int FoliageCount { get; set; }
 
         /// <summary>A tuft's radius (spr_sprite_grass is 24 px across).</summary>
-        public double FoliageRadius { get; set; } = 0.25;
+        public double FoliageRadius { get; set; }
 
         /// <summary>How far a tuft keeps from a seat's spot, a wall, a redirector and the border.</summary>
-        public double FoliageClearance { get; set; } = 1.2;
+        public double FoliageClearance { get; set; }
 
         /// <summary>Whether laser gates switch on and off every turn (off: always on).</summary>
-        public bool LasersAlternate { get; set; } = true;
+        public bool LasersAlternate { get; set; }
 
         /// <summary>The electric arcs every round starts with (pairs of pylons), for <see cref="Level.Default"/>.</summary>
-        public List<Vec2[]> Arcs { get; } = new List<Vec2[]>
-        {
-            new[] { new Vec2(-6.5, 3.2), new Vec2(-6.5, 5.6) },
-        };
+        public List<Vec2[]> Arcs { get; } = new List<Vec2[]>();
 
         /// <summary>The laser gates every round starts with (emitter, receiver), for <see cref="Level.Default"/>.</summary>
-        public List<Vec2[]> Gates { get; } = new List<Vec2[]>
+        public List<Vec2[]> Gates { get; } = new List<Vec2[]>();
+
+        /// <summary>The stock rules, from hazards.json (UR-T35): a new set starts as a copy of them.</summary>
+        public HazardRules()
         {
-            new[] { new Vec2(4.6, 4.6), new Vec2(8.2, 4.6) },
-        };
+            CopyFrom(Ricochet.Core.Data.GameData.Current.Hazards);
+        }
+
+        internal HazardRules(bool blank)
+        {
+        }
+
+        internal void CopyFrom(HazardRules other)
+        {
+            ShieldWallOffset = other.ShieldWallOffset;
+            ShieldWallLength = other.ShieldWallLength;
+            ShieldWallMinLife = other.ShieldWallMinLife;
+            ShieldWallMaxLife = other.ShieldWallMaxLife;
+            RedirectorLength = other.RedirectorLength;
+            FoliageCount = other.FoliageCount;
+            FoliageRadius = other.FoliageRadius;
+            FoliageClearance = other.FoliageClearance;
+            LasersAlternate = other.LasersAlternate;
+            Arcs.Clear();
+            Gates.Clear();
+            foreach (Vec2[] arc in other.Arcs)
+            {
+                Arcs.Add((Vec2[])arc.Clone());
+            }
+
+            foreach (Vec2[] gate in other.Gates)
+            {
+                Gates.Add((Vec2[])gate.Clone());
+            }
+        }
 
         public static HazardRules Default => new HazardRules();
     }

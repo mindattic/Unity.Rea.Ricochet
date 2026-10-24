@@ -1,0 +1,31 @@
+{
+  "_source": "ArsenalRules: the weapons and items and the numbers they play by (2013 original globals.gml; see Arsenal.cs). start 10 is unlimited. Ids are the Weapon and Item enum names, in the original's order.",
+  "defaultFuse": 2,
+  "minFuse": 0.5,
+  "maxFuse": 6,
+  "fuseStep": 0.5,
+  "grenadeRadius": 2.5,
+  "vortexRadius": 3.4,
+  "pellets": 5,
+  "pelletSpread": 4,
+  "pelletDamage": 0.35,
+  "laserSpeed": 3,
+  "railgunSpeed": 8,
+  "shrinkScale": 0.6,
+  "weapons": [
+    { "id": "Cannon", "name": "Cannon", "start": 10, "inPlay": true },
+    { "id": "Laser", "name": "Laser", "start": 3, "inPlay": true },
+    { "id": "Shotgun", "name": "Shotgun", "start": 3, "inPlay": true },
+    { "id": "Grenade", "name": "Grenade", "start": 3, "inPlay": true },
+    { "id": "Railgun", "name": "Railgun", "start": 3, "inPlay": true },
+    { "id": "Vortex", "name": "Vortex Device", "start": 3, "inPlay": true }
+  ],
+  "items": [
+    { "id": "ExtraBounce", "name": "Extra Bounce", "start": 3, "inPlay": true },
+    { "id": "ShieldWall", "name": "Shield Wall", "start": 3, "inPlay": true },
+    { "id": "ShrinkRay", "name": "Shrink Ray", "start": 3, "inPlay": true },
+    { "id": "Teleporter", "name": "Teleporter", "start": 3, "inPlay": true },
+    { "id": "AimAssist", "name": "Aim Assist", "start": 3, "inPlay": true },
+    { "id": "Redirector", "name": "Redirector", "start": 3, "inPlay": true }
+  ]
+}

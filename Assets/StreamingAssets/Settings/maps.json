@@ -1,0 +1,83 @@
+{
+  "_source": "The map room's levels (see Maps.cs). A map's border is [minX, minY, maxX, maxY]; walls are [ax, ay, bx, by]; redirectors [ax, ay, bx, by, heading]. A random map is laid afresh each round and has no geometry.",
+  "maps": [
+    {
+      "id": "practice",
+      "name": "Practice Range",
+      "description": "Mirror walls across the upper corners, a wall in the middle and two redirectors: every kind of bounce in one room.",
+      "random": false,
+      "border": [-11, -6, 11, 6],
+      "walls": [
+        [-11, 3, -8, 6],
+        [8, 6, 11, 3],
+        [-2, 0.5, 2, 0.5]
+      ],
+      "redirectors": [
+        [-6.5, -1.5, -5.5, -1.5, 90],
+        [6, 2.5, 6, 3.5, 225]
+      ]
+    },
+    {
+      "id": "crossfire",
+      "name": "Crossfire",
+      "description": "Two walls lean in over the middle, the lower corners are cut off, and a redirector under the centre sends shots straight up.",
+      "random": false,
+      "border": [-11, -6, 11, 6],
+      "walls": [
+        [-3, -0.5, -1, 1.5],
+        [1, 1.5, 3, -0.5],
+        [-11, -3, -9, -6],
+        [9, -6, 11, -3]
+      ],
+      "redirectors": [
+        [-0.5, -1, 0.5, -1, 90],
+        [5.9, -3.6, 5.9, -2.6, 180]
+      ]
+    },
+    {
+      "id": "pillars",
+      "name": "Pillars",
+      "description": "Short standing walls all over the room: plenty to bank off, little to hide behind.",
+      "random": false,
+      "border": [-11, -6, 11, 6],
+      "walls": [
+        [-7.5, -2, -7.5, -0.5],
+        [7, -1.6, 7, -0.2],
+        [-2, 0.3, -2, 1.5],
+        [2, 0.3, 2, 1.5],
+        [-3, -4.2, -3, -3.2],
+        [3, -4.2, 3, -3.2],
+        [-5, 3.5, -5, 4.5]
+      ],
+      "redirectors": [
+        [0, 1.5, 1, 1.5, 270]
+      ]
+    },
+    {
+      "id": "funnel",
+      "name": "Funnel",
+      "description": "Long walls slope down from the upper corners towards the middle; a redirector on the right wall throws shots back up and in.",
+      "random": false,
+      "border": [-11, -6, 11, 6],
+      "walls": [
+        [-10, 3.4, -5.2, 1.6],
+        [5, 1.4, 9.6, 3.2],
+        [-1.2, -1, 1.2, -1],
+        [-1, 2, 1, 2]
+      ],
+      "redirectors": [
+        [-6, -1.2, -4.6, -0.4, 45],
+        [10, -4, 10, -3, 135]
+      ]
+    },
+    {
+      "id": "random",
+      "name": "Random Arena",
+      "description": "A new level every round, as in the original: twenty abstract polygons turned any way, none overlapping, and everyone starts at a random spot. R in practice rolls another.",
+      "random": true,
+      "border": [-11, -6, 11, 6],
+      "walls": [],
+      "redirectors": []
+    }
+  ]
+}

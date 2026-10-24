@@ -1,0 +1,29 @@
+{
+  "_source": "The Settings screen's registry: every tunable the screen can show, naming the data file and key it edits, its kind, range and step. Validated on load: ids are unique and each file, key, kind and range matches the data.",
+  "settings": [
+    {"id": "match.maxHealth", "label": "Health", "group": "Match", "file": "match.json", "key": "maxHealth", "kind": "Integer", "min": 1, "max": 1000, "step": 10},
+    {"id": "match.turnSeconds", "label": "Turn time (seconds)", "group": "Match", "file": "match.json", "key": "turnSeconds", "kind": "Number", "min": 1, "max": 600, "step": 1},
+    {"id": "match.countdownBeeps", "label": "Countdown beeps", "group": "Match", "file": "match.json", "key": "countdownBeeps", "kind": "Integer", "min": 0, "max": 10, "step": 1},
+    {"id": "match.weaponDamage", "label": "Weapon damage", "group": "Match", "file": "match.json", "key": "weaponDamage", "kind": "Integer", "min": 1, "max": 100, "step": 1},
+    {"id": "match.endTurnSeconds", "label": "Pause after a shot (seconds)", "group": "Match", "file": "match.json", "key": "endTurnSeconds", "kind": "Number", "min": 0, "max": 30, "step": 0.25},
+    {"id": "match.roundOverSeconds", "label": "Round result stays up (seconds)", "group": "Match", "file": "match.json", "key": "roundOverSeconds", "kind": "Number", "min": 0, "max": 60, "step": 0.5},
+    {"id": "match.aiThinkSeconds", "label": "AI thinking time (seconds)", "group": "Match", "file": "match.json", "key": "aiThinkSeconds", "kind": "Number", "min": 0, "max": 30, "step": 0.25},
+    {"id": "match.pointsHit", "label": "Points for a hit", "group": "Scoring", "file": "match.json", "key": "pointsHit", "kind": "Integer", "min": 0, "max": 10000, "step": 5},
+    {"id": "match.pointsBounce", "label": "Points a bounce", "group": "Scoring", "file": "match.json", "key": "pointsBounce", "kind": "Integer", "min": 0, "max": 10000, "step": 5},
+    {"id": "match.pointsFlightTime", "label": "Points a tenth-second in the air", "group": "Scoring", "file": "match.json", "key": "pointsFlightTime", "kind": "Integer", "min": 0, "max": 10000, "step": 1},
+    {"id": "shot.maxBounces", "label": "Bounces before a shot goes off", "group": "Shot", "file": "shot.json", "key": "maxBounces", "kind": "Integer", "min": 1, "max": 50, "step": 1},
+    {"id": "shot.minRange", "label": "Range at power 0", "group": "Shot", "file": "shot.json", "key": "minRange", "kind": "Number", "min": 0, "max": 200, "step": 1},
+    {"id": "shot.maxRange", "label": "Range at full power", "group": "Shot", "file": "shot.json", "key": "maxRange", "kind": "Number", "min": 1, "max": 500, "step": 1},
+    {"id": "shot.speed", "label": "Shot speed", "group": "Shot", "file": "shot.json", "key": "speed", "kind": "Number", "min": 1, "max": 200, "step": 1},
+    {"id": "shot.driveSpeed", "label": "Tank drive speed", "group": "Shot", "file": "shot.json", "key": "driveSpeed", "kind": "Number", "min": 0, "max": 50, "step": 0.5},
+    {"id": "hazards.shieldWallLength", "label": "Shield wall length", "group": "Hazards", "file": "hazards.json", "key": "shieldWallLength", "kind": "Number", "min": 0.1, "max": 20, "step": 0.1},
+    {"id": "hazards.foliageCount", "label": "Grass tufts a round", "group": "Hazards", "file": "hazards.json", "key": "foliageCount", "kind": "Integer", "min": 0, "max": 100, "step": 1},
+    {"id": "hazards.lasersAlternate", "label": "Laser gates switch every turn", "group": "Hazards", "file": "hazards.json", "key": "lasersAlternate", "kind": "Flag"},
+    {"id": "arsenal.defaultFuse", "label": "Grenade fuse (seconds)", "group": "Arsenal", "file": "arsenal.json", "key": "defaultFuse", "kind": "Number", "min": 0.5, "max": 6, "step": 0.5},
+    {"id": "arsenal.pellets", "label": "Shotgun pellets", "group": "Arsenal", "file": "arsenal.json", "key": "pellets", "kind": "Integer", "min": 1, "max": 50, "step": 1},
+    {"id": "level.polygonCount", "label": "Shapes in the random arena", "group": "Level", "file": "level.json", "key": "polygonCount", "kind": "Integer", "min": 0, "max": 80, "step": 1},
+    {"id": "level.rotation", "label": "Shape rotation (degrees)", "group": "Level", "file": "level.json", "key": "rotation", "kind": "Number", "min": 0, "max": 360, "step": 45},
+    {"id": "level.overlap", "label": "Shapes may overlap", "group": "Level", "file": "level.json", "key": "overlap", "kind": "Flag"},
+    {"id": "level.shapes", "label": "Shape set", "group": "Level", "file": "level.json", "key": "shapes", "kind": "Choice", "choices": ["Abstract", "Triangles", "Bars", "Circles", "Squares", "Random"]}
+  ]
+}

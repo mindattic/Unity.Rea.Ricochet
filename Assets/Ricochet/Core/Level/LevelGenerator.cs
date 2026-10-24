@@ -30,22 +30,40 @@ namespace Ricochet.Core.Level
     public sealed class LevelSettings
     {
         /// <summary>How many shapes to lay (the original's 20).</summary>
-        public int PolygonCount { get; set; } = 20;
+        public int PolygonCount { get; set; }
 
         /// <summary>
         /// The original's rotation setting in degrees: 0 leaves every shape as drawn, 45 turns it to one of eight
         /// multiples of 45, 90 to one of four multiples of 90, and anything else (the original's 360) any whole angle up
         /// to that many degrees.
         /// </summary>
-        public double Rotation { get; set; } = 360;
+        public double Rotation { get; set; }
 
         /// <summary>True lets shapes overlap each other (the original's "no").</summary>
         public bool Overlap { get; set; }
 
         /// <summary>Which shape set the walls come from (the original's "abstract").</summary>
-        public ShapeKind Shapes { get; set; } = ShapeKind.Abstract;
+        public ShapeKind Shapes { get; set; }
+
+        /// <summary>The stock setup, from level.json (UR-T35): a new set starts as a copy of it.</summary>
+        public LevelSettings()
+        {
+            CopyFrom(Ricochet.Core.Data.GameData.Current.Level);
+        }
+
+        internal LevelSettings(bool blank)
+        {
+        }
 
         public static LevelSettings Default => new LevelSettings();
+
+        internal void CopyFrom(LevelSettings other)
+        {
+            PolygonCount = other.PolygonCount;
+            Rotation = other.Rotation;
+            Overlap = other.Overlap;
+            Shapes = other.Shapes;
+        }
     }
 
     /// <summary>One round's arena: the level and where each of the sixteen seats stands in it.</summary>
