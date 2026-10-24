@@ -29,7 +29,10 @@ are the reference architectures: read their AGENTS.md, README and docs/BIBLE.md 
 6. **Modern Unity only.** Unity 6, URP behind a pipeline-agnostic layer, the Input System, UI Toolkit or the shared
    MindAttic components, Unity.Shared profiles and settings, multiplayer-ready seams (commands carrying a player id,
    one authority, no global current-player singleton).
-7. **Done means verified by play, not asserted.** Core tests green, a build that launches, and the feature seen
+7. **Done means verified by play, not asserted.** Unity 6000.4.3f1 runs headless here, so every ticket that touches
+   Unity-side code or assets runs a headless import/compile of its own worktree (`-batchmode -quit -projectPath <worktree>`,
+   never touching an editor the owner has open), runs the EditMode (and, where relevant, PlayMode) tests it touches, and
+   commits any `.meta` files Unity writes, before it lands. Landing Unity code that was never compiled is not allowed. Core tests green, a build that launches, and the feature seen
    working (screenshots or a scripted run) before a ticket closes.
 8. **Finite.** Once every story from the reconstruction is built, the repo is a complete, polished proof of concept
    of the original, and is done.
