@@ -6,8 +6,8 @@ namespace Ricochet
 {
     /// <summary>
     /// Points Core at the game's data files (UR-T35): StreamingAssets/Settings, which ships with the build as plain files.
-    /// It runs before the first scene loads, ahead of anything that reads a rule, map or line, and a bad file stops the
-    /// game there with every problem listed (file, key and line).
+    /// It runs before the first scene loads, ahead of anything that reads a rule, map or line. A bad file is logged with
+    /// every problem (file, key and line) and the game stops there: the player quits, play mode ends in the editor.
     /// </summary>
     internal static class GameDataBoot
     {
@@ -22,7 +22,11 @@ namespace Ricochet
             catch (SettingsException ex)
             {
                 Debug.LogError(ex.Message);
-                throw;
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit(1);
+#endif
             }
         }
     }

@@ -237,7 +237,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void MenuMustTitleEveryRoomAndOnlyNameRealRooms()
         {
-            var ex = Fails(s => Patched(s, "menu.json", t => t.Replace("\"Lobby\": \"Lobby\"", "\"Lobbi\": \"Lobby\"").Replace("\"Credits\"\n  ],\n  \"controls\"", "\"Creditz\"\n  ],\n  \"controls\"")));
+            var ex = Fails(s => Patched(s, "menu.json", t => t.Replace("\r\n", "\n").Replace("\"Lobby\": \"Lobby\"", "\"Lobbi\": \"Lobby\"").Replace("\"Credits\"\n  ],\n  \"controls\"", "\"Creditz\"\n  ],\n  \"controls\"")));
             Assert.That(ex.Errors.Any(e => e.Contains("menu.json") && e.Contains("'Lobby' is missing")), Is.True, string.Join("\n", ex.Errors));
             Assert.That(ex.Errors.Any(e => e.Contains("unknown key 'Lobbi'")), Is.True);
             Assert.That(ex.Errors.Any(e => e.Contains("'Creditz' is not a room")), Is.True, string.Join("\n", ex.Errors));

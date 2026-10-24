@@ -40,6 +40,7 @@ namespace Ricochet.Core.Data
         private static readonly object s_lock = new object();
         private static ISettingsSource s_source;
         private static GameData s_current;
+        private static SettingsException s_failure;
 
         internal GameData()
         {
@@ -83,9 +84,22 @@ namespace Ricochet.Core.Data
             {
                 lock (s_lock)
                 {
+                    if (s_failure != null)
+                    {
+                        throw s_failure; // a bad file fails once, not by re-reading every file on every access
+                    }
+
                     if (s_current == null)
                     {
-                        s_current = Load(s_source ?? FindStock());
+                        try
+                        {
+                            s_current = Load(s_source ?? FindStock());
+                        }
+                        catch (SettingsException ex)
+                        {
+                            s_failure = ex;
+                            throw;
+                        }
                     }
 
                     return s_current;
@@ -100,6 +114,7 @@ namespace Ricochet.Core.Data
             {
                 s_source = source;
                 s_current = null;
+                s_failure = null;
             }
         }
 

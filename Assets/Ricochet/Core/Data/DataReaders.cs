@@ -268,6 +268,7 @@ namespace Ricochet.Core.Data
             }
 
             r.Check(random >= 0, "maps", "one map must be the random arena (\"random\": true)");
+            r.Done();
             data.Maps = maps;
             data.RandomMapIndex = random;
         }
