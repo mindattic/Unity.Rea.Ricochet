@@ -445,7 +445,7 @@ namespace Ricochet
                 human.AssignSeat(seat);
                 if (seat >= 0)
                 {
-                    _authority.Apply(new Cmd.JoinSeatCommand(human.PlayerId, seat, false, human.DisplayName));
+                    JoinSeat(human, seat, false);
                     _humanSeats[human.KitSeat] = seat;
                     human.Place(SpawnPoint(seat));
                     if (human.Away)
@@ -463,7 +463,7 @@ namespace Ricochet
                 Player ai = spawned.GetComponent<Player>();
                 ai.AssignSeat(seat);
                 ai.Place(SpawnPoint(seat));
-                _authority.Apply(new Cmd.JoinSeatCommand(ai.PlayerId, seat, true, ai.DisplayName));
+                JoinSeat(ai, seat, true);
             }
 
             _turns = Turns.For(_session);
@@ -480,6 +480,15 @@ namespace Ricochet
             Mirror();
             Say(_announcer.Welcome()); // obj_game's create event: random_announcement_welcome
             return true;
+        }
+
+        // Seats a player through the authority (AssignSeat has registered them already); a join it refuses is said, not hidden.
+        private void JoinSeat(Player player, int seat, bool isAi)
+        {
+            if (_authority.Apply(new Cmd.JoinSeatCommand(player.PlayerId, seat, isAi, player.DisplayName)).Count == 0)
+            {
+                Debug.LogWarning("[Ricochet] " + player.DisplayName + " was not seated in " + seat + ": the authority refused the join.");
+            }
         }
 
         /// <summary>Server: may <paramref name="player"/> fire now? Always in practice; in a match, only on their turn.</summary>
@@ -619,7 +628,7 @@ namespace Ricochet
             player.AssignSeat(seat);
             if (seat >= 0)
             {
-                _authority.Apply(new Cmd.JoinSeatCommand(player.PlayerId, seat, false, player.DisplayName));
+                JoinSeat(player, seat, false);
                 _humanSeats[player.KitSeat] = seat;
                 player.Place(SpawnPoint(seat));
             }
@@ -707,7 +716,7 @@ namespace Ricochet
             {
                 _humanSeats.Remove(kitSeat);
                 Player player = HumanAt(kitSeat); // already gone with the connection, perhaps: the command names the seat too
-                _authority.Apply(new Cmd.LeaveSeatCommand(player != null ? player.PlayerId : 0, seat));
+                _authority.Apply(new Cmd.LeaveSeatCommand(player != null ? player.PlayerId : -1, seat));
                 Mirror();
             }
         }
@@ -826,41 +835,73 @@ namespace Ricochet
 
         // The kit counts the ballots (its overlay and quorum are its own); what they decided goes through Core (UR-T65): the
         // vote opens on the authority, every ballot is a VoteCommand from the player who cast it, and the authority's
-        // VotePassed is what carries the effect out. A voter with no Player on this peer cannot be mirrored: the kit's
-        // verdict stands then, and the effect still runs rather than be lost.
+        // VotePassed is what carries the effect out, and only it: a vote Core does not pass is not carried out. A voter with
+        // no Player on this peer cannot cast in Core, so they are left out of its electorate and the threshold falls by their yes; with no voter Core knows at all, the kit's count stands.
         private string _votingKind;
         private bool _votePassedInCore;
 
         private void RouteVote(Vote vote, Action<Vote> effect)
         {
             string kind = vote.Kind.Id;
-            int electorate = Math.Max(1, vote.Voters.Count);
-            _authority.OpenVote(kind, electorate, Math.Min(1.0, (double)Math.Max(1, vote.Quorum) / electorate));
+
+            // Only voters with a player here can cast in Core: they are its electorate, and the kit's quorum less the yes
+            // votes it cannot mirror is its threshold (the kit has already counted those).
+            int electorate = 0;
+            foreach (ulong voter in vote.Voters)
+            {
+                electorate += PlayerOf(voter) != null ? 1 : 0;
+            }
+
+            int unmirroredYes = 0;
+            foreach (ulong voter in vote.Yes)
+            {
+                unmirroredYes += PlayerOf(voter) == null ? 1 : 0;
+            }
+
+            if (electorate == 0)
+            {
+                effect?.Invoke(vote); // nobody here is a player Core knows (a bare fixture): the kit's count is all there is
+                return;
+            }
+
+            int needed = Math.Max(1, Math.Min(electorate, vote.Quorum - unmirroredYes));
+            _authority.OpenVote(kind, electorate, (double)needed / electorate);
             _votingKind = kind;
             _votePassedInCore = false;
             CastBallots(vote.Yes, kind, true);
             CastBallots(vote.No, kind, false);
             _votingKind = null;
+            _authority.CloseVote(kind);
             if (!_votePassedInCore)
             {
-                _authority.CloseVote(kind);
-                Debug.LogWarning("[Ricochet] The " + kind + " vote passed on the kit's board but not in Core (a voter has no player here); carrying it out anyway.");
+                Debug.LogWarning("[Ricochet] The " + kind + " vote passed on the kit's board but Core did not pass it; nothing carried out.");
+                return;
             }
 
             effect?.Invoke(vote);
+        }
+
+        private Player PlayerOf(ulong clientId)
+        {
+            foreach (Player player in Player.In(_session))
+            {
+                if (!player.IsAi && player.OwnerClientId == clientId)
+                {
+                    return player;
+                }
+            }
+
+            return null;
         }
 
         private void CastBallots(IReadOnlyList<ulong> voters, string kind, bool yes)
         {
             foreach (ulong voter in voters)
             {
-                foreach (Player player in Player.In(_session))
+                Player player = PlayerOf(voter);
+                if (player != null)
                 {
-                    if (!player.IsAi && player.OwnerClientId == voter)
-                    {
-                        _authority.Apply(new Cmd.VoteCommand(player.PlayerId, kind, yes));
-                        break;
-                    }
+                    _authority.Apply(new Cmd.VoteCommand(player.PlayerId, kind, yes));
                 }
             }
         }

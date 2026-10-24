@@ -904,5 +904,35 @@ namespace Ricochet.Core.Tests
             Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.RoundOver), "one seat left standing ends the round");
             Assert.That(authority.Apply(new LeaveSeatCommand(2, 5)), Is.Empty, "no such seat");
         }
+
+        [Test]
+        public void LeaveSeat_NeverLeavesAnotherPlayersSeat()
+        {
+            GameAuthority authority = TwoSeats(out _, out _);
+            Assert.That(authority.Apply(new LeaveSeatCommand(1, 1)), Is.Empty, "player 1 sits in seat 0, not seat 1");
+            Assert.That(authority.Match.Seat(1).Present, Is.True);
+            Assert.That(Of<SeatLeft>(authority.Apply(new LeaveSeatCommand(-1, 1))).Single().Seat, Is.EqualTo(1), "no such player: the seat named goes");
+        }
+
+        [Test]
+        public void Vote_ThresholdIsExactForOddElectorates()
+        {
+            foreach ((int electorate, int needed) in new[] { (3, 2), (7, 3), (7, 5), (5, 4), (9, 6) })
+            {
+                var authority = new GameAuthority(new World(), seed: 5);
+                for (int id = 1; id <= electorate; id++)
+                {
+                    authority.AddPlayer(id);
+                }
+
+                authority.OpenVote("restart", electorate, (double)needed / electorate);
+                for (int id = 1; id < needed; id++)
+                {
+                    Assert.That(Of<VotePassed>(authority.Apply(new VoteCommand(id, "restart", true))), Is.Empty, electorate + ":" + needed);
+                }
+
+                Assert.That(Of<VotePassed>(authority.Apply(new VoteCommand(needed, "restart", true))), Has.Count.EqualTo(1), electorate + ":" + needed);
+            }
+        }
     }
 }

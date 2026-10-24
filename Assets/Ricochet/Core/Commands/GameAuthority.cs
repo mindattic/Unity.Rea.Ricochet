@@ -786,8 +786,9 @@ namespace Ricochet.Core.Commands
 
         private void DoLeaveSeat(PlayerState state, LeaveSeatCommand leave)
         {
-            int seat = state != null && state.Seat >= 0 ? state.Seat : leave.Seat;
-            if (Match == null || !Match.TryGetSeat(seat, out _))
+            // The command names the seat; a player still here must be sitting in it (a stale or wrong id leaves nobody out).
+            int seat = leave.Seat;
+            if (Match == null || !Match.TryGetSeat(seat, out _) || (state != null && state.Seat != seat))
             {
                 return;
             }
