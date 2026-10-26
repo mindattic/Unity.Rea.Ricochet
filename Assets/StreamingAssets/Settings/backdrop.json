@@ -1,0 +1,59 @@
+{
+  "_source": "The level backdrop (U.RICO-T46): setup_backgrounds.gml's three floor groups, gamescreen's eight clouds (obj_cloud1-4 under obj_cloud_parent: image_alpha 0.15, hspeed -1, back in at room_width with y = irandom_range(-100, room_height - 100)), obj_spotlight's pulse, obj_lights' coloured lights and draw_borders' four border sprites. Positions and sizes are the original's room pixels (1920 x 1080 = 22 x 12.375 units). bg_redslate is in no group (and its image is missing from the original); bg_potato is in two, as in the original.",
+  "roomWidth": 1920,
+  "roomHeight": 1080,
+  "groups": [
+    {
+      "name": "bg_group1 (outdoor)",
+      "backgrounds": ["bg_dirt", "bg_moss", "bg_oldwood", "bg_moonwave", "bg_roughground", "bg_saturn", "bg_mars", "bg_bluegrass",
+                      "bg_sand", "bg_rocky", "bg_brownstone", "bg_redsand", "bg_grass", "bg_smoothmetal", "bg_erosion", "bg_apple"]
+    },
+    {
+      "name": "bg_group2 (tiles and patterns)",
+      "backgrounds": ["bg_blackearth", "bg_purpletile", "bg_bluehoneycomb", "bg_grape", "bg_pinktile", "bg_darkwoodtile", "bg_potato", "bg_sherbert",
+                      "bg_banana", "bg_crackedgrey", "bg_skin", "bg_limestone", "bg_rockysand", "bg_ice", "bg_metal2", "bg_pear"]
+    },
+    {
+      "name": "bg_group3 (skins and stucco)",
+      "backgrounds": ["bg_potato", "bg_skin2", "bg_stucco", "bg_brownskin", "bg_cardboard"]
+    }
+  ],
+  "clouds": [
+    {"sprite": "spr_cloud1", "x": -416, "y": 304},
+    {"sprite": "spr_cloud2", "x": 1392, "y": 208},
+    {"sprite": "spr_cloud3", "x": 912, "y": 32},
+    {"sprite": "spr_cloud3", "x": 416, "y": 384},
+    {"sprite": "spr_cloud2", "x": -224, "y": 672},
+    {"sprite": "spr_cloud1", "x": 1568, "y": 544},
+    {"sprite": "spr_cloud4", "x": 16, "y": 0},
+    {"sprite": "spr_cloud4", "x": 768, "y": 688}
+  ],
+  "cloudAlpha": 0.15,
+  "cloudSpeed": 1,
+  "cloudWrapTop": -100,
+  "cloudWrapBottomGap": 100,
+  "spotlight": {
+    "_source": "obj_spotlight (the original placed it in the splashscreen room at 960, 712; U.RICO-T46 puts it over the level there).",
+    "sprite": "spr_spotlight",
+    "x": 960,
+    "y": 712,
+    "minAlpha": 0.05,
+    "maxAlpha": 0.15,
+    "rate": 0.001
+  },
+  "lights": {
+    "_source": "obj_lights: lightCount 10, lightSize irandom_range(50, 300), each channel irandom_range(32, 196).",
+    "count": 10,
+    "minRadius": 50,
+    "maxRadius": 300,
+    "minChannel": 32,
+    "maxChannel": 196
+  },
+  "borders": {
+    "top": "spr_top_border",
+    "bottom": "spr_bottom_border",
+    "left": "spr_left_border",
+    "right": "spr_right_border",
+    "border": 32
+  }
+}

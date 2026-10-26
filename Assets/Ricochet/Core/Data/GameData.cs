@@ -30,11 +30,12 @@ namespace Ricochet.Core.Data
         public const string AnnouncerFile = "announcer.json";
         public const string MenuFile = "menu.json";
         public const string RegistryFile = "registry.json";
+        public const string BackdropFile = "backdrop.json";
 
         /// <summary>Every data file Core reads, in load order.</summary>
         public static readonly string[] Files =
         {
-            MatchFile, ShotFile, HazardsFile, ArsenalFile, LevelFile, ShapesFile, MapsFile, AnnouncerFile, MenuFile, RegistryFile,
+            MatchFile, ShotFile, HazardsFile, ArsenalFile, LevelFile, ShapesFile, MapsFile, AnnouncerFile, MenuFile, RegistryFile, BackdropFile,
         };
 
         private static readonly object s_lock = new object();
@@ -73,6 +74,9 @@ namespace Ricochet.Core.Data
         public MenuData Menu { get; internal set; }
 
         public ShapeTable Shapes { get; internal set; }
+
+        /// <summary>The level backdrop (U.RICO-T46): floors, clouds, spotlight, lights and border sprites.</summary>
+        public Ricochet.Core.Art.BackdropRules Backdrop { get; internal set; }
 
         /// <summary>The Settings screen's registry, in screen order.</summary>
         public IReadOnlyList<SettingDef> Registry { get; internal set; }
@@ -191,6 +195,7 @@ namespace Ricochet.Core.Data
             data.Announcer = DataReaders.ReadAnnouncer(Root(AnnouncerFile));
             data.Menu = DataReaders.ReadMenu(Root(MenuFile));
             data.Registry = DataReaders.ReadRegistry(Root(RegistryFile), docs, errors);
+            data.Backdrop = DataReaders.ReadBackdrop(Root(BackdropFile));
 
             if (errors.Count > 0)
             {

@@ -489,6 +489,77 @@ namespace Ricochet.Core.Data
             return defs;
         }
 
+        // U.RICO-T46: the level backdrop. Room numbers are the original's pixels; GML names are checked against the art
+        // catalogue by the editor tests (Core has no art), so here they only need to be there and not repeat within a group.
+        public static Ricochet.Core.Art.BackdropRules ReadBackdrop(SettingsReader r)
+        {
+            var rules = new Ricochet.Core.Art.BackdropRules
+            {
+                RoomWidth = r.Integer("roomWidth", 1, 10000),
+                RoomHeight = r.Integer("roomHeight", 1, 10000),
+            };
+
+            var groups = new List<IReadOnlyList<string>>();
+            foreach (SettingsReader g in r.Objects("groups", 1))
+            {
+                g.Text("name");
+                List<string> backgrounds = g.Texts("backgrounds", 1);
+                g.Check(new HashSet<string>(backgrounds).Count == backgrounds.Count, "backgrounds", "names a background twice");
+                g.Done();
+                if (backgrounds.Count > 0)
+                {
+                    groups.Add(backgrounds);
+                }
+            }
+
+            rules.Groups = groups;
+
+            var clouds = new List<Ricochet.Core.Art.CloudSpot>();
+            foreach (SettingsReader c in r.Objects("clouds"))
+            {
+                clouds.Add(new Ricochet.Core.Art.CloudSpot(c.Text("sprite"), c.Number("x", -10000, 10000), c.Number("y", -10000, 10000)));
+                c.Done();
+            }
+
+            rules.Clouds = clouds;
+            rules.CloudAlpha = r.Number("cloudAlpha", 0, 1);
+            rules.CloudSpeed = r.Number("cloudSpeed", 0, 100);
+            rules.CloudWrapTop = r.Integer("cloudWrapTop", -10000, 10000);
+            rules.CloudWrapBottomGap = r.Integer("cloudWrapBottomGap", -10000, 10000);
+            r.Check(rules.CloudWrapTop <= rules.RoomHeight - rules.CloudWrapBottomGap, "cloudWrapTop", "must not be below roomHeight - cloudWrapBottomGap");
+
+            SettingsReader spot = r.Section("spotlight");
+            rules.SpotlightSprite = spot.Text("sprite");
+            rules.SpotlightX = spot.Number("x", -10000, 10000);
+            rules.SpotlightY = spot.Number("y", -10000, 10000);
+            rules.SpotlightMinAlpha = spot.Number("minAlpha", 0, 1);
+            rules.SpotlightMaxAlpha = spot.Number("maxAlpha", 0, 1);
+            rules.SpotlightRate = spot.Number("rate", 1e-6, 1);
+            spot.Check(rules.SpotlightMinAlpha <= rules.SpotlightMaxAlpha, "maxAlpha", "must be at least minAlpha");
+            spot.Done();
+
+            SettingsReader lights = r.Section("lights");
+            rules.LightCount = lights.Integer("count", 0, 100);
+            rules.LightMinRadius = lights.Integer("minRadius", 1, 10000);
+            rules.LightMaxRadius = lights.Integer("maxRadius", 1, 10000);
+            rules.LightMinChannel = lights.Integer("minChannel", 0, 255);
+            rules.LightMaxChannel = lights.Integer("maxChannel", 0, 255);
+            lights.Check(rules.LightMinRadius <= rules.LightMaxRadius, "maxRadius", "must be at least minRadius");
+            lights.Check(rules.LightMinChannel <= rules.LightMaxChannel, "maxChannel", "must be at least minChannel");
+            lights.Done();
+
+            SettingsReader borders = r.Section("borders");
+            rules.TopBorder = borders.Text("top");
+            rules.BottomBorder = borders.Text("bottom");
+            rules.LeftBorder = borders.Text("left");
+            rules.RightBorder = borders.Text("right");
+            rules.Border = borders.Integer("border", 0, 1000);
+            borders.Done();
+
+            r.Done();
+            return rules;
+        }
+
         private static void CheckSegment(SettingsReader r, string key, double[] s)
         {
             r.Check(Math.Abs(s[0] - s[2]) > 1e-6 || Math.Abs(s[1] - s[3]) > 1e-6, key, "a segment needs two different end points");

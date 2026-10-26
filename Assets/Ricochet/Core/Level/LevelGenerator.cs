@@ -66,20 +66,52 @@ namespace Ricochet.Core.Level
         }
     }
 
+    /// <summary>
+    /// One shape a random level laid, as the original's obj_polygon/triangle/bar/circle/square instance stood: which of the
+    /// eighty, where its origin is and how far it is turned (U.RICO-T46 draws its sprite there).
+    /// </summary>
+    public readonly struct LaidShape
+    {
+        public LaidShape(ShapeId id, Vec2 origin, double degrees, Vec2[] corners)
+        {
+            Id = id;
+            Origin = origin;
+            Degrees = degrees;
+            Corners = corners;
+        }
+
+        public ShapeId Id { get; }
+
+        /// <summary>The sprite's origin in the arena (instance_create's x, y).</summary>
+        public Vec2 Origin { get; }
+
+        /// <summary>image_angle: degrees anticlockwise.</summary>
+        public double Degrees { get; }
+
+        /// <summary>The outline the walls were made from, laid and turned.</summary>
+        public Vec2[] Corners { get; }
+    }
+
     /// <summary>One round's arena: the level and where each of the sixteen seats stands in it.</summary>
     public sealed class RoundLayout
     {
-        public RoundLayout(Level level, IReadOnlyList<Vec2> spots, int polygons = 0)
+        private static readonly LaidShape[] s_noShapes = new LaidShape[0];
+
+        public RoundLayout(Level level, IReadOnlyList<Vec2> spots, int polygons = 0, IReadOnlyList<LaidShape> shapes = null)
         {
             Polygons = polygons;
             Level = level ?? throw new ArgumentNullException(nameof(level));
             Spots = spots ?? throw new ArgumentNullException(nameof(spots));
+            Shapes = shapes ?? s_noShapes;
         }
 
         public Level Level { get; }
 
         /// <summary>How many polygons were laid (0 for a hand-laid map).</summary>
         public int Polygons { get; }
+
+        /// <summary>The shapes a random level laid, in laying order (none on a hand-laid map); their walls are the level's.</summary>
+        public IReadOnlyList<LaidShape> Shapes { get; }
 
         /// <summary>Where seat i stands (any seat index wraps onto the spots).</summary>
         public IReadOnlyList<Vec2> Spots { get; }
@@ -132,6 +164,7 @@ namespace Ricochet.Core.Level
             var dice = new Random(seed);
             var avoid = new List<Vec2>(keepClear ?? DefaultKeepClear());
             var shapes = new List<PlacedShape>();
+            var laid = new List<LaidShape>();
             var walls = new List<Wall>();
 
             for (int i = 0; i < settings.PolygonCount; i++)
@@ -139,7 +172,9 @@ namespace Ricochet.Core.Level
                 for (int pick = 0; pick < Picks; pick++)
                 {
                     // A shape that will not fit anywhere is swapped for another pick (the original would retry forever).
-                    Vec2[] outline = Turn(ShapeLibrary.Outline(ShapeLibrary.Pick(settings.Shapes, dice)), RotationDegrees(settings.Rotation, dice));
+                    ShapeId id = ShapeLibrary.Pick(settings.Shapes, dice);
+                    double degrees = RotationDegrees(settings.Rotation, dice);
+                    Vec2[] outline = Turn(ShapeLibrary.Outline(id), degrees);
                     PlacedShape placed = default;
                     bool found = false;
                     for (int attempt = 0; attempt < Attempts && !found; attempt++)
@@ -161,12 +196,13 @@ namespace Ricochet.Core.Level
                     }
 
                     shapes.Add(placed);
+                    laid.Add(new LaidShape(id, placed.Centre, degrees, c));
                     break;
                 }
             }
 
             var level = new Level(MinX, MinY, MaxX, MaxY, walls);
-            return new RoundLayout(level, PickSpots(dice, shapes, avoid, level), shapes.Count);
+            return new RoundLayout(level, PickSpots(dice, shapes, avoid, level), shapes.Count, laid);
         }
 
         /// <summary>setup_shapes.gml's rotation switch: none, one of eight, one of four or any whole angle.</summary>
