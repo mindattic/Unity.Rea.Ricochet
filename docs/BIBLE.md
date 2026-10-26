@@ -237,5 +237,36 @@ did that with its squares; GameMaker's draw_self draws them as they are): the tr
 vortex spin at 3 degrees per 60-a-second step, where the original spun 3 degrees per step at whatever `shootFPS` the
 machine reached during a shot. (4) The HUD labels keep the rebuild's layout and fit their text to its boxes in the
 original's faces, rather than drawing at the original's sizes in its places. (5) The rail's trail of swirls, the vortex's
-spread and every other sprite are still drawn as before; U.RICO-T45 (tanks, tracks), U.RICO-T46 (backgrounds, clouds,
+spread and every other sprite are still drawn as before; U.RICO-T45 (tanks, tracks: done, see Tanks), U.RICO-T46 (backgrounds, clouds,
 borders, shapes) and U.RICO-T78 (the rest) swap them.
+
+## Tanks (U.RICO-T45)
+
+Source: `objects/obj_player` (the turret, spr_tank_top, depth 0), `objects/obj_bottom` (the hull, spr_tank_bottom,
+depth 1), `objects/obj_tracks` and `sprites/spr_tracks` (depth 2), `scripts/setup_players.gml`, `align_bottom_to_top.gml`,
+`spawn_tracks.gml`, `move_forward.gml` / `move_backward.gml`.
+
+- `Runtime/TankView` draws each player as the original did: spr_tank_bottom under spr_tank_top at the original's pixel
+  size (a shrink ray still shrinks it), both tinted the seat's colour (setup_players' `image_blend = pColor[i]`), faint
+  out of the round as the squares were. The turret is on the aim (the owner's own responsive aim, everyone else's synced
+  one). The hull starts on the turret's angle (`bottom[i].image_angle = player[i].image_angle`) and, while the tank
+  drives, turns a degree a step the short way toward the turret (align_bottom_to_top, from move_forward / move_backward).
+- While it drives, a spr_tracks print (4x64, untinted) is laid under the hull at the hull's angle on the tenth step and
+  every fifth step after (obj_bottom's `trackTime = 10`, spawn_tracks' `trackTime = 5`; the count is not reset when the
+  tank stops). Each print holds at alpha 0.7 for its 400-step alarm, then loses 0.003 a step and is destroyed once it
+  reaches 0 (635 steps, about 10.6 s at 60). Prints stay where they were laid; a new level sweeps them away, as the
+  original's room change did.
+- Core's `TankMotion` / `TrackLayer` hold the step rules (tested in `Tests/Core.Tests/TankMotionTests`); the view runs
+  them at the room speed (`ArtCatalogue.RoomSpeed`). "Driving" is the authority's held drive key (`PlayerState.DriveDirection`,
+  synced as `Player.TankMoving`), the original's `isMoving`, so a tank pushing against a wall still turns its hull and
+  lays prints, as in the original. The name over the tank stays `PlayerLabels`' world label (U.RICO-T38, in fnt_score
+  since U.RICO-T44); the turn marker stays the rebuild's until U.RICO-T49 brings spr_turnarrow.
+- Without the art (an empty catalogue) the player keeps its code-drawn square and barrel.
+
+Fixed defect: `isMoving` is a global and spawn_tracks runs in every obj_bottom's Step, so in the original every tank on
+the board laid prints under itself while the current one drove, piling them under the tanks standing still. Only the
+driving tank lays tracks in the rebuild.
+
+Not carried: `obj_head` (spr_head) and `spr_torso` are a leftover the project file no longer lists: a person-shaped body
+from before the tanks (obj_head followed `playerX`/`playerY`/`playerPreSwagger`, which nothing sets). They stay imported
+under `Art/Sprites/Unlisted` and are drawn by nothing.

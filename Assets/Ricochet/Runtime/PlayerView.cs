@@ -35,9 +35,39 @@ namespace Ricochet
         private int _hurt;                    // every peer: the damage the last shot that struck this player did
         private float _hurtShownUntil = -1f;
 
-        private SpriteRenderer _body;
+        // The player's own scale (its code-drawn square's size; the tank's art undoes it to draw at the original's pixels).
+        private const float BodyScale = 0.8f;
+
+        private TankView _tank;          // the original's turret, hull and tracks (U.RICO-T45); null without the art
+        private SpriteRenderer _body;    // the code-drawn square and barrel when the art is missing
         private SpriteRenderer _barrel;
         private SpriteRenderer _turnMarker;
+
+        /// <summary>The tank drawn from the original's art, or null when it fell back to squares.</summary>
+        public TankView Tank => _tank;
+
+        // Every peer: the tank as the synced state has it (the owner's turret follows its own, responsive aim).
+        private void DrawTank()
+        {
+            float shownHeading = LocallyControlled ? (float)_aim.Heading : Heading;
+
+            // Out of the round (no health left, or waiting for the next one): drawn faint.
+            Color32 color = Color;
+            color.a = Turns.For(Session) != null && !InRound ? (byte)60 : (byte)255;
+            if (_tank != null)
+            {
+                _tank.Show(shownHeading, TankMoving, color, LevelVersion, Time.deltaTime);
+            }
+            else
+            {
+                _barrel.transform.localRotation = Quaternion.Euler(0f, 0f, shownHeading);
+                _barrel.transform.localPosition = Quaternion.Euler(0f, 0f, shownHeading) * new Vector3(0.45f, 0f, 0f);
+                _body.color = color;
+                _barrel.color = color;
+            }
+
+            _turnMarker.enabled = HasTurn;
+        }
 
         private LineRenderer _previewLine;
         private ShotView _shotView;

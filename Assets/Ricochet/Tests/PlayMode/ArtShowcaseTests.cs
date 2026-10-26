@@ -1,6 +1,7 @@
 // U.RICO-T44: looks at the original's art in a running match and saves what the camera and the HUD show to
 // Screenshots/ (gitignored): the Ready card in fnt_impact and fnt_mono with draw_text_outline's outlines, the four
-// crates with their icons, a shell in flight, its spr_smallexplosion, and a grenade's spr_bigexplosion. Explicit: it
+// crates with their icons, a shell in flight, its spr_smallexplosion, a grenade's spr_bigexplosion, and the tanks with
+// one driving and leaving tracks (U.RICO-T45). Explicit: it
 // needs graphics (Tools/unity.ps1 -Graphics), so it runs only when asked for by name:
 //   powershell -File Tools/unity.ps1 -Graphics -Log art-showcase -Extra "-runTests -testPlatform PlayMode -testFilter Ricochet.Tests.ArtShowcaseTests -testResults Logs/TestResults-ArtShowcase.xml"
 using System.Collections;
@@ -125,6 +126,25 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => !grenade.Flying, "the grenade never went off", 10f);
             yield return new WaitForSeconds(0.4f);
             yield return Capture("grenade-explosion");
+
+            // U.RICO-T45: the tanks in their colours, and the next seat driving, its hull turning after its turret and its
+            // tracks left behind (driving forfeits the turn's shot, so this comes last).
+            Turns turns = Turns.For(Server);
+            yield return WaitUntil(() => turns.MatchPhase == MatchPhase.Aiming && turns.Current != other.Seat, "the turn never passed again", 20f);
+            Player driver = Object.FindObjectsByType<Player>().First(p => p.IsLocalHuman && p.Seat == turns.Current);
+            Assert.That(driver.Tank, Is.Not.Null, "the tank fell back to squares");
+            driver.Aim(driver.Heading + 120f, 0.5f);
+            yield return new WaitForSeconds(0.3f);
+            float until = Time.time + 1.5f;
+            while (Time.time < until)
+            {
+                driver.Drive(1);
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            driver.Drive(0);
+            Assert.That(driver.Tank.TrackCount, Is.GreaterThan(0), "driving left no tracks");
+            yield return Capture("tanks");
         }
 
         // Renders the camera with every overlay canvas moved onto it, into a 1920x1080 PNG under Screenshots/.

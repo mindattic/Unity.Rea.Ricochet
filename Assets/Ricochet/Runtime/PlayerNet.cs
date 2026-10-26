@@ -83,6 +83,10 @@ namespace Ricochet
         [Synced] private float _heading = StartHeading;
         [Synced] private float _power = StartPower;
 
+        // Whether the authority is driving this tank (a drive key held: the original's isMoving), so every peer turns the
+        // hull after the turret and lays tracks only while it drives (U.RICO-T45).
+        [Synced] private bool _tankMoving;
+
         // The last shot: its aim, weapon, fuse and extra bounces, and a count that goes up by one per shot so every peer
         // knows a new one was fired.
         [Synced] private int _shots;

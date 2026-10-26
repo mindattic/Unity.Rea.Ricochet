@@ -9,6 +9,11 @@ namespace Ricochet
     /// <summary>The GML names of the sprites the views draw.</summary>
     public static class GmlSprites
     {
+        // The tank (obj_player's turret over obj_bottom's hull) and the prints it leaves (obj_tracks).
+        public const string TankTop = "spr_tank_top";
+        public const string TankBottom = "spr_tank_bottom";
+        public const string Tracks = "spr_tracks";
+
         // Shots in the air (obj_bullet, obj_pellet, obj_laser, obj_rail_swirl, obj_grenade, obj_vortex).
         public const string Shell = "spr_mortar";
         public const string Pellet = "spr_pellet";

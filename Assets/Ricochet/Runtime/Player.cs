@@ -232,10 +232,17 @@ namespace Ricochet
 
         protected override void OnSpawned()
         {
-            _body = Shapes.Square(gameObject, 0.8f, 0);
-            GameObject barrel = Child("Barrel"); // the same ones again when the kit respawns this object on a reconnect
-            _barrel = Shapes.Square(barrel, 1f, 1);
-            barrel.transform.localScale = new Vector3(0.9f, 0.18f, 1f);
+            // The original's tank (U.RICO-T45), or the code-drawn square and barrel when the art is missing. The same ones
+            // again when the kit respawns this object on a reconnect.
+            _tank = TankView.Create(transform, name, BodyScale);
+            if (_tank == null)
+            {
+                _body = Shapes.Square(gameObject, BodyScale, 0);
+                GameObject barrel = Child("Barrel");
+                _barrel = Shapes.Square(barrel, 1f, 1);
+                barrel.transform.localScale = new Vector3(0.9f, 0.18f, 1f);
+            }
+
             GameObject marker = Child("Turn marker");
             _turnMarker = Shapes.Square(marker, 1f, 2);
             marker.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
@@ -341,6 +348,11 @@ namespace Ricochet
             {
                 Destroy(_shotView.gameObject);
             }
+
+            if (_tank != null)
+            {
+                _tank.DestroyTracks();
+            }
         }
 
         // A human on their own machine: not a bot (its driver fires for it) and not an AI (Arena plays its turns). A dropped
@@ -358,7 +370,7 @@ namespace Ricochet
             }
 
             transform.position = Position;
-            transform.localScale = new Vector3(Scale, Scale, 1f) * 0.8f;
+            transform.localScale = new Vector3(Scale, Scale, 1f) * BodyScale;
 
             // A client in a process of its own lays the server's level (a host's peers share its Arena).
             if (!IsServer && Arena.Current == null && LevelVersion > 0)
@@ -387,18 +399,14 @@ namespace Ricochet
             {
                 DriveStep();
                 FlightStep();
+                bool moving = State.DriveDirection != 0;
+                if (TankMoving != moving)
+                {
+                    TankMoving = moving;
+                }
             }
 
-            float shownHeading = LocallyControlled ? (float)_aim.Heading : Heading;
-            _barrel.transform.localRotation = Quaternion.Euler(0f, 0f, shownHeading);
-            _barrel.transform.localPosition = Quaternion.Euler(0f, 0f, shownHeading) * new Vector3(0.45f, 0f, 0f);
-
-            // Out of the round (no health left, or waiting for the next one): drawn faint.
-            Color32 color = Color;
-            color.a = Turns.For(Session) != null && !InRound ? (byte)60 : (byte)255;
-            _body.color = color;
-            _barrel.color = color;
-            _turnMarker.enabled = HasTurn;
+            DrawTank();
         }
 
         /// <summary>True for the human playing on this machine (not a bot, not an AI).</summary>
