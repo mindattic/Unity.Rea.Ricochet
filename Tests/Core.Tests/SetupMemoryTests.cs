@@ -172,7 +172,6 @@ namespace Ricochet.Core.Tests
             setup.PauseRedirector = false;
             setup.SetWeaponOn(Weapon.Railgun, false);
             setup.SetWeaponCount(Weapon.Laser, 7);
-            setup.SetWeaponCount(Weapon.Cannon, 4);
             setup.SetItemOn(Item.Teleporter, false);
             setup.SetItemCount(Item.ShieldWall, 0);
             setup.SetDropOn(DropKind.Health, false);
@@ -186,7 +185,7 @@ namespace Ricochet.Core.Tests
             MatchSetup back = MatchSetup.FromRecord(rules.ToRecord());
             Assert.That(back.SameAs(rules), Is.True);
             Assert.That((back.TurnSeconds, back.MaxBounces, back.WeaponDamage, back.PauseRedirector), Is.EqualTo((35, 9, 40, false)));
-            Assert.That((back.WeaponOn(Weapon.Railgun), back.WeaponCount(Weapon.Laser), back.WeaponCount(Weapon.Cannon)), Is.EqualTo((false, 7, 4)));
+            Assert.That((back.WeaponOn(Weapon.Railgun), back.WeaponCount(Weapon.Laser), back.WeaponCount(Weapon.Cannon)), Is.EqualTo((false, 7, ArsenalRules.Unlimited)));
             Assert.That((back.ItemOn(Item.Teleporter), back.ItemCount(Item.ShieldWall), back.DropOn(DropKind.Health)), Is.EqualTo((false, 0, false)));
             Assert.That(back.DropOn(DropKind.Weapon), Is.True);
 
@@ -208,6 +207,37 @@ namespace Ricochet.Core.Tests
             // A save from before the rules hold none of them.
             MatchSetup old = MatchSetup.FromRecord(new Dictionary<string, int> { [MatchSetup.Keys.Goal] = 1000 });
             Assert.That(old.TurnSeconds, Is.EqualTo(20));
+        }
+
+        [Test]
+        public void TheCannonCannotBeSwitchedOffOrSpent()
+        {
+            var setup = new MatchSetup();
+            setup.SetWeaponOn(Weapon.Cannon, false);
+            setup.SetWeaponCount(Weapon.Cannon, 0);
+            var arsenal = new ArsenalRules();
+            setup.ApplyTo(arsenal);
+            Assert.That((arsenal.InPlay(Weapon.Cannon), arsenal.StartCount(Weapon.Cannon)), Is.EqualTo((true, ArsenalRules.Unlimited)));
+        }
+
+        [Test]
+        public void TheSetupDefaultsAreTheShippedDataStockRules()
+        {
+            var setup = new MatchSetup();
+            var stock = new ArsenalRules();
+            var arsenal = new ArsenalRules();
+            setup.ApplyTo(arsenal);
+            for (int i = 0; i < ArsenalRules.Kinds; i++)
+            {
+                Assert.That(arsenal.StartCount((Weapon)i), Is.EqualTo(stock.StartCount((Weapon)i)), "weapon " + i);
+                Assert.That(arsenal.InPlay((Weapon)i), Is.EqualTo(stock.InPlay((Weapon)i)), "weapon " + i);
+                Assert.That(arsenal.StartCount((Item)i), Is.EqualTo(stock.StartCount((Item)i)), "item " + i);
+                Assert.That(arsenal.InPlay((Item)i), Is.EqualTo(stock.InPlay((Item)i)), "item " + i);
+            }
+
+            Assert.That(new MatchRules().TurnSeconds, Is.EqualTo((double)MatchSetup.DefaultTurnSeconds));
+            Assert.That(new MatchRules().WeaponDamage, Is.EqualTo(MatchSetup.DefaultWeaponDamage));
+            Assert.That(new ShotRules().MaxBounces, Is.EqualTo(MatchSetup.DefaultMaxBounces));
         }
 
         [Test]
@@ -238,7 +268,7 @@ namespace Ricochet.Core.Tests
             setup.ApplyTo(arsenal);
             setup.ApplyTo(match, shot, drops, hazards);
             Assert.That((match.TurnSeconds, match.WeaponDamage, shot.MaxBounces), Is.EqualTo((35.0, 40, 9)));
-            Assert.That((arsenal.InPlay(Weapon.Railgun), arsenal.StartCount(Weapon.Laser), arsenal.StartCount(Weapon.Cannon)), Is.EqualTo((false, 7, 4)));
+            Assert.That((arsenal.InPlay(Weapon.Railgun), arsenal.StartCount(Weapon.Laser), arsenal.StartCount(Weapon.Cannon)), Is.EqualTo((false, 7, ArsenalRules.Unlimited)));
             Assert.That((arsenal.InPlay(Item.Teleporter), arsenal.StartCount(Item.ShieldWall), arsenal.InPlay(Item.AimAssist)), Is.EqualTo((false, 0, true)));
             Assert.That((drops.Enabled(DropKind.Health), drops.Enabled(DropKind.Weapon)), Is.EqualTo((false, true)));
             Assert.That(hazards.RedirectorsSpin, Is.True);

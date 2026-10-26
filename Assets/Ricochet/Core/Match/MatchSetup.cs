@@ -197,15 +197,15 @@ namespace Ricochet.Core.Match
             set { _pauseRedirector = value; }
         }
 
-        /// <summary>The weapon's box (hasX): whether it is in play at all.</summary>
-        public bool WeaponOn(Weapon weapon) => _weaponOn[(int)weapon];
+        /// <summary>The weapon's box (hasX): whether it is in play at all. The cannon is always in play and unlimited, so a player always has a shot.</summary>
+        public bool WeaponOn(Weapon weapon) => weapon == Weapon.Cannon || _weaponOn[(int)weapon];
 
-        public void SetWeaponOn(Weapon weapon, bool on) => _weaponOn[(int)weapon] = on;
+        public void SetWeaponOn(Weapon weapon, bool on) => _weaponOn[(int)weapon] = weapon == Weapon.Cannon || on;
 
         /// <summary>The count each player starts a round with (countX): 0 to 9, or 10 for unlimited.</summary>
-        public int WeaponCount(Weapon weapon) => _weaponCount[(int)weapon];
+        public int WeaponCount(Weapon weapon) => weapon == Weapon.Cannon ? ArsenalRules.Unlimited : _weaponCount[(int)weapon];
 
-        public void SetWeaponCount(Weapon weapon, int count) => _weaponCount[(int)weapon] = ArsenalRules.ClampCount(count);
+        public void SetWeaponCount(Weapon weapon, int count) => _weaponCount[(int)weapon] = weapon == Weapon.Cannon ? ArsenalRules.Unlimited : ArsenalRules.ClampCount(count);
 
         /// <summary>The item's box (hasX): whether it is in play at all (the aim assist is also out of play at a count of 0).</summary>
         public bool ItemOn(Item item) => _itemOn[(int)item];
@@ -579,14 +579,14 @@ namespace Ricochet.Core.Match
                     int index = IndexAfter(key, Keys.WeaponOn, ArsenalRules.Kinds);
                     if (index >= 0)
                     {
-                        _weaponOn[index] = value != 0;
+                        SetWeaponOn((Weapon)index, value != 0);
                         return true;
                     }
 
                     index = IndexAfter(key, Keys.WeaponCount, ArsenalRules.Kinds);
                     if (index >= 0)
                     {
-                        _weaponCount[index] = ArsenalRules.ClampCount(value);
+                        SetWeaponCount((Weapon)index, value);
                         return true;
                     }
 
@@ -639,8 +639,8 @@ namespace Ricochet.Core.Match
 
             for (int i = 0; i < ArsenalRules.Kinds; i++)
             {
-                rules.SetStartCount((Weapon)i, _weaponCount[i]);
-                rules.SetInPlay((Weapon)i, _weaponOn[i]);
+                rules.SetStartCount((Weapon)i, WeaponCount((Weapon)i));
+                rules.SetInPlay((Weapon)i, WeaponOn((Weapon)i));
                 rules.SetStartCount((Item)i, _itemCount[i]);
                 rules.SetInPlay((Item)i, _itemOn[i]);
             }

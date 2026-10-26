@@ -186,6 +186,11 @@ namespace Ricochet
             for (int i = 0; i < ArsenalRules.Kinds; i++)
             {
                 var weapon = (Weapon)i;
+                if (weapon == Weapon.Cannon)
+                {
+                    continue; // always in play and unlimited: a player always has a shot
+                }
+
                 string name = ArsenalRules.Name(weapon);
                 s.AddToggle(name + " in play", setup.WeaponOn(weapon), v => setup.SetWeaponOn(weapon, v));
                 s.AddRange(name + " at the start", 0, ArsenalRules.Unlimited, setup.WeaponCount(weapon), v => setup.SetWeaponCount(weapon, Mathf.RoundToInt(v)),
@@ -209,6 +214,7 @@ namespace Ricochet
             s.AddToggle("Weapon drops", setup.DropOn(DropKind.Weapon), v => setup.SetDropOn(DropKind.Weapon, v));
             s.AddToggle("Item drops", setup.DropOn(DropKind.Item), v => setup.SetDropOn(DropKind.Item, v));
             s.AddToggle("Health drops", setup.DropOn(DropKind.Health), v => setup.SetDropOn(DropKind.Health, v));
+            s.AddToggle("Random drops", setup.DropOn(DropKind.Powerup), v => setup.SetDropOn(DropKind.Powerup, v));
             s.AddToggle("Pause redirectors once placed", setup.PauseRedirector, v => setup.PauseRedirector = v);
         }
 
