@@ -99,6 +99,16 @@ aim, Up/Down set the power, Space fires.
 Tests: `dotnet test Core.slnx` runs the bounce solver's unit tests without Unity; the PlayMode and EditMode suites
 are listed in [Assets/Ricochet/README.md](Assets/Ricochet/README.md).
 
+### Muted launches
+
+`powershell -File Tools/play.ps1` launches a playable build (`Build/Ricochet/Ricochet.exe`, built first by
+`Tools/deploy.ps1` when missing or with `-Build`; the Editor must be closed for the build) **muted by default**: it
+passes `-muted` and sets `MINDATTIC_CLI_MUTED=1` for the launch only, so a CLI or agent starting the game never plays
+sound. Add `-Sound` to launch with audio. The mute is Unity.Shared's session mute (`Profiles.SessionMuted`): it lasts
+for that run only, and `GameAudio` keeps the listener and both sources silent while still saving the player's real
+volumes if they change one in Settings, so the profile's `settings.json` never picks up the mute. Any build or Editor
+run started with `-muted` or `MINDATTIC_CLI_MUTED=1` gets the same behaviour.
+
 ## Project layout
 
 ```text

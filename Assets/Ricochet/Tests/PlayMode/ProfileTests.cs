@@ -168,4 +168,69 @@ namespace Ricochet.Tests
             Assert.That(_audio.Effects.volume, Is.EqualTo(0.1f).Within(1e-4));
         }
     }
+
+    /// <summary>
+    /// U.RICO-T71: launched with -muted or MINDATTIC_CLI_MUTED=1 (Unity.Shared's session mute), nothing is heard, and a
+    /// setting changed during the muted run saves the player's real values, never the mute's zeros.
+    /// </summary>
+    public class SessionMuteAudioTests
+    {
+        private string _root;
+        private GameAudio _audio;
+        private float _listenerVolume;
+
+        [SetUp]
+        public void AFreshProfile_MutedForTheSession()
+        {
+            _listenerVolume = AudioListener.volume;
+            _root = TempProfiles.Use();
+            CommonSettings common = Profiles.Current.Settings.Common;
+            common.SfxVolume = 0.4f;
+            common.MusicVolume = 0.5f;
+            Profiles.Current.SaveSettings();
+            Profiles.SessionMuted = true;
+        }
+
+        [TearDown]
+        public void PutTheProfilesBack()
+        {
+            Profiles.SessionMuted = false;
+            AudioListener.volume = _listenerVolume;
+            if (_audio != null)
+            {
+                Object.Destroy(_audio.gameObject);
+            }
+
+            TempProfiles.Release(_root);
+        }
+
+        [UnityTest]
+        public IEnumerator ASessionMute_SilencesEverything_AndLeavesTheSavedSettingsAlone()
+        {
+            _audio = GameAudio.Create();
+            yield return null;
+
+            Assert.That(GameAudio.SessionMuted, Is.True);
+            Assert.That(AudioListener.volume, Is.EqualTo(0f), "the listener is silenced for this run");
+            Assert.That(_audio.Effects.volume, Is.EqualTo(0f));
+            Assert.That(_audio.Music.volume, Is.EqualTo(0f));
+            Assert.That(_audio.Mix.SfxVolume, Is.EqualTo(0.4f).Within(1e-4), "the mix holds the saved value, not the mute's 0");
+
+            GameAudio.Play(SoundCue.Fire);
+            Assert.That(_audio.Played, Is.EqualTo(1), "the cue is counted but not heard");
+
+            // The player raises the music during the muted run: still silent, and only that change is saved.
+            AudioMix mix = _audio.Mix;
+            mix.MusicVolume = 0.7f;
+            Assert.That(_audio.Save(mix), Is.True);
+            Assert.That(_audio.Music.volume, Is.EqualTo(0f), "still silent this session");
+
+            Profiles.SessionMuted = false;
+            CommonSettings reread = Profiles.Current.ReloadSettings().Common;
+            Assert.That(reread.MusicVolume, Is.EqualTo(0.7f).Within(1e-4));
+            Assert.That(reread.SfxVolume, Is.EqualTo(0.4f).Within(1e-4), "not saved as the mute's 0");
+            Assert.That(reread.MuteSfx, Is.False, "not saved as the mute's true");
+            Assert.That(reread.MuteMusic, Is.False);
+        }
+    }
 }

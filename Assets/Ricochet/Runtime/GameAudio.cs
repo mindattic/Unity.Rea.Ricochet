@@ -57,16 +57,38 @@ namespace Ricochet
             return new GameObject("Game audio").AddComponent<GameAudio>();
         }
 
-        /// <summary>The profile's audio settings (Unity.Shared's common block) as a mix.</summary>
+        /// <summary>
+        /// True while Unity.Shared's session mute is on (U.RICO-T71): the game was launched with -muted or
+        /// MINDATTIC_CLI_MUTED=1 (tools/play.ps1 does both unless given -Sound). Nothing is heard for this run, and the
+        /// player's saved settings are left exactly as they were.
+        /// </summary>
+        public static bool SessionMuted => Profiles.SessionMuted;
+
+        /// <summary>
+        /// The profile's audio settings (Unity.Shared's common block) as a mix: the values stored in settings.json, read
+        /// past the session mute (which makes CommonSettings report 0 and muted), so a setting the player changes during a
+        /// muted run saves the other three as they were, not as the mute shows them. <see cref="Apply"/> does the silencing.
+        /// </summary>
         public static AudioMix ReadProfile()
         {
             CommonSettings common = Common;
+            if (!Profiles.SessionMuted)
+            {
+                return new AudioMix
+                {
+                    MusicVolume = common.MusicVolume,
+                    SfxVolume = common.SfxVolume,
+                    MuteMusic = common.MuteMusic,
+                    MuteSfx = common.MuteSfx,
+                };
+            }
+
             return new AudioMix
             {
-                MusicVolume = common.MusicVolume,
-                SfxVolume = common.SfxVolume,
-                MuteMusic = common.MuteMusic,
-                MuteSfx = common.MuteSfx,
+                MusicVolume = Mathf.Clamp01(common.Data.GetFloat(CommonSettings.Keys.MusicVolume, CommonSettings.DefaultMusicVolume)),
+                SfxVolume = Mathf.Clamp01(common.Data.GetFloat(CommonSettings.Keys.SfxVolume, CommonSettings.DefaultSfxVolume)),
+                MuteMusic = common.Data.GetBool(CommonSettings.Keys.MuteMusic, false),
+                MuteSfx = common.Data.GetBool(CommonSettings.Keys.MuteSfx, false),
             };
         }
 
@@ -126,20 +148,29 @@ namespace Ricochet
             return saved;
         }
 
-        /// <summary>Applies <paramref name="mix"/> to the sources without saving it.</summary>
+        /// <summary>
+        /// Applies <paramref name="mix"/> to the sources without saving it. During a session mute the sources and the
+        /// listener stay silent whatever the mix says (AudioListener.volume is never saved, so this lasts for this run only).
+        /// </summary>
         public void Apply(AudioMix mix)
         {
             _mix = (mix ?? new AudioMix()).Copy();
+            bool session = Profiles.SessionMuted;
+            if (session)
+            {
+                AudioListener.volume = 0f;
+            }
+
             if (_effects != null)
             {
-                _effects.volume = _mix.EffectiveSfx;
-                _effects.mute = _mix.MuteSfx;
+                _effects.volume = session ? 0f : _mix.EffectiveSfx;
+                _effects.mute = session || _mix.MuteSfx;
             }
 
             if (_music != null)
             {
-                _music.volume = _mix.EffectiveMusic;
-                _music.mute = _mix.MuteMusic;
+                _music.volume = session ? 0f : _mix.EffectiveMusic;
+                _music.mute = session || _mix.MuteMusic;
             }
         }
 
@@ -170,7 +201,7 @@ namespace Ricochet
         {
             LastCue = cue;
             Played++;
-            if (_effects != null && !_mix.MuteSfx && _mix.SfxVolume > 0f)
+            if (_effects != null && !Profiles.SessionMuted && !_mix.MuteSfx && _mix.SfxVolume > 0f)
             {
                 _effects.PlayOneShot(ClipFor(cue));
             }
