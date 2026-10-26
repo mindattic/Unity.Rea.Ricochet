@@ -117,6 +117,9 @@ namespace Ricochet.Tests
             annOnHerClient.Fire(annOnHerClient.AssistHeading, annOnHerClient.AssistPower);
             Player hostOnClient = Player.In(Client).First(p => p.Seat == host.Seat);
             yield return WaitUntil(() => hostOnClient.Health < Arena.MatchRules.MaxHealth, "her assisted shot never hurt the host", 10f);
+            // The client draws her shot (and drops the beam) when the server's ShotResolved reaches it, which can land after the
+            // host's synced health: wait for that, not for the damage, before looking at the beam.
+            yield return WaitUntil(() => annOnHerClient.LastVolleyShot >= 1, "her client never drew her shot");
             Assert.That(annOnHerClient.AssistShown, Is.False, "the beam goes with the shot");
         }
 
