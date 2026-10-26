@@ -96,7 +96,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | No music | UR-T27 (open) |
 | One AI skill; no per-AI names | UR-T28 (open) |
 | No mouse controls, numpad aim, ping, fullscreen | UR-T29 (open) |
-| Setup not remembered (`config.ini`, defaults button) | UR-T41 |
+| Setup not remembered (`config.ini`, defaults button) | UR-T41 (built: `MatchSetup.ToRecord`/`FromRecord`, `SetupMemory` keeps it in the profile's game block as `matchSetup`, saved as a setup screen closes or a match starts, loaded on start; Players and Map carry Reset to defaults. Rules UR-T25 adds and names UR-T28 adds join the record when they land) |
 | Ready card, turn-start ping, overlap-free placement before the clock | UR-T42 |
 | Pause menu (Resume, Randomize, Music, Quit round) | UR-T43 |
 | No art imported (315 sprites, 64 backgrounds, 9 fonts) | UR-T44 |
@@ -128,7 +128,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | UI Toolkit or shared components, no IMGUI | done: `MatchHud` is a uGUI canvas of Components labels, `Player`/`Crate` labels are world TextMeshPro (`PlayerLabels`, `WorldText`); no `OnGUI` remains | UR-T38 |
 | Small focused components | gap: `Player.cs` 1174 lines, `Arena.cs` 975 | UR-T39 |
 | Tests and CI | partial: Core and PlayMode tests exist, CI is the nightly smoke only | UR-T40 |
-| Unity.Shared profiles and settings | partial: name, colour and audio read from the profile (UR-T10); the match setup is not stored | UR-T41 |
+| Unity.Shared profiles and settings | met: name, colour and audio read from the profile (UR-T10), rebinds (UR-T36) and the match setup (UR-T41) kept in its game block | UR-T41 |
 | Multiplayer-ready seams | met: Unity.Multiplayer kit, server authority, seats | kept |
 | README and BIBLE | gap: README and BIBLE are slice-by-slice history | UR-T59 |
 | Built in code | met for UI and level; scene and six prefabs are the kit's spawn templates | kept |

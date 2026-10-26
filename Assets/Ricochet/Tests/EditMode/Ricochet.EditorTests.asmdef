@@ -11,6 +11,7 @@
         "Unity.Multiplayer.UI",
         "Unity.Netcode.Runtime",
         "Unity.InputSystem",
+        "Unity.Shared.Core",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.RenderPipelines.Universal.2D.Runtime",

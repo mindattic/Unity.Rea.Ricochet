@@ -8,8 +8,10 @@
 // The game's goal and map (UR-T9) ride along too: the points that win the game (the setup screen's obj_btn_goal_less/more,
 // 1 meaning a single round, then 500 to 10000 in steps of 500; 500 by default) and the map the match is played on (an
 // index into Maps.All, the maproom's choice). The AI count travels as a vote's number and the rest as its text
-// ("skill=5;assist=3;voice=0;announce=1;goal=500;map=0").
+// ("skill=5;assist=3;voice=0;announce=1;goal=500;map=0"). The whole setup is remembered between sessions (UR-T41, the
+// original's config.ini) as ToRecord's named numbers, read back by FromRecord; ResetToDefaults is its Default button.
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Ricochet.Core.Match
@@ -129,6 +131,117 @@ namespace Ricochet.Core.Match
 
         public MatchSetup Clone() => (MatchSetup)MemberwiseClone();
 
+        /// <summary>
+        /// The names a remembered setup is stored under (UR-T41, the original's config.ini): <c>ai</c> for the AI count, then
+        /// the vote text's own names (<see cref="Format"/>).
+        /// </summary>
+        public static class Keys
+        {
+            public const string Ai = "ai";
+            public const string Skill = "skill";
+            public const string Assist = "assist";
+            public const string Voice = "voice";
+            public const string Announce = "announce";
+            public const string Goal = "goal";
+            public const string Map = "map";
+        }
+
+        /// <summary>
+        /// Everything this setup holds, as named whole numbers in a fixed order (UR-T41): what the profile stores so the
+        /// next session starts where this one left off, as the original's write_config/write_settings did to config.ini.
+        /// </summary>
+        public IReadOnlyList<KeyValuePair<string, int>> ToRecord()
+        {
+            return new[]
+            {
+                new KeyValuePair<string, int>(Keys.Ai, AiCount),
+                new KeyValuePair<string, int>(Keys.Skill, AiSkill),
+                new KeyValuePair<string, int>(Keys.Assist, AimAssists),
+                new KeyValuePair<string, int>(Keys.Voice, AnnouncerVoice),
+                new KeyValuePair<string, int>(Keys.Announce, Announcements),
+                new KeyValuePair<string, int>(Keys.Goal, Goal),
+                new KeyValuePair<string, int>(Keys.Map, Map),
+            };
+        }
+
+        /// <summary>
+        /// A setup read back from <see cref="ToRecord"/>'s values (the original's read_config): each value goes through
+        /// its property's clamp, and anything missing or unknown keeps its default.
+        /// </summary>
+        public static MatchSetup FromRecord(IEnumerable<KeyValuePair<string, int>> record)
+        {
+            var setup = new MatchSetup();
+            if (record == null)
+            {
+                return setup;
+            }
+
+            foreach (KeyValuePair<string, int> entry in record)
+            {
+                setup.Set(entry.Key, entry.Value);
+            }
+
+            return setup;
+        }
+
+        /// <summary>Takes every choice from <paramref name="other"/> (the screens hold this instance, so it changes in place).</summary>
+        public void CopyFrom(MatchSetup other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            _aiCount = other._aiCount;
+            _aiSkill = other._aiSkill;
+            _aimAssists = other._aimAssists;
+            _voice = other._voice;
+            _announcements = other._announcements;
+            _goal = other._goal;
+            _map = other._map;
+        }
+
+        /// <summary>The Default button (obj_btn_default, backup.ini): every choice back to the game's own defaults.</summary>
+        public void ResetToDefaults() => CopyFrom(new MatchSetup());
+
+        /// <summary>True when <paramref name="other"/> holds the same choices.</summary>
+        public bool SameAs(MatchSetup other)
+        {
+            return other != null && _aiCount == other._aiCount && _aiSkill == other._aiSkill && _aimAssists == other._aimAssists
+                && _voice == other._voice && _announcements == other._announcements && _goal == other._goal && _map == other._map;
+        }
+
+        // One named value onto this setup (through its property's clamp); false for a name it does not know.
+        private bool Set(string key, int value)
+        {
+            switch (key)
+            {
+                case Keys.Ai:
+                    AiCount = value;
+                    return true;
+                case Keys.Skill:
+                    AiSkill = value;
+                    return true;
+                case Keys.Assist:
+                    AimAssists = value;
+                    return true;
+                case Keys.Voice:
+                    AnnouncerVoice = value;
+                    return true;
+                case Keys.Announce:
+                    Announcements = value;
+                    return true;
+                case Keys.Goal:
+                    Goal = value;
+                    return true;
+                case Keys.Map:
+                    Map = value;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         /// <summary>Gives <paramref name="rules"/> this setup's aim assists: the starting count, and in play only when above 0.</summary>
         public void ApplyTo(ArsenalRules rules)
         {
@@ -169,26 +282,10 @@ namespace Ricochet.Core.Match
                     continue;
                 }
 
-                switch (part.Substring(0, equals).Trim())
+                string key = part.Substring(0, equals).Trim();
+                if (key != Keys.Ai) // the vote's number carries the AI count, never its text
                 {
-                    case "skill":
-                        setup.AiSkill = value;
-                        break;
-                    case "assist":
-                        setup.AimAssists = value;
-                        break;
-                    case "voice":
-                        setup.AnnouncerVoice = value;
-                        break;
-                    case "announce":
-                        setup.Announcements = value;
-                        break;
-                    case "goal":
-                        setup.Goal = value;
-                        break;
-                    case "map":
-                        setup.Map = value;
-                        break;
+                    setup.Set(key, value);
                 }
             }
 

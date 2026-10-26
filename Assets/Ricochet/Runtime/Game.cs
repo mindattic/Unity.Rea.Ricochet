@@ -24,6 +24,7 @@ namespace Ricochet
         private Arena _arena;
         private LobbyRoom _lobby;
         private readonly MatchSetup _setup = new MatchSetup(); // what the start-match vote proposes: the players, map and settings rooms' choices
+        private MatchSetup _saved; // what the profile holds now (UR-T41), so an unchanged setup is not written again
 
         /// <summary>The host's lobby (null before Start, or without the front end).</summary>
         public LobbyRoom HostLobby => _lobby;
@@ -74,6 +75,10 @@ namespace Ricochet
                 return;
             }
 
+            // UR-T41: the setup starts where the last session left it (the original's read_config), from the profile.
+            SetupMemory.Load(_setup);
+            _saved = _setup.Clone();
+
             // The Settings screen: the kit's name and colour (read from and saved to the MindAttic profile, Unity.Shared,
             // since that package is installed), then the profile's audio settings, saved the moment they change.
             frontEnd.AddSettingsItems(AddAudioSettings);
@@ -84,14 +89,22 @@ namespace Ricochet
             // announcer box sits under the kit's Settings, beside the name and colour.
             StartCoroutine(ShowTitle(frontEnd));
 
-            frontEnd.AddScreen(MenuFlow.Title(Room.Players), s => Menus.BuildPlayers(s, _setup, frontEnd.Identity.DisplayName,
-                frontEnd.OpenSettings, from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), BuildMapRoom)), MenuPlacement.Both);
+            frontEnd.AddScreen(MenuFlow.Title(Room.Players), s =>
+            {
+                RememberOnHide(s);
+                Menus.BuildPlayers(s, _setup, frontEnd.Identity.DisplayName, frontEnd.OpenSettings,
+                    from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), BuildMapRoom), ResetSetup);
+            }, MenuPlacement.Both);
             frontEnd.AddScreen(MenuFlow.Title(Room.Controls), Menus.BuildControls, MenuPlacement.Both);
             // UR-T36: the Input System's RicochetControls asset, rebindable and saved to the Unity.Shared profile.
             frontEnd.AddScreen("Rebind controls", Menus.BuildRebind, MenuPlacement.Both);
             frontEnd.AddScreen(MenuFlow.Title(Room.HowToPlay), s => Menus.BuildHowToPlay(s), MenuPlacement.Both);
             frontEnd.AddScreen(MenuFlow.Title(Room.Credits), Menus.BuildCredits, MenuPlacement.MainMenu);
-            frontEnd.AddSettingsItems(s => Menus.AddGameSettings(s, _setup));
+            frontEnd.AddSettingsItems(s =>
+            {
+                RememberOnHide(s);
+                Menus.AddGameSettings(s, _setup);
+            });
             frontEnd.AddPauseMenuItems(s =>
             {
                 s.AddButton("Vote to start a match", StartMatchVote);
@@ -158,13 +171,47 @@ namespace Ricochet
         {
             NetFrontEnd frontEnd = NetFrontEnd.Instance;
             bool inGame = frontEnd != null && frontEnd.State == FrontEndState.InGame;
+            RememberOnHide(s);
             Menus.BuildMap(s, _setup, inGame ? "Vote to start a match" : "Next: " + MenuFlow.Title(MenuFlow.Next(Room.MapRoom)),
-                inGame ? (System.Action)StartMatchVote : HostFromMapRoom);
+                inGame ? (System.Action)StartMatchVote : HostFromMapRoom, ResetSetup);
+        }
+
+        // UR-T41: a setup screen saves the setup to the profile as it closes (once, not on every step of a slider), the way
+        // the original rewrote config.ini on every change. The method group is the same delegate every time, so a screen
+        // rebuilt in place never subscribes twice.
+        private void RememberOnHide(MenuScreen s)
+        {
+            s.Hidden -= RememberSetup;
+            s.Hidden += RememberSetup;
+        }
+
+        // Saves the setup when it differs from what the profile already holds.
+        private void RememberSetup()
+        {
+            if (_saved != null && _setup.SameAs(_saved))
+            {
+                return;
+            }
+
+            if (SetupMemory.Save(_setup))
+            {
+                _saved = _setup.Clone();
+            }
+        }
+
+        // The setup screens' Reset to defaults (the original's Default button): every choice back to the defaults, saved.
+        private void ResetSetup()
+        {
+            if (SetupMemory.ResetToDefaults(_setup))
+            {
+                _saved = _setup.Clone();
+            }
         }
 
         // titlescreen -> mainmenu -> players -> maproom -> lobby -> gamescreen: host with the setup; the lobby's Start plays it.
         private void HostFromMapRoom()
         {
+            RememberSetup();
             if (_lobby != null)
             {
                 _ = _lobby.HostMatch(_setup);
@@ -185,6 +232,7 @@ namespace Ricochet
 
         private void StartMatchVote()
         {
+            RememberSetup();
             if (NetVotes.Instance != null && NetVotes.Instance.Board != null)
             {
                 NetVotes.Instance.Board.StartVote(Arena.MatchVote, _setup.AiCount, _setup.Format());

@@ -6,6 +6,8 @@
 //     seats, how well they aim and how many aim assists everyone starts with; Next goes on to the map room.
 //   Map (maproom): which map, what it is like, and the goal (one round, or first to 500 ... 10000 points); its button
 //     starts the game: hosts one from the main menu, or asks the others by the match vote in a game.
+//   Players and Map both carry a Reset to defaults (UR-T41, the original's Default button) when Game gives them a reset:
+//     the whole setup back to the defaults and saved, the screen rebuilt to show it.
 //   Vote to kick (UR-T14, in game only): a button for each player who may be voted out.
 //   Controls, How to play (obj_slide's slides with Last/Next and a "3/9" counter), Credits.
 //   Rebind controls (UR-T36): one row per key, mouse button or gamepad control the RicochetControls asset binds;
@@ -30,9 +32,11 @@ namespace Ricochet
         /// The players room: the local player's name (and a way to change it and the colour), then the AI opponents, their
         /// skill and the aim assists, and Next for the map room (<paramref name="next"/>, when given).
         /// </summary>
-        public static void BuildPlayers(MenuScreen s, MatchSetup setup, string playingAs, Action changeNameAndColour, Action<MenuScreen> next)
+        public static void BuildPlayers(MenuScreen s, MatchSetup setup, string playingAs, Action changeNameAndColour, Action<MenuScreen> next,
+            Action resetSetup = null)
         {
             s.Subtitle = "Up to " + MatchRules.MaxSeats + " seats: everyone who joins, then the AI opponents.";
+            AddResetButton(s, resetSetup, () => BuildPlayers(s, setup, playingAs, changeNameAndColour, next, resetSetup));
             if (!string.IsNullOrEmpty(playingAs))
             {
                 s.AddText("You play as " + playingAs + ".", TextStyle.Label);
@@ -57,9 +61,10 @@ namespace Ricochet
         /// The map room: the map (with its description) and the goal; <paramref name="start"/>, when given, is the button
         /// that goes on into the game, labelled <paramref name="startLabel"/>.
         /// </summary>
-        public static void BuildMap(MenuScreen s, MatchSetup setup, string startLabel, Action start)
+        public static void BuildMap(MenuScreen s, MatchSetup setup, string startLabel, Action start, Action resetSetup = null)
         {
             s.Subtitle = "Pick where to play and what it takes to win.";
+            AddResetButton(s, resetSetup, () => BuildMap(s, setup, startLabel, start, resetSetup));
             var names = new List<string>();
             foreach (MapInfo map in Maps.All)
             {
@@ -93,6 +98,26 @@ namespace Ricochet
             {
                 s.AddButton(startLabel, start, ButtonVariant.Primary);
             }
+        }
+
+        /// <summary>The label of the setup screens' Default button (UR-T41, the original's obj_btn_default).</summary>
+        public const string ResetSetupLabel = "Reset to defaults";
+
+        // UR-T41: the setup screens' Default button, when the screen is given a reset: it puts every choice of the setup
+        // (players, map and settings rooms alike) back to the defaults, then rebuilds the screen so it shows them.
+        private static void AddResetButton(MenuScreen s, Action resetSetup, Action rebuild)
+        {
+            if (resetSetup == null)
+            {
+                return;
+            }
+
+            s.AddButton(ResetSetupLabel, () =>
+            {
+                resetSetup();
+                s.Clear();
+                rebuild();
+            }, ButtonVariant.Danger);
         }
 
         /// <summary>The settings room's announcements box: the personality on the air, and how often they speak.</summary>
