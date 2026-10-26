@@ -194,3 +194,48 @@ shot. (4) The music button is an on/off toggle of the player's own profile mute 
 (there is no music to step through until UR-T27); under the CLI session mute the game stays silent and only the player's
 own values are saved. (5) Quit round is a vote, and it ends the match back to practice with everyone on the in-game menu
 (whose Players and Map rooms start the next one), not the setup screen.
+
+## Art and fonts (U.RICO-T44)
+
+Source: every `sprites/*.sprite.gmx`, `background/*.background.gmx` and `fonts/*.font.gmx` of the 2013 project (the copy
+docs/RECONSTRUCTION.md was read from; the 2018 re-save's images are byte-identical), `scripts/draw_text_outline.gml`.
+
+- `Tools/import-gml-art.ps1` mirrors all 314 sprites (473 frames) and the 62 backgrounds that have an image into
+  `Assets/Ricochet/Art`, each in its GameMaker group (`Unlisted` for the 39 sprites and 12 backgrounds the project file
+  no longer lists), and writes `Art/gml-art.json`: the source data, the original files (`originalPath`, relative to the
+  project folder), whether the project lists it, and the image_speed its object's Create sets. `bg_redslate` is skipped:
+  its image is missing from the original.
+- `Editor/Art/GmlArtImporter` is the importer preset, read from that file: single sprites with the pivot on the GML
+  origin at 1920 px = 22 units (`ShapeLibrary.UnitsPerPixel`), full-rect, bilinear, uncompressed, no mipmaps;
+  backgrounds pivot top left, tile where they tiled, and are compressed at high quality. `GmlArtBuilder` adds a Sprite
+  Atlas V2 per top group and fills `Resources/Ricochet/ArtCatalogue`, which records every asset with its original path.
+- `Tools/import-gml-fonts.ps1` mirrors the nine fonts' baked glyph atlases and the sprite font sheet (`spr_spritefont`,
+  coloured ASCII 33-126 on a ruled 40x51 grid) into `Assets/Ricochet/Fonts` with `gml-fonts.json`. Only GameMaker's
+  rasterised glyphs are imported, never Impact, Verdana, Monotype Corsiva or Arial themselves (not redistributable).
+- `Editor/Fonts/GmlFontBuilder` makes each a TextMeshPro font: the glyph cells repacked with clear gaps, sampled up to
+  about 64 texels a line (`GmlFontMetrics.SamplingScale`), turned into a signed distance field (Core's
+  `SignedDistanceField`), with GameMaker's metrics (cell top on the line top, `shift` and `offset` as advance and bearing,
+  `string_height("M")` lines) at that scale, so a label at the font.gmx size draws at the original's pixel size. Each has
+  draw_text_outline's materials beside its own: white face, black outline 1 and 2 px wide (the original calls it with 2 on
+  its buttons, labels and the Ready card, 1 on the aim readout and the name over the tank), the face dilated back so the
+  glyph itself is untouched. The sprite font keeps its colours on an RGBA atlas under TextMeshPro's Sprite shader.
+- `Runtime/Art/GameArt` is presentation's one door to it (by GML name; null when missing, so a view keeps its code-drawn
+  fallback) and `GmlFontLabel` keeps a themed MaText in its GML font. Swapped so far: the shots (`spr_mortar` and
+  `spr_railgun_swirl` turned along the flight, `spr_pellet`, `spr_raingun_ring`, `spr_grenade` and `spr_vortex_device`
+  spinning 3 degrees a step and turning back at each bounce), a shell's `spr_smallexplosion` (obj_explosion, image_speed
+  0.5) and a grenade's `spr_bigexplosion` (three times its size at 70%, image_speed 0.2); the crates' fall and land
+  sprites with their kind's icon at 70% 34 px above, bobbing 5 px a pixel every five steps once landed; the match HUD,
+  aim readout and world labels in `fnt_score`; the Ready card in `fnt_impact` and `fnt_mono` with their outlines.
+- `Tests/EditMode/ArtCatalogueTests` checks the catalogue, the preset, the fonts, their outlines and their metrics;
+  `Tests/Core.Tests/GmlFontTests` the glyph table and the distance field; `Tests/PlayMode/ArtShowcaseTests` (explicit,
+  needs graphics) saves screenshots of the art in a match to `Screenshots/`.
+- Git LFS holds the PNGs (`.gitattributes`); the .meta files, the JSON and the generated .asset files are text.
+
+Deviations: (1) draw_text_outline draws the text nine (or 25) times at whole-pixel offsets, a square outline; the rebuild
+draws one SDF outline, whose corners are round. (2) The shots are no longer tinted in their player's colour (the rebuild
+did that with its squares; GameMaker's draw_self draws them as they are): the trail keeps the colour. (3) The grenade and
+vortex spin at 3 degrees per 60-a-second step, where the original spun 3 degrees per step at whatever `shootFPS` the
+machine reached during a shot. (4) The HUD labels keep the rebuild's layout and fit their text to its boxes in the
+original's faces, rather than drawing at the original's sizes in its places. (5) The rail's trail of swirls, the vortex's
+spread and every other sprite are still drawn as before; U.RICO-T45 (tanks, tracks), U.RICO-T46 (backgrounds, clouds,
+borders, shapes) and U.RICO-T78 (the rest) swap them.

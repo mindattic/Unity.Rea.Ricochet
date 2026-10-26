@@ -22,10 +22,10 @@ Source read: `R:\Projects\_PRE_2022\_PRE_2021\_PRE_2020\_PRE_2017\gmlRicochet\09
 | Objects | 469 | Game flow, 8 seats of buttons and labels, 16 each of polygon, square, triangle, circle and bar level shapes, weapons and projectiles, items, drops, hazards, effects, menu widgets |
 | Scripts | 196 | Level and player setup, turn flow, weapons and items, AI, bounce maths, drawing helpers, announcer picks, config read and write |
 | Rooms | 18 | titlescreen, mainmenu, names, players, maproom, gamescreen, endgame, settings, controls, howtoplay, credits, splashscreen, startup_credits, intro (empty), room0 (startup only), multiplayer_hostorjoin, multiplayer_host, multiplayer_join |
-| Sprites | 315 | Tank, shots, effects, icons (weapon and item in normal, off and selected states), buttons, borders, shapes (16 each of five kinds), portraits, UI |
-| Backgrounds | 64 | `bg_*` level floors in three groups, plus title and controls pictures |
+| Sprites | 314 | Tank, shots, effects, icons (weapon and item in normal, off and selected states), buttons, borders, shapes (16 each of five kinds), portraits, UI. 275 are in `Ricochet.project.gmx`; 39 are on disk only (left_border, spr_spritefont, spr_player, spr_simple1-5, ...). Earlier drafts said 315 |
+| Backgrounds | 63 | `bg_*` level floors in three groups, plus title and controls pictures. 50 are in the project; `bg_redslate` names an image the project never had. Earlier drafts said 64 |
 | Sounds | 321 | 9 music tracks, about 70 effects, 7 announcers x (welcome, win, lose) x 10 recordings, plus 10 generic announcer lines of each kind |
-| Fonts | 9 | impact, mono, score, score shadow, count, small, credits, font4, font5 |
+| Fonts | 9 | impact, mono, score, score shadow, count, small, credits, font4, font5 (impact, mono, score, count, small in the project), plus `spr_spritefont`, a sheet of coloured ASCII 33-126 glyphs no code loads |
 | Data files | 4 | `config.ini` (every setting), `backup.ini` (defaults and eight default names), `names_f.ini` and `names_m.ini` (about 5,300 first names) |
 | Extensions | 1 | Xin v1.1 (a Windows DLL helper; no behaviour to keep) |
 | Timelines, paths, shaders | 0 | none |
@@ -77,7 +77,7 @@ a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `
 | Commands and events: every input a command with a player id, one authority, ordered events (new, UR-T34) | built | `Core/Commands/` (`GameAuthority`, `PlayerState`, `Commands`, `GameEvents`) |
 | Real multiplayer, votes, reconnect, profile | built (new, replaces the hotseat rooms) | `Core/Menu/` (`Lobby`, `VoteMenu`), `Core/Net/ShotWire`, kit |
 | Sound | four synthesised cues, no recordings, no music | `Core/Menu/Sound`, `Runtime/GameAudio` |
-| Art | none imported: shapes and IMGUI | `Runtime/*` |
+| Art | imported whole (U.RICO-T44): every sprite, background and font, catalogued with its original path; shots, crates and HUD text drawn from it, the rest still code-drawn | `Art/`, `Fonts/`, `Resources/Ricochet/ArtCatalogue`, `Runtime/Art/` |
 
 ## 3. Gaps against the original, and the ticket for each
 
@@ -99,7 +99,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Setup not remembered (`config.ini`, defaults button) | UR-T41 (built: `MatchSetup.ToRecord`/`FromRecord`, `SetupMemory` keeps it in the profile's game block as `matchSetup`, saved as a setup screen closes or a match starts, loaded on start; Players and Map carry Reset to defaults. Per-AI skills and names (UR-T28) joined the record as `skill1..15`/`name1..15`, and an older save's single `skill` still sets every AI; the match rules (UR-T25: turn time, bounces, damage, each weapon and item box and count, the drop boxes, pause_redirector) joined it as `turn`, `bounces`, `damage`, `pause`, `wpn0..5`, `wpnct0..5`, `item0..5`, `itemct0..5`, `drop0..3`, and the start-match vote carries those that differ from the defaults) |
 | Ready card, turn-start ping, overlap-free placement before the clock | UR-T42 (built: every turn opens in `MatchPhase.Ready` for `MatchRules.ReadySeconds`, obj_ready's 80-step hold plus its 50-step fade at 60 a second (`readyHoldSeconds`/`readyFadeSeconds` in match.json), with the clock full and still and nobody able to fire, drive or end the turn, the AI included; `ReadyCard` shows "Ready", the name in the player's colour and the name over the tank, with the switch sound, then pings the tank (sonar sound, a white and a coloured ring) as the clock starts. The round's level and spots are rolled clear of overlaps before the first turn, so check_isready's wait has nothing left to wait for. obj_checkready1-8 are the players room's unused "Ready" checkboxes (their click sets hasCannon) and are not carried. The two sounds are synthesised until UR-T50) |
 | Pause menu (Resume, Randomize, Music, Quit round) | UR-T43 (built: the host pauses at once and anyone else by a vote, freezing every peer's clock, Ready card, shots and AI; Randomize is the host's before the round's first shot; Music toggles the profile's mute; Quit round is a vote back to practice. Pause is on P / Pause / right stick, Esc stays the kit's menu; see the BIBLE's Pause menu deviations) |
-| No art imported (315 sprites, 64 backgrounds, 9 fonts) | UR-T44 |
+| No art imported (314 sprites, 63 backgrounds, 9 fonts and the sprite font) | UR-T44 (built: `Tools/import-gml-art.ps1` and `import-gml-fonts.ps1` mirror them with `gml-art.json` / `gml-fonts.json`; `GmlArtImporter`, `GmlArtBuilder` and `GmlFontBuilder` make the sprites, atlases, TextMeshPro SDF fonts and `ArtCatalogue`; shots, crates, the HUD, the Ready card and the world labels draw from it; the remaining swaps are U.RICO-T45, U.RICO-T46 and the follow-up) |
 | Tank turret and hull art, tracks | UR-T45 |
 | Backdrop: backgrounds, clouds, spotlights, lights, borders, shape art | UR-T46 |
 | Weapon and hazard visuals | UR-T47 |

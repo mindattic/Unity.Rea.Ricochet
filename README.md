@@ -118,6 +118,8 @@ Assets/Ricochet/     the game (see its README.md)
   Runtime/           networked entities (Player, Dummy, Turns, Crate, LevelHazard), server rules (Arena), scene glue, bot,
                      HUD (IMGUI bars and clock, MindAttic Components announcer and turn cards, the endgame recap), the
                      title and the rooms' screens (Menus), presentation
+  Art/, Fonts/       the original's sprites, backgrounds and font atlases (Git LFS) with gml-art.json / gml-fonts.json
+  Resources/Ricochet the ArtCatalogue and the TextMeshPro fonts built from them (U.RICO-T44)
   Tests/             PlayMode and EditMode tests on the kit's test fixtures
 Tests/               dotnet projects compiling Assets/Ricochet/Core for `dotnet test Core.slnx`
 Packages/            manifest.json: the house kit (Unity.Multiplayer, MindAttic.Components, Unity.Shared) + Unity packages
@@ -131,4 +133,8 @@ docs/
 
 The GameMaker original lives outside this repo, at
 `R:\Projects\_PRE_2022\_PRE_2021\_PRE_2020\_PRE_2017\gmlRicochet\09-05-13_2.20am` (last touched 2013-09-05), read
-for design reference only — no GML source is copied into this repo.
+for design reference only — no GML source is copied into this repo. Its images are: `powershell -File
+Tools/import-gml-art.ps1` and `Tools/import-gml-fonts.ps1` mirror every sprite, background and baked font atlas into
+`Assets/Ricochet/Art` and `Fonts` (described, with each one's original path, in `gml-art.json` / `gml-fonts.json`)
+and build the sprites, atlases, TextMeshPro fonts and `Resources/Ricochet/ArtCatalogue` from them in Unity (see the BIBLE's
+"Art and fonts"). The PNGs are in Git LFS: run `git lfs install` once, or `git lfs push origin HEAD` before pushing.
