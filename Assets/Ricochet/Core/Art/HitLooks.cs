@@ -290,9 +290,9 @@ namespace Ricochet.Core.Art
                 case GmEffect.Ring:
                     return new GmEffectLook { LifeMin = 12, LifeMax = 12, Size = 0, SizeGrowth = 8 * scale };
                 case GmEffect.Firework:
-                    return new GmEffectLook { Count = (int)(20 * scale), LifeMin = 15, LifeMax = 30, Size = 3, SizeGrowth = 0, SpeedMin = 0.5, SpeedMax = 3 * scale };
+                    return new GmEffectLook { Count = (int)(20 * scale), LifeMin = 15, LifeMax = 30, Size = 4, SizeGrowth = 0, SpeedMin = 0.5, SpeedMax = 3 * scale };
                 case GmEffect.SmokeUp:
-                    return new GmEffectLook { LifeMin = 30, LifeMax = 40, Size = 12 * scale, SizeGrowth = 0.25 * scale, SpeedMin = 1, SpeedMax = 1.5, Upward = true, Alpha = 0.5 };
+                    return new GmEffectLook { LifeMin = 30, LifeMax = 40, Size = 24 * scale, SizeGrowth = 0.3 * scale, SpeedMin = 1, SpeedMax = 1.5, Upward = true, Alpha = 0.6 };
                 default:
                     return new GmEffectLook { LifeMin = 8, LifeMax = 12, Size = 10 * scale, SizeGrowth = -0.8 * scale };
             }

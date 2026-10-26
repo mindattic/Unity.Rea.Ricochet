@@ -8,8 +8,15 @@
 // (spr_icon_gun, spr_icon_gear, spr_icon_health; the powerup has none) drawn at 70% 34 pixels above it, bobbing five
 // pixels up and down a pixel every five steps once landed (the drop's alarm 0). Without the art it falls back to a
 // coloured square marked W, I, + or ?.
+//
+// U.RICO-T48 (HitLooks): falling, it trails ef_smokeup in darkgrey 25 px over itself every step; landing, it throws
+// ef_firework in brown 10 px under itself and plays sfx_crash; obj_powerup, landed, throws ef_spark in white or orange 30 px
+// over itself (less its hover) every step. Where it goes (taken: a ring; burst: obj_powerup_explosion) is FieldEffects',
+// from the server's CrateGone.
 using Ricochet.Core.Arsenal;
+using Ricochet.Core.Art;
 using Ricochet.Core.Level;
+using Ricochet.Core.Menu;
 using Unity.Multiplayer;      // NetEntity, NetKey
 using Unity.Multiplayer.Core; // [Synced]
 using UnityEngine;
@@ -48,6 +55,12 @@ namespace Ricochet
         private float _hoverClock;
         private int _hoverY;
         private bool _hoverUp = true;
+        private bool _falling;       // this peer has drawn it falling (so it lands here, with its firework and crash)
+        private float _effectClock;  // steps toward the next smoke puff or spark (U.RICO-T48)
+        private static readonly System.Random s_dice = new System.Random();
+
+        /// <summary>True once this peer has drawn it fall and land (its firework and sfx_crash), for tests.</summary>
+        public bool LandedHere { get; private set; }
 
         public DropKind DropKind => (DropKind)Mathf.Clamp(Kind, 0, DropRules.KindCount - 1);
 
@@ -153,17 +166,68 @@ namespace Ricochet
                 return;
             }
 
+            float steps = Time.deltaTime * Steps.PerSecond;
             if (Landed || float.IsNaN(_shownY))
             {
+                if (_falling)
+                {
+                    Land(); // this peer's fall reached the spot as the server's did
+                }
+
                 _shownY = Spot.y;
                 Hover(Time.deltaTime);
+                Spark(steps);
             }
             else
             {
                 _shownY = Mathf.Max(Spot.y, _shownY - (float)Arena.DropRules.FallSpeed * Time.deltaTime);
+                if (_shownY > Spot.y)
+                {
+                    Smoke(steps); // (down on this peer a moment before the server's landing arrives: no more smoke)
+                }
             }
 
             Place();
+        }
+
+        // The drop's Step while it falls: ef_smokeup in darkgrey 25 px over it, every step (U.RICO-T48).
+        private void Smoke(float steps)
+        {
+            _falling = true;
+            _effectClock += steps;
+            while (_effectClock >= 1f)
+            {
+                _effectClock -= 1f;
+                GmlParticles.Play(GmEffect.SmokeUp, Shown + Vector2.up * ((float)HitLooks.CrateSmokeAbove * Steps.Pixel), 0, FloatText.Of(HitLooks.DarkGrey));
+            }
+        }
+
+        // The drop's landing: ef_firework in brown 10 px under it and sfx_crash (a crate already down when this peer saw it
+        // spawn landed before it was here, so it makes neither).
+        private void Land()
+        {
+            _falling = false;
+            _effectClock = 0f;
+            LandedHere = true;
+            GmlParticles.Play(GmEffect.Firework, (Vector2)Spot + Vector2.down * ((float)HitLooks.CrateFireworkBelow * Steps.Pixel), 0, FloatText.Of(HitLooks.Brown));
+            GameAudio.Play(SoundCue.Crash);
+        }
+
+        // obj_powerup once landed: ef_spark in white or orange 30 px over it, less its hover, every step.
+        private void Spark(float steps)
+        {
+            if (DropKind != DropKind.Powerup)
+            {
+                return;
+            }
+
+            _effectClock += steps;
+            while (_effectClock >= 1f)
+            {
+                _effectClock -= 1f;
+                Vector2 at = (Vector2)Spot + Vector2.up * ((float)(HitLooks.CrateSparkAbove + _hoverY) * Steps.Pixel);
+                GmlParticles.Play(GmEffect.Spark, at, 1, FloatText.Of(HitLooks.SparkColor(s_dice)));
+            }
         }
 
         // The drop's alarm 0: every five steps the icon moves a pixel toward the end of its reach, turning round a step there.

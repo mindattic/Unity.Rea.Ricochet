@@ -294,7 +294,9 @@ namespace Ricochet
             }
 
             _seenShots = Shots; // a late joiner does not replay a shot fired before it arrived
+            FieldEffects.Ensure(); // the level's marks listen for the server's flourishes from now on (U.RICO-T48)
             _seenPickups = PickupCount;
+            _seenExtraBounces = ExtraBounces;
             _seenAssists = Assists;
             _adoptedAssists = Assists;
             _shotView = ShotView.Create("Shot (" + name + ")", this);
@@ -387,12 +389,7 @@ namespace Ricochet
             // A shot reaches a client as the server's ShotResolved (OnShotResolved), never solved again here: the synced
             // Shots count only tells a late joiner which shots were fired before it arrived.
 
-            if (PickupCount != _seenPickups)
-            {
-                _seenPickups = PickupCount;
-                _pickupShownUntil = Time.time + PickupSeconds;
-            }
-
+            ShowSyncedFloats(); // a crate collected, an extra bounce used (U.RICO-T48)
             DrawAssist();
             RefreshLabels();
 

@@ -21,6 +21,9 @@
 // obj_boom_normal's (hit.gml) on them. A grenade's blast is spr_bigexplosion under obj_grenade_explosion's circle growing
 // 2 px a step, both gone when it reaches the blast radius. The vortex grows from a quarter of its size in flight; where it
 // goes off it plays obj_boom (set off) or obj_explosion (spent) and vortex_step's implosion.
+//
+// U.RICO-T48: each of those blasts leaves its scorch mark on the level (FieldEffects): obj_scorchmark_small under a hit's
+// obj_boom_normal, a spent shell's obj_explosion and a vortex's obj_boom or obj_explosion, obj_scorchmark under a grenade's.
 using System.Collections.Generic;
 using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
@@ -431,6 +434,7 @@ namespace Ricochet
                     if (volley.Weapon == Weapon.Cannon && flight.Path.End == ShotEndKind.Spent)
                     {
                         StartFlash(part, flight.Path.Impact); // bullet_step.gml: obj_explosion where the last bounce is spent
+                        FieldEffects.ScorchAt(Arena.ToUnity(flight.Path.Impact), false); // and its obj_scorchmark_small (U.RICO-T48)
                     }
 
                     if (i == 0 && volley.Weapon == Weapon.Laser)
@@ -449,19 +453,23 @@ namespace Ricochet
             foreach (Vector2 spot in _struck)
             {
                 SpriteBurst.Play(GmlSprites.SmallExplosion, spot, (float)WeaponLooks.HitFlashImageSpeed);
+                FieldEffects.ScorchAt(spot, false); // obj_boom_normal's obj_scorchmark_small (U.RICO-T48)
             }
 
             if (volley.HasBlast && volley.Weapon == Weapon.Vortex)
             {
                 Vector2 center = Arena.ToUnity(volley.BlastCenter);
-                // vortex_detonate.gml's obj_boom where it is set off, vortex_step.gml's obj_explosion where it is spent.
+                // vortex_detonate.gml's obj_boom where it is set off, vortex_step.gml's obj_explosion where it is spent; each
+                // leaves obj_scorchmark_small.
                 SpriteBurst.Play(GmlSprites.SmallExplosion, center, _detonated ? (float)WeaponLooks.DetonateFlashImageSpeed : SmallExplosionSpeed);
+                FieldEffects.ScorchAt(center, false);
                 _implosion.Start(center, WeaponLooks.ShotStepsPerSecond(Arena.Rules.Speed));
             }
             else if (volley.HasBlast)
             {
                 StartBlast(volley.BlastCenter);
                 _ring.Start(Arena.ToUnity(volley.BlastCenter), volley.BlastRadius);
+                FieldEffects.ScorchAt(Arena.ToUnity(volley.BlastCenter), true); // obj_grenade_explosion's obj_scorchmark
             }
 
             Presentation.Raise(_owner, new Cmd.ShotLanded(_owner.PlayerId, _owner.Seat, _owner.LastVolleyShot, volley, null, false, -1));

@@ -2,8 +2,8 @@
 // Screenshots/ (gitignored): the Ready card in fnt_impact and fnt_mono with draw_text_outline's outlines, the four
 // crates with their icons, a shell in flight, its spr_smallexplosion, a grenade's spr_bigexplosion, and the tanks with
 // one driving and leaving tracks (U.RICO-T45), and the level backdrop with a random level's shapes (U.RICO-T46); and the
-// weapons and hazards (U.RICO-T47, TheWeaponsAndHazards). Explicit: it needs graphics (Tools/unity.ps1 -Graphics), so it
-// runs only when asked for by name:
+// weapons and hazards (U.RICO-T47, TheWeaponsAndHazards), and the hit and knock-out effects (U.RICO-T48,
+// TheHitAndKnockOutEffects). Explicit: it needs graphics (Tools/unity.ps1 -Graphics), so it runs only when asked for by name:
 //   powershell -File Tools/unity.ps1 -Graphics -Log art-showcase -Extra "-runTests -testPlatform PlayMode -testFilter Ricochet.Tests.ArtShowcaseTests -testResults Logs/TestResults-ArtShowcase.xml"
 using System.Collections;
 using System.IO;
@@ -271,6 +271,88 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => LevelHazard.In(Client).Any(h => h.Ready && h.HazardKind == HazardKind.Electricity), "the arc was never laid", 10f);
             yield return new WaitForSeconds(1f);
             yield return Capture("hazards", "U.RICO-T47");
+        }
+
+        // U.RICO-T48: the hit and knock-out effects in a match on the practice range: the crates falling in their smoke and
+        // landing with a firework (the powerup sparking), a shield wall shattering into glass, the "+N pts" and damage
+        // figures with a knocked-out tank's blast, its smoke and the scorch marks left behind.
+        [UnityTest]
+        [Timeout(180000)]
+        public IEnumerator TheHitAndKnockOutEffects()
+        {
+            int maxHealth = Arena.MatchRules.MaxHealth;
+            TestMatches.WithoutReadyCard();
+            try
+            {
+                yield return StartAndJoinAll();
+                Arena arena = Arena.Serve(Server, GamePrefabs.Dummy);
+                var hostSpawn = WaitForSpawn<Player>(Server, owner: Server.LocalClientId);
+                yield return hostSpawn;
+                var annSpawn = WaitForSpawn<Player>(Server, owner: Client.LocalClientId);
+                yield return annSpawn;
+                Player host = hostSpawn.Result;
+                Player ann = annSpawn.Result;
+                yield return WaitUntil(() => Player.In(Client).Count() == 2, "the client never saw both players");
+
+                Level level = Arena.Level;
+                _level = LevelView.Create(level);
+                var cameraObject = new GameObject("Showcase camera");
+                _camera = cameraObject.AddComponent<Camera>();
+                _camera.orthographic = true;
+                _camera.orthographicSize = 4.5f;
+                _camera.transform.position = new Vector3(-2f, -2.5f, -10f); // the two seats and the floor between them
+                _camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
+                _camera.clearFlags = CameraClearFlags.SolidColor;
+                RenderStyle.Current.ConfigureCamera(_camera);
+                _backdrop = BackdropView.Create();
+
+                // Ann's shield wall, shattered by the host's shell.
+                Player annOnHerClient = Player.In(Client).First(p => p.OwnerClientId == Client.LocalClientId);
+                yield return WaitUntil(() => annOnHerClient.Weapons != 0, "her loadout never came");
+                annOnHerClient.CycleItem(1);
+                yield return WaitUntil(() => ann.Loadout.Item == Item.ShieldWall, "the shield wall was never selected");
+                ann.ServerUseItem(0f, 0.5f);
+                yield return WaitUntil(() => LevelHazard.In(Client).Any(h => h.Ready && h.Art != null), "the wall never stood", 5f);
+                yield return new WaitForSeconds(1.2f);
+                host.ServerFire(180f, 1f);
+                yield return WaitUntil(() => FieldEffects.Shards > 0, "the glass never flew", 10f);
+                yield return new WaitForSeconds(0.1f);
+                yield return Capture("glass", "U.RICO-T48");
+                yield return WaitUntil(() => !host.ShotInFlight, "the shell never landed", 10f);
+
+                // The crates in a match: two falling in their smoke, then down with the powerup's sparks.
+                Arena.MatchRules.MaxHealth = 1;
+                Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange()), Is.True);
+                yield return WaitUntil(() => Turns.For(Client) != null && Turns.For(Server).MatchPhase == MatchPhase.Aiming, "the match never opened", 10f);
+                Assert.That(arena.DropCrate(DropKind.Weapon, new Vector2(-6f, 0f)), Is.Not.Null);
+                Assert.That(arena.DropCrate((DropKind)(DropRules.KindCount - 1), new Vector2(1.5f, -1f)), Is.Not.Null);
+                yield return new WaitForSeconds(0.4f);
+                yield return Capture("crates-falling", "U.RICO-T48");
+                yield return WaitUntil(() => Object.FindObjectsByType<Crate>().Count(c => c.LandedHere) >= 2, "the crates never landed here", 10f);
+                yield return null;
+                yield return Capture("crates-landing", "U.RICO-T48");
+                yield return new WaitForSeconds(1f);
+                yield return Capture("crates-sparks", "U.RICO-T48");
+
+                // The host's shell knocks Ann out: the points and damage float, her tank blows up and smokes.
+                Player current = Turns.For(Server).Current == host.Seat ? host : ann;
+                Player target = current == host ? ann : host;
+                Vector2 toTarget = target.Position - current.Position;
+                current.ServerFire(Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg, 1f);
+                yield return WaitUntil(() => FieldEffects.KnockOuts > 0, "the tank never blew up", 10f);
+                yield return new WaitForSeconds(0.15f);
+                yield return Capture("knock-out", "U.RICO-T48");
+                yield return WaitUntil(() => FieldEffects.Flames > 0, "it never smoked", 5f);
+                yield return new WaitForSeconds(0.8f);
+                yield return Capture("knock-out-smoke", "U.RICO-T48");
+            }
+            finally
+            {
+                Arena.MatchRules.MaxHealth = maxHealth;
+                TestMatches.StockReadyCard();
+                FieldEffects.Clear();
+                GmlParticles.Clear();
+            }
         }
 
         // Renders the camera with every overlay canvas moved onto it, into a 1920x1080 PNG under Screenshots/.

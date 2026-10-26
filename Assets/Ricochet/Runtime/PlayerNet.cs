@@ -69,7 +69,13 @@ namespace Ricochet
         // server -> every client (UR-T12): what shot number `shot` did in a match once it landed (Core's ShotOutcome): the
         // damage each seat it struck took, and the seats it put out of the round.
         [ToClients]
-        public partial void ShotResult(int shot, int[] seats, int[] damage, int[] knockedOut);
+        public partial void ShotResult(int shot, int[] seats, int[] damage, int[] knockedOut, int points);
+
+        // server -> every client (U.RICO-T48): something on the level broke that every peer draws, sent once by one player
+        // object for the whole session: kind 0 a shield wall (id, a = 1 when a shot broke it), kind 1 a crate gone (id, a its
+        // DropKind, b its DropEnd), at (x, y).
+        [ToClients]
+        public partial void Flourish(int kind, int id, int a, int b, float x, float y);
 
         // The level in play (UR-T23): the map, the seed its random round was built from, and a count that goes up by one per
         // change, so a peer adopts the newest and every one lays the identical round (Arena.AdoptLayout). Every Player
@@ -360,6 +366,44 @@ namespace Ricochet
                 case Cmd.ShotLanded landed:
                     ById(session, landed.PlayerId)?.OnShotLanded(landed);
                     break;
+                case Cmd.ShieldWallShattered wall:
+                    Sender(session)?.Flourish(FlourishWall, wall.HazardId, wall.Struck ? 1 : 0, 0, (float)wall.Center.X, (float)wall.Center.Y);
+                    break;
+                case Cmd.CrateGone crate:
+                    Sender(session)?.Flourish(FlourishCrate, crate.CrateId, (int)crate.Kind, (int)crate.End, (float)crate.Spot.X, (float)crate.Spot.Y);
+                    break;
+            }
+        }
+
+        private const int FlourishWall = 0;
+        private const int FlourishCrate = 1;
+
+        // The one player object a session-wide flourish goes out on (any will do; every peer has them all).
+        private static Player Sender(NetSession session)
+        {
+            foreach (Player player in In(session))
+            {
+                if (player.IsServer)
+                {
+                    return player;
+                }
+            }
+
+            return null;
+        }
+
+        // Every peer (the host's included): the server's flourish, raised on the feed as the event it came from.
+        private void OnFlourish(int kind, int id, int a, int b, float x, float y)
+        {
+            var at = new Vec2(x, y);
+            switch (kind)
+            {
+                case FlourishWall:
+                    Presentation.Raise(this, new Cmd.ShieldWallShattered(id, at, a != 0));
+                    break;
+                case FlourishCrate:
+                    Presentation.Raise(this, new Cmd.CrateGone(id, (DropKind)Mathf.Clamp(a, 0, DropRules.KindCount - 1), at, (DropEnd)b));
+                    break;
             }
         }
 
@@ -451,13 +495,13 @@ namespace Ricochet
             LastOutcome = outcome;
             LastOutcomeShot = Shots;
             outcome.Encode(out int[] seats, out int[] damage, out int[] knockedOut);
-            ShotResult(Shots, seats, damage, knockedOut);
+            ShotResult(Shots, seats, damage, knockedOut, outcome.Points);
         }
 
         // Every peer (the host's included): the server's result for shot number `shot`.
-        private void OnShotResult(int shot, int[] seats, int[] damage, int[] knockedOut)
+        private void OnShotResult(int shot, int[] seats, int[] damage, int[] knockedOut, int points)
         {
-            ShotOutcome outcome = ShotOutcome.Decode(seats, damage, knockedOut, global::Ricochet.Core.Match.MatchRules.MaxSeats);
+            ShotOutcome outcome = ShotOutcome.Decode(seats, damage, knockedOut, points, global::Ricochet.Core.Match.MatchRules.MaxSeats);
             if (outcome == null)
             {
                 Debug.LogWarning("[Ricochet] " + name + ": the result of shot " + shot + " came over unreadable.");

@@ -391,5 +391,59 @@ connector would have drawn laser_draw's look, which the beam already is), `drawg
 draw_weaponinfo's countdown is the one the original showed), `draw_glow` as its own call (its only call, in railgun_draw, is
 commented out and malformed; railgun_draw's 9 px line is that glow), `obj_tesla` (no sprite and no events), `obj_tracer` (the
 AI's invisible probe, drawn only in debug) and `obj_shotgun_blast` (a controller with nothing to draw). The items in flight
-(obj_teleporter, obj_shrinkray and its child, a redirector before it stops), the shield wall's glass and the endgame room's
-camera flashes (obj_flash, obj_flashemitter: the endgame room's only use of them) are U.RICO-T79.
+(obj_teleporter, obj_shrinkray and its child, a redirector before it stops) and the endgame room's camera flashes (obj_flash,
+obj_flashemitter: the endgame room's only use of them) are U.RICO-T79; the shield wall's glass is U.RICO-T48's (below).
+
+## Hit and knock-out effects (U.RICO-T48)
+
+Source: `scripts/hit.gml`, `show_float_text.gml`, `show_float_text_ext.gml`, `show_float_text_color.gml`, `spawn_glass.gml`,
+`use_item.gml`, `add_random_weapon/item/health.gml`, `clear_objects.gml`, `railgun_step.gml`, `globals.gml` (darkgrey, brown),
+and the objects `obj_boom`, `obj_boom_normal`, `obj_explosion`, `obj_grenade_explosion`, `obj_playerexplosion`, `obj_flame`,
+`obj_scorchmark`, `obj_scorchmark_small`, `obj_glass`, `obj_shieldwall`, `obj_float_text`, `obj_hitscore`,
+`obj_powerup_explosion`, `obj_powerup`, `obj_weapondrop`, `obj_itemdrop`, `obj_healthdrop`.
+
+- Core's `HitLooks` holds every number and step rule (`Tests/Core.Tests/HitLooksTests`); the views run them at the room
+  speed. A crate and a hazard say how they left the level (`DropEnd`, `HazardEnd`), and the authority raises `CrateGone` (taken
+  or burst) and `ShieldWallShattered` (struck, swallowed or decayed; nothing for one swept away with the round), which the
+  server sends every peer once (`Player.Flourish`) and each raises on the Presentation feed. A shot's outcome carries the
+  points it scored (`ShotOutcome.Points`), so every peer floats them when its own flight lands.
+- **Floating text** (`FloatText`, obj_float_text): fnt_score outlined 1 px in black, drawn 10 px over its spot, rising a
+  pixel a step and losing its fadespeed of alpha a step (0.008, gone in 125 steps; 0.01 from the _ext and _color callers);
+  flashing text moves through white, red, yellow, blue, blue, white, one a step (colorCycle 1-5 and 0, where 5 matches no case
+  and keeps the blue). hit.gml floats "+N pts" over the shooter (flashing) and "-N" in red over whoever it struck; a crate's
+  "Laser x 1 collected" in white (health's "+N" in green) over its collector; use_item's "Bounce +1" (flashing) over whoever
+  used an extra bounce. They replace the rebuild's earlier name-label pickup and damage figures (UR-T38, UR-T12).
+- **Scorch marks** (`FieldEffects`): obj_scorchmark_small under obj_boom_normal (a hit), obj_explosion (a shell spent, a
+  vortex spent) and obj_boom (a vortex set off); obj_scorchmark under obj_grenade_explosion, obj_playerexplosion and
+  obj_powerup_explosion. Each lies under the tracks and tanks, losing 0.0001 of its alpha a step (10,000 steps).
+- **Knock-out** (obj_playerexplosion): spr_bigexplosion at image_speed 0.5 holding its last frame (image_index 19),
+  sfx_explode, a big scorch mark, and 30 steps in obj_flame: an ef_smokeup every step, each in its own dark grey (0-40 a
+  channel), 5 px over the spot, until the round goes. Every peer plays it from the server's result once its own flight lands.
+- **Shield wall breaking** (obj_shieldwall, spawn_glass): ef_ring and ef_firework in white and 20-30 shards of spr_glass1-5,
+  each scattered up to 20 px either way, turning -2..2 degrees and moving -5..5 px a step either way, losing 0.02 of its alpha
+  a step (50 steps); sfx_shatter when a shot (or a vortex) broke it, silent when it decayed.
+- **Crates**: falling, ef_smokeup in darkgrey (32, 32, 32) 25 px over them every step; landing, ef_firework in brown
+  (165, 42, 42) 10 px under them and sfx_crash; obj_powerup, landed, ef_spark in white or orange 30 px over itself (less its
+  hover) every step; the others' icon keeps U.RICO-T44's hover. Taken, an ef_ring 25 px over where it stood; left too long,
+  obj_powerup_explosion (spr_bigexplosion at 0.5, gone at its end, sfx_explode, a big scorch mark).
+- **The round going** (a new round, a reroll, the session ending: the level's version, map or seed changing) sweeps the
+  scorch marks, the held blasts and their smoke, the glass and the floating text away, as clear_objects did.
+- Sounds play through `GameAudio`, which honours the profile's and the session's mute: sfx_shatter and sfx_crash as the
+  synthesised `Shatter` and `Crash` cues, sfx_explode as `Blast`, until U.RICO-T50's recordings.
+- `Tests/PlayMode/HitEffectTests` plays the knock-out (points, damage, blast, smoke), a scorch mark swept by a reroll, a
+  shield wall's glass, "Bounce +1" and a crate's smoke, landing, ring and burst on a client; `ArtShowcaseTests.
+  TheHitAndKnockOutEffects` saves `U.RICO-T48-*` screenshots (glass, crates falling, landing and sparking, knock-out and its
+  smoke).
+
+Deviations: (1) GameMaker's runner drew ef_ring, ef_firework, ef_smokeup and ef_spark, not the game, so `GmlParticles` draws
+the rebuild's reading of them (`HitLooks.Look`: a ring spreading 8, 12 or 20 px a step for 12 steps; 20-50 sparks of 4 px
+flying apart for 15-30 steps; a soft puff 24 px and growing, rising 1-1.5 px a step for 30-40 steps; a 10 px flare shrinking
+away in 8-12 steps), tinted as the original asked. (2) "+N pts" floats once per volley with the points it scored; hit.gml
+floated it per hit, and since it destroyed the volley's other pellets on the first, a volley rarely made two. (3) The
+knock-out blast is drawn at the knocked-out tank; hit.gml made it at the striking bullet, which was touching the tank.
+(4) A shield wall a railgun breaks plays sfx_shatter too (railgun_step's shatter was silent); one a vortex swallows breaks
+like one a shot struck (obj_shieldwall's vortex collision). (5) Two crates collected by one shot float only the last's text
+(the synced pickup count's last value). (6) sfx_flyover, sfx_powerup and sfx_powerup_activate wait for U.RICO-T50.
+
+Fixed defects: obj_glass rolled one of five but drew spr_glass1 for two of the rolls and spr_glass5 for none, though the
+sprite shipped; each of the five is drawn. Not carried: obj_hitscore (created nowhere; obj_float_text is the same text).

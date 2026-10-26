@@ -1,7 +1,7 @@
-// What a player shows in the world (UR-T38; it was IMGUI in Player.OnGUI): the name under the square, the small health
-// bar under that (in a match), the pickup text rising over it (show_float_text) and the damage a shot did to it, rising
-// and fading (UR-T12). TextMeshPro labels and two sprite squares on a root of their own that follows the player, so the
-// shrink ray's smaller square does not shrink its name. Player feeds it values each frame; it holds no game state.
+// What a player shows in the world (UR-T38; it was IMGUI in Player.OnGUI): the name under the square and the small health
+// bar under that (in a match). TextMeshPro labels and two sprite squares on a root of their own that follows the player, so
+// the shrink ray's smaller square does not shrink its name. Player feeds it values each frame; it holds no game state. The
+// pickup text and the damage figures float on their own since U.RICO-T48 (FloatText, obj_float_text).
 using TMPro;
 using UnityEngine;
 
@@ -14,8 +14,6 @@ namespace Ricochet
 
         private readonly GameObject _root;
         private readonly TextMeshPro _name;
-        private readonly TextMeshPro _pickup;
-        private readonly TextMeshPro _hurt;
         private readonly Transform _barBack;
         private readonly SpriteRenderer _barFillRenderer;
         private readonly Transform _barFill;
@@ -38,11 +36,9 @@ namespace Ricochet
         {
             _root = new GameObject("Labels: " + owner);
             _root.AddComponent<Tether>().Owner = tether;
-            // fnt_score, as draw_scores, obj_float_text (show_float_text) and obj_hitscore draw them (U.RICO-T44).
+            // fnt_score, as draw_scores draws them (U.RICO-T44).
             _name = WorldText.Create(_root.transform, "Name", GmlFonts.Score, 0, Color.white, 0.27f);
             _name.transform.localPosition = new Vector3(0f, -0.78f, 0f);
-            _pickup = WorldText.Create(_root.transform, "Pickup", GmlFonts.Score, 0, Color.white, 0.27f);
-            _hurt = WorldText.Create(_root.transform, "Damage", GmlFonts.Score, 0, Color.white, 0.27f);
 
             var back = new GameObject("Bar");
             back.transform.SetParent(_root.transform, false);
@@ -81,48 +77,14 @@ namespace Ricochet
         /// <summary>The name label's text now (for tests).</summary>
         public string NameText => _name.text;
 
-        /// <summary>The pickup text's, while it shows ("" otherwise).</summary>
-        public string PickupText => _pickup.gameObject.activeSelf ? _pickup.text : string.Empty;
-
-        /// <summary>The damage figure's, while it shows ("" otherwise).</summary>
-        public string HurtText => _hurt.gameObject.activeSelf ? _hurt.text : string.Empty;
-
         /// <summary>True while the small health bar shows.</summary>
         public bool BarShowing => _barBack.gameObject.activeSelf;
 
         /// <summary>Moves the labels to <paramref name="position"/> and sets what they say.</summary>
-        /// <param name="pickup">The pickup text and how far through its rise it is (0 to 1), or null for none.</param>
-        /// <param name="hurt">The damage text and how much of its time is left (1 down to 0), or null for none.</param>
-        public void Refresh(Vector3 position, string name, string pickup, float pickupProgress, string hurt, float hurtLeft,
-            bool showBar, float health, Color color, bool inRound)
+        public void Refresh(Vector3 position, string name, bool showBar, float health, Color color, bool inRound)
         {
             _root.transform.position = position;
             WorldText.Set(_name, name);
-
-            bool pickupShowing = pickup != null;
-            if (_pickup.gameObject.activeSelf != pickupShowing)
-            {
-                _pickup.gameObject.SetActive(pickupShowing);
-            }
-
-            if (pickupShowing)
-            {
-                WorldText.Set(_pickup, pickup);
-                _pickup.transform.localPosition = new Vector3(0f, 0.85f + pickupProgress * 0.6f, 0f);
-            }
-
-            bool hurtShowing = hurt != null;
-            if (_hurt.gameObject.activeSelf != hurtShowing)
-            {
-                _hurt.gameObject.SetActive(hurtShowing);
-            }
-
-            if (hurtShowing)
-            {
-                WorldText.Set(_hurt, hurt);
-                _hurt.color = new Color(1f, 0.3f, 0.25f, Mathf.Clamp01(hurtLeft * 2f));
-                _hurt.transform.localPosition = new Vector3(0f, 0.45f + (1f - hurtLeft) * 0.5f, 0f);
-            }
 
             if (_barBack.gameObject.activeSelf != showBar)
             {

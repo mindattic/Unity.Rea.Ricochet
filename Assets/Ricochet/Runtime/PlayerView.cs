@@ -1,9 +1,11 @@
 // Player, what it looks like: the aim-assist beam, pickup and damage figures, world labels, the shot in flight as this peer sees it,
-// and the aim readout and vortex hint MatchHud reads. (U.RICO-T39: split out of Player.cs, no behaviour change.)
+// and the aim readout and vortex hint MatchHud reads. (U.RICO-T39: split out of Player.cs, no behaviour change.) U.RICO-T48: the
+// figures are obj_float_text's (FloatText), and a shot's result also floats its points and blows up whoever it knocked out.
 using System.Collections.Generic;
 using Ricochet.Core.Ai;
 using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
+using Ricochet.Core.Art;
 using Ricochet.Core.Level;
 using Ricochet.Core.Match;
 using Ricochet.Core.Menu;
@@ -17,8 +19,6 @@ namespace Ricochet
 {
     public partial class Player : NetEntity
     {
-        private const float PickupSeconds = 2.5f;
-
         /// <summary>Seconds an aim-assist beam takes to fade (obj_aimassist lost 0.003 of its alpha a frame at 60).</summary>
         public const float AssistSeconds = 5.5f;
 
@@ -28,13 +28,10 @@ namespace Ricochet
         private DottedBeam _assistBeam;
         private readonly List<Vector3> _beamPoints = new List<Vector3>();
         private int _seenPickups;
-        private float _pickupShownUntil = -1f;
-        private PlayerLabels _labels;           // the world labels (name, bar, floating figures), UR-T38
+        private int _seenExtraBounces;
+        private PlayerLabels _labels;           // the world labels (name, bar), UR-T38
 
-        private const float HurtSeconds = 1.6f;
         private ShotOutcome _pendingOutcome;  // a client: the server's result for the shot this peer is still flying
-        private int _hurt;                    // every peer: the damage the last shot that struck this player did
-        private float _hurtShownUntil = -1f;
 
         // The player's own scale (its code-drawn square's size; the tank's art undoes it to draw at the original's pixels).
         private const float BodyScale = 0.8f;
@@ -121,23 +118,43 @@ namespace Ricochet
             Presentation.Raise(this, new Cmd.ShotFired(PlayerId, Seat, shot, volley.Weapon, ShotHeading, ShotPower, ShotFuse, ShotExtraBounces, volley));
         }
 
-        // Every peer: each player the shot struck floats the damage it took.
+        // Every peer, once its own flight of the shot lands (hit.gml, U.RICO-T48): "+N pts" flashing over the shooter, the damage
+        // in red over each player it struck, and obj_playerexplosion on each it knocked out.
         private void ShowOutcome(ShotOutcome outcome)
         {
+            if (outcome.Points > 0)
+            {
+                FloatText.Show(transform.position, HitLooks.PointsText(outcome.Points));
+            }
+
             foreach (Player player in In(Session))
             {
-                int damage = player.Seat >= 0 ? outcome.DamageTo(player.Seat) : 0;
+                if (player.Seat < 0)
+                {
+                    continue;
+                }
+
+                int damage = outcome.DamageTo(player.Seat);
                 if (damage > 0)
                 {
-                    player.ShowHurt(damage);
+                    FloatText.Show(player.transform.position, HitLooks.DamageText(damage), false, HitLooks.FloatQuickFadePerStep, FloatText.Of(HitLooks.Red));
+                }
+
+                foreach (int seat in outcome.KnockedOut)
+                {
+                    if (seat == player.Seat)
+                    {
+                        FieldEffects.KnockOut(player.transform.position);
+                    }
                 }
             }
         }
 
-        private void ShowHurt(int damage)
+        // Every peer: add_random_weapon / item / health's text over whoever collected a crate (white, health in green).
+        private void ShowPickup(int code)
         {
-            _hurt = damage;
-            _hurtShownUntil = Time.time + HurtSeconds;
+            bool health = code / 1000 == (int)DropKind.Health;
+            FloatText.Show(transform.position, PickupText(code), false, HitLooks.FloatQuickFadePerStep, FloatText.Of(health ? HitLooks.Green : HitLooks.White));
         }
 
         /// <summary>
@@ -178,28 +195,29 @@ namespace Ricochet
                 _labels = PlayerLabels.Create(name, gameObject);
             }
 
-            string pickup = null;
-            float pickupProgress = 0f;
-            if (Time.time < _pickupShownUntil)
-            {
-                // show_float_text: what the last crate gave, rising over the player for a moment.
-                pickup = PickupText(LastPickup);
-                pickupProgress = 1f - (_pickupShownUntil - Time.time) / PickupSeconds;
-            }
-
-            // The server's result for a shot that struck this player (UR-T12): the damage it took, rising and fading.
-            string hurt = null;
-            float hurtLeft = 0f;
-            if (Time.time < _hurtShownUntil)
-            {
-                hurt = "-" + _hurt;
-                hurtLeft = (_hurtShownUntil - Time.time) / HurtSeconds;
-            }
-
-            // In a match, a small health bar under the name (the roster's bars along the top are MatchHud's).
+            // In a match, a small health bar under the name (the roster's bars along the top are MatchHud's). The pickup text
+            // and the damage figures float on their own (FloatText, U.RICO-T48).
             bool bar = Turns.For(Session) != null && Seat >= 0;
             _labels.Refresh(transform.position, DisplayName + (LocallyControlled ? " (you)" : Away ? " (reconnecting...)" : string.Empty),
-                pickup, pickupProgress, hurt, hurtLeft, bar, Health / (float)Arena.MatchRules.MaxHealth, Color, InRound);
+                bar, Health / (float)Arena.MatchRules.MaxHealth, Color, InRound);
+        }
+
+        // Every peer: what this player's synced counts say happened since the last frame: a crate collected (its text) and an
+        // extra bounce used (use_item.gml's "Bounce +1", flashing).
+        private void ShowSyncedFloats()
+        {
+            if (PickupCount != _seenPickups)
+            {
+                _seenPickups = PickupCount;
+                ShowPickup(LastPickup);
+            }
+
+            if (ExtraBounces > _seenExtraBounces)
+            {
+                FloatText.Show(transform.position, HitLooks.ExtraBounceText);
+            }
+
+            _seenExtraBounces = ExtraBounces;
         }
 
         /// <summary>The owner's draw_bounceinfo line (angle, power, "Bounces: n/max" and where the shot ends), or null for anyone else.</summary>
