@@ -53,18 +53,28 @@ namespace Ricochet.Tests
             Assert.That(_hud.Canvas.sortingOrder, Is.LessThan(90), "the menus (90 and up) draw over the HUD");
             Assert.That(_hud.Canvas.renderMode, Is.EqualTo(RenderMode.ScreenSpaceOverlay));
 
-            float previousRight = float.MinValue;
-            for (int i = 0; i < MatchRules.MaxSeats; i++)
+            // Per row, in column order, every slot is on the canvas and clear of the one before it.
+            var previousRight = new System.Collections.Generic.Dictionary<int, float>();
+            for (int column = 0; column < 8; column++)
             {
-                Assert.That(_hud.TrySlotSpan(i, out float left, out float right), Is.True);
-                Assert.That(left, Is.GreaterThanOrEqualTo(0f), "seat " + i + " ran off the left edge");
-                Assert.That(right, Is.LessThanOrEqualTo(_hud.CanvasWidth), "seat " + i + " ran off the right edge");
-                if (i % 8 != 0)
+                for (int i = 0; i < MatchRules.MaxSeats; i++)
                 {
-                    Assert.That(left, Is.GreaterThanOrEqualTo(previousRight - 0.01f), "seats " + (i - 1) + " and " + i + " overlap");
-                }
+                    Seating.BarSlot(i, out int c, out int row);
+                    if (c != column)
+                    {
+                        continue;
+                    }
 
-                previousRight = right;
+                    Assert.That(_hud.TrySlotSpan(i, out float left, out float right), Is.True);
+                    Assert.That(left, Is.GreaterThanOrEqualTo(0f), "seat " + i + " ran off the left edge");
+                    Assert.That(right, Is.LessThanOrEqualTo(_hud.CanvasWidth), "seat " + i + " ran off the right edge");
+                    if (previousRight.TryGetValue(row, out float before))
+                    {
+                        Assert.That(left, Is.GreaterThanOrEqualTo(before - 0.01f), "seat " + i + " overlaps the one to its left");
+                    }
+
+                    previousRight[row] = right;
+                }
             }
 
             Assert.That(_hud.ClockText, Does.Match(@"^\d\d\.\d\d$").Or.EqualTo("--.--"));

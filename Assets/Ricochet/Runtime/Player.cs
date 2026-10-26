@@ -1317,11 +1317,27 @@ namespace Ricochet
 
         // The name under the square, the pickup text, the damage figure and the small health bar are PlayerLabels (world
         // TextMeshPro, UR-T38); the owner's draw_bounceinfo line and the vortex hint are MatchHud's, read from here.
+        // Labels live in a root of their own, so they follow the player's active state by hand.
+        private void OnEnable()
+        {
+            _labels?.SetVisible(true);
+        }
+
+        private void OnDisable()
+        {
+            _labels?.SetVisible(false);
+        }
+
         private void RefreshLabels()
         {
+            if (!IsSpawned)
+            {
+                return; // a despawned player must not rebuild labels nothing would destroy
+            }
+
             if (_labels == null)
             {
-                _labels = PlayerLabels.Create(name);
+                _labels = PlayerLabels.Create(name, gameObject);
             }
 
             string pickup = null;

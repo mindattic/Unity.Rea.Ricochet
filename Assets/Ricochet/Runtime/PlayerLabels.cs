@@ -20,9 +20,24 @@ namespace Ricochet
         private readonly SpriteRenderer _barFillRenderer;
         private readonly Transform _barFill;
 
-        private PlayerLabels(string owner)
+        // Destroys the labels' root once the player's object is gone without a despawn (a scene unload, a Destroy).
+        private sealed class Tether : MonoBehaviour
+        {
+            public GameObject Owner;
+
+            private void Update()
+            {
+                if (Owner == null)
+                {
+                    Destroy(gameObject);
+                }
+            }
+        }
+
+        private PlayerLabels(string owner, GameObject tether)
         {
             _root = new GameObject("Labels: " + owner);
+            _root.AddComponent<Tether>().Owner = tether;
             _name = WorldText.Create(_root.transform, "Name", 0.27f, Color.white);
             _name.transform.localPosition = new Vector3(0f, -0.78f, 0f);
             _pickup = WorldText.Create(_root.transform, "Pickup", 0.27f, Color.white);
@@ -42,7 +57,16 @@ namespace Ricochet
         }
 
         /// <summary>Makes a player's labels; they are destroyed with <see cref="Destroy"/>.</summary>
-        public static PlayerLabels Create(string owner) => new PlayerLabels(owner);
+        public static PlayerLabels Create(string owner, GameObject tether) => new PlayerLabels(owner, tether);
+
+        /// <summary>Shows or hides everything (the player's object was disabled or enabled).</summary>
+        public void SetVisible(bool visible)
+        {
+            if (_root != null)
+            {
+                _root.SetActive(visible);
+            }
+        }
 
         /// <summary>Tears the labels down (the player despawned).</summary>
         public void Destroy()
