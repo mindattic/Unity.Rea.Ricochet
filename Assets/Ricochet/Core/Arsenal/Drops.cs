@@ -30,6 +30,22 @@ namespace Ricochet.Core.Arsenal
         Powerup = 3,
     }
 
+    /// <summary>How a crate left the level (U.RICO-T48: what every peer then draws there).</summary>
+    public enum DropEnd
+    {
+        /// <summary>Still on the level.</summary>
+        None = 0,
+
+        /// <summary>A shot passed over it: its collision event's ef_ring where it stood.</summary>
+        Collected = 1,
+
+        /// <summary>It lay too long and burst (decayDelay): obj_powerup_explosion.</summary>
+        Burst = 2,
+
+        /// <summary>Swept away with the round or the match (clear_objects): nothing is drawn.</summary>
+        Cleared = 3,
+    }
+
     public sealed class DropRules
     {
         public const int KindCount = 4;
@@ -102,6 +118,9 @@ namespace Ricochet.Core.Arsenal
 
         /// <summary>Seconds until a landed crate bursts.</summary>
         public double LifeLeft { get; internal set; }
+
+        /// <summary>How it left the level (<see cref="DropEnd.None"/> while it is still there).</summary>
+        public DropEnd End { get; internal set; }
     }
 
     public sealed class DropField
@@ -167,7 +186,7 @@ namespace Ricochet.Core.Arsenal
                     drop.LifeLeft -= seconds;
                     if (drop.LifeLeft <= 0)
                     {
-                        RemoveAt(i);
+                        RemoveAt(i, DropEnd.Burst);
                     }
                 }
             }
@@ -243,7 +262,7 @@ namespace Ricochet.Core.Arsenal
 
                     collected.Insert(at, drop);
                     distances.Insert(at, distance.Value);
-                    RemoveAt(i);
+                    RemoveAt(i, DropEnd.Collected);
                 }
             }
 
@@ -255,14 +274,15 @@ namespace Ricochet.Core.Arsenal
         {
             for (int i = _drops.Count - 1; i >= 0; i--)
             {
-                RemoveAt(i);
+                RemoveAt(i, DropEnd.Cleared);
             }
         }
 
-        private void RemoveAt(int index)
+        private void RemoveAt(int index, DropEnd end)
         {
             Drop drop = _drops[index];
             _drops.RemoveAt(index);
+            drop.End = end;
             Removed?.Invoke(drop);
         }
 

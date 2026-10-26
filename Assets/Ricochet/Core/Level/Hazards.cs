@@ -50,6 +50,25 @@ namespace Ricochet.Core.Level
         Redirector = 5,
     }
 
+    /// <summary>How a hazard left the level (U.RICO-T48: a shield wall's glass flies on every peer unless it was cleared).</summary>
+    public enum HazardEnd
+    {
+        /// <summary>Still on the level.</summary>
+        None = 0,
+
+        /// <summary>A shot shattered or cut it down (obj_shieldwall's collision events: sfx_shatter, ef_ring, ef_firework, spawn_glass).</summary>
+        Struck = 1,
+
+        /// <summary>A vortex's implosion swallowed it.</summary>
+        Swallowed = 2,
+
+        /// <summary>Its time ran out (obj_shieldwall's decayDelay: ef_ring, ef_firework, spawn_glass, no sound).</summary>
+        Decayed = 3,
+
+        /// <summary>Swept away with the round or the level (clear_objects): nothing is drawn.</summary>
+        Cleared = 4,
+    }
+
     public sealed class HazardRules
     {
         public const int KindCount = 6;
@@ -174,6 +193,9 @@ namespace Ricochet.Core.Level
 
         /// <summary>Seconds until a shield wall decays; infinite for the rest.</summary>
         public double LifeLeft { get; internal set; }
+
+        /// <summary>How it left the level (<see cref="HazardEnd.None"/> while it is still there).</summary>
+        public HazardEnd End { get; internal set; }
 
         public Vec2 Center => (A + B) * 0.5;
 
@@ -399,7 +421,7 @@ namespace Ricochet.Core.Level
                 return null;
             }
 
-            Remove(hazard);
+            Remove(hazard, HazardEnd.Struck);
             return hazard;
         }
 
@@ -422,7 +444,7 @@ namespace Ricochet.Core.Level
                 if (hazard.Destructible && Reaches(hazard, center, radius))
                 {
                     changed.Insert(0, hazard);
-                    Remove(hazard);
+                    Remove(hazard, HazardEnd.Swallowed);
                 }
             }
 
@@ -479,7 +501,7 @@ namespace Ricochet.Core.Level
                 hazard.LifeLeft -= seconds;
                 if (hazard.LifeLeft <= 0)
                 {
-                    Remove(hazard);
+                    Remove(hazard, HazardEnd.Decayed);
                 }
             }
         }
@@ -489,7 +511,7 @@ namespace Ricochet.Core.Level
         {
             for (int i = _hazards.Count - 1; i >= 0; i--)
             {
-                Remove(_hazards[i]);
+                Remove(_hazards[i], HazardEnd.Cleared);
             }
         }
 
@@ -500,10 +522,11 @@ namespace Ricochet.Core.Level
             return hazard;
         }
 
-        private void Remove(Hazard hazard)
+        private void Remove(Hazard hazard, HazardEnd end)
         {
             if (_hazards.Remove(hazard))
             {
+                hazard.End = end;
                 Removed?.Invoke(hazard);
             }
         }

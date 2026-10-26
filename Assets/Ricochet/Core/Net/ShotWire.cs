@@ -313,6 +313,18 @@ namespace Ricochet.Core.Net
         /// <summary>True when the volley struck nobody.</summary>
         public bool Missed => _seats.Count == 0;
 
+        /// <summary>The points the shooter scored with it (hit.gml's point_combo for each opponent struck; U.RICO-T48 floats them).</summary>
+        public int Points { get; private set; }
+
+        /// <summary>Adds <paramref name="points"/> scored (negative ones are ignored).</summary>
+        public void AddPoints(int points)
+        {
+            if (points > 0)
+            {
+                Points += points;
+            }
+        }
+
         /// <summary>One strike's damage on <paramref name="seat"/> (added to what it already took from this volley).</summary>
         public void Add(int seat, int damage)
         {
@@ -362,7 +374,10 @@ namespace Ricochet.Core.Net
         /// The outcome the wire carried; null when the lists do not belong together (different lengths, a seat out of
         /// range or twice, negative damage, more seats than a match has).
         /// </summary>
-        public static ShotOutcome Decode(int[] seats, int[] damage, int[] knockedOut, int maxSeats)
+        public static ShotOutcome Decode(int[] seats, int[] damage, int[] knockedOut, int maxSeats) => Decode(seats, damage, knockedOut, 0, maxSeats);
+
+        /// <summary>As <see cref="Decode(int[], int[], int[], int)"/>, with the <paramref name="points"/> the shooter scored.</summary>
+        public static ShotOutcome Decode(int[] seats, int[] damage, int[] knockedOut, int points, int maxSeats)
         {
             seats = seats ?? Array.Empty<int>();
             damage = damage ?? Array.Empty<int>();
@@ -393,6 +408,12 @@ namespace Ricochet.Core.Net
                 outcome.KnockOut(seat);
             }
 
+            if (points < 0)
+            {
+                return null;
+            }
+
+            outcome.AddPoints(points);
             return outcome;
         }
     }

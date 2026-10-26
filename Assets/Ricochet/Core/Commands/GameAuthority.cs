@@ -56,6 +56,14 @@ namespace Ricochet.Core.Commands
             _matchDice = seed == 0 ? new Random() : new Random(seed + 2);
             Layout = Maps.At(0).Layout(0);
             Hazards = new HazardField(Layout.Level, hazards ?? HazardRules.Default, seed == 0 ? new Random() : new Random(seed + 3));
+            Hazards.Removed += hazard =>
+            {
+                // obj_shieldwall going any way but with the round (U.RICO-T48): its glass, and sfx_shatter when a shot broke it.
+                if (hazard.Kind == HazardKind.ShieldWall && hazard.End != HazardEnd.Cleared && hazard.End != HazardEnd.None)
+                {
+                    Emit(new ShieldWallShattered(hazard.Id, hazard.Center, hazard.End != HazardEnd.Decayed));
+                }
+            };
         }
 
         /// <summary>
@@ -968,7 +976,12 @@ namespace Ricochet.Core.Commands
                 struckAPlayer = true;
                 Emit(new Hit(state.Id, strike.TargetId, hit, strike.Bounces));
                 bool wasIn = Match.TryGetSeat(hit, out MatchSeat before) && before.Alive;
+                int scoreBefore = Match.TryGetSeat(state.Seat, out MatchSeat scorer) ? scorer.Score : 0;
                 outcome.Add(hit, Match.Strike(state.Seat, hit, strike.Bounces, strike.Scale, flight));
+                if (scorer != null)
+                {
+                    outcome.AddPoints(scorer.Score - scoreBefore); // hit.gml's "+N pts" over the shooter (U.RICO-T48)
+                }
                 if (wasIn && !Match.Seat(hit).Alive)
                 {
                     outcome.KnockOut(hit);
@@ -1121,7 +1134,14 @@ namespace Ricochet.Core.Commands
             Crates = new DropField(Layout.Level, DropRules, _dropDice);
             Crates.Spawned += drop => Emit(new CrateDropped(drop));
             Crates.Landed += drop => Emit(new CrateLanded(drop));
-            Crates.Removed += drop => Emit(new CrateRemoved(drop));
+            Crates.Removed += drop =>
+            {
+                Emit(new CrateRemoved(drop));
+                if (drop.End == DropEnd.Collected || drop.End == DropEnd.Burst)
+                {
+                    Emit(new CrateGone(drop.Id, drop.Kind, drop.Spot, drop.End)); // U.RICO-T48: what every peer draws there
+                }
+            };
         }
 
         private void ClearExtraBounces()

@@ -26,6 +26,12 @@ namespace Ricochet.Core.Menu
 
         /// <summary>The tank whose turn it is is pinged as its clock starts (ping_player's sfx_sonar_ping, UR-T42).</summary>
         SonarPing,
+
+        /// <summary>A shot breaks a shield wall (obj_shieldwall's sfx_shatter, U.RICO-T48).</summary>
+        Shatter,
+
+        /// <summary>A crate lands (the drops' sfx_crash, U.RICO-T48).</summary>
+        Crash,
     }
 
     /// <summary>
@@ -96,6 +102,8 @@ namespace Ricochet.Core.Menu
                 case SoundCue.Land: return 0.18;
                 case SoundCue.Switch: return 0.08;
                 case SoundCue.SonarPing: return 0.9;
+                case SoundCue.Shatter: return 0.35;
+                case SoundCue.Crash: return 0.25;
                 default: return 0.45;
             }
         }
@@ -144,6 +152,23 @@ namespace Ricochet.Core.Menu
                         // A sonar ping: a pure tone that rings out (the decay below, slowed by its own longer length).
                         phase += 1180.0 / sampleRate;
                         value = Math.Sin(2 * Math.PI * phase) * 0.7;
+                        break;
+                    case SoundCue.Shatter:
+                        // Breaking glass: bright noise over a few high tones that tinkle apart.
+                        noise ^= noise << 13;
+                        noise ^= noise >> 17;
+                        noise ^= noise << 5;
+                        phase += 1.0 / sampleRate;
+                        value = ((noise / (double)uint.MaxValue) * 2 - 1) * 0.35 * (1 - t)
+                            + (Math.Sin(2 * Math.PI * phase * 3150) + Math.Sin(2 * Math.PI * phase * 4410) + Math.Sin(2 * Math.PI * phase * 5870)) * 0.15;
+                        break;
+                    case SoundCue.Crash:
+                        // A crate hitting the ground: a low thump under a burst of noise.
+                        noise ^= noise << 13;
+                        noise ^= noise >> 17;
+                        noise ^= noise << 5;
+                        phase += (110 - 60 * t) / sampleRate;
+                        value = Math.Sin(2 * Math.PI * phase) * 0.6 + ((noise / (double)uint.MaxValue) * 2 - 1) * 0.3;
                         break;
                     default:
                         noise ^= noise << 13;

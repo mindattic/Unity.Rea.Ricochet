@@ -182,6 +182,19 @@ namespace Ricochet.Core.Tests
             Assert.That(ShotOutcome.Decode(new[] { 1, 1 }, new[] { 5, 5 }, null, 16), Is.Null, "a seat twice");
             Assert.That(ShotOutcome.Decode(new[] { 1 }, new[] { -5 }, null, 16), Is.Null, "negative damage");
             Assert.That(ShotOutcome.Decode(new[] { 1 }, new[] { 5 }, new[] { 1, 1 }, 16), Is.Null, "knocked out twice");
+            Assert.That(ShotOutcome.Decode(new[] { 1 }, new[] { 5 }, null, -3, 16), Is.Null, "negative points");
+        }
+
+        [Test]
+        public void TheOutcomeCarriesThePointsScored_ForTheTextOverTheShooter()
+        {
+            var outcome = new ShotOutcome();
+            outcome.AddPoints(120);
+            outcome.AddPoints(-50);
+            outcome.AddPoints(5);
+            Assert.That(outcome.Points, Is.EqualTo(125));
+            Assert.That(ShotOutcome.Decode(new[] { 1 }, new[] { 5 }, null, 125, 16).Points, Is.EqualTo(125));
+            Assert.That(ShotOutcome.Decode(new[] { 1 }, new[] { 5 }, null, 16).Points, Is.EqualTo(0));
         }
     }
 }

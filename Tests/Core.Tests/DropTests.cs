@@ -72,6 +72,7 @@ namespace Ricochet.Core.Tests
             field.Tick(0.2);
             Assert.That(field.Drops, Is.Empty);
             Assert.That(removed, Is.EqualTo(new[] { drop }));
+            Assert.That(drop.End, Is.EqualTo(DropEnd.Burst), "U.RICO-T48: obj_powerup_explosion goes off where it lay");
         }
 
         [Test]
@@ -99,6 +100,8 @@ namespace Ricochet.Core.Tests
             Assert.That(collected, Is.EqualTo(new[] { near, far }));
             Assert.That(field.Drops, Is.EquivalentTo(new[] { aside, falling }));
             Assert.That(field.Collect(shot), Is.Empty);
+            Assert.That(near.End, Is.EqualTo(DropEnd.Collected));
+            Assert.That(aside.End, Is.EqualTo(DropEnd.None), "still on the level");
         }
 
         [Test]
@@ -107,7 +110,11 @@ namespace Ricochet.Core.Tests
             var field = new DropField(Open(), Every(1), new Random(3));
             field.Tick(1);
             int removed = 0;
-            field.Removed += _ => removed++;
+            field.Removed += drop =>
+            {
+                removed++;
+                Assert.That(drop.End, Is.EqualTo(DropEnd.Cleared), "swept away: nothing is drawn");
+            };
             field.Clear();
             Assert.That(field.Drops, Is.Empty);
             Assert.That(removed, Is.EqualTo(4));

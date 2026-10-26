@@ -280,6 +280,8 @@ namespace Ricochet.Core.Tests
             Assert.That(landed.KnockedOut, Is.EqualTo(1));
             Assert.That(landed.StruckAPlayer, Is.True);
             Assert.That(landed.Outcome.DamageTo(1), Is.EqualTo(damaged.Damage));
+            Assert.That(landed.Outcome.Points, Is.EqualTo(Of<Scored>(all).Single().Points), "U.RICO-T48: the \"+N pts\" floated over the shooter");
+            Assert.That(landed.Outcome.Points, Is.GreaterThan(0));
             Assert.That(Of<RoundOver>(all).Single().Winner, Is.EqualTo(0));
 
             int Index<T>() where T : GameEvent => all.FindIndex(e => e is T);
@@ -984,6 +986,66 @@ namespace Ricochet.Core.Tests
 
                 Assert.That(Of<VotePassed>(authority.Apply(new VoteCommand(needed, "restart", true))), Has.Count.EqualTo(1), electorate + ":" + needed);
             }
+        }
+
+        // ---- U.RICO-T48: what every peer draws when a shield wall breaks or a crate goes
+
+        [Test]
+        public void AShieldWallThatBreaks_ShattersWithItsSound_OrDecaysSilently_AndOneSweptAwayRaisesNothing()
+        {
+            var authority = new GameAuthority(new World(), seed: 3);
+            var heard = new List<GameEvent>();
+            authority.Published += heard.Add;
+
+            Hazard struck = authority.Hazards.AddShieldWall(0, Vec2.Zero, 0);
+            Hazard decaying = authority.Hazards.AddShieldWall(0, new Vec2(3, 0), 0);
+            authority.Hazards.Struck(struck.Id, 1);
+            authority.Hazards.Tick(1000);
+            Hazard swept = authority.Hazards.AddShieldWall(0, new Vec2(-3, 0), 0);
+            Hazard tuft = authority.Hazards.AddFoliage(new Vec2(0, 3));
+            authority.Hazards.Struck(tuft.Id, 1);
+            authority.Hazards.Clear();
+
+            List<ShieldWallShattered> broken = Of<ShieldWallShattered>(heard);
+            Assert.That(broken.Select(b => b.HazardId), Is.EqualTo(new[] { struck.Id, decaying.Id }), "the swept wall and the tuft raise nothing");
+            Assert.That(swept.End, Is.EqualTo(HazardEnd.Cleared));
+            Assert.That(broken[0].Struck, Is.True, "a shot breaks it: sfx_shatter");
+            Assert.That(broken[0].Center, Is.EqualTo(struck.Center));
+            Assert.That(broken[1].Struck, Is.False, "decayDelay: no sound");
+        }
+
+        [Test]
+        public void ACrateThatBursts_OrIsCollected_IsDrawnWhereItLay_AndOneSweptAwayIsNot()
+        {
+            var drops = new DropRules { MinLife = 1, MaxLife = 1, MinDelay = 1000, MaxDelay = 1000 };
+            var authority = new GameAuthority(new World(), matchRules: NoReadyCard.Rules(), drops: drops, seed: 7);
+            authority.AddPlayer(1);
+            authority.AddPlayer(2);
+            authority.SetSeat(1, 0);
+            authority.SetSeat(2, 1);
+            Match match = authority.BeginMatch(0, MatchSetup.OneRound);
+            match.Join(0, SeatKind.Human, "A");
+            match.Join(1, SeatKind.Human, "B");
+            authority.StartMatch();
+
+            Drop bursting = authority.DropCrate(DropKind.Health, new Vec2(2, 2));
+            var all = new List<GameEvent>();
+            for (int i = 0; i < 40; i++)
+            {
+                all.AddRange(authority.Tick(0.1));
+            }
+
+            CrateGone gone = Of<CrateGone>(all).Single();
+            Assert.That(gone.CrateId, Is.EqualTo(bursting.Id));
+            Assert.That(gone.End, Is.EqualTo(DropEnd.Burst));
+            Assert.That(gone.Kind, Is.EqualTo(DropKind.Health));
+            Assert.That(gone.Spot, Is.EqualTo(new Vec2(2, 2)));
+
+            Drop swept = authority.DropCrate(DropKind.Item, new Vec2(-2, 2));
+            Assert.That(swept, Is.Not.Null);
+            IReadOnlyList<GameEvent> quit = authority.QuitMatch(1); // the pause menu's Quit round sweeps the crates away
+            Assert.That(Of<CrateRemoved>(quit), Has.Count.EqualTo(1));
+            Assert.That(Of<CrateGone>(quit), Is.Empty);
         }
     }
 }

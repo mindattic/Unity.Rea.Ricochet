@@ -83,6 +83,10 @@ namespace Ricochet.Core.Tests
 
             Assert.That(removed, Is.EqualTo(new[] { wall, tuft }));
             Assert.That(field.Hazards, Is.EqualTo(new[] { arc, gate }));
+            Assert.That(wall.End, Is.EqualTo(HazardEnd.Struck));
+            Assert.That(arc.End, Is.EqualTo(HazardEnd.None));
+            field.Clear();
+            Assert.That(arc.End, Is.EqualTo(HazardEnd.Cleared));
         }
 
         [Test]
@@ -98,6 +102,7 @@ namespace Ricochet.Core.Tests
             field.Tick(0.2);
             Assert.That(field.Hazards, Has.No.Member(wall));
             Assert.That(field.Hazards.Count, Is.EqualTo(1));
+            Assert.That(wall.End, Is.EqualTo(HazardEnd.Decayed));
         }
 
         [Test]

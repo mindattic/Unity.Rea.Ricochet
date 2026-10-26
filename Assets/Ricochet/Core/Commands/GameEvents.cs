@@ -459,6 +459,50 @@ namespace Ricochet.Core.Commands
         public Drop Crate { get; }
     }
 
+    /// <summary>
+    /// U.RICO-T48: a crate left the level other than by being swept away with the round: collected (its collision event's
+    /// ef_ring) or burst after lying too long (obj_powerup_explosion). Every peer draws it where the crate lay.
+    /// </summary>
+    public sealed class CrateGone : GameEvent
+    {
+        public CrateGone(int crateId, DropKind kind, Vec2 spot, DropEnd end)
+        {
+            CrateId = crateId;
+            Kind = kind;
+            Spot = spot;
+            End = end;
+        }
+
+        public int CrateId { get; }
+
+        public DropKind Kind { get; }
+
+        public Vec2 Spot { get; }
+
+        public DropEnd End { get; }
+    }
+
+    /// <summary>
+    /// U.RICO-T48: a shield wall broke (obj_shieldwall: ef_ring, ef_firework and spawn_glass's shards at <see cref="Center"/>),
+    /// <see cref="Struck"/> by a shot or a vortex (with sfx_shatter) or decayed (silently). A wall swept away with the round
+    /// raises nothing.
+    /// </summary>
+    public sealed class ShieldWallShattered : GameEvent
+    {
+        public ShieldWallShattered(int hazardId, Vec2 center, bool struck)
+        {
+            HazardId = hazardId;
+            Center = center;
+            Struck = struck;
+        }
+
+        public int HazardId { get; }
+
+        public Vec2 Center { get; }
+
+        public bool Struck { get; }
+    }
+
     /// <summary>A shot passed over a crate: its collector got a weapon, an item or health (<see cref="Value"/>).</summary>
     public sealed class CratePickedUp : GameEvent
     {
