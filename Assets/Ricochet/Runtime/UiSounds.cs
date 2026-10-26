@@ -39,7 +39,8 @@ namespace Ricochet
                 return SoundCue.Disabled;
             }
 
-            return control is Slider || control is Scrollbar ? SoundCue.Select : SoundCue.Click;
+            // The original's less / more arrows (GmlStepper, U.RICO-T78) played sfx_select, as the sliders they step do.
+            return control is Slider || control is Scrollbar || control.GetComponent<GmlStepper>() != null ? SoundCue.Select : SoundCue.Click;
         }
 
         /// <summary>The cue the pointer coming over <paramref name="control"/> plays: sfx_flick when it can be pressed.</summary>

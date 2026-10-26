@@ -188,6 +188,13 @@ namespace Ricochet
                 _stack.AllowCloseRoot = false;
                 _screen = _stack.CreateScreen(VoteMenu.PausedTitle);
                 _stack.Push(_screen);
+                // obj_pausemenu drew "Paused" in fnt_mono outlined 2 px (its spr_pausemenu and spr_pausemenu_back draws are
+                // commented out, so no panel sprite either; U.RICO-T78). The buttons are dressed by GmlMenuSkin.
+                TMPro.TMP_Text title = GmlMenuSkin.TitleOf(_screen);
+                if (title != null)
+                {
+                    GmlFontLabel.Attach(title, Ricochet.Core.Art.MenuLooks.ButtonFont, Ricochet.Core.Art.MenuLooks.ButtonOutline);
+                }
             }
 
             if (built != _built || !Showing)

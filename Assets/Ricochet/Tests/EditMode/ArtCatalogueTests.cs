@@ -191,5 +191,33 @@ namespace Ricochet.EditorTests
                 }
             }
         }
+
+        // U.RICO-T78: every sprite the menus, the pad and the rooms' pictures draw is in the art.
+        [Test]
+        public void TheMenusPadAndRoomPicturesResolve()
+        {
+            Catalogue();
+            foreach (Plate plate in System.Enum.GetValues(typeof(Plate)))
+            {
+                var names = new[] { MenuLooks.Face(plate), MenuLooks.Face(plate, true), MenuLooks.Back(plate, true), MenuLooks.Back(plate, false) };
+                foreach (string name in names)
+                {
+                    Assert.That(GameArt.Frame(name), Is.Not.Null, name);
+                }
+            }
+
+            var others = MenuLooks.TitleLetters.Concat(new[]
+            {
+                MenuLooks.KeyboardLayout, MenuLooks.HowToPlaySlide, MenuLooks.CreditsImage,
+            });
+            foreach (string name in others)
+            {
+                Assert.That(GameArt.Frame(name), Is.Not.Null, name);
+            }
+
+            Assert.That(GameArt.Background(MenuLooks.RoomBackground), Is.Not.Null);
+            Sprite sliced = GameArt.Sliced(MenuLooks.Face(Plate.Button), GmlPlate.FrameBorder);
+            Assert.That(sliced.border, Is.EqualTo(new Vector4(12, 12, 12, 12)), "spr_button nine-slices at its corners");
+        }
     }
 }

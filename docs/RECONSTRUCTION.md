@@ -77,7 +77,7 @@ a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `
 | Commands and events: every input a command with a player id, one authority, ordered events (new, UR-T34) | built | `Core/Commands/` (`GameAuthority`, `PlayerState`, `Commands`, `GameEvents`) |
 | Real multiplayer, votes, reconnect, profile | built (new, replaces the hotseat rooms) | `Core/Menu/` (`Lobby`, `VoteMenu`), `Core/Net/ShotWire`, kit |
 | Sound | the original's 70 non-voice recordings, one `SoundCue` each (U.RICO-T50); the announcers' 210 voice lines (U.RICO-T51) | `Core/Menu/Sound`, `Runtime/GameAudio`, `Runtime/UiSounds` |
-| Art | imported whole (U.RICO-T44): every sprite, background and font, catalogued with its original path; shots, crates, HUD text, tanks (U.RICO-T45), the level backdrop and shapes (U.RICO-T46), the weapons, items and hazards (U.RICO-T47) and the hit and knock-out effects (U.RICO-T48) drawn from it, the rest still code-drawn | `Art/`, `Fonts/`, `Resources/Ricochet/ArtCatalogue`, `Runtime/Art/` |
+| Art | imported whole (U.RICO-T44): every sprite, background and font, catalogued with its original path; shots, crates, HUD text, tanks (U.RICO-T45), the level backdrop and shapes (U.RICO-T46), the weapons, items and hazards (U.RICO-T47), the hit and knock-out effects (U.RICO-T48), the HUD details (U.RICO-T49), the announcers' portraits (U.RICO-T51), the items in flight and the endgame flashes (U.RICO-T79) and the menus, the pad and the rooms' pictures (U.RICO-T78) drawn from it | `Art/`, `Fonts/`, `Resources/Ricochet/ArtCatalogue`, `Runtime/Art/` |
 
 ## 3. Gaps against the original, and the ticket for each
 

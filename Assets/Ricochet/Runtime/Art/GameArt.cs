@@ -173,6 +173,44 @@ namespace Ricochet
             return frames != null && fps > 0f ? frames.Length / fps : 0f;
         }
 
+        private static readonly System.Collections.Generic.Dictionary<string, Sprite> s_sliced = new System.Collections.Generic.Dictionary<string, Sprite>();
+
+        /// <summary>
+        /// Frame 0 of GML sprite <paramref name="name"/> with a nine-slice border of <paramref name="border"/> pixels on every
+        /// side (U.RICO-T78), so a frame sprite such as spr_button stretches to a wider control without stretching its
+        /// corners; the plain frame when it cannot be cut (null when missing).
+        /// </summary>
+        public static Sprite Sliced(string name, int border)
+        {
+            Sprite frame = Frame(name);
+            if (frame == null || border <= 0)
+            {
+                return frame;
+            }
+
+            string key = name + "#" + border.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (s_sliced.TryGetValue(key, out Sprite cut) && cut != null && cut.texture == frame.texture)
+            {
+                return cut;
+            }
+
+            try
+            {
+                Rect rect = frame.textureRect;
+                float edge = Mathf.Min(border, Mathf.Floor((Mathf.Min(rect.width, rect.height) - 1f) / 2f));
+                cut = Sprite.Create(frame.texture, rect, new Vector2(0.5f, 0.5f), frame.pixelsPerUnit, 0, SpriteMeshType.FullRect,
+                    new Vector4(edge, edge, edge, edge));
+                cut.name = name + " (sliced)";
+            }
+            catch (UnityException)
+            {
+                cut = frame; // a tightly packed sprite has no rect to cut: it stretches whole
+            }
+
+            s_sliced[key] = cut;
+            return cut;
+        }
+
         /// <summary>The background <paramref name="name"/> as a sprite, or null.</summary>
         public static Sprite Background(string name)
         {

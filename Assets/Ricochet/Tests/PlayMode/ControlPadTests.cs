@@ -59,6 +59,12 @@ namespace Ricochet.Tests
             foreach (ControlPad.Control control in System.Enum.GetValues(typeof(ControlPad.Control)))
             {
                 Assert.That(_hud.Pad.ButtonObject(control), Is.Not.Null, control + " has no button");
+                if (GameArt.Frame("spr_tinybutton") != null)
+                {
+                    // U.RICO-T78: the original's spr_tinybutton / spr_tinyarrow* over their _back sprites.
+                    Assert.That(_hud.Pad.PlateFor(control).FaceName, Is.EqualTo(Ricochet.Core.Art.MenuLooks.Face(ControlPad.PlateOf(control))));
+                    Assert.That(_hud.Pad.PlateFor(control).BackName, Does.EndWith("_back"));
+                }
             }
 
             float start = annOnHost.Result.Heading;

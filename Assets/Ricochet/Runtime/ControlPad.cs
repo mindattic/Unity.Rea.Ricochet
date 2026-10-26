@@ -31,6 +31,7 @@ namespace Ricochet
         {
             public Control Kind;
             public Image Face;
+            public GmlPlate Plate; // U.RICO-T78: the original's sprite, when the art is there
             private bool _over;
             private bool _held;
 
@@ -85,7 +86,12 @@ namespace Ricochet
 
             private void Paint()
             {
-                if (Face != null)
+                if (Plate != null)
+                {
+                    // obj_btn_*'s Draw: the _over sprite while the mouse is on it (it is, while held), the _back one otherwise.
+                    Plate.Over = _over || _held;
+                }
+                else if (Face != null)
                 {
                     Face.color = _held ? Down : _over ? Hover : Idle;
                 }
@@ -251,9 +257,44 @@ namespace Ricochet
             button.Face = face;
             _buttons[(int)control] = button;
 
-            MaText label = HudParts.Label(rect, TextStyle.Body, Color.white, 12f, 27f, TextAlignmentOptions.Center, bold: true);
+            // U.RICO-T78: obj_btn_degreeleft / degreeright (spr_tinyarrowleft / right), obj_btn_moveforward / movebackward
+            // (spr_tinyarrowup / down) and obj_btn_fire / useitem / endturn (spr_tinybutton, the label in fnt_count), each
+            // its _back or _over sprite at 0.5 under its face, kept to the sprite's proportions inside the pad's button.
+            Plate kind = PlateOf(control);
+            GmlPlate plate = GmlPlate.Add(rect, kind, stretch: false);
+            if (plate != null)
+            {
+                face.color = Color.clear; // still the button's raycast target; the plate is its look
+                button.Plate = plate;
+                plate.Over = false;
+                if (kind != Plate.TinyButton)
+                {
+                    return; // the arrow is the sprite
+                }
+            }
+
+            MaText label = plate != null
+                ? HudParts.Label(rect, TextStyle.Body, Color.white, 10f, GameArt.CanvasFontSize(MenuLooks.TinyFont, 16f), TextAlignmentOptions.Center,
+                    gmlFont: MenuLooks.TinyFont)
+                : HudParts.Label(rect, TextStyle.Body, Color.white, 12f, 27f, TextAlignmentOptions.Center, bold: true);
             HudParts.Stretch(label.RectTransform, 4f);
             HudParts.Set(label, text);
         }
+
+        /// <summary>The original's sprite for each pad button.</summary>
+        public static Plate PlateOf(Control control)
+        {
+            switch (control)
+            {
+                case Control.TurnLeft: return Plate.TinyArrowLeft;
+                case Control.TurnRight: return Plate.TinyArrowRight;
+                case Control.Forward: return Plate.TinyArrowUp;
+                case Control.Backward: return Plate.TinyArrowDown;
+                default: return Plate.TinyButton;
+            }
+        }
+
+        /// <summary>The plate drawing <paramref name="control"/> (null without the art, or before the pad is built).</summary>
+        public GmlPlate PlateFor(Control control) => _buttons[(int)control] != null ? _buttons[(int)control].Plate : null;
     }
 }

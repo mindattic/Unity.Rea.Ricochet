@@ -238,8 +238,10 @@ vortex spin at 3 degrees per 60-a-second step, where the original spun 3 degrees
 machine reached during a shot. (4) The HUD labels keep the rebuild's layout and fit their text to its boxes in the
 original's faces, rather than drawing at the original's sizes in its places. (5) U.RICO-T45 (tanks, tracks: done, see
 Tanks), U.RICO-T46 (backgrounds, clouds, borders, shapes: done, see Level backdrop), U.RICO-T47 (the rail's swirls, the
-laser, the vortex's implosion, the items on the level: done, see Weapon and hazard visuals) and U.RICO-T78 (the rest) swap
-the other sprites.
+laser, the vortex's implosion, the items on the level: done, see Weapon and hazard visuals), U.RICO-T48 (scorch marks,
+glass, flame, the player explosion), U.RICO-T49 (the HUD's icons, health bars, turn arrow), U.RICO-T51 (the announcers'
+portraits and speaker), U.RICO-T79 (the items in flight, the endgame flashes) and U.RICO-T78 (the menus, the pad and the
+rooms' pictures: done, see Menus and pictures) swap the other sprites.
 
 ## Tanks (U.RICO-T45)
 
@@ -548,6 +550,50 @@ nowhere; the icons draw spr_infinity themselves), `obj_item_extrabounces` and `o
 laser sight is dormant), `mouseover_powerup_draw` (the dormant powerup HUD stubs, RECONSTRUCTION 1.2). `obj_hover_icon` is
 the crates' floating icon (U.RICO-T44's). `obj_bar1-16`, `obj_circle1-16` and `obj_square1-16` are the random level's
 shapes (`GmlSprites.Shape`, U.RICO-T46), not HUD markers.
+
+## Menus and pictures (U.RICO-T78)
+
+Source: every `obj_btn_*`, `obj_btn_*_less/_more/_last/_next`, `obj_checkbox_*`, `obj_inputbox*`, `obj_lbl_*`, `obj_pausemenu`,
+`obj_btn_fire/useitem/endturn`, `obj_btn_degreeleft/degreeright`, `obj_btn_moveforward/movebackward`,
+`obj_keyboardlayout`, `obj_slide`, `obj_creditsimage`, `obj_letter_*`, and the
+rooms `titlescreen`, `controls`, `howtoplay`, `credits` and `gamescreen`.
+
+- Core's `MenuLooks` names every sprite and font and holds the rules (`Tests/Core.Tests/MenuLooksTests`). Every one of these
+  controls drew itself the same way: at alpha 0.5 its `_over` sprite while the mouse was on it or its `_back` sprite
+  otherwise, then its face sprite at 1 (`GmlPlate`).
+- **Menus** (`GmlMenuSkin`, one watcher, as `UiSounds` is, that dresses every MindAttic Components control as it appears,
+  whichever screen built it: the kit's front end, the game's rooms, the lobby, the pause menu, the endgame recap): a button
+  is spr_button over spr_button_back / spr_button_over (nine-sliced at 12 px to the kit's width), its label in fnt_mono
+  outlined 2 px, white; a switch is spr_checkbox_unchecked / _checked over spr_checkbox_back / _over, its text in fnt_score
+  outlined 2 px; a text field is spr_inputbox over spr_inputbox_back (no hover), its text in fnt_score; a slider's or
+  dropdown's caption (obj_lbl_*) is fnt_mono outlined 2 px, its value fnt_score, with spr_arrowleft / spr_arrowright either
+  side stepping it one notch a click and wrapping past either end, as every less / more arrow did, with sfx_select; section
+  headings are fnt_mono outlined 2 px; a screen's title is fnt_impact outlined 2 px (the rooms' titles), the pause menu's
+  "Paused" fnt_mono outlined 2 px (obj_pausemenu). The keyboard's focus draws as the mouse over did.
+- **Pad** (`ControlPad`): the turn arrows spr_tinyarrowleft / right, the drive arrows spr_tinyarrowup / down, Fire, Use Item
+  and End Turn spr_tinybutton with the label in fnt_count (not outlined), each over its _back / _over sprite, in its own
+  proportions inside the pad's button.
+- **Pictures**: the title is on bg_titlescreen with obj_letter_R ... obj_letter_T where the titlescreen room placed them;
+  the controls room shows spr_keyboardlayout, the how-to-play room obj_slide's spr_howtoplay1 between its counter and its
+  text, and the credits room spr_creditsimage, each at the top of its screen.
+- `Tests/PlayMode/MenuArtTests` checks the dressing, the arrows' wrap, the title room and the pictures; `ControlPadTests` the
+  pad's sprites; `ArtCatalogueTests` that every name resolves;
+  `ArtShowcaseTests.TheMenusAndPictures` saves `U.RICO-T78-*` screenshots (title, settings, controls, how to play, credits,
+  a match, paused).
+
+Deviations: (1) The rebuild's menus are the kit's screens, so the controls keep the kit's layout and sizes (a full-width
+button nine-slices spr_button; a switch's checkbox is 48 px on the right of its row; the arrows are at half size beside the
+kit's slider or dropdown, which stay; the room's own placements are not carried). (2) Only the title shows bg_titlescreen:
+the kit's front end and the other rooms are screens over the live arena. (3) The title's letters stand where the room placed
+them; their drift (obj_letter_parent) and the main menu's letters are U.RICO-T52's. The announcer's portrait and speaker are
+U.RICO-T51's (Announcer voices and portraits).
+
+Not carried: spr_pausemenu and spr_pausemenu_back (obj_pausemenu's draws of them are commented out), spr_label and
+spr_label_small (only the labels' hover masks; never drawn), the picture labels spr_lbl_* and picture buttons spr_btn_start,
+_quit, _settings, _controls, _howtoplay, _default and _credits (no object or script draws them), spr_back (obj_button_back is
+placed in no room), spr_howtoplay (obj_howtoplayimage is placed in no room), spr_btn_config and spr_btn_add / _remove with
+spr_checkbox_player / _ai (the title's setup panel and the players room's seats: the kit's front end and U.RICO-T52). The items
+in flight (spr_teleporter, spr_shrinkball) and the endgame's spr_flash are U.RICO-T79's (Item flights and endgame flashes).
 
 ## Music (U.RICO-T27)
 

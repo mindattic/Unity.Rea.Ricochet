@@ -18,6 +18,7 @@ using MindAttic.Components.Unity; // MenuScreen, MaText, MaSelect, TextStyle
 using MindAttic.Components.Unity.Core; // ButtonVariant
 using Ricochet.Core.Ai;
 using Ricochet.Core.Arsenal;
+using Ricochet.Core.Art;
 using Ricochet.Core.Level;
 using Ricochet.Core.Match;
 using Ricochet.Core.Menu;
@@ -222,6 +223,7 @@ namespace Ricochet
         /// <summary>The controls room: a line a binding.</summary>
         public static void BuildControls(MenuScreen s)
         {
+            AddPicture(s, MenuLooks.KeyboardLayout, 300f); // obj_keyboardlayout, centred in the controls room
             foreach (ControlBinding binding in MenuFlow.Controls)
             {
                 s.AddText(binding.Keys + "   " + binding.Action);
@@ -313,6 +315,7 @@ namespace Ricochet
         {
             int slide = MenuFlow.ClampSlide(first);
             MaText counter = s.AddText(string.Empty, TextStyle.Caption);
+            AddPicture(s, MenuLooks.HowToPlaySlide, 300f); // obj_slide's spr_howtoplay1, its counter over it and its text under it
             MaText title = s.AddText(string.Empty, TextStyle.Heading);
             MaText body = s.AddText(string.Empty);
 
@@ -354,9 +357,39 @@ namespace Ricochet
             }
         }
 
+        /// <summary>The name of the picture a screen shows (U.RICO-T78), for tests.</summary>
+        public const string PictureName = "GML picture";
+
+        /// <summary>
+        /// U.RICO-T78: the room's picture (its GML sprite <paramref name="sprite"/>) at the top of the screen, as wide as the card
+        /// and at most <paramref name="maxHeight"/> tall, in its own proportions; nothing when the catalogue lacks it.
+        /// </summary>
+        public static UnityEngine.UI.Image AddPicture(MenuScreen s, string sprite, float maxHeight)
+        {
+            Sprite picture = GameArt.Frame(sprite);
+            if (picture == null)
+            {
+                return null;
+            }
+
+            var rect = new GameObject(PictureName + ": " + sprite, typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.gameObject.layer = s.Items.gameObject.layer;
+            rect.SetParent(s.Items, false);
+            UnityEngine.UI.Image image = rect.gameObject.AddComponent<UnityEngine.UI.Image>();
+            image.sprite = picture;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            UnityEngine.UI.LayoutElement size = rect.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
+            float height = Mathf.Min(maxHeight, picture.rect.height);
+            size.minHeight = size.preferredHeight = height;
+            size.flexibleWidth = 1f;
+            return image;
+        }
+
         /// <summary>The credits room.</summary>
         public static void BuildCredits(MenuScreen s)
         {
+            AddPicture(s, MenuLooks.CreditsImage, 360f); // obj_creditsimage, centred in the credits room
             for (int i = 0; i < MenuFlow.Credits.Count; i++)
             {
                 s.AddText(MenuFlow.Credits[i], i == 0 ? TextStyle.Heading : TextStyle.Body);

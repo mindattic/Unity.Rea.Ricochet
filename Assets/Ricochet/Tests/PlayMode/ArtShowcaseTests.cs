@@ -8,7 +8,9 @@
 using System.Collections;
 using System.IO;
 using System.Linq;
+using MindAttic.Components.Unity;
 using NUnit.Framework;
+using Ricochet.Core.Menu;
 using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
 using Ricochet.Core.Art;
@@ -407,6 +409,77 @@ namespace Ricochet.Tests
                 UnityEngine.EventSystems.ExecuteEvents.Execute(_hud.Icons.IconObject((int)Weapon.Vortex), hover, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
                 yield return null;
                 yield return Capture("hud-hover", "U.RICO-T49");
+            }
+            finally
+            {
+                TestMatches.StockReadyCard();
+            }
+        }
+
+        // U.RICO-T78: the menus in the original's buttons, checkboxes, input box and arrows; the title room; the controls,
+        // how-to-play and credits pictures; the pause menu; and in a match the pad's tiny buttons (and U.RICO-T51's portrait).
+        [UnityTest]
+        [Timeout(180000)]
+        public IEnumerator TheMenusAndPictures()
+        {
+            var cameraObject = new GameObject("Showcase camera");
+            _camera = cameraObject.AddComponent<Camera>();
+            _camera.orthographic = true;
+            _camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
+            _camera.clearFlags = CameraClearFlags.SolidColor;
+            GmlMenuSkin.Ensure();
+
+            TitleScreen title = TitleScreen.Show(null, "showcase");
+            yield return new WaitForSeconds(0.3f);
+            yield return Capture("title", "U.RICO-T78");
+            Object.Destroy(title.gameObject);
+
+            MenuStack stack = MenuStack.Create(null, backdrop: true);
+            try
+            {
+                var setup = new MatchSetup();
+                stack.Push("Settings", s =>
+                {
+                    s.AddTextbox("Name", "Ann").Text = "Ann";
+                    Menus.AddGameSettings(s, setup);
+                });
+                yield return new WaitForSeconds(0.3f);
+                yield return Capture("settings", "U.RICO-T78");
+                stack.Push(MenuFlow.Title(Room.Controls), Menus.BuildControls);
+                yield return new WaitForSeconds(0.3f);
+                yield return Capture("controls", "U.RICO-T78");
+                stack.Push(MenuFlow.Title(Room.HowToPlay), s => Menus.BuildHowToPlay(s));
+                yield return new WaitForSeconds(0.3f);
+                yield return Capture("howtoplay", "U.RICO-T78");
+                stack.Push(MenuFlow.Title(Room.Credits), Menus.BuildCredits);
+                yield return new WaitForSeconds(0.3f);
+                yield return Capture("credits", "U.RICO-T78");
+            }
+            finally
+            {
+                Object.Destroy(stack.transform.root.gameObject);
+            }
+
+            TestMatches.WithoutReadyCard();
+            try
+            {
+                yield return StartAndJoinAll();
+                Arena arena = Arena.Serve(Server, GamePrefabs.Dummy);
+                yield return WaitUntil(() => Player.In(Client).Count() == 2, "the client never saw both players");
+                _camera.orthographicSize = 7f;
+                _camera.transform.position = new Vector3(0f, 0f, -10f);
+                RenderStyle.Current.ConfigureCamera(_camera);
+                _level = LevelView.Create(Arena.Level);
+                _hud = MatchHud.Create(Client);
+                MatchSetup match = TestMatches.OnThePracticeRange(2);
+                match.AnnouncerVoice = 0; // Kurt Sly, his own spr_profile_sly
+                match.Announcements = 1;
+                Assert.That(arena.StartMatch(match), Is.True);
+                yield return WaitUntil(() => _hud.Overlay.AnnouncerShowing && _hud.Pad.Showing, "the announcer's card never came in", 10f);
+                yield return Capture("match", "U.RICO-T78");
+                Assert.That(arena.SetPaused(true), Is.True);
+                yield return new WaitForSeconds(0.5f);
+                yield return Capture("paused", "U.RICO-T78");
             }
             finally
             {

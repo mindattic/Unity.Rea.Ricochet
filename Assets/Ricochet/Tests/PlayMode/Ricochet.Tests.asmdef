@@ -13,6 +13,7 @@
         "Unity.Shared.Core",
         "Unity.TextMeshPro",
         "MindAttic.Components.Unity",
+        "MindAttic.Components.Unity.Core",
         "Unity.Netcode.Runtime",
         "Unity.Netcode.Runtime.Tests",
         "UnityEngine.TestRunner",

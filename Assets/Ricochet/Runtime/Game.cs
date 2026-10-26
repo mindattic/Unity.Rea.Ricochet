@@ -77,6 +77,9 @@ namespace Ricochet
             // Sound (UR-T10): the volumes and mutes are the active MindAttic profile's (none on a headless peer).
             GameAudio.Create();
 
+            // U.RICO-T78: every menu control in the original's spr_button / checkbox / input box / arrow art and fonts.
+            GmlMenuSkin.Ensure();
+
             NetFrontEnd frontEnd = NetFrontEnd.Instance;
             if (frontEnd == null)
             {
