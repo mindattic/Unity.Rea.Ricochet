@@ -31,3 +31,4 @@ Tests/**/obj/
 !Tests/**/*.csproj
 /artifacts/*
 !/artifacts/*.html
+/TestResults/

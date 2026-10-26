@@ -1,0 +1,127 @@
+# CI on every push and pull request (U.RICO-T40): the pure-C# Core suite with a coverage floor, then the Unity EditMode and
+# PlayMode suites (GameCI), then a Windows player build. The scripted two-bot scenario in mp-host.json stays in nightly.yml.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The fast job: Core.slnx (Ricochet.Core + its NUnit tests), no Unity, with Ricochet.Core's line coverage held to a floor.
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet test Core.slnx --nologo --collect:"XPlat Code Coverage" --results-directory TestResults
+      - name: Coverage floor for Ricochet.Core
+        shell: pwsh
+        run: ./Tools/coverage-floor.ps1 -Report TestResults -Floor 92
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-coverage
+          path: TestResults
+          if-no-files-found: ignore
+
+  # GameCI needs Unity license secrets, and a job's `if` can't read secrets, so this tiny job reports whether
+  # they are set. Without them the Unity job below is skipped (not failed). Secrets by name, never printed:
+  #   UNITY_LICENSE (the .ulf file contents), or UNITY_SERIAL; plus UNITY_EMAIL and UNITY_PASSWORD.
+  unity-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          if [ -n "$UNITY_LICENSE" ] || { [ -n "$UNITY_SERIAL" ] && [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; }; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Unity job skipped: no UNITY_LICENSE (or UNITY_SERIAL + UNITY_EMAIL + UNITY_PASSWORD) secret is set."
+          fi
+
+  unity:
+    needs: unity-gate
+    if: needs.unity-gate.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+    steps:
+      # Packages/manifest.json points at sibling repos (file:../../<name>), so the game sits in a folder beside them,
+      # as Unity.Multiplayer's game-smoke.yml lays it out. MINDATTIC_REPOS_TOKEN is only needed while they are private.
+      - uses: actions/checkout@v4
+        with:
+          path: Unity.Ricochet
+          lfs: true
+      - name: Check out sibling repos
+        env:
+          TOKEN: ${{ secrets.MINDATTIC_REPOS_TOKEN || github.token }}
+        run: |
+          for repo in mindattic/MindAttic.Components mindattic/Unity.Multiplayer mindattic/Unity.Shared; do
+            git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${repo}.git" "${repo#*/}"
+          done
+      - uses: actions/cache@v4
+        with:
+          path: Unity.Ricochet/Library
+          key: Library-${{ hashFiles('Unity.Ricochet/Packages/manifest.json', 'Unity.Ricochet/Packages/packages-lock.json', 'Unity.Ricochet/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-
+
+      # Not hidden behind continue-on-error: the known-flaky PlayMode tests (U.RICO-T73) fail the run until they are fixed.
+      - uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: Unity.Ricochet
+          testMode: EditMode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: EditMode results
+          artifactsPath: editmode-results
+      - uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: Unity.Ricochet
+          testMode: PlayMode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: PlayMode results
+          artifactsPath: playmode-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-test-results
+          path: |
+            Unity.Ricochet/editmode-results
+            Unity.Ricochet/playmode-results
+          if-no-files-found: ignore
+
+      # Tools/deploy.ps1 drives a local Windows Unity.exe through this same build method; GameCI builds the Windows
+      # player from its Linux image with the identical entry point.
+      - uses: game-ci/unity-builder@v4
+        with:
+          projectPath: Unity.Ricochet
+          targetPlatform: StandaloneWindows64
+          buildMethod: Ricochet.Tooling.RicochetBuild.BuildWindows
+          allowDirtyBuild: true
+      - name: Check the player was produced
+        run: test -f Unity.Ricochet/Build/Ricochet/Ricochet.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ricochet-Windows
+          path: Unity.Ricochet/Build/Ricochet
+          retention-days: 7
