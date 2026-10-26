@@ -106,9 +106,7 @@ namespace Ricochet.Tests
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, Announcements = 1 }), Is.True);
-            // StartMatch applies the setup's rules, so the test's tuning goes in after it:
-            Arena.MatchRules.WeaponDamage = 1000;  // one hit is a knock-out
+            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, Announcements = 1, WeaponDamage = MatchSetup.MaxWeaponDamage }), Is.True); // one hit is a knock-out
             yield return WaitUntil(() => Turns.For(Client) != null && Turns.For(Client).Announced == 1, "the client never heard the welcome");
 
             string target = Arena.SeatTarget(ann.Seat);

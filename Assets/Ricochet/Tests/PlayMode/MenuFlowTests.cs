@@ -67,9 +67,7 @@ namespace Ricochet.Tests
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
             _hud = MatchHud.Create(Client);
 
-            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, Map = 0, Goal = MatchSetup.OneRound, Announcements = 0 }), Is.True);
-            // StartMatch applies the setup's rules, so the test's tuning goes in after it:
-            Arena.MatchRules.WeaponDamage = 1000;  // one hit is a knock-out
+            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, Map = 0, Goal = MatchSetup.OneRound, Announcements = 0, WeaponDamage = MatchSetup.MaxWeaponDamage }), Is.True);
             Turns turns = null;
             yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.Round == 1, "the client never got the match");
             Assert.That(turns.GoalPoints, Is.EqualTo(MatchSetup.OneRound));

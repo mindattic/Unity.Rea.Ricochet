@@ -62,7 +62,14 @@ namespace Ricochet.Tests
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
             Assert.That(arena.StartMatch(new MatchSetup { AiCount = 1, AiSkill = Ai.MaxSkill, TurnSeconds = MatchSetup.MinTurnSeconds }), Is.True);
-            // StartMatch applies the setup's rules, so the test's tuning goes in after it (the first turn keeps the setup's 5 s clock):
+            // A joined client takes the host's rules from the synced match (UR-T76), over the live rules, so tune after it has:
+            yield return WaitUntil(() => Turns.For(Client) != null, "the client never got the match");
+            for (int frame = 0; frame < 5; frame++)
+            {
+                yield return null;
+            }
+
+            // The first turn keeps the setup's 5 s clock:
             Arena.MatchRules.TurnSeconds = 1.5;  // the humans let their clocks run out
             Assert.That(arena.Setup.AiSkill, Is.EqualTo(Ai.MaxSkill));
 
