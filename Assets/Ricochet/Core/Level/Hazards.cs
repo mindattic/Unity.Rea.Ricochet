@@ -81,6 +81,12 @@ namespace Ricochet.Core.Level
         /// <summary>Whether laser gates switch on and off every turn (off: always on).</summary>
         public bool LasersAlternate { get; set; }
 
+        /// <summary>pause_redirector off (UR-T25): placed redirectors keep turning, <see cref="RedirectorSpinDegrees"/> every turn.</summary>
+        public bool RedirectorsSpin { get; set; }
+
+        /// <summary>Degrees a spinning redirector turns at each new turn.</summary>
+        public double RedirectorSpinDegrees { get; set; } = 30;
+
         /// <summary>The electric arcs every round starts with (pairs of pylons), for <see cref="Level.Default"/>.</summary>
         public List<Vec2[]> Arcs { get; } = new List<Vec2[]>();
 
@@ -108,6 +114,8 @@ namespace Ricochet.Core.Level
             FoliageRadius = other.FoliageRadius;
             FoliageClearance = other.FoliageClearance;
             LasersAlternate = other.LasersAlternate;
+            RedirectorsSpin = other.RedirectorsSpin;
+            RedirectorSpinDegrees = other.RedirectorSpinDegrees;
             Arcs.Clear();
             Gates.Clear();
             foreach (Vec2[] arc in other.Arcs)
@@ -147,10 +155,10 @@ namespace Ricochet.Core.Level
         public HazardKind Kind { get; }
 
         /// <summary>One end: a pylon, a laser's emitter, a shield wall's or breach's end; a tuft's centre.</summary>
-        public Vec2 A { get; }
+        public Vec2 A { get; internal set; }
 
         /// <summary>The other end (a tuft's centre again).</summary>
-        public Vec2 B { get; }
+        public Vec2 B { get; internal set; }
 
         /// <summary>A tuft's radius; 0 for the rest.</summary>
         public double Radius { get; }
@@ -159,7 +167,7 @@ namespace Ricochet.Core.Level
         public int Owner { get; }
 
         /// <summary>A placed redirector's heading, in degrees.</summary>
-        public double Heading { get; }
+        public double Heading { get; internal set; }
 
         /// <summary>A laser gate's beam is on (the rest are always active).</summary>
         public bool Active { get; internal set; }
@@ -425,19 +433,28 @@ namespace Ricochet.Core.Level
             return changed;
         }
 
-        /// <summary>A new turn: every laser gate switches (when <see cref="HazardRules.LasersAlternate"/>).</summary>
+        /// <summary>A new turn: every laser gate switches (when <see cref="HazardRules.LasersAlternate"/>) and every redirector turns (when <see cref="HazardRules.RedirectorsSpin"/>).</summary>
         public void NextTurn()
         {
-            if (!Rules.LasersAlternate)
-            {
-                return;
-            }
-
             foreach (Hazard hazard in _hazards)
             {
-                if (hazard.Kind == HazardKind.Laser)
+                if (hazard.Kind == HazardKind.Laser && Rules.LasersAlternate)
                 {
                     hazard.Active = !hazard.Active;
+                    Changed?.Invoke(hazard);
+                }
+                else if (hazard.Kind == HazardKind.Redirector && Rules.RedirectorsSpin)
+                {
+                    // pause_redirector off: the rail turns about its centre and sends shots along its new heading.
+                    double radians = Rules.RedirectorSpinDegrees * Math.PI / 180;
+                    double cos = Math.Cos(radians);
+                    double sin = Math.Sin(radians);
+                    Vec2 center = hazard.Center;
+                    Vec2 half = (hazard.B - hazard.A) * 0.5;
+                    var turned = new Vec2(half.X * cos - half.Y * sin, half.X * sin + half.Y * cos);
+                    hazard.A = center - turned;
+                    hazard.B = center + turned;
+                    hazard.Heading = Angles.Normalize(hazard.Heading + Rules.RedirectorSpinDegrees);
                     Changed?.Invoke(hazard);
                 }
             }

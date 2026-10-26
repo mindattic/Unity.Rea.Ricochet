@@ -167,6 +167,49 @@ namespace Ricochet
             s.AddSelect("Announcer", voices, setup.AnnouncerVoice, v => setup.AnnouncerVoice = v);
             s.AddRange("Announcements (0 off, 1 every time, 4 rarely)", 0, Announcer.MaxFrequency, setup.Announcements,
                 v => setup.Announcements = Mathf.RoundToInt(v), wholeNumbers: true);
+            AddMatchRules(s, setup);
+        }
+
+        /// <summary>
+        /// UR-T25: the original's settings room rules: the turn time, bounces and damage (obj_btn_turntime/bounces/damage_less/more),
+        /// each weapon's and item's box and starting count (obj_checkbox_* and the count arrows), the drops' boxes and
+        /// pause_redirector.
+        /// </summary>
+        public static void AddMatchRules(MenuScreen s, MatchSetup setup)
+        {
+            s.AddSection("Match rules");
+            s.AddRange("Turn time (seconds)", MatchSetup.MinTurnSeconds, MatchSetup.MaxTurnSeconds, setup.TurnSeconds,
+                v => setup.TurnSeconds = Mathf.RoundToInt(v), wholeNumbers: true);
+            s.AddRange("Bounces a shot makes", 1, MatchSetup.MaxBouncesLimit, setup.MaxBounces, v => setup.MaxBounces = Mathf.RoundToInt(v), wholeNumbers: true);
+            s.AddRange("Weapon damage", 1, MatchSetup.MaxWeaponDamage, setup.WeaponDamage, v => setup.WeaponDamage = Mathf.RoundToInt(v), wholeNumbers: true);
+            s.AddSection("Weapons (on, and how many each player starts with; 10 = unlimited)");
+            for (int i = 0; i < ArsenalRules.Kinds; i++)
+            {
+                var weapon = (Weapon)i;
+                string name = ArsenalRules.Name(weapon);
+                s.AddToggle(name + " in play", setup.WeaponOn(weapon), v => setup.SetWeaponOn(weapon, v));
+                s.AddRange(name + " at the start", 0, ArsenalRules.Unlimited, setup.WeaponCount(weapon), v => setup.SetWeaponCount(weapon, Mathf.RoundToInt(v)),
+                    wholeNumbers: true);
+            }
+
+            s.AddSection("Items (on, and how many each player starts with; the aim assists are on the Players screen)");
+            for (int i = 0; i < ArsenalRules.Kinds; i++)
+            {
+                var item = (Item)i;
+                string name = ArsenalRules.Name(item);
+                s.AddToggle(name + " in play", setup.ItemOn(item), v => setup.SetItemOn(item, v));
+                if (item != Item.AimAssist)
+                {
+                    s.AddRange(name + " at the start", 0, ArsenalRules.Unlimited, setup.ItemCount(item), v => setup.SetItemCount(item, Mathf.RoundToInt(v)),
+                        wholeNumbers: true);
+                }
+            }
+
+            s.AddSection("Drops");
+            s.AddToggle("Weapon drops", setup.DropOn(DropKind.Weapon), v => setup.SetDropOn(DropKind.Weapon, v));
+            s.AddToggle("Item drops", setup.DropOn(DropKind.Item), v => setup.SetDropOn(DropKind.Item, v));
+            s.AddToggle("Health drops", setup.DropOn(DropKind.Health), v => setup.SetDropOn(DropKind.Health, v));
+            s.AddToggle("Pause redirectors once placed", setup.PauseRedirector, v => setup.PauseRedirector = v);
         }
 
         /// <summary>The controls room: a line a binding.</summary>

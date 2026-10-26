@@ -8,7 +8,11 @@
 // (the "announcements" setting, obj_btn_announcer_less/more: 0 off to 4 rarely). The AI count travels as a vote's number
 // The game's goal and map (UR-T9) ride along too: the points that win the game (the setup screen's obj_btn_goal_less/more,
 // 1 meaning a single round, then 500 to 10000 in steps of 500; 500 by default) and the map the match is played on (an
-// index into Maps.All, the maproom's choice). The AI count travels as a vote's number and the rest as its text
+// index into Maps.All, the maproom's choice). The match rules of the settings room (UR-T25) ride along as well: the turn
+// time (turntime, 20 seconds), the bounces a shot makes (bounces, 5), a hit's damage (weapon_damage), each weapon's and item's
+// on/off box and starting count (hasX and countX, 3 apiece, the cannon unlimited), whether weapon, item, health and random
+// drops fall (weapondrops and the like) and pause_redirector (a redirector the item places stops turning, or keeps turning).
+// The AI count travels as a vote's number and the rest as its text
 // ("skill=5;assist=3;voice=0;announce=1;goal=500;map=0"). The whole setup is remembered between sessions (UR-T41, the
 // original's config.ini) as ToRecord's named numbers, read back by FromRecord; ResetToDefaults is its Default button.
 using System;
@@ -18,6 +22,7 @@ using System.Globalization;
 namespace Ricochet.Core.Match
 {
     using Ricochet.Core.Ai;
+    using Ricochet.Core.Aim;
     using Ricochet.Core.Arsenal;
     using Ricochet.Core.Level;
     public sealed class MatchSetup
@@ -37,10 +42,42 @@ namespace Ricochet.Core.Match
         /// <summary>The highest goal (10000).</summary>
         public const int MaxGoal = 10000;
 
+        /// <summary>The seconds a turn lasts unless set (turnTime = 20).</summary>
+        public const int DefaultTurnSeconds = 20;
+
+        /// <summary>The shortest turn the settings screen sets (the original's arrows went 10 to 30 in fives).</summary>
+        public const int MinTurnSeconds = 5;
+
+        /// <summary>The longest turn the settings screen sets.</summary>
+        public const int MaxTurnSeconds = 60;
+
+        /// <summary>How far each step of the turn time moves it (obj_btn_turntime_more's 5).</summary>
+        public const int TurnSecondsStep = 5;
+
+        /// <summary>The bounces a shot makes unless set (maxBounces = 5).</summary>
+        public const int DefaultMaxBounces = 5;
+
+        /// <summary>The most bounces the settings screen sets.</summary>
+        public const int MaxBouncesLimit = 20;
+
+        /// <summary>A hit's base damage unless set (the stock match.json's weaponDamage).</summary>
+        public const int DefaultWeaponDamage = 10;
+
+        /// <summary>The most base damage the settings screen sets.</summary>
+        public const int MaxWeaponDamage = 100;
+
         private int _aiCount = 1;
         private readonly int[] _skills = NewFilled(Ai.DefaultSkill);
         private readonly int[] _names = NewFilled(AiNames.Default);
-        private int _aimAssists = DefaultAimAssists;
+        private readonly bool[] _weaponOn = NewOn(ArsenalRules.Kinds);
+        private readonly int[] _weaponCount = NewCounts(true);
+        private readonly bool[] _itemOn = NewOn(ArsenalRules.Kinds);
+        private readonly int[] _itemCount = NewCounts(false);
+        private readonly bool[] _dropOn = NewOn(DropRules.KindCount);
+        private int _turnSeconds = DefaultTurnSeconds;
+        private int _maxBounces = DefaultMaxBounces;
+        private int _weaponDamage = DefaultWeaponDamage;
+        private bool _pauseRedirector = true;
         private int _voice = Announcer.DefaultVoice;
         private int _announcements = Announcer.DefaultFrequency;
         private int _goal = DefaultGoal;
@@ -128,8 +165,84 @@ namespace Ricochet.Core.Match
         /// <summary>Aim assists each player starts a round with: 0 (none, and none drop), 1 to 9, or 10 (unlimited).</summary>
         public int AimAssists
         {
-            get { return _aimAssists; }
-            set { _aimAssists = ArsenalRules.ClampCount(value); }
+            get { return _itemCount[(int)Item.AimAssist]; }
+            set { _itemCount[(int)Item.AimAssist] = ArsenalRules.ClampCount(value); }
+        }
+
+        /// <summary>Seconds a player has to fire (turnTime): 5 to 60.</summary>
+        public int TurnSeconds
+        {
+            get { return _turnSeconds; }
+            set { _turnSeconds = Math.Max(MinTurnSeconds, Math.Min(MaxTurnSeconds, value)); }
+        }
+
+        /// <summary>Contacts a shot makes before it detonates (maxBounces): 1 to 20.</summary>
+        public int MaxBounces
+        {
+            get { return _maxBounces; }
+            set { _maxBounces = Math.Max(1, Math.Min(MaxBouncesLimit, value)); }
+        }
+
+        /// <summary>A hit's base damage (weapon_damage): 1 to 100.</summary>
+        public int WeaponDamage
+        {
+            get { return _weaponDamage; }
+            set { _weaponDamage = Math.Max(1, Math.Min(MaxWeaponDamage, value)); }
+        }
+
+        /// <summary>pause_redirector: a redirector stops turning once placed (true), or keeps turning every turn (false).</summary>
+        public bool PauseRedirector
+        {
+            get { return _pauseRedirector; }
+            set { _pauseRedirector = value; }
+        }
+
+        /// <summary>The weapon's box (hasX): whether it is in play at all.</summary>
+        public bool WeaponOn(Weapon weapon) => _weaponOn[(int)weapon];
+
+        public void SetWeaponOn(Weapon weapon, bool on) => _weaponOn[(int)weapon] = on;
+
+        /// <summary>The count each player starts a round with (countX): 0 to 9, or 10 for unlimited.</summary>
+        public int WeaponCount(Weapon weapon) => _weaponCount[(int)weapon];
+
+        public void SetWeaponCount(Weapon weapon, int count) => _weaponCount[(int)weapon] = ArsenalRules.ClampCount(count);
+
+        /// <summary>The item's box (hasX): whether it is in play at all (the aim assist is also out of play at a count of 0).</summary>
+        public bool ItemOn(Item item) => _itemOn[(int)item];
+
+        public void SetItemOn(Item item, bool on) => _itemOn[(int)item] = on;
+
+        /// <summary>The count each player starts a round with (countX).</summary>
+        public int ItemCount(Item item) => _itemCount[(int)item];
+
+        public void SetItemCount(Item item, int count) => _itemCount[(int)item] = ArsenalRules.ClampCount(count);
+
+        /// <summary>weapondrops / itemdrops / healthdrops / randomdrops: whether crates of this kind fall.</summary>
+        public bool DropOn(DropKind kind) => _dropOn[(int)kind];
+
+        public void SetDropOn(DropKind kind, bool on) => _dropOn[(int)kind] = on;
+
+        private static bool[] NewOn(int length)
+        {
+            var on = new bool[length];
+            for (int i = 0; i < length; i++)
+            {
+                on[i] = true;
+            }
+
+            return on;
+        }
+
+        // Every count starts at 3 (countX), but the cannon, which is never spent (the stock arsenal.json's 10).
+        private static int[] NewCounts(bool weapons)
+        {
+            var counts = new int[ArsenalRules.Kinds];
+            for (int i = 0; i < counts.Length; i++)
+            {
+                counts[i] = weapons && i == (int)Weapon.Cannon ? ArsenalRules.Unlimited : DefaultAimAssists;
+            }
+
+            return counts;
         }
 
         /// <summary>The announcer on the air (an index into Announcer.Voices).</summary>
@@ -222,6 +335,18 @@ namespace Ricochet.Core.Match
 
             /// <summary>The prefix of one AI's name index, then its number from 1: <c>name3</c> (UR-T28).</summary>
             public const string NameOf = "name";
+
+            public const string Turn = "turn";
+            public const string Bounces = "bounces";
+            public const string Damage = "damage";
+            public const string Pause = "pause";
+
+            /// <summary>Prefixes of one weapon's box and count, one item's box and count, and one drop kind's box, then its number from 0 (the enum's value): <c>wpn2</c>, <c>wpnct2</c>.</summary>
+            public const string WeaponOn = "wpn";
+            public const string WeaponCount = "wpnct";
+            public const string ItemOn = "item";
+            public const string ItemCount = "itemct";
+            public const string DropOn = "drop";
         }
 
         /// <summary>
@@ -247,7 +372,55 @@ namespace Ricochet.Core.Match
                 record.Add(new KeyValuePair<string, int>(Keys.NameOf + (i + 1).ToString(CultureInfo.InvariantCulture), _names[i]));
             }
 
+            record.AddRange(RuleEntries());
             return record;
+        }
+
+        // The match rules (UR-T25) as named numbers, in a fixed order; the aim assist's count is the "assist" entry.
+        private List<KeyValuePair<string, int>> RuleEntries()
+        {
+            var entries = new List<KeyValuePair<string, int>>
+            {
+                new KeyValuePair<string, int>(Keys.Turn, TurnSeconds),
+                new KeyValuePair<string, int>(Keys.Bounces, MaxBounces),
+                new KeyValuePair<string, int>(Keys.Damage, WeaponDamage),
+                new KeyValuePair<string, int>(Keys.Pause, PauseRedirector ? 1 : 0),
+            };
+            for (int i = 0; i < ArsenalRules.Kinds; i++)
+            {
+                entries.Add(Entry(Keys.WeaponOn, i, _weaponOn[i] ? 1 : 0));
+                entries.Add(Entry(Keys.WeaponCount, i, _weaponCount[i]));
+                entries.Add(Entry(Keys.ItemOn, i, _itemOn[i] ? 1 : 0));
+                if (i != (int)Item.AimAssist)
+                {
+                    entries.Add(Entry(Keys.ItemCount, i, _itemCount[i]));
+                }
+            }
+
+            for (int i = 0; i < DropRules.KindCount; i++)
+            {
+                entries.Add(Entry(Keys.DropOn, i, _dropOn[i] ? 1 : 0));
+            }
+
+            return entries;
+        }
+
+        private static KeyValuePair<string, int> Entry(string prefix, int index, int value)
+        {
+            return new KeyValuePair<string, int>(prefix + index.ToString(CultureInfo.InvariantCulture), value);
+        }
+
+        // The index (0 and up, below count) a key like "wpn3" names after its prefix, or -1 when it is not one.
+        private static int IndexAfter(string key, string prefix, int count)
+        {
+            if (key.Length > prefix.Length && key.StartsWith(prefix, StringComparison.Ordinal)
+                && int.TryParse(key.Substring(prefix.Length), NumberStyles.None, CultureInfo.InvariantCulture, out int index)
+                && index >= 0 && index < count)
+            {
+                return index;
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -295,7 +468,15 @@ namespace Ricochet.Core.Match
             _aiCount = other._aiCount;
             Array.Copy(other._skills, _skills, _skills.Length);
             Array.Copy(other._names, _names, _names.Length);
-            _aimAssists = other._aimAssists;
+            Array.Copy(other._weaponOn, _weaponOn, _weaponOn.Length);
+            Array.Copy(other._weaponCount, _weaponCount, _weaponCount.Length);
+            Array.Copy(other._itemOn, _itemOn, _itemOn.Length);
+            Array.Copy(other._itemCount, _itemCount, _itemCount.Length);
+            Array.Copy(other._dropOn, _dropOn, _dropOn.Length);
+            _turnSeconds = other._turnSeconds;
+            _maxBounces = other._maxBounces;
+            _weaponDamage = other._weaponDamage;
+            _pauseRedirector = other._pauseRedirector;
             _voice = other._voice;
             _announcements = other._announcements;
             _goal = other._goal;
@@ -308,8 +489,26 @@ namespace Ricochet.Core.Match
         /// <summary>True when <paramref name="other"/> holds the same choices.</summary>
         public bool SameAs(MatchSetup other)
         {
-            return other != null && _aiCount == other._aiCount && SameItems(_skills, other._skills) && SameItems(_names, other._names) && _aimAssists == other._aimAssists
+            return other != null && _aiCount == other._aiCount && SameItems(_skills, other._skills) && SameItems(_names, other._names)
+                && SameItems(_weaponCount, other._weaponCount) && SameItems(_itemCount, other._itemCount) && SameFlags(_weaponOn, other._weaponOn)
+                && SameFlags(_itemOn, other._itemOn) && SameFlags(_dropOn, other._dropOn) && _turnSeconds == other._turnSeconds
+                && _maxBounces == other._maxBounces && _weaponDamage == other._weaponDamage && _pauseRedirector == other._pauseRedirector
                 && _voice == other._voice && _announcements == other._announcements && _goal == other._goal && _map == other._map;
+        }
+
+        private static readonly List<KeyValuePair<string, int>> DefaultRuleEntries = new MatchSetup().RuleEntries();
+
+        private static bool SameFlags(bool[] a, bool[] b)
+        {
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool SameItems(int[] a, int[] b)
@@ -364,7 +563,54 @@ namespace Ricochet.Core.Match
                 case Keys.Map:
                     Map = value;
                     return true;
+                case Keys.Turn:
+                    TurnSeconds = value;
+                    return true;
+                case Keys.Bounces:
+                    MaxBounces = value;
+                    return true;
+                case Keys.Damage:
+                    WeaponDamage = value;
+                    return true;
+                case Keys.Pause:
+                    PauseRedirector = value != 0;
+                    return true;
                 default:
+                    int index = IndexAfter(key, Keys.WeaponOn, ArsenalRules.Kinds);
+                    if (index >= 0)
+                    {
+                        _weaponOn[index] = value != 0;
+                        return true;
+                    }
+
+                    index = IndexAfter(key, Keys.WeaponCount, ArsenalRules.Kinds);
+                    if (index >= 0)
+                    {
+                        _weaponCount[index] = ArsenalRules.ClampCount(value);
+                        return true;
+                    }
+
+                    index = IndexAfter(key, Keys.ItemOn, ArsenalRules.Kinds);
+                    if (index >= 0)
+                    {
+                        _itemOn[index] = value != 0;
+                        return true;
+                    }
+
+                    index = IndexAfter(key, Keys.ItemCount, ArsenalRules.Kinds);
+                    if (index >= 0)
+                    {
+                        _itemCount[index] = ArsenalRules.ClampCount(value);
+                        return true;
+                    }
+
+                    index = IndexAfter(key, Keys.DropOn, DropRules.KindCount);
+                    if (index >= 0)
+                    {
+                        _dropOn[index] = value != 0;
+                        return true;
+                    }
+
                     int skill = NumberAfter(key, Keys.SkillOf);
                     if (skill > 0)
                     {
@@ -391,8 +637,37 @@ namespace Ricochet.Core.Match
                 throw new ArgumentNullException(nameof(rules));
             }
 
-            rules.SetStartCount(Item.AimAssist, AimAssists);
-            rules.SetInPlay(Item.AimAssist, AimAssists > 0);
+            for (int i = 0; i < ArsenalRules.Kinds; i++)
+            {
+                rules.SetStartCount((Weapon)i, _weaponCount[i]);
+                rules.SetInPlay((Weapon)i, _weaponOn[i]);
+                rules.SetStartCount((Item)i, _itemCount[i]);
+                rules.SetInPlay((Item)i, _itemOn[i]);
+            }
+
+            rules.SetInPlay(Item.AimAssist, _itemOn[(int)Item.AimAssist] && AimAssists > 0);
+        }
+
+        /// <summary>
+        /// Gives the match, shot, drop and hazard rules this setup's turn time, bounces, damage, drops and redirector
+        /// choice (the arsenal's own come through <see cref="ApplyTo(ArsenalRules)"/>).
+        /// </summary>
+        public void ApplyTo(MatchRules match, ShotRules shot, DropRules drops, HazardRules hazards)
+        {
+            if (match == null || shot == null || drops == null || hazards == null)
+            {
+                throw new ArgumentNullException(match == null ? nameof(match) : shot == null ? nameof(shot) : drops == null ? nameof(drops) : nameof(hazards));
+            }
+
+            match.TurnSeconds = TurnSeconds;
+            match.WeaponDamage = WeaponDamage;
+            shot.MaxBounces = MaxBounces;
+            for (int i = 0; i < DropRules.KindCount; i++)
+            {
+                drops.SetEnabled((DropKind)i, _dropOn[i]);
+            }
+
+            hazards.RedirectorsSpin = !PauseRedirector;
         }
 
         /// <summary>The vote's text payload: everything but the AI count.</summary>
@@ -408,9 +683,21 @@ namespace Ricochet.Core.Match
                 }
             }
 
+            // The rules (UR-T25) only where they differ from the defaults: the text stays short.
+            var rules = new System.Text.StringBuilder();
+            List<KeyValuePair<string, int>> mine = RuleEntries();
+            List<KeyValuePair<string, int>> stock = DefaultRuleEntries;
+            for (int i = 0; i < mine.Count; i++)
+            {
+                if (mine[i].Value != stock[i].Value)
+                {
+                    rules.Append(';').Append(mine[i].Key).Append('=').Append(mine[i].Value.ToString(CultureInfo.InvariantCulture));
+                }
+            }
+
             return "skill=" + AiSkill.ToString(CultureInfo.InvariantCulture) + ";assist=" + AimAssists.ToString(CultureInfo.InvariantCulture)
                 + ";voice=" + AnnouncerVoice.ToString(CultureInfo.InvariantCulture) + ";announce=" + Announcements.ToString(CultureInfo.InvariantCulture)
-                + ";goal=" + Goal.ToString(CultureInfo.InvariantCulture) + ";map=" + Map.ToString(CultureInfo.InvariantCulture) + seats;
+                + ";goal=" + Goal.ToString(CultureInfo.InvariantCulture) + ";map=" + Map.ToString(CultureInfo.InvariantCulture) + seats + rules;
         }
 
         /// <summary>

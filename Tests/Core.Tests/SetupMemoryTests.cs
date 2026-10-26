@@ -6,7 +6,9 @@ using NUnit.Framework;
 
 namespace Ricochet.Core.Tests
 {
+    using Ricochet.Core.Aim;
     using Ricochet.Core.Ai;
+    using Ricochet.Core.Arsenal;
     using Ricochet.Core.Data;
     using Ricochet.Core.Level;
     using Ricochet.Core.Match;
@@ -62,7 +64,10 @@ namespace Ricochet.Core.Tests
                 MatchSetup.Keys.Ai, MatchSetup.Keys.Skill, MatchSetup.Keys.Assist, MatchSetup.Keys.Voice,
                 MatchSetup.Keys.Announce, MatchSetup.Keys.Goal, MatchSetup.Keys.Map,
             }));
-            Assert.That(keys.Skip(7), Is.EqualTo(Enumerable.Range(1, MatchRules.MaxSeats - 1).SelectMany(n => new[] { "skill" + n, "name" + n })));
+            Assert.That(keys.Skip(7).Take(2 * (MatchRules.MaxSeats - 1)),
+                Is.EqualTo(Enumerable.Range(1, MatchRules.MaxSeats - 1).SelectMany(n => new[] { "skill" + n, "name" + n })));
+            Assert.That(keys.Skip(7 + 2 * (MatchRules.MaxSeats - 1)).Take(4),
+                Is.EqualTo(new[] { MatchSetup.Keys.Turn, MatchSetup.Keys.Bounces, MatchSetup.Keys.Damage, MatchSetup.Keys.Pause }));
             Assert.That(keys, Is.Unique);
         }
 
@@ -156,6 +161,101 @@ namespace Ricochet.Core.Tests
             b.SetNameIndex(0, 3);
             Assert.That(a.SkillOf(0), Is.EqualTo(Ai.DefaultSkill));
             Assert.That(a.NameIndexOf(0), Is.EqualTo(AiNames.Default));
+        }
+
+        private static MatchSetup WithRules()
+        {
+            MatchSetup setup = Chosen();
+            setup.TurnSeconds = 35;
+            setup.MaxBounces = 9;
+            setup.WeaponDamage = 40;
+            setup.PauseRedirector = false;
+            setup.SetWeaponOn(Weapon.Railgun, false);
+            setup.SetWeaponCount(Weapon.Laser, 7);
+            setup.SetWeaponCount(Weapon.Cannon, 4);
+            setup.SetItemOn(Item.Teleporter, false);
+            setup.SetItemCount(Item.ShieldWall, 0);
+            setup.SetDropOn(DropKind.Health, false);
+            return setup;
+        }
+
+        [Test]
+        public void TheMatchRulesGoIntoTheRecord_AndComeBackThroughItsAndTheVoteText()
+        {
+            MatchSetup rules = WithRules();
+            MatchSetup back = MatchSetup.FromRecord(rules.ToRecord());
+            Assert.That(back.SameAs(rules), Is.True);
+            Assert.That((back.TurnSeconds, back.MaxBounces, back.WeaponDamage, back.PauseRedirector), Is.EqualTo((35, 9, 40, false)));
+            Assert.That((back.WeaponOn(Weapon.Railgun), back.WeaponCount(Weapon.Laser), back.WeaponCount(Weapon.Cannon)), Is.EqualTo((false, 7, 4)));
+            Assert.That((back.ItemOn(Item.Teleporter), back.ItemCount(Item.ShieldWall), back.DropOn(DropKind.Health)), Is.EqualTo((false, 0, false)));
+            Assert.That(back.DropOn(DropKind.Weapon), Is.True);
+
+            MatchSetup voted = MatchSetup.Parse(rules.AiCount, rules.Format());
+            Assert.That(voted.SameAs(rules), Is.True, rules.Format());
+        }
+
+        [Test]
+        public void TheDefaultRulesAreTheOriginals_AndAnOlderSaveKeepsThem()
+        {
+            var setup = new MatchSetup();
+            Assert.That((setup.TurnSeconds, setup.MaxBounces, setup.WeaponDamage, setup.PauseRedirector), Is.EqualTo((20, 5, 10, true)));
+            Assert.That(setup.WeaponCount(Weapon.Laser), Is.EqualTo(3));
+            Assert.That(setup.WeaponCount(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
+            Assert.That(setup.ItemCount(Item.Redirector), Is.EqualTo(3));
+            Assert.That(Enumerable.Range(0, ArsenalRules.Kinds).All(i => setup.WeaponOn((Weapon)i) && setup.ItemOn((Item)i)), Is.True);
+            Assert.That(setup.Format(), Does.Not.Contain("turn=").And.Not.Contain("wpn"), "defaults stay out of the vote text");
+
+            // A save from before the rules hold none of them.
+            MatchSetup old = MatchSetup.FromRecord(new Dictionary<string, int> { [MatchSetup.Keys.Goal] = 1000 });
+            Assert.That(old.TurnSeconds, Is.EqualTo(20));
+        }
+
+        [Test]
+        public void RulesAreClamped_AndResetAndCloneCarryThem()
+        {
+            MatchSetup clamped = MatchSetup.FromRecord(new Dictionary<string, int>
+            {
+                [MatchSetup.Keys.Turn] = 9999, [MatchSetup.Keys.Bounces] = -3, [MatchSetup.Keys.Damage] = 0, ["wpnct1"] = 99, ["wpn99"] = 0,
+            });
+            Assert.That((clamped.TurnSeconds, clamped.MaxBounces, clamped.WeaponDamage, clamped.WeaponCount(Weapon.Laser)),
+                Is.EqualTo((MatchSetup.MaxTurnSeconds, 1, 1, ArsenalRules.Unlimited)));
+
+            MatchSetup rules = WithRules();
+            Assert.That(rules.Clone().SameAs(rules), Is.True);
+            rules.ResetToDefaults();
+            Assert.That(rules.SameAs(new MatchSetup()), Is.True);
+        }
+
+        [Test]
+        public void TheRulesReachTheMatchShotArsenalDropAndHazardRules()
+        {
+            MatchSetup setup = WithRules();
+            var match = new MatchRules();
+            var shot = new ShotRules();
+            var arsenal = new ArsenalRules();
+            var drops = new DropRules();
+            var hazards = new HazardRules();
+            setup.ApplyTo(arsenal);
+            setup.ApplyTo(match, shot, drops, hazards);
+            Assert.That((match.TurnSeconds, match.WeaponDamage, shot.MaxBounces), Is.EqualTo((35.0, 40, 9)));
+            Assert.That((arsenal.InPlay(Weapon.Railgun), arsenal.StartCount(Weapon.Laser), arsenal.StartCount(Weapon.Cannon)), Is.EqualTo((false, 7, 4)));
+            Assert.That((arsenal.InPlay(Item.Teleporter), arsenal.StartCount(Item.ShieldWall), arsenal.InPlay(Item.AimAssist)), Is.EqualTo((false, 0, true)));
+            Assert.That((drops.Enabled(DropKind.Health), drops.Enabled(DropKind.Weapon)), Is.EqualTo((false, true)));
+            Assert.That(hazards.RedirectorsSpin, Is.True);
+        }
+
+        [Test]
+        public void ASpinningRedirectorTurnsEachTurn_APausedOneStays()
+        {
+            foreach (bool spin in new[] { false, true })
+            {
+                var rules = new HazardRules { RedirectorsSpin = spin, RedirectorSpinDegrees = 90 };
+                var field = new HazardField(new Level(-10, -5, 10, 5), rules);
+                Hazard placed = field.AddRedirector(0, new Vec2(0, 0), 0);
+                field.NextTurn();
+                Assert.That(placed.Heading, Is.EqualTo(spin ? 90 : 0).Within(1e-9));
+                Assert.That((placed.A + placed.B).Length, Is.EqualTo(0).Within(1e-9), "still about its centre");
+            }
         }
 
         [Test]
