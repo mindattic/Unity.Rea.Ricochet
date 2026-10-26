@@ -279,6 +279,13 @@ namespace Ricochet
                 : null;
         }
 
+        // The skill the setup gave this AI; the all-AI skill for one whose key has no number.
+        private int SkillOfAi(Player ai)
+        {
+            int n = ai.AiNumber;
+            return n >= 1 && n <= MatchRules.MaxSeats - 1 ? _setup.SkillOf(n - 1) : _setup.AiSkill;
+        }
+
         // An AI seat's turn, a frame at a time: think, plan (and pick the weapon), turn the barrel, fire.
         private void PlayAi(float seconds)
         {
@@ -296,7 +303,7 @@ namespace Ricochet
             switch (_aiTurn.Step(seconds, ai.Heading, _match.TimeLeft, out double next))
             {
                 case AiStep.Plan:
-                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), _setup.SkillOf(ai.AiNumber - 1), _aiDice,
+                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), SkillOfAi(ai), _aiDice,
                         Rules, ArsenalRules, ai.Loadout);
                     _aiTurn.SetPlan(plan);
                     ai.ServerSelectWeapon(plan.Weapon);
