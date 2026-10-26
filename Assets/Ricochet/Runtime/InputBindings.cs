@@ -26,6 +26,14 @@ namespace Ricochet
         private static InputActionAsset _asset;
         private static InputActionMap _map;
 
+        /// <summary>
+        /// Skips reading (and never writes) the real Unity.Shared profile store while set. EditMode tests set this
+        /// before touching <see cref="Gameplay"/>: without it, they would load whatever the developer running them
+        /// has actually saved on this machine (<c>Application.persistentDataPath</c>, per <c>ProfilesBootstrap</c>),
+        /// which could leave every default-binding assertion depending on that developer's own rebinds.
+        /// </summary>
+        internal static bool SkipProfileForTests;
+
         /// <summary>The loaded asset (a private, instantiated copy), created and enabled on first use.</summary>
         public static InputActionAsset Asset
         {
@@ -69,6 +77,17 @@ namespace Ricochet
         /// <summary>Re-reads the active profile's saved overrides (a fresh profile, or another MindAttic game) and applies them.</summary>
         public static void ApplySavedOverrides()
         {
+            EnsureLoaded();
+            if (SkipProfileForTests)
+            {
+                return;
+            }
+
+            // Always starts from the asset's own bindings, not whatever was on it a moment ago: a profile with no
+            // saved overrides (fresh, or one switched to from a profile that had some) must mean "use the defaults",
+            // not "keep whatever the previous profile left on this instance".
+            RemoveAllOverrides();
+
             string json = ReadProfileJson();
             if (string.IsNullOrEmpty(json))
             {
@@ -89,6 +108,11 @@ namespace Ricochet
         public static bool Save()
         {
             EnsureLoaded();
+            if (SkipProfileForTests)
+            {
+                return true;
+            }
+
             string json = _asset.SaveBindingOverridesAsJson();
             GameSettings().Set(ProfileKey, json);
             return Profiles.Current.TrySaveSettings();
@@ -98,12 +122,16 @@ namespace Ricochet
         public static bool ResetToDefaults()
         {
             EnsureLoaded();
+            RemoveAllOverrides();
+            return Save();
+        }
+
+        private static void RemoveAllOverrides()
+        {
             foreach (InputActionMap map in _asset.actionMaps)
             {
                 map.RemoveAllBindingOverrides();
             }
-
-            return Save();
         }
 
         private static string ReadProfileJson()
@@ -124,6 +152,7 @@ namespace Ricochet
         {
             if (_asset != null)
             {
+                _asset.Disable(); // otherwise its actions stay registered in the Input System's global action state
                 UnityEngine.Object.DestroyImmediate(_asset);
             }
 

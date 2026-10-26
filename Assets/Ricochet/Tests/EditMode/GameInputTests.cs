@@ -113,6 +113,10 @@ namespace Ricochet.EditorTests
             InputSystem.settings.updateMode = InputSettings.UpdateMode.ProcessEventsManually;
             InputSystem.settings.SetInternalFeatureFlag("RUN_PLAYER_UPDATES_IN_EDIT_MODE", true);
 
+            // Without this, ApplySavedOverrides() would read whatever rebinds the developer running these tests has
+            // actually saved on this machine (Application.persistentDataPath), leaving every default-binding
+            // assertion depending on that developer's own profile instead of the asset's shipped defaults.
+            InputBindings.SkipProfileForTests = true;
             InputBindings.ResetForTests();
             GameInput.ResetForTests();
             _keyboard = InputSystem.AddDevice<Keyboard>();
@@ -132,6 +136,7 @@ namespace Ricochet.EditorTests
             InputSystem.settings.updateMode = _previousUpdateMode;
             InputSystem.settings.SetInternalFeatureFlag("RUN_PLAYER_UPDATES_IN_EDIT_MODE", false);
             InputBindings.ResetForTests();
+            InputBindings.SkipProfileForTests = false;
             GameInput.ResetForTests();
         }
 
@@ -210,7 +215,13 @@ namespace Ricochet.EditorTests
         {
             Press(Key.E);
             Assert.That(GameInput.CycleWeapon(), Is.EqualTo(1), "E steps to the next weapon");
-            Assert.That(GameInput.CycleWeapon(), Is.EqualTo(0), "held, it does not step again");
+
+            // CycleWeapon() reads WasPressedThisFrame(), the Input System's own per-frame transition, so two reads
+            // within the same frame must agree (a HUD preview reading it right after the game must see the same step,
+            // not consume it) - this re-sends the same still-held key, simulating the next frame with no new press.
+            Assert.That(GameInput.CycleWeapon(), Is.EqualTo(1), "a second read the same frame sees the same step");
+            Press(Key.E);
+            Assert.That(GameInput.CycleWeapon(), Is.EqualTo(0), "held into another frame, it does not step again");
             ReleaseKeys();
 
             Press(Key.Q);
@@ -270,5 +281,11 @@ namespace Ricochet.EditorTests
             Press(Key.G);
             Assert.That(GameInput.Fire(), Is.True, "the rebound key fires instead");
         }
+
+        // GameInput.Fire()/UseItem() also check EventSystem.current.IsPointerOverGameObject() so a click that lands
+        // on a menu button doesn't also fire (UR-T36 review): EventSystem.IsPointerOverGameObject() is not virtual,
+        // and populating it for real needs a Canvas, a GraphicRaycaster and a running player loop (Update()) that
+        // EditMode's no-player-loop environment doesn't have, so that guard is exercised by hand (open the rebind
+        // screen in Play mode and click a row - Fire/UseItem never trigger) rather than by a test here.
     }
 }

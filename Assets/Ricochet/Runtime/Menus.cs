@@ -126,8 +126,16 @@ namespace Ricochet
         /// change is saved to the active Unity.Shared profile the moment it completes, so it is kept for every
         /// session (<see cref="InputBindings"/>).
         /// </summary>
+        // The one rebind in progress, if any: StartRebind cancels it before starting another (two rows pending at
+        // once would race for which one re-enables the map), and leaving the screen any way at all - Back, closing
+        // the in-game menu, navigating elsewhere - cancels it too, so the Gameplay map can never come back disabled.
+        private static InputActionRebindingExtensions.RebindingOperation _activeRebind;
+
         public static void BuildRebind(MenuScreen s)
         {
+            s.Hidden -= CancelActiveRebind; // BuildRebind re-runs itself (Reset to defaults), so guard against a
+            s.Hidden += CancelActiveRebind; // second subscription to the same screen's Hidden event.
+
             s.Subtitle = "Click a control, then press, click or move the one you want instead. Esc cancels.";
             s.AddButton("Reset to defaults", () =>
             {
@@ -158,17 +166,24 @@ namespace Ricochet
         private static string DescribeBinding(InputAction action, int bindingIndex) =>
             action.bindings[bindingIndex].ToDisplayString(InputBinding.DisplayStringOptions.DontIncludeInteractions);
 
+        // Cancelling fires the pending operation's own OnCancel callback (synchronously), which restores its
+        // button's label and re-enables its map - so this alone is enough to undo whatever StartRebind did.
+        private static void CancelActiveRebind() => _activeRebind?.Cancel();
+
         private static void StartRebind(InputAction action, int bindingIndex, MaButton button)
         {
+            CancelActiveRebind();
+
             InputActionMap map = action.actionMap;
             map.Disable();
             button.Label = "Press a control...";
-            action.PerformInteractiveRebinding(bindingIndex)
+            _activeRebind = action.PerformInteractiveRebinding(bindingIndex)
                 .WithControlsExcluding("<Mouse>/position")
                 .WithControlsExcluding("<Mouse>/delta")
                 .WithCancelingThrough("<Keyboard>/escape")
                 .OnComplete(op =>
                 {
+                    _activeRebind = null;
                     op.Dispose();
                     InputBindings.Save();
                     button.Label = DescribeBinding(action, bindingIndex);
@@ -176,6 +191,7 @@ namespace Ricochet
                 })
                 .OnCancel(op =>
                 {
+                    _activeRebind = null;
                     op.Dispose();
                     button.Label = DescribeBinding(action, bindingIndex);
                     map.Enable();
