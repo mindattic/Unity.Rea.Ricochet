@@ -1,0 +1,5139 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a4db28d9496cbf499da6ba7ba2d1e7a, type: 3}
+  m_Name: ArtCatalogue
+  m_EditorClassIdentifier: Ricochet.Runtime::Ricochet.ArtCatalogue
+  _pixelsPerUnit: 87.27273
+  _roomSpeed: 60
+  _sprites:
+  - name: left_border
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\left_border.sprite.gmx
+    originalFrames:
+    - sprites\images\left_border_0.png
+    width: 33
+    height: 1080
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 11119e20de3357c4198203435fe173e6, type: 3}
+  - name: obj_item_extrabounces_off
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\obj_item_extrabounces_off.sprite.gmx
+    originalFrames:
+    - sprites\images\obj_item_extrabounces_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0867c930a264696469eb55eb3bd2c6b1, type: 3}
+  - name: spr_arrowleft
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_arrowleft.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_arrowleft_0.png
+    width: 89
+    height: 64
+    xorig: 44
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 25d036900d5dc5644aeabec1f66dba6e, type: 3}
+  - name: spr_arrowleft_back
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_arrowleft_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_arrowleft_back_0.png
+    width: 89
+    height: 64
+    xorig: 44
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 16e533fb2cf73354eac87e2d28c4fdc1, type: 3}
+  - name: spr_arrowleft_over
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_arrowleft_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_arrowleft_over_0.png
+    width: 89
+    height: 64
+    xorig: 44
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b9c56576cfb74704bb36ddc66f63ae94, type: 3}
+  - name: spr_arrowright
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_arrowright.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_arrowright_0.png
+    width: 89
+    height: 64
+    xorig: 44
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0224bd2359bc2144fade6770866bee70, type: 3}
+  - name: spr_arrowright_back
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_arrowright_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_arrowright_back_0.png
+    width: 89
+    height: 64
+    xorig: 44
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4cf43d10127e8df45b0e2b4151c01b2c, type: 3}
+  - name: spr_arrowright_over
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_arrowright_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_arrowright_over_0.png
+    width: 89
+    height: 64
+    xorig: 44
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 8c100e710dd04214c8f0d18a6e219390, type: 3}
+  - name: spr_back
+    group: controls
+    inProject: 1
+    originalPath: sprites\spr_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_back_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0c9cf98a2aa0f304db859af417364733, type: 3}
+  - name: spr_banner
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_banner.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_banner_0.png
+    width: 1000
+    height: 200
+    xorig: 500
+    yorig: 100
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 59aac3b860c0ced45b6ed84f54098978, type: 3}
+  - name: spr_bar1
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar1_0.png
+    width: 26
+    height: 381
+    xorig: 13
+    yorig: 190
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 84924454f6c331e48a72436d88600759, type: 3}
+  - name: spr_bar10
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar10.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar10_0.png
+    width: 24
+    height: 267
+    xorig: 12
+    yorig: 133
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d4e26b353d54d6347bef5adbde22515e, type: 3}
+  - name: spr_bar11
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar11.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar11_0.png
+    width: 26
+    height: 193
+    xorig: 13
+    yorig: 96
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 38b01a64be3e01549a46a22bfc5c7810, type: 3}
+  - name: spr_bar12
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar12.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar12_0.png
+    width: 41
+    height: 210
+    xorig: 20
+    yorig: 105
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 52faede82f9787c4abad7a0bf299512c, type: 3}
+  - name: spr_bar13
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar13.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar13_0.png
+    width: 41
+    height: 306
+    xorig: 20
+    yorig: 153
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4b562603ce326a344ae426ef6726a1c1, type: 3}
+  - name: spr_bar14
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar14.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar14_0.png
+    width: 41
+    height: 205
+    xorig: 20
+    yorig: 102
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 6cf598c96f22e6540bda2ccce117bd19, type: 3}
+  - name: spr_bar15
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar15.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar15_0.png
+    width: 23
+    height: 244
+    xorig: 11
+    yorig: 122
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 3b4388825e9dd8541879fb7134e5ff78, type: 3}
+  - name: spr_bar16
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar16.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar16_0.png
+    width: 23
+    height: 183
+    xorig: 11
+    yorig: 91
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0afc46d720480774ba3e870877124c80, type: 3}
+  - name: spr_bar2
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar2_0.png
+    width: 26
+    height: 297
+    xorig: 13
+    yorig: 148
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 86bec4b84e9dc2c408a787081a3a4944, type: 3}
+  - name: spr_bar3
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar3_0.png
+    width: 16
+    height: 228
+    xorig: 8
+    yorig: 114
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 3c2105a8903cd4c40a22ba8fcec42759, type: 3}
+  - name: spr_bar4
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar4.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar4_0.png
+    width: 16
+    height: 207
+    xorig: 8
+    yorig: 103
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: eaad7cf5c87e6bf4b837dc6fdb82cf33, type: 3}
+  - name: spr_bar5
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar5.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar5_0.png
+    width: 28
+    height: 261
+    xorig: 14
+    yorig: 130
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c2777668d1ffa32428e28224b3f23179, type: 3}
+  - name: spr_bar6
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar6.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar6_0.png
+    width: 43
+    height: 318
+    xorig: 21
+    yorig: 159
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4ca823223aa7b6e48a550bb06da10b51, type: 3}
+  - name: spr_bar7
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar7.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar7_0.png
+    width: 43
+    height: 345
+    xorig: 21
+    yorig: 172
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1e228f3b2557d4c498a44e6a893f531a, type: 3}
+  - name: spr_bar8
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar8.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar8_0.png
+    width: 35
+    height: 224
+    xorig: 17
+    yorig: 112
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4c83e4f351782f54fb5e18d4f2fc3d1e, type: 3}
+  - name: spr_bar9
+    group: game/shapes/bars
+    inProject: 1
+    originalPath: sprites\spr_bar9.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bar9_0.png
+    width: 47
+    height: 317
+    xorig: 23
+    yorig: 158
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c1078baca06498847bcae6e894750f5f, type: 3}
+  - name: spr_beach
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_beach.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_beach_0.png
+    width: 238
+    height: 343
+    xorig: 119
+    yorig: 171
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1398c58f9bbc72142ab0d0ebc9fbc115, type: 3}
+  - name: spr_bigexplosion
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_bigexplosion.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bigexplosion_0.png
+    - sprites\images\spr_bigexplosion_1.png
+    - sprites\images\spr_bigexplosion_2.png
+    - sprites\images\spr_bigexplosion_3.png
+    - sprites\images\spr_bigexplosion_4.png
+    - sprites\images\spr_bigexplosion_5.png
+    - sprites\images\spr_bigexplosion_6.png
+    - sprites\images\spr_bigexplosion_7.png
+    - sprites\images\spr_bigexplosion_8.png
+    - sprites\images\spr_bigexplosion_9.png
+    - sprites\images\spr_bigexplosion_10.png
+    - sprites\images\spr_bigexplosion_11.png
+    - sprites\images\spr_bigexplosion_12.png
+    - sprites\images\spr_bigexplosion_13.png
+    - sprites\images\spr_bigexplosion_14.png
+    - sprites\images\spr_bigexplosion_15.png
+    - sprites\images\spr_bigexplosion_16.png
+    - sprites\images\spr_bigexplosion_17.png
+    - sprites\images\spr_bigexplosion_18.png
+    - sprites\images\spr_bigexplosion_19.png
+    width: 96
+    height: 96
+    xorig: 48
+    yorig: 48
+    imageSpeed: 0.2
+    frames:
+    - {fileID: 21300000, guid: b7134616be2b88e4da61371a75842c48, type: 3}
+    - {fileID: 21300000, guid: 85d03b1d8ceb91b45a298b041974dbc9, type: 3}
+    - {fileID: 21300000, guid: 6e0227cf46c1ddc4db9ad4c405744d02, type: 3}
+    - {fileID: 21300000, guid: f13708b6fbafb9441ad8b2ad4e59a7a1, type: 3}
+    - {fileID: 21300000, guid: e3af6b345bd141f418c383884766a889, type: 3}
+    - {fileID: 21300000, guid: c80de6fff4c91fa41b4e14c0ff166ce2, type: 3}
+    - {fileID: 21300000, guid: 1d0d05f3ecac9fb40867249599e56511, type: 3}
+    - {fileID: 21300000, guid: 8703be9e52ee3e44a842e972cbad4c3f, type: 3}
+    - {fileID: 21300000, guid: 4034adae02d15ca45817431f3f80d51f, type: 3}
+    - {fileID: 21300000, guid: 58e9fdad20e5d5040b8706c992db924e, type: 3}
+    - {fileID: 21300000, guid: 3626046dc568c454aa9506a9d28562a1, type: 3}
+    - {fileID: 21300000, guid: fb4ce694eb8207c41a73f7ca2f21356a, type: 3}
+    - {fileID: 21300000, guid: a8bfee1d15a58f240b47f38b83e5143b, type: 3}
+    - {fileID: 21300000, guid: 6ad719984a0094e4eb2445424696dc51, type: 3}
+    - {fileID: 21300000, guid: 827cb1f6a3e42e3449d74d7131118517, type: 3}
+    - {fileID: 21300000, guid: 2ad66ab369cfa5741b787c05b6109f1c, type: 3}
+    - {fileID: 21300000, guid: 067cd8576f8759344be27a2ed18edbdf, type: 3}
+    - {fileID: 21300000, guid: 23b3356d9a30ca04488ee1c55eb7ddb8, type: 3}
+    - {fileID: 21300000, guid: 9c3a1e5e42ae92c4884788b54c7cae18, type: 3}
+    - {fileID: 21300000, guid: b73334906345bd145a05985d2c94465d, type: 3}
+  - name: spr_black
+    group: gui
+    inProject: 1
+    originalPath: sprites\spr_black.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_black_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 430b7f46b11dba047b17f66b70935720, type: 3}
+  - name: spr_bottom_border
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_bottom_border.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bottom_border_0.png
+    width: 1920
+    height: 64
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 3e067736c9434dc4b957f2ba3886c339, type: 3}
+  - name: spr_btn_add
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_btn_add.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_add_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 9e94b1665f393d0418af5fd974602840, type: 3}
+  - name: spr_btn_config
+    group: mainmenu/buttons
+    inProject: 1
+    originalPath: sprites\spr_btn_config.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_config_0.png
+    width: 238
+    height: 64
+    xorig: 119
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 86cc6677aa467434aa7d5c31d4192d34, type: 3}
+  - name: spr_btn_controls
+    group: mainmenu/buttons
+    inProject: 1
+    originalPath: sprites\spr_btn_controls.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_controls_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0b02b5b9f7c63254d94e36ee3793f0ca, type: 3}
+  - name: spr_btn_credits
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_btn_credits.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_credits_0.png
+    width: 238
+    height: 64
+    xorig: 119
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: fd6d18420695e8a4485c1b40888f7531, type: 3}
+  - name: spr_btn_default
+    group: mainmenu/buttons
+    inProject: 1
+    originalPath: sprites\spr_btn_default.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_default_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f5e6909eb7f8e1b4aac8ee0f1a5c055e, type: 3}
+  - name: spr_btn_howtoplay
+    group: mainmenu/buttons
+    inProject: 1
+    originalPath: sprites\spr_btn_howtoplay.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_howtoplay_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 92bdff00bd71d074e95cae4d66cd9f1c, type: 3}
+  - name: spr_btn_quit
+    group: mainmenu/buttons
+    inProject: 1
+    originalPath: sprites\spr_btn_quit.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_quit_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ccae8d2eec7518344837c80e9823629d, type: 3}
+  - name: spr_btn_remove
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_btn_remove.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_remove_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 062ae5ac90d654d48939e95611e63075, type: 3}
+  - name: spr_btn_settings
+    group: mainmenu/buttons
+    inProject: 1
+    originalPath: sprites\spr_btn_settings.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_settings_0.png
+    width: 238
+    height: 64
+    xorig: 119
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 77cb2f2c17031374faf4458e7564a077, type: 3}
+  - name: spr_btn_start
+    group: mainmenu/buttons
+    inProject: 1
+    originalPath: sprites\spr_btn_start.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_btn_start_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 59a2263af6b8c904b9edfdbac232c480, type: 3}
+  - name: spr_bullet
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_bullet.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_bullet_0.png
+    - sprites\images\spr_bullet_1.png
+    - sprites\images\spr_bullet_2.png
+    - sprites\images\spr_bullet_3.png
+    width: 8
+    height: 8
+    xorig: 4
+    yorig: 4
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c967ec46137947446913a20c366895b1, type: 3}
+    - {fileID: 21300000, guid: bf7a65d3975962f4d95d4cb34aba39f1, type: 3}
+    - {fileID: 21300000, guid: c95272e288235d14a88e12f9a341df7b, type: 3}
+    - {fileID: 21300000, guid: d802f3de0b133b44d8f7b4b1afda1bfe, type: 3}
+  - name: spr_button
+    group: gui
+    inProject: 1
+    originalPath: sprites\spr_button.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_button_0.png
+    width: 226
+    height: 64
+    xorig: 113
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 6dea8bbc81eb26643b3c57e96d51bcd8, type: 3}
+  - name: spr_button_back
+    group: gui
+    inProject: 1
+    originalPath: sprites\spr_button_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_button_back_0.png
+    width: 226
+    height: 64
+    xorig: 113
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 6eccc3fb3c96a2c469600fe7c4eef520, type: 3}
+  - name: spr_button_over
+    group: gui
+    inProject: 1
+    originalPath: sprites\spr_button_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_button_over_0.png
+    width: 226
+    height: 64
+    xorig: 113
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c4cfc39e9a2eea54ea811c1ef3f27685, type: 3}
+  - name: spr_checkbox_ai
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_checkbox_ai.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_checkbox_ai_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a25c508bd7ac19745bf0c89a288f264e, type: 3}
+  - name: spr_checkbox_back
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_checkbox_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_checkbox_back_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 887e9b981bca7b94ca17c592b5aa134d, type: 3}
+  - name: spr_checkbox_checked
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_checkbox_checked.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_checkbox_checked_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4770b060d220c07438490a0a6db762f1, type: 3}
+  - name: spr_checkbox_over
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_checkbox_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_checkbox_over_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ed613313ba194474fb55ab79e047bb2e, type: 3}
+  - name: spr_checkbox_player
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_checkbox_player.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_checkbox_player_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1097038c62afedf4282a866c005dbbcc, type: 3}
+  - name: spr_checkbox_unchecked
+    group: settings
+    inProject: 1
+    originalPath: sprites\spr_checkbox_unchecked.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_checkbox_unchecked_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 5fdafc818324b2f44972aae373445872, type: 3}
+  - name: spr_circle1
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle1_0.png
+    width: 92
+    height: 92
+    xorig: 46
+    yorig: 46
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 04bd605c519f44c4e9002ce13738a205, type: 3}
+  - name: spr_circle10
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle10.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle10_0.png
+    width: 72
+    height: 72
+    xorig: 36
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ace8c6b6f5c9e004bbfb708c025e07a3, type: 3}
+  - name: spr_circle11
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle11.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle11_0.png
+    width: 120
+    height: 120
+    xorig: 60
+    yorig: 60
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 72dab1d0ae9236e428a14f65a0e88f41, type: 3}
+  - name: spr_circle12
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle12.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle12_0.png
+    width: 109
+    height: 150
+    xorig: 54
+    yorig: 75
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: dd1af528c8e59c143b0d4ea46cfab766, type: 3}
+  - name: spr_circle13
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle13.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle13_0.png
+    width: 94
+    height: 94
+    xorig: 47
+    yorig: 47
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b14da742a215f2d44ae255a2ea6251f8, type: 3}
+  - name: spr_circle14
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle14.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle14_0.png
+    width: 73
+    height: 88
+    xorig: 36
+    yorig: 44
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 144334279b032394d9e3c6456366d42e, type: 3}
+  - name: spr_circle15
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle15.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle15_0.png
+    width: 138
+    height: 154
+    xorig: 69
+    yorig: 77
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 7a2c768549b6ccc4aac8b87625e01cd2, type: 3}
+  - name: spr_circle16
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle16.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle16_0.png
+    width: 282
+    height: 338
+    xorig: 141
+    yorig: 169
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b8cd0fd4145bce34a989c8669668d266, type: 3}
+  - name: spr_circle2
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle2_0.png
+    width: 196
+    height: 196
+    xorig: 98
+    yorig: 98
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e9a08d2b78559b64cbd77c0d4b4e627f, type: 3}
+  - name: spr_circle3
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle3_0.png
+    width: 153
+    height: 153
+    xorig: 76
+    yorig: 76
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 26f41aff249d63c48aa4f2c19b2f9376, type: 3}
+  - name: spr_circle4
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle4.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle4_0.png
+    width: 279
+    height: 279
+    xorig: 139
+    yorig: 139
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 10e619177aa61ba4d9ad5715937865e8, type: 3}
+  - name: spr_circle5
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle5.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle5_0.png
+    width: 209
+    height: 209
+    xorig: 104
+    yorig: 104
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a4cc280e75f17c44396246430d569cab, type: 3}
+  - name: spr_circle6
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle6.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle6_0.png
+    width: 107
+    height: 107
+    xorig: 53
+    yorig: 53
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 5668152dcc62c7b4a92f59d07c74a5a4, type: 3}
+  - name: spr_circle7
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle7.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle7_0.png
+    width: 101
+    height: 132
+    xorig: 50
+    yorig: 66
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 6563391f249fc69448f09cc0a5891ace, type: 3}
+  - name: spr_circle8
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle8.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle8_0.png
+    width: 136
+    height: 80
+    xorig: 68
+    yorig: 40
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1c6862c39b0593c46a0cd3e8cfa380e9, type: 3}
+  - name: spr_circle9
+    group: game/shapes/circles
+    inProject: 1
+    originalPath: sprites\spr_circle9.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_circle9_0.png
+    width: 170
+    height: 87
+    xorig: 85
+    yorig: 43
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f8e8ce502a3e29b4b8ce09490642f0d6, type: 3}
+  - name: spr_cloud1
+    group: game/clouds
+    inProject: 1
+    originalPath: sprites\spr_cloud1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_cloud1_0.png
+    width: 851
+    height: 313
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4b94393140f031e499e1e7731a99b053, type: 3}
+  - name: spr_cloud2
+    group: game/clouds
+    inProject: 1
+    originalPath: sprites\spr_cloud2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_cloud2_0.png
+    width: 851
+    height: 313
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 3495e117c54c57f49ac4815c6b10d06c, type: 3}
+  - name: spr_cloud3
+    group: game/clouds
+    inProject: 1
+    originalPath: sprites\spr_cloud3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_cloud3_0.png
+    width: 851
+    height: 313
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a5d05ba52ea2cc840945dc6d668cac8b, type: 3}
+  - name: spr_cloud4
+    group: game/clouds
+    inProject: 1
+    originalPath: sprites\spr_cloud4.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_cloud4_0.png
+    width: 851
+    height: 313
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0514791520d6b144d886b83523273e98, type: 3}
+  - name: spr_config
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_config.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_config_0.png
+    width: 238
+    height: 64
+    xorig: 119
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1513b2e77c6f6b7418d865caa0afcb31, type: 3}
+  - name: spr_controls
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_controls.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_controls_0.png
+    width: 238
+    height: 64
+    xorig: 119
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 91684d7f6775be34484b42bede9a3111, type: 3}
+  - name: spr_credits
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_credits.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_credits_0.png
+    width: 1227
+    height: 468
+    xorig: 613
+    yorig: 234
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 598726467d40f234ab2c5e9e0881ffcd, type: 3}
+  - name: spr_creditsimage
+    group: credits
+    inProject: 1
+    originalPath: sprites\spr_creditsimage.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_creditsimage_0.png
+    width: 486
+    height: 714
+    xorig: 243
+    yorig: 357
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e084e8e01bf6f0b48a8a2b6e06e36947, type: 3}
+  - name: spr_dirt
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_dirt.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_dirt_0.png
+    width: 512
+    height: 512
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e15c87024fd95964d83c377c785ca635, type: 3}
+  - name: spr_explode2
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_explode2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_explode2_0.png
+    - sprites\images\spr_explode2_1.png
+    - sprites\images\spr_explode2_2.png
+    - sprites\images\spr_explode2_3.png
+    - sprites\images\spr_explode2_4.png
+    - sprites\images\spr_explode2_5.png
+    - sprites\images\spr_explode2_6.png
+    - sprites\images\spr_explode2_7.png
+    - sprites\images\spr_explode2_8.png
+    - sprites\images\spr_explode2_9.png
+    - sprites\images\spr_explode2_10.png
+    - sprites\images\spr_explode2_11.png
+    - sprites\images\spr_explode2_12.png
+    - sprites\images\spr_explode2_13.png
+    - sprites\images\spr_explode2_14.png
+    - sprites\images\spr_explode2_15.png
+    - sprites\images\spr_explode2_16.png
+    - sprites\images\spr_explode2_17.png
+    - sprites\images\spr_explode2_18.png
+    - sprites\images\spr_explode2_19.png
+    - sprites\images\spr_explode2_20.png
+    - sprites\images\spr_explode2_21.png
+    - sprites\images\spr_explode2_22.png
+    - sprites\images\spr_explode2_23.png
+    - sprites\images\spr_explode2_24.png
+    width: 66
+    height: 81
+    xorig: 33
+    yorig: 40
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 76d13e7f816002146976d6ca0704299c, type: 3}
+    - {fileID: 21300000, guid: 7bb6c2618725c1546afba6422e58705c, type: 3}
+    - {fileID: 21300000, guid: 528e73179a862e149a0203e62c9436f8, type: 3}
+    - {fileID: 21300000, guid: c9cd181cc92d50a4c872be11b616dc10, type: 3}
+    - {fileID: 21300000, guid: aea974a81841c5648a00a8474b0c5ad8, type: 3}
+    - {fileID: 21300000, guid: d960e43c5a0256344bb8d2af4b373bee, type: 3}
+    - {fileID: 21300000, guid: 18d49d113fcbf774195e55b7c76bf368, type: 3}
+    - {fileID: 21300000, guid: d6b540a78c3186a40b8b33467f15b1c5, type: 3}
+    - {fileID: 21300000, guid: ce11c89303807574d8addeedb12b12a3, type: 3}
+    - {fileID: 21300000, guid: c415def0e81212f4bbb2394a2fed49fb, type: 3}
+    - {fileID: 21300000, guid: e466ed059af21f94f9d1b9c8e63f675f, type: 3}
+    - {fileID: 21300000, guid: 72c0b55a95e8fe544996a1bff9648a85, type: 3}
+    - {fileID: 21300000, guid: 0e53a9e28e11abb4c882778b62463a4b, type: 3}
+    - {fileID: 21300000, guid: 5953e32105a03cc42aabe4bf5b7d01d8, type: 3}
+    - {fileID: 21300000, guid: 0272cf5797e9bea4daf6d2c1abc875f0, type: 3}
+    - {fileID: 21300000, guid: 376603c97b847c543afe3471c4381ada, type: 3}
+    - {fileID: 21300000, guid: d36eff728394cef46af4cff966a24991, type: 3}
+    - {fileID: 21300000, guid: 8d24601ea0fa2834d8f4f35bae9f4830, type: 3}
+    - {fileID: 21300000, guid: 9ce53d10f6e1fa142aeed405684f4a46, type: 3}
+    - {fileID: 21300000, guid: bb079f4729069f3439350bd940301327, type: 3}
+    - {fileID: 21300000, guid: 988c46241d7f82f4480bd1d2f90cb664, type: 3}
+    - {fileID: 21300000, guid: b631f2f1123d5a342a2565334cea30bd, type: 3}
+    - {fileID: 21300000, guid: 489b04b1fec01b24b85c488a9e78ff79, type: 3}
+    - {fileID: 21300000, guid: 1b51e0a62d1197c4ba0a3f992de5a0ec, type: 3}
+    - {fileID: 21300000, guid: 97328b4374f094542900b583a8efbeaf, type: 3}
+  - name: spr_explode3
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_explode3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_explode3_0.png
+    - sprites\images\spr_explode3_1.png
+    - sprites\images\spr_explode3_2.png
+    - sprites\images\spr_explode3_3.png
+    - sprites\images\spr_explode3_4.png
+    - sprites\images\spr_explode3_5.png
+    - sprites\images\spr_explode3_6.png
+    - sprites\images\spr_explode3_7.png
+    - sprites\images\spr_explode3_8.png
+    width: 200
+    height: 182
+    xorig: 100
+    yorig: 91
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 5074756007985524a91e20141ecb1b01, type: 3}
+    - {fileID: 21300000, guid: 08c542b9a3ac01e4b8de528a5518f7bc, type: 3}
+    - {fileID: 21300000, guid: 5dc16b451d44a8644b592de732882656, type: 3}
+    - {fileID: 21300000, guid: 29369459f0cda9143a5c5a53336946f5, type: 3}
+    - {fileID: 21300000, guid: 593be12f5a6f34348ba9ca3d4e927a01, type: 3}
+    - {fileID: 21300000, guid: 2cebb848a725f40489ccfabb3444c84c, type: 3}
+    - {fileID: 21300000, guid: 347e1df805b02fe4b8405e71a390d594, type: 3}
+    - {fileID: 21300000, guid: 52d6f30b1487f1a42b58e36470809c61, type: 3}
+    - {fileID: 21300000, guid: b5b0b8be5703b09488376b7dd1ca7338, type: 3}
+  - name: spr_explosion
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_explosion.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_explosion_0.png
+    - sprites\images\spr_explosion_1.png
+    - sprites\images\spr_explosion_2.png
+    - sprites\images\spr_explosion_3.png
+    - sprites\images\spr_explosion_4.png
+    - sprites\images\spr_explosion_5.png
+    - sprites\images\spr_explosion_6.png
+    width: 32
+    height: 32
+    xorig: 16
+    yorig: 16
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 56d2532c153078e4ab4691ae219ff0f4, type: 3}
+    - {fileID: 21300000, guid: e57276df923277e4eb32ff680066bce2, type: 3}
+    - {fileID: 21300000, guid: fde1b2da9f01c304cb84c5cc904c504b, type: 3}
+    - {fileID: 21300000, guid: ac81049b1bab1af4498c5d728a604f12, type: 3}
+    - {fileID: 21300000, guid: b2e24c7f98eb9fc418d02eddfd5ffea8, type: 3}
+    - {fileID: 21300000, guid: d997099b53d03274f9074f9e3c87f359, type: 3}
+    - {fileID: 21300000, guid: 1224aac0f1fa3c544930bf8e4196f87b, type: 3}
+  - name: spr_explosion_oval
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_explosion_oval.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_explosion_oval_0.png
+    - sprites\images\spr_explosion_oval_1.png
+    - sprites\images\spr_explosion_oval_2.png
+    - sprites\images\spr_explosion_oval_3.png
+    - sprites\images\spr_explosion_oval_4.png
+    - sprites\images\spr_explosion_oval_5.png
+    - sprites\images\spr_explosion_oval_6.png
+    - sprites\images\spr_explosion_oval_7.png
+    - sprites\images\spr_explosion_oval_8.png
+    - sprites\images\spr_explosion_oval_9.png
+    - sprites\images\spr_explosion_oval_10.png
+    - sprites\images\spr_explosion_oval_11.png
+    width: 256
+    height: 128
+    xorig: 128
+    yorig: 64
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0dd2e32c44e8f1e418142a23bfeca77e, type: 3}
+    - {fileID: 21300000, guid: 93b0a8bab4d6d3f418c64b731d9259fc, type: 3}
+    - {fileID: 21300000, guid: 1649c86947d0ad642a4009b8b9a93d8d, type: 3}
+    - {fileID: 21300000, guid: 676fa5d2143baca4c82fcf891525acc4, type: 3}
+    - {fileID: 21300000, guid: edbd5e7d0ab0d5c469bf9520f1ebd6ca, type: 3}
+    - {fileID: 21300000, guid: 130088f4c0cf3f647b6a0f41d1c0424f, type: 3}
+    - {fileID: 21300000, guid: 1c283b455a7d58d4a930d44b813bfe69, type: 3}
+    - {fileID: 21300000, guid: 4314516f65591d547bdb0d7fc9cca168, type: 3}
+    - {fileID: 21300000, guid: eb8a5583a72d0bb4a9345feb7ac3d3a5, type: 3}
+    - {fileID: 21300000, guid: e05cd2833ec4d834aaa1d66eb84eb281, type: 3}
+    - {fileID: 21300000, guid: a12d573387749d1448cf1f892d0970e8, type: 3}
+    - {fileID: 21300000, guid: 809c3edd88865e14c9f1e430c483ffe5, type: 3}
+  - name: spr_flame
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_flame.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_flame_0.png
+    - sprites\images\spr_flame_1.png
+    - sprites\images\spr_flame_2.png
+    - sprites\images\spr_flame_3.png
+    width: 12
+    height: 24
+    xorig: 6
+    yorig: 24
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 9ab900f05e46f8a418ecc5c631d5a5af, type: 3}
+    - {fileID: 21300000, guid: 102abf286e712c046a591c45ed63829a, type: 3}
+    - {fileID: 21300000, guid: dcb31b420fb6fcb4380a6c3c29de1e6b, type: 3}
+    - {fileID: 21300000, guid: 482643279a768a445ba45d6cad37554d, type: 3}
+  - name: spr_flash
+    group: endgame
+    inProject: 1
+    originalPath: sprites\spr_flash.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_flash_0.png
+    - sprites\images\spr_flash_1.png
+    - sprites\images\spr_flash_2.png
+    - sprites\images\spr_flash_3.png
+    - sprites\images\spr_flash_4.png
+    - sprites\images\spr_flash_5.png
+    width: 13
+    height: 13
+    xorig: 6
+    yorig: 6
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: efcf7f3866bbd20458c896c48da2dfcf, type: 3}
+    - {fileID: 21300000, guid: 2152ce00bac321346b74e9708d766c7c, type: 3}
+    - {fileID: 21300000, guid: c7fc82f64d3a93e4b869f2b0a353ec8b, type: 3}
+    - {fileID: 21300000, guid: aa5e6cfe01835c54798c719a06339efc, type: 3}
+    - {fileID: 21300000, guid: 756fa31165a846e48bbef32449ca40d9, type: 3}
+    - {fileID: 21300000, guid: aeae4b58bc3dd1945a0dc40e2780a228, type: 3}
+  - name: spr_floor_circle
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_floor_circle.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_floor_circle_0.png
+    width: 419
+    height: 105
+    xorig: 209
+    yorig: 52
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 55c310157ba532347a0192efff19ba42, type: 3}
+  - name: spr_fog
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_fog.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_fog_0.png
+    width: 128
+    height: 128
+    xorig: 64
+    yorig: 64
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: dbcae0aba9990984a85cd7a52ee1074f, type: 3}
+  - name: spr_glass1
+    group: game/items/glass
+    inProject: 1
+    originalPath: sprites\spr_glass1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_glass1_0.png
+    width: 10
+    height: 11
+    xorig: 5
+    yorig: 5
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e6fd3fb807fa7da408a847d5447c826c, type: 3}
+  - name: spr_glass2
+    group: game/items/glass
+    inProject: 1
+    originalPath: sprites\spr_glass2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_glass2_0.png
+    width: 9
+    height: 11
+    xorig: 4
+    yorig: 5
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: bd11c821991e1304badbcac5d9934a54, type: 3}
+  - name: spr_glass3
+    group: game/items/glass
+    inProject: 1
+    originalPath: sprites\spr_glass3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_glass3_0.png
+    width: 10
+    height: 12
+    xorig: 5
+    yorig: 6
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 229c7d7d1860b1e478b8fb619fffc675, type: 3}
+  - name: spr_glass4
+    group: game/items/glass
+    inProject: 1
+    originalPath: sprites\spr_glass4.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_glass4_0.png
+    width: 8
+    height: 10
+    xorig: 4
+    yorig: 5
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b722351c63f2d3043af6691e1b204286, type: 3}
+  - name: spr_glass5
+    group: game/items/glass
+    inProject: 1
+    originalPath: sprites\spr_glass5.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_glass5_0.png
+    width: 11
+    height: 11
+    xorig: 5
+    yorig: 5
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ab6f0baa96e3a67428db7ec5109c9a41, type: 3}
+  - name: spr_grenade
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_grenade.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_grenade_0.png
+    width: 13
+    height: 13
+    xorig: 6
+    yorig: 6
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: afc419feec69d3a4685d2fb04960868c, type: 3}
+  - name: spr_grenade_explode
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_grenade_explode.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_grenade_explode_0.png
+    - sprites\images\spr_grenade_explode_1.png
+    - sprites\images\spr_grenade_explode_2.png
+    - sprites\images\spr_grenade_explode_3.png
+    - sprites\images\spr_grenade_explode_4.png
+    - sprites\images\spr_grenade_explode_5.png
+    - sprites\images\spr_grenade_explode_6.png
+    - sprites\images\spr_grenade_explode_7.png
+    - sprites\images\spr_grenade_explode_8.png
+    width: 200
+    height: 182
+    xorig: 100
+    yorig: 91
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a9601c56e7d515a42ac0c3e58d6a6dfc, type: 3}
+    - {fileID: 21300000, guid: 7ab6bd4f1940864439bd5c44e884616c, type: 3}
+    - {fileID: 21300000, guid: af9341c2d9b460f49af7b35a395ce04a, type: 3}
+    - {fileID: 21300000, guid: 19e2c443e2370ac48bff83de305e52c5, type: 3}
+    - {fileID: 21300000, guid: f79a0e4d4145a73439471a6883ac8bca, type: 3}
+    - {fileID: 21300000, guid: 4afa928f6f419fd4abc8f37a89b7b7a5, type: 3}
+    - {fileID: 21300000, guid: a8806ef53a3df61428dc8e4fda33bd0d, type: 3}
+    - {fileID: 21300000, guid: 2c394db48db0bfa468aa81f3d5b08f29, type: 3}
+    - {fileID: 21300000, guid: 7203d13d6f34ef34188806cfe8ab81aa, type: 3}
+  - name: spr_grenade_explosion
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_grenade_explosion.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_grenade_explosion_0.png
+    width: 300
+    height: 300
+    xorig: 150
+    yorig: 150
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a4a80aff624e11a4284ae0288e99ca23, type: 3}
+  - name: spr_ground
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_ground.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_ground_0.png
+    width: 1600
+    height: 1600
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 7f086893704ffca4c9165f0e708af4b7, type: 3}
+  - name: spr_guide
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_guide.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_guide_0.png
+    width: 128
+    height: 128
+    xorig: 64
+    yorig: 64
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1179925d11f422d45be568f38f969e06, type: 3}
+  - name: spr_head
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_head.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_head_0.png
+    width: 256
+    height: 256
+    xorig: 128
+    yorig: 128
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d277374e392518c41aac3aba6a12be14, type: 3}
+  - name: spr_healthbar
+    group: game/gui/health
+    inProject: 1
+    originalPath: sprites\spr_healthbar.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_healthbar_0.png
+    width: 171
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: aaabc91a2c073934083a1680b63023da, type: 3}
+  - name: spr_healthbar_back
+    group: game/gui/health
+    inProject: 1
+    originalPath: sprites\spr_healthbar_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_healthbar_back_0.png
+    width: 171
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 01a2b0e253af80b438cdf17f66008828, type: 3}
+  - name: spr_healthbar_fill
+    group: game/gui/health
+    inProject: 1
+    originalPath: sprites\spr_healthbar_fill.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_healthbar_fill_0.png
+    width: 171
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 8a613d75a24329e44899580b1b4a44ab, type: 3}
+  - name: spr_healthdrop_fall
+    group: game/gui/health
+    inProject: 1
+    originalPath: sprites\spr_healthdrop_fall.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_healthdrop_fall_0.png
+    width: 54
+    height: 72
+    xorig: 27
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 92707c5cbe67a7e46b0a2b523675c69f, type: 3}
+  - name: spr_healthdrop_land
+    group: game/gui/health
+    inProject: 1
+    originalPath: sprites\spr_healthdrop_land.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_healthdrop_land_0.png
+    width: 54
+    height: 72
+    xorig: 27
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0b7bfc82fa9776146bc752a1dd1e8cb3, type: 3}
+  - name: spr_hex
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_hex.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_hex_0.png
+    width: 78
+    height: 68
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c6f4ca28f54e3a340982839621bf0752, type: 3}
+  - name: spr_howtoplay
+    group: howtoplay
+    inProject: 1
+    originalPath: sprites\spr_howtoplay.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_howtoplay_0.png
+    width: 1040
+    height: 422
+    xorig: 520
+    yorig: 211
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 684422d626dffaf479f654421e985ad9, type: 3}
+  - name: spr_howtoplay1
+    group: howtoplay
+    inProject: 1
+    originalPath: sprites\spr_howtoplay1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_howtoplay1_0.png
+    width: 640
+    height: 480
+    xorig: 320
+    yorig: 240
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e76f7ea4767aea943ab4534e3abbe39d, type: 3}
+  - name: spr_icon_computer
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_icon_computer.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_computer_0.png
+    width: 16
+    height: 16
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4ee37f3269f375e48aaa103bd3f8da10, type: 3}
+  - name: spr_icon_door
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_icon_door.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_door_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 39ba192dad59aac489b2a1d185124e0f, type: 3}
+  - name: spr_icon_gear
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_icon_gear.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_gear_0.png
+    width: 48
+    height: 24
+    xorig: 24
+    yorig: 12
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: dbbdd03df87d0da4eae92a053a071ae3, type: 3}
+  - name: spr_icon_gun
+    group: game/icons/weapons
+    inProject: 1
+    originalPath: sprites\spr_icon_gun.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_gun_0.png
+    width: 48
+    height: 24
+    xorig: 24
+    yorig: 12
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 04bf1a5a8491e7b4e8c7c5dbc377ddad, type: 3}
+  - name: spr_icon_health
+    group: game/gui/health
+    inProject: 1
+    originalPath: sprites\spr_icon_health.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_health_0.png
+    width: 48
+    height: 24
+    xorig: 24
+    yorig: 12
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a27e9692bd8cee6429b4feb30605c132, type: 3}
+  - name: spr_icon_player
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_icon_player.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_player_0.png
+    width: 16
+    height: 16
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 8d45604c21bba304a801f04096adaed2, type: 3}
+  - name: spr_icon_weapon_cannon
+    group: game/icons/weapons
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_cannon.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_cannon_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e85ca3fa9c842704683a287aecb403d8, type: 3}
+  - name: spr_icon_weapon_cannon_off
+    group: game/icons/weapons/off
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_cannon_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_cannon_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c81e7d9e17b73aa4d8f5bb68035835d4, type: 3}
+  - name: spr_icon_weapon_cannon_selected
+    group: game/icons/weapons/selected
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_cannon_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_cannon_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 42b6b6d6d86d3b74c9abb8980415ca80, type: 3}
+  - name: spr_icon_weapon_grenade
+    group: game/icons/weapons
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_grenade.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_grenade_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a5d98248af917084c97099f73d7fc473, type: 3}
+  - name: spr_icon_weapon_grenade_off
+    group: game/icons/weapons/off
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_grenade_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_grenade_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 730a4c6a7817fbf4abfcd51b4868f34c, type: 3}
+  - name: spr_icon_weapon_grenade_selected
+    group: game/icons/weapons/selected
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_grenade_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_grenade_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: dc2a9cd453da4864497db01a58638bf4, type: 3}
+  - name: spr_icon_weapon_laser
+    group: game/icons/weapons
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_laser.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_laser_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: fff81317d7c40934e96aecec6bbf462b, type: 3}
+  - name: spr_icon_weapon_laser_off
+    group: game/icons/weapons/off
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_laser_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_laser_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 9b530d07d60a47c4fbdbb949fd16f2d6, type: 3}
+  - name: spr_icon_weapon_laser_selected
+    group: game/icons/weapons/selected
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_laser_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_laser_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 87cffb69d803a274291462f391771a16, type: 3}
+  - name: spr_icon_weapon_railgun
+    group: game/icons/weapons
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_railgun.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_railgun_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 20f48165658f7814a8950be963c99c20, type: 3}
+  - name: spr_icon_weapon_railgun_off
+    group: game/icons/weapons/off
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_railgun_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_railgun_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ba62a2ba130f15a4899b5c5342488893, type: 3}
+  - name: spr_icon_weapon_railgun_selected
+    group: game/icons/weapons/selected
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_railgun_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_railgun_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 08afc53303d54c94ea26c8751e454c96, type: 3}
+  - name: spr_icon_weapon_shotgun
+    group: game/icons/weapons
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_shotgun.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_shotgun_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0750b580123bea242bdc26ef21605030, type: 3}
+  - name: spr_icon_weapon_shotgun_off
+    group: game/icons/weapons/off
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_shotgun_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_shotgun_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 72d68f914e38ec54db0a61b3c3727d07, type: 3}
+  - name: spr_icon_weapon_shotgun_selected
+    group: game/icons/weapons/selected
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_shotgun_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_shotgun_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 781f19b9d4264d64b8c5aeeb8d4a086f, type: 3}
+  - name: spr_icon_weapon_vortex
+    group: game/icons/weapons
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_vortex.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_vortex_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ac63cce6d3ba47040abc8f7e3af91242, type: 3}
+  - name: spr_icon_weapon_vortex_off
+    group: game/icons/weapons/off
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_vortex_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_vortex_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e2e9596bc6e66dc478a10766667fb7d5, type: 3}
+  - name: spr_icon_weapon_vortex_selected
+    group: game/icons/weapons/selected
+    inProject: 1
+    originalPath: sprites\spr_icon_weapon_vortex_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_icon_weapon_vortex_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: fed9299a474f43e40b147ef0e379f180, type: 3}
+  - name: spr_indicator_extrabounce
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_indicator_extrabounce.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_indicator_extrabounce_0.png
+    width: 34
+    height: 32
+    xorig: 17
+    yorig: 16
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f40fa388784d2f64d88d79965147096d, type: 3}
+  - name: spr_infinity
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_infinity.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_infinity_0.png
+    width: 11
+    height: 11
+    xorig: 5
+    yorig: 5
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f1173a6e8e3263d4aa175d92fde210e2, type: 3}
+  - name: spr_infinity_large
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_infinity_large.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_infinity_large_0.png
+    width: 31
+    height: 19
+    xorig: 15
+    yorig: 9
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a1e76366f6d8aef4fa230aa0e6b5c8ae, type: 3}
+  - name: spr_infinity_symbol
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_infinity_symbol.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_infinity_symbol_0.png
+    width: 11
+    height: 11
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 52d82935f63f5f2429e3c2be727e20b6, type: 3}
+  - name: spr_inputbox
+    group: names
+    inProject: 1
+    originalPath: sprites\spr_inputbox.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_inputbox_0.png
+    width: 387
+    height: 64
+    xorig: 193
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b787e46bb7b59094aa9230479ae99e20, type: 3}
+  - name: spr_inputbox_back
+    group: names
+    inProject: 1
+    originalPath: sprites\spr_inputbox_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_inputbox_back_0.png
+    width: 387
+    height: 64
+    xorig: 193
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0aa7e78904fbd3d419ac64a34abb10b6, type: 3}
+  - name: spr_item_aimassist
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_item_aimassist.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_aimassist_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ada936dc7e6dbe64a99b1e2e12ca306a, type: 3}
+  - name: spr_item_aimassist_off
+    group: game/icons/items/off
+    inProject: 1
+    originalPath: sprites\spr_item_aimassist_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_aimassist_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: cfd330de3d249484b8a094f2bb3a0b6c, type: 3}
+  - name: spr_item_aimassist_selected
+    group: game/icons/items/selected
+    inProject: 1
+    originalPath: sprites\spr_item_aimassist_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_aimassist_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 5c2a86e806853ff4b8f63e03458faebd, type: 3}
+  - name: spr_item_extrabounce
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_item_extrabounce.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_extrabounce_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 2ff7a6883af65e34db1693b7df49cac4, type: 3}
+  - name: spr_item_extrabounce_off
+    group: game/icons/items/off
+    inProject: 1
+    originalPath: sprites\spr_item_extrabounce_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_extrabounce_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d322cd5c2ee055b4d81d3e30036b1055, type: 3}
+  - name: spr_item_extrabounce_selected
+    group: game/icons/items/selected
+    inProject: 1
+    originalPath: sprites\spr_item_extrabounce_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_extrabounce_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 876671b68992b0a439df97fbdd602996, type: 3}
+  - name: spr_item_extrabounces
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_item_extrabounces.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_extrabounces_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 78b2d668b025209479f3d4e325f46046, type: 3}
+  - name: spr_item_extrabounces_off
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_item_extrabounces_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_extrabounces_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ac109d4502cf0b74fa0f5fed6824f1e5, type: 3}
+  - name: spr_item_extrabounces_selected
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_item_extrabounces_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_extrabounces_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a4a45beb81e9bf44580ad6fa4d968a6c, type: 3}
+  - name: spr_item_fall
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_item_fall.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_fall_0.png
+    width: 54
+    height: 72
+    xorig: 27
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 535a846065279b44a94e73231e5c007b, type: 3}
+  - name: spr_item_land
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_item_land.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_land_0.png
+    width: 54
+    height: 72
+    xorig: 27
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 85eb5dce8d7e51643a2aa7a464c27de8, type: 3}
+  - name: spr_item_lasersight
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_item_lasersight.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_lasersight_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 8ccdbfe607c476740bf54f4b103f9f20, type: 3}
+  - name: spr_item_lasersight_off
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_item_lasersight_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_lasersight_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0c50bb56f5b1bb949b7db9115ac7f0d6, type: 3}
+  - name: spr_item_lasersight_selected
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_item_lasersight_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_lasersight_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: fbfc6ae14c2e4de4d92b9f55d8d787f6, type: 3}
+  - name: spr_item_redirector
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_item_redirector.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_redirector_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b63b40baded4fc541bd864a877da8e91, type: 3}
+  - name: spr_item_redirector_off
+    group: game/icons/items/off
+    inProject: 1
+    originalPath: sprites\spr_item_redirector_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_redirector_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 6472ff25356cf4148aad7ffd8259c1a3, type: 3}
+  - name: spr_item_redirector_selected
+    group: game/icons/items/selected
+    inProject: 1
+    originalPath: sprites\spr_item_redirector_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_redirector_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 663918028b22d39408150932f3a48a6d, type: 3}
+  - name: spr_item_shieldwall
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_item_shieldwall.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_shieldwall_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 86e28bd27b5f49541a54c2b9cb34798c, type: 3}
+  - name: spr_item_shieldwall_off
+    group: game/icons/items/off
+    inProject: 1
+    originalPath: sprites\spr_item_shieldwall_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_shieldwall_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d712e9e72f6d2e24c997336f9b952b9e, type: 3}
+  - name: spr_item_shieldwall_selected
+    group: game/icons/items/selected
+    inProject: 1
+    originalPath: sprites\spr_item_shieldwall_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_shieldwall_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 29f5cc871ead45f4f979513a1ea84798, type: 3}
+  - name: spr_item_shrinkray
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_item_shrinkray.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_shrinkray_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 070c29cb08cce174eb60356574d00085, type: 3}
+  - name: spr_item_shrinkray_off
+    group: game/icons/items/off
+    inProject: 1
+    originalPath: sprites\spr_item_shrinkray_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_shrinkray_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d6d42fd4ab545114d9155dc2fd83fd55, type: 3}
+  - name: spr_item_shrinkray_selected
+    group: game/icons/items/selected
+    inProject: 1
+    originalPath: sprites\spr_item_shrinkray_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_shrinkray_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 59bd5ccb9bf54cf46be328da08f13d6c, type: 3}
+  - name: spr_item_teleporter
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_item_teleporter.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_teleporter_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 88e36c0d2a7903b4cbd619c3f94d5e3a, type: 3}
+  - name: spr_item_teleporter_off
+    group: game/icons/items/off
+    inProject: 1
+    originalPath: sprites\spr_item_teleporter_off.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_teleporter_off_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f71bfea1b2bb15e4ea0db3fa41ac4820, type: 3}
+  - name: spr_item_teleporter_selected
+    group: game/icons/items/selected
+    inProject: 1
+    originalPath: sprites\spr_item_teleporter_selected.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_item_teleporter_selected_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 7b4cb3c9644359e4482abf4ab8de6b92, type: 3}
+  - name: spr_jukebox
+    group: gui
+    inProject: 1
+    originalPath: sprites\spr_jukebox.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_jukebox_0.png
+    width: 128
+    height: 128
+    xorig: 64
+    yorig: 64
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c8f14ddf46a64e741b2f47d1c1dffca0, type: 3}
+  - name: spr_keyboardlayout
+    group: controls
+    inProject: 1
+    originalPath: sprites\spr_keyboardlayout.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_keyboardlayout_0.png
+    width: 1814
+    height: 972
+    xorig: 907
+    yorig: 486
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ed14666749a324b469a4838182b4bc5b, type: 3}
+  - name: spr_label
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_label.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_label_0.png
+    width: 226
+    height: 64
+    xorig: 113
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 8f1819cdca43ae24c920f93f3b3c8709, type: 3}
+  - name: spr_label_small
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_label_small.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_label_small_0.png
+    width: 64
+    height: 64
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d73b2137678cc9646817d2facf31f186, type: 3}
+  - name: spr_laser_pulse
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_laser_pulse.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_laser_pulse_0.png
+    - sprites\images\spr_laser_pulse_1.png
+    - sprites\images\spr_laser_pulse_2.png
+    - sprites\images\spr_laser_pulse_3.png
+    width: 7
+    height: 18
+    xorig: 3
+    yorig: 9
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 9c1335404ab5ecb48bc3dc3740ede41a, type: 3}
+    - {fileID: 21300000, guid: db44298be26600142b93109052c4db32, type: 3}
+    - {fileID: 21300000, guid: 308090fc2b19fe7469e272ba9cb121cc, type: 3}
+    - {fileID: 21300000, guid: 5200a39297cfb28439f2747dd6111b80, type: 3}
+  - name: spr_lbl_bounces
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_bounces.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_bounces_0.png
+    width: 238
+    height: 64
+    xorig: 119
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 2cdb51b3141ca9f4d8436bc36b94ae6a, type: 3}
+  - name: spr_lbl_goal
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_goal.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_goal_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 2736e45ab17d5f043b879c454bdf4364, type: 3}
+  - name: spr_lbl_overlap
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_overlap.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_overlap_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a629e7c874f6b684e90306617d52afc7, type: 3}
+  - name: spr_lbl_players
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_players.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_players_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 9b3654f18d3d7be4ab0f5d4b9fb635e0, type: 3}
+  - name: spr_lbl_polygons
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_polygons.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_polygons_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: cad16404ea8e72347a04246722ddf354, type: 3}
+  - name: spr_lbl_rotation
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_rotation.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_rotation_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 507d794e71f9f3647bb13d985b4b409f, type: 3}
+  - name: spr_lbl_scale
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_scale.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_scale_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 278deece0b49ac14c96a1fff328c0661, type: 3}
+  - name: spr_lbl_shapes
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_shapes.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_shapes_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c2ca5220e7fa31a4da3f9f92b77cf5b7, type: 3}
+  - name: spr_lbl_turntime
+    group: settings/labels
+    inProject: 1
+    originalPath: sprites\spr_lbl_turntime.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lbl_turntime_0.png
+    width: 196
+    height: 64
+    xorig: 98
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0d29148ce15402f4a84dd46317e65ddd, type: 3}
+  - name: spr_left_border
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_left_border.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_left_border_0.png
+    width: 33
+    height: 1080
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a906540201cd62a49bf5c0537225351e, type: 3}
+  - name: spr_letter_C
+    group: mainmenu/letters
+    inProject: 1
+    originalPath: sprites\spr_letter_C.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_letter_C_0.png
+    width: 40
+    height: 60
+    xorig: 20
+    yorig: 30
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 24056ec9a518c864ea638a59037077ae, type: 3}
+  - name: spr_letter_E
+    group: mainmenu/letters
+    inProject: 1
+    originalPath: sprites\spr_letter_E.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_letter_E_0.png
+    width: 40
+    height: 60
+    xorig: 20
+    yorig: 30
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 5cef1c77ab1d332418a269ea6c7b13c4, type: 3}
+  - name: spr_letter_H
+    group: mainmenu/letters
+    inProject: 1
+    originalPath: sprites\spr_letter_H.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_letter_H_0.png
+    width: 40
+    height: 60
+    xorig: 20
+    yorig: 30
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b3f45728b55b0e94bb9e353b04f80b98, type: 3}
+  - name: spr_letter_I
+    group: mainmenu/letters
+    inProject: 1
+    originalPath: sprites\spr_letter_I.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_letter_I_0.png
+    width: 40
+    height: 60
+    xorig: 20
+    yorig: 30
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e32791a405a1c9e44ae32346102ba2c4, type: 3}
+  - name: spr_letter_O
+    group: mainmenu/letters
+    inProject: 1
+    originalPath: sprites\spr_letter_O.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_letter_O_0.png
+    width: 40
+    height: 60
+    xorig: 20
+    yorig: 30
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 8eccffd4c41fa504b9fc5c56120805c8, type: 3}
+  - name: spr_letter_R
+    group: mainmenu/letters
+    inProject: 1
+    originalPath: sprites\spr_letter_R.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_letter_R_0.png
+    width: 40
+    height: 60
+    xorig: 20
+    yorig: 30
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: fbb07549c709e1c4498ccc0673f232f8, type: 3}
+  - name: spr_letter_T
+    group: mainmenu/letters
+    inProject: 1
+    originalPath: sprites\spr_letter_T.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_letter_T_0.png
+    width: 40
+    height: 60
+    xorig: 20
+    yorig: 30
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 21586e3f8da604149b586ed12279076f, type: 3}
+  - name: spr_lightsource
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_lightsource.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lightsource_0.png
+    width: 200
+    height: 200
+    xorig: 100
+    yorig: 100
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4d451e39e3b5da74d9c575b9c0f5b376, type: 3}
+  - name: spr_lotus_card
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_lotus_card.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lotus_card_0.png
+    width: 238
+    height: 343
+    xorig: 119
+    yorig: 171
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 6e07008066ecfe9459449ef274e01781, type: 3}
+  - name: spr_lotus_card_frame
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_lotus_card_frame.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lotus_card_frame_0.png
+    width: 238
+    height: 343
+    xorig: 119
+    yorig: 171
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 2efac0c66db89f24b8b8aadb56809768, type: 3}
+  - name: spr_lotus_card_noborder
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_lotus_card_noborder.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_lotus_card_noborder_0.png
+    width: 238
+    height: 343
+    xorig: 119
+    yorig: 171
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 721f26ca27491f34c8305d0770140a49, type: 3}
+  - name: spr_mortar
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_mortar.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_mortar_0.png
+    width: 12
+    height: 12
+    xorig: 6
+    yorig: 6
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 3dfe3e2793a47eb45971c996816afcf5, type: 3}
+  - name: spr_mouse
+    group: gui
+    inProject: 1
+    originalPath: sprites\spr_mouse.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_mouse_0.png
+    width: 18
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4a1e6143242764543b2b715d65ba62ae, type: 3}
+  - name: spr_musroomcloud
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_musroomcloud.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_musroomcloud_0.png
+    - sprites\images\spr_musroomcloud_1.png
+    - sprites\images\spr_musroomcloud_2.png
+    - sprites\images\spr_musroomcloud_3.png
+    - sprites\images\spr_musroomcloud_4.png
+    - sprites\images\spr_musroomcloud_5.png
+    - sprites\images\spr_musroomcloud_6.png
+    - sprites\images\spr_musroomcloud_7.png
+    - sprites\images\spr_musroomcloud_8.png
+    - sprites\images\spr_musroomcloud_9.png
+    - sprites\images\spr_musroomcloud_10.png
+    - sprites\images\spr_musroomcloud_11.png
+    - sprites\images\spr_musroomcloud_12.png
+    - sprites\images\spr_musroomcloud_13.png
+    - sprites\images\spr_musroomcloud_14.png
+    - sprites\images\spr_musroomcloud_15.png
+    - sprites\images\spr_musroomcloud_16.png
+    - sprites\images\spr_musroomcloud_17.png
+    - sprites\images\spr_musroomcloud_18.png
+    - sprites\images\spr_musroomcloud_19.png
+    - sprites\images\spr_musroomcloud_20.png
+    - sprites\images\spr_musroomcloud_21.png
+    - sprites\images\spr_musroomcloud_22.png
+    - sprites\images\spr_musroomcloud_23.png
+    - sprites\images\spr_musroomcloud_24.png
+    width: 66
+    height: 81
+    xorig: 33
+    yorig: 40
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0cd9ea3591bd7fd4f9154bae79702604, type: 3}
+    - {fileID: 21300000, guid: 0d611e5d33cd1a04b830e9813339a9b5, type: 3}
+    - {fileID: 21300000, guid: e4df817f2de82bb4aa61e90c17d90fe1, type: 3}
+    - {fileID: 21300000, guid: 3aff0f2c28b826444a7015c1c3bf2d21, type: 3}
+    - {fileID: 21300000, guid: b8fe49ad7de3d3946831f45fa19d4a36, type: 3}
+    - {fileID: 21300000, guid: f2b88aab2c5470644a685a4915daec16, type: 3}
+    - {fileID: 21300000, guid: 8ec2744288648ef448b2ddb3598b10d9, type: 3}
+    - {fileID: 21300000, guid: 90c55f1c9d642aa42bb61504e17a38c5, type: 3}
+    - {fileID: 21300000, guid: c3c7ebc66b2f6344a9d636f7a79fdb86, type: 3}
+    - {fileID: 21300000, guid: d7a068d040c4c3841943ea93e27a2d21, type: 3}
+    - {fileID: 21300000, guid: a16c23d87f615dc4d9cff65334ab18af, type: 3}
+    - {fileID: 21300000, guid: 17ef37cc6baac6b4eafda11031eb3ff9, type: 3}
+    - {fileID: 21300000, guid: 3194d8eac8d0ba14abca1c5d795482bd, type: 3}
+    - {fileID: 21300000, guid: 32521bae0cc55da4fa3369eb516f6129, type: 3}
+    - {fileID: 21300000, guid: 4b5c160220af001409f8b5132580b632, type: 3}
+    - {fileID: 21300000, guid: 18726e109774d1d4796fb9657d6f72b2, type: 3}
+    - {fileID: 21300000, guid: aa92dbaba3061244d8d59f8af8cb8015, type: 3}
+    - {fileID: 21300000, guid: b58978a4d04e7f64dbf9d08b3e952ba8, type: 3}
+    - {fileID: 21300000, guid: 4bf3b83a86e2c8041a05794338361086, type: 3}
+    - {fileID: 21300000, guid: 8b65f9056ee7a7649a0a6a39cfb7eb98, type: 3}
+    - {fileID: 21300000, guid: fcdc067e20f2c4d448566b07ac7316b4, type: 3}
+    - {fileID: 21300000, guid: 3bf91b728b9fc6a42a4794c194b63977, type: 3}
+    - {fileID: 21300000, guid: a0e990249fde090409bd514b9be17457, type: 3}
+    - {fileID: 21300000, guid: 7e0c9f33c789b5448bcf4a6153f12a95, type: 3}
+    - {fileID: 21300000, guid: dbed0c8bca038514b8b41616e1192513, type: 3}
+  - name: spr_pausemenu
+    group: game/pause
+    inProject: 1
+    originalPath: sprites\spr_pausemenu.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_pausemenu_0.png
+    width: 387
+    height: 225
+    xorig: 193
+    yorig: 112
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a015f10472bebf7408ea361d3d3d7989, type: 3}
+  - name: spr_pausemenu_back
+    group: game/pause
+    inProject: 1
+    originalPath: sprites\spr_pausemenu_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_pausemenu_back_0.png
+    width: 387
+    height: 225
+    xorig: 193
+    yorig: 112
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e369b13d766c4fb459502a8114e88df1, type: 3}
+  - name: spr_pedastal
+    group: endgame
+    inProject: 1
+    originalPath: sprites\spr_pedastal.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_pedastal_0.png
+    width: 278
+    height: 247
+    xorig: 139
+    yorig: 123
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0c0bfab158061574a9850b93b0c57e06, type: 3}
+  - name: spr_pellet
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_pellet.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_pellet_0.png
+    width: 6
+    height: 6
+    xorig: 3
+    yorig: 3
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f7d5d5fc2434e0847b6655f8cb6d67ce, type: 3}
+  - name: spr_piratica
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_piratica.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_piratica_0.png
+    width: 1920
+    height: 1080
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 7ba8a64ae44f06242bf42496700f4097, type: 3}
+  - name: spr_player
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_player.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_player_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f1954fc5e4e173749b44e8ba6c063c56, type: 3}
+  - name: spr_playerexplosion
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_playerexplosion.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_playerexplosion_0.png
+    - sprites\images\spr_playerexplosion_1.png
+    - sprites\images\spr_playerexplosion_2.png
+    - sprites\images\spr_playerexplosion_3.png
+    - sprites\images\spr_playerexplosion_4.png
+    - sprites\images\spr_playerexplosion_5.png
+    - sprites\images\spr_playerexplosion_6.png
+    - sprites\images\spr_playerexplosion_7.png
+    width: 65
+    height: 65
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e014e3c2b1833f445a80f4a4241883ff, type: 3}
+    - {fileID: 21300000, guid: bd9df23dad348ca40a1123b687ec29be, type: 3}
+    - {fileID: 21300000, guid: c8d488f098841314e99f6651518bfd06, type: 3}
+    - {fileID: 21300000, guid: e8b6c9393b9fc82468f176f6265bc258, type: 3}
+    - {fileID: 21300000, guid: 5196f65141a1aed49864865254255af6, type: 3}
+    - {fileID: 21300000, guid: 934e8a9fcb3db8d4393a5098d08f7adc, type: 3}
+    - {fileID: 21300000, guid: 4c79e2ab1d234fd4ca727f6aad76ba66, type: 3}
+    - {fileID: 21300000, guid: d193bfae6f607094ebb1790a958ddaf2, type: 3}
+  - name: spr_polygon1
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon1_0.png
+    width: 250
+    height: 134
+    xorig: 125
+    yorig: 67
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 33835d7b48e2299458d13348480a91a0, type: 3}
+  - name: spr_polygon10
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon10.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon10_0.png
+    width: 180
+    height: 152
+    xorig: 90
+    yorig: 76
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b0f6fb13b72eefe4d8ea4bb8bbc1846a, type: 3}
+  - name: spr_polygon11
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon11.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon11_0.png
+    width: 162
+    height: 172
+    xorig: 81
+    yorig: 86
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 011117fee60700044bd0bd15f5c47c48, type: 3}
+  - name: spr_polygon12
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon12.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon12_0.png
+    width: 143
+    height: 149
+    xorig: 71
+    yorig: 74
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b3f3aea8549607e41be46be684e2b14d, type: 3}
+  - name: spr_polygon13
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon13.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon13_0.png
+    width: 172
+    height: 154
+    xorig: 86
+    yorig: 77
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d9026eeed7a9e0d4fa182d5fae870a44, type: 3}
+  - name: spr_polygon14
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon14.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon14_0.png
+    width: 181
+    height: 164
+    xorig: 90
+    yorig: 82
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 577e44a5cb722cc45b0a7955ae33283c, type: 3}
+  - name: spr_polygon15
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon15.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon15_0.png
+    width: 165
+    height: 159
+    xorig: 82
+    yorig: 79
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 91b8b58e05d43a34e9c7454666c31b71, type: 3}
+  - name: spr_polygon16
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon16.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon16_0.png
+    width: 138
+    height: 150
+    xorig: 69
+    yorig: 75
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 6481b7efbbfc97c43b07d981bb4c9f1e, type: 3}
+  - name: spr_polygon2
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon2_0.png
+    width: 80
+    height: 200
+    xorig: 40
+    yorig: 100
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 00ab6888b3cff0e46b7df401a2853e84, type: 3}
+  - name: spr_polygon3
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon3_0.png
+    width: 175
+    height: 155
+    xorig: 87
+    yorig: 77
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c11a1677f4da4d24ea127ec3c0e8b5a0, type: 3}
+  - name: spr_polygon4
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon4.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon4_0.png
+    width: 156
+    height: 139
+    xorig: 78
+    yorig: 69
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c4137961b5e2d9143b9d6b5567522a7c, type: 3}
+  - name: spr_polygon5
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon5.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon5_0.png
+    width: 155
+    height: 179
+    xorig: 77
+    yorig: 89
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 91f2ed36d7912da4dbd43eccf32e17c2, type: 3}
+  - name: spr_polygon6
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon6.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon6_0.png
+    width: 215
+    height: 168
+    xorig: 107
+    yorig: 84
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: bb459673b13d44c4bbf2843f031a6554, type: 3}
+  - name: spr_polygon7
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon7.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon7_0.png
+    width: 208
+    height: 145
+    xorig: 104
+    yorig: 72
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 40d0b94deea7688439191d7146ba8a72, type: 3}
+  - name: spr_polygon8
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon8.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon8_0.png
+    width: 134
+    height: 148
+    xorig: 67
+    yorig: 74
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 2689e96d8f41216478424ff231221a49, type: 3}
+  - name: spr_polygon9
+    group: game/shapes/abstract
+    inProject: 1
+    originalPath: sprites\spr_polygon9.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_polygon9_0.png
+    width: 209
+    height: 177
+    xorig: 104
+    yorig: 88
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 6e9562a651fe7ca47ab01aed1d75c177, type: 3}
+  - name: spr_portrait_dummy
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_portrait_dummy.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_portrait_dummy_0.png
+    width: 96
+    height: 96
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 506d2efbbcb669d4998b171ca73f2947, type: 3}
+  - name: spr_powerup_cover
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_powerup_cover.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_powerup_cover_0.png
+    width: 43
+    height: 69
+    xorig: 21
+    yorig: 34
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: aacea080b64a5a24599bdad4dd71125c, type: 3}
+  - name: spr_powerup_doublespeed
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_powerup_doublespeed.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_powerup_doublespeed_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0e28bf24ea09d1546a0d24a5dcea12c2, type: 3}
+  - name: spr_powerup_empty
+    group: game/icons/items
+    inProject: 1
+    originalPath: sprites\spr_powerup_empty.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_powerup_empty_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e23ff4af22210bd4f875eafd537d6fa3, type: 3}
+  - name: spr_powerup_extrabounce
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_powerup_extrabounce.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_powerup_extrabounce_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 2521e41805bf9f94ebb30cf2f0e180b2, type: 3}
+  - name: spr_powerup_fall
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_powerup_fall.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_powerup_fall_0.png
+    width: 54
+    height: 72
+    xorig: 27
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 467207f2015c95b459ea4baf82cdf8a8, type: 3}
+  - name: spr_powerup_land
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_powerup_land.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_powerup_land_0.png
+    width: 54
+    height: 72
+    xorig: 27
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: af5ed04988977b041becae597e61c245, type: 3}
+  - name: spr_powerup_shield
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_powerup_shield.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_powerup_shield_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 10849e030615d3c4d8c85b00c1824207, type: 3}
+  - name: spr_powerup_teleport
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_powerup_teleport.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_powerup_teleport_0.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 75eea5301749afa4f87de00dd97670f5, type: 3}
+  - name: spr_profile_dummy
+    group: announcer
+    inProject: 1
+    originalPath: sprites\spr_profile_dummy.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_profile_dummy_0.png
+    width: 96
+    height: 96
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a64165b7eca9d5d4fb101e83054fd77b, type: 3}
+  - name: spr_profile_rye
+    group: announcer
+    inProject: 1
+    originalPath: sprites\spr_profile_rye.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_profile_rye_0.png
+    width: 96
+    height: 96
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: eca4230b451c3dd48a28d4d739b266bb, type: 3}
+  - name: spr_profile_sid
+    group: announcer
+    inProject: 1
+    originalPath: sprites\spr_profile_sid.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_profile_sid_0.png
+    width: 96
+    height: 96
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 812b10336c18ef341b92f74ba53a5bcf, type: 3}
+  - name: spr_profile_sly
+    group: announcer
+    inProject: 1
+    originalPath: sprites\spr_profile_sly.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_profile_sly_0.png
+    width: 96
+    height: 96
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d2ed721caa485444082fa8ef2929e6f9, type: 3}
+  - name: spr_railgun_swirl
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_railgun_swirl.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_railgun_swirl_0.png
+    width: 56
+    height: 12
+    xorig: 28
+    yorig: 6
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 2fcdbddd98f99d54c894bd5f00e46504, type: 3}
+  - name: spr_raingun_ring
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_raingun_ring.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_raingun_ring_0.png
+    width: 7
+    height: 18
+    xorig: 3
+    yorig: 9
+    imageSpeed: 0.1
+    frames:
+    - {fileID: 21300000, guid: af53760c55974e74b87ed3f18fd1595b, type: 3}
+  - name: spr_redirector_arrow
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_redirector_arrow.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_redirector_arrow_0.png
+    width: 40
+    height: 40
+    xorig: 20
+    yorig: 20
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b73929afe5d915348ba199f6e2261b37, type: 3}
+  - name: spr_redirector_shot
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_redirector_shot.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_redirector_shot_0.png
+    width: 32
+    height: 32
+    xorig: 16
+    yorig: 16
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1a7184bd8db270547b457271c4e9d057, type: 3}
+  - name: spr_right_border
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_right_border.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_right_border_0.png
+    width: 33
+    height: 1080
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 71e6ff0ceffcf0349954f1b3144be0c6, type: 3}
+  - name: spr_room_loop
+    group: gui
+    inProject: 1
+    originalPath: sprites\spr_room_loop.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_room_loop_0.png
+    width: 96
+    height: 96
+    xorig: 48
+    yorig: 48
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4f4b323d3595d4d44ae29992492b61ec, type: 3}
+  - name: spr_ryan
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_ryan.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_ryan_0.png
+    width: 238
+    height: 343
+    xorig: 119
+    yorig: 171
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 79ed7eee93e88d0439b39ef5fb9f85f5, type: 3}
+  - name: spr_scorchmark
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_scorchmark.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_scorchmark_0.png
+    width: 300
+    height: 300
+    xorig: 150
+    yorig: 150
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 5db478e045b8b214682d0a22ab72f035, type: 3}
+  - name: spr_scorchmark_small
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_scorchmark_small.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_scorchmark_small_0.png
+    width: 150
+    height: 150
+    xorig: 75
+    yorig: 75
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 9d1bdda938c7a57429bb014f863949d2, type: 3}
+  - name: spr_selector
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_selector.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_selector_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ea78bb9dd656bba4c893ded7d7d43eef, type: 3}
+  - name: spr_sheep
+    group: game/critters
+    inProject: 1
+    originalPath: sprites\spr_sheep.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_sheep_0.png
+    - sprites\images\spr_sheep_1.png
+    - sprites\images\spr_sheep_2.png
+    width: 13
+    height: 9
+    xorig: 6
+    yorig: 4
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 58f679db80bbc1749a48243f37020d74, type: 3}
+    - {fileID: 21300000, guid: 8d0dd7b2055ee594caf4ac7790c0ff32, type: 3}
+    - {fileID: 21300000, guid: 2cbed66f573139e4cad6389e1ebd9f28, type: 3}
+  - name: spr_shieldwall
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_shieldwall.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_shieldwall_0.png
+    - sprites\images\spr_shieldwall_1.png
+    - sprites\images\spr_shieldwall_2.png
+    - sprites\images\spr_shieldwall_3.png
+    - sprites\images\spr_shieldwall_4.png
+    - sprites\images\spr_shieldwall_5.png
+    - sprites\images\spr_shieldwall_6.png
+    - sprites\images\spr_shieldwall_7.png
+    width: 19
+    height: 128
+    xorig: 9
+    yorig: 64
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e7c89dfd8235ec4489ad9d2122b866db, type: 3}
+    - {fileID: 21300000, guid: bdbb42f6aa81f444a87aeb390c91d0af, type: 3}
+    - {fileID: 21300000, guid: 90f018c2bcfe3a64ca6d522b613b0548, type: 3}
+    - {fileID: 21300000, guid: c9565ab6087ffa14b8721b939829f56f, type: 3}
+    - {fileID: 21300000, guid: 7c9948f9d25c30443ba27a4b34fdcf06, type: 3}
+    - {fileID: 21300000, guid: 1568536714b62d54b8e23b91f2ec8224, type: 3}
+    - {fileID: 21300000, guid: 878cddaa1b8748248925203c1db85483, type: 3}
+    - {fileID: 21300000, guid: 605d71d7f2c7e5e4baad0aeff6cf8e8a, type: 3}
+  - name: spr_shieldwall_solid
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_shieldwall_solid.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_shieldwall_solid_0.png
+    width: 19
+    height: 128
+    xorig: 9
+    yorig: 64
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ffbde85b9da29784a90cdee00e987432, type: 3}
+  - name: spr_shoot
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_shoot.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_shoot_0.png
+    width: 256
+    height: 256
+    xorig: 128
+    yorig: 128
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 387d9df6f91134c479e68e9ae21681c4, type: 3}
+  - name: spr_shrinkball
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_shrinkball.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_shrinkball_0.png
+    width: 32
+    height: 13
+    xorig: 16
+    yorig: 6
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 023b2d810ed720f42b0f643a8a7539ed, type: 3}
+  - name: spr_sideborder
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_sideborder.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_sideborder_0.png
+    width: 32
+    height: 1080
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0828e45654b625c48b9a7c10d051454a, type: 3}
+  - name: spr_simple1
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_simple1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_simple1_0.png
+    width: 273
+    height: 140
+    xorig: 136
+    yorig: 70
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: c19e4646da5ac2d4288b9d41d1c21ded, type: 3}
+  - name: spr_simple2
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_simple2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_simple2_0.png
+    width: 393
+    height: 198
+    xorig: 196
+    yorig: 99
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 699ccc69c436d764eb7fdd84b3d13fbe, type: 3}
+  - name: spr_simple3
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_simple3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_simple3_0.png
+    width: 160
+    height: 133
+    xorig: 80
+    yorig: 66
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: cd99d2df86ab58347928bc3a8d3fa067, type: 3}
+  - name: spr_simple4
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_simple4.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_simple4_0.png
+    width: 277
+    height: 177
+    xorig: 138
+    yorig: 88
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: cb24e99fdd9430148b7353ecf952b993, type: 3}
+  - name: spr_simple5
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_simple5.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_simple5_0.png
+    width: 227
+    height: 95
+    xorig: 113
+    yorig: 47
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: fd235a0fcff0e9a4897017f1c3b1a603, type: 3}
+  - name: spr_smallexplosion
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_smallexplosion.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_smallexplosion_0.png
+    - sprites\images\spr_smallexplosion_1.png
+    - sprites\images\spr_smallexplosion_2.png
+    - sprites\images\spr_smallexplosion_3.png
+    - sprites\images\spr_smallexplosion_4.png
+    - sprites\images\spr_smallexplosion_5.png
+    - sprites\images\spr_smallexplosion_6.png
+    - sprites\images\spr_smallexplosion_7.png
+    - sprites\images\spr_smallexplosion_8.png
+    - sprites\images\spr_smallexplosion_9.png
+    - sprites\images\spr_smallexplosion_10.png
+    - sprites\images\spr_smallexplosion_11.png
+    - sprites\images\spr_smallexplosion_12.png
+    - sprites\images\spr_smallexplosion_13.png
+    - sprites\images\spr_smallexplosion_14.png
+    - sprites\images\spr_smallexplosion_15.png
+    - sprites\images\spr_smallexplosion_16.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 0.1
+    frames:
+    - {fileID: 21300000, guid: 068d2e7c07444454689a7c30b6228012, type: 3}
+    - {fileID: 21300000, guid: e194ae89d07c4ef4eb78540c196eeb3d, type: 3}
+    - {fileID: 21300000, guid: 2a613f9e3d525c44587174346e2aa432, type: 3}
+    - {fileID: 21300000, guid: 6a5b8cf81168d8145b1a6d8634403d9b, type: 3}
+    - {fileID: 21300000, guid: 4277db7ef6c68204493148d4565d4002, type: 3}
+    - {fileID: 21300000, guid: 35148adc769a1e04f9f44ec641e69b8e, type: 3}
+    - {fileID: 21300000, guid: 829a95d297f3bb843bd502ec6ebffb93, type: 3}
+    - {fileID: 21300000, guid: 699399e2d53f2aa4591b53eaa474f1cb, type: 3}
+    - {fileID: 21300000, guid: 7091144950cdc5647ab43b319ffd6367, type: 3}
+    - {fileID: 21300000, guid: bab671148c408af46aef373930c85f68, type: 3}
+    - {fileID: 21300000, guid: 2e7719b9c8119ce4e85fdd67a7d34827, type: 3}
+    - {fileID: 21300000, guid: 6f11321a6e5a900419003b5289ee2229, type: 3}
+    - {fileID: 21300000, guid: 30d7f554f54acdc448ac95be1d8c0875, type: 3}
+    - {fileID: 21300000, guid: df2a10807558bdf4f9045a1d9c447439, type: 3}
+    - {fileID: 21300000, guid: 0acde056e0834934a94b90ec05cfe5ec, type: 3}
+    - {fileID: 21300000, guid: 593436db23b7ea94da5b77c98b8c6094, type: 3}
+    - {fileID: 21300000, guid: 251e0b51ef9a89e4cb92ce0884b2745e, type: 3}
+  - name: spr_speaker
+    group: announcer
+    inProject: 1
+    originalPath: sprites\spr_speaker.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_speaker_0.png
+    - sprites\images\spr_speaker_1.png
+    - sprites\images\spr_speaker_2.png
+    - sprites\images\spr_speaker_3.png
+    width: 28
+    height: 27
+    xorig: 0
+    yorig: 0
+    imageSpeed: 0
+    frames:
+    - {fileID: 21300000, guid: b4c330fa61b26f949ad8150a4eafee88, type: 3}
+    - {fileID: 21300000, guid: 271b3259df226274f85ede64087ecedf, type: 3}
+    - {fileID: 21300000, guid: 6dc47d51fe51f3c48b699cc435a37fe7, type: 3}
+    - {fileID: 21300000, guid: 287dbf6f74f139649acc0bc39ad7a2aa, type: 3}
+  - name: spr_spotlight
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_spotlight.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_spotlight_0.png
+    width: 796
+    height: 534
+    xorig: 398
+    yorig: 267
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: aff6285e66b72eb41af451458dbc0e7e, type: 3}
+  - name: spr_sprite_grass1
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_sprite_grass1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_sprite_grass1_0.png
+    width: 24
+    height: 24
+    xorig: 12
+    yorig: 12
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 91d9d672080ab014ea6eeb796e00c8be, type: 3}
+  - name: spr_sprite_grass2
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_sprite_grass2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_sprite_grass2_0.png
+    width: 24
+    height: 24
+    xorig: 12
+    yorig: 12
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1acbb66aeb3fb1a4daf6b2d21a226bb2, type: 3}
+  - name: spr_spritefont
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_spritefont.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_spritefont_0.png
+    width: 440
+    height: 596
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 016f41e861caec0438db38409236af18, type: 3}
+  - name: spr_square1
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square1_0.png
+    width: 140
+    height: 140
+    xorig: 70
+    yorig: 70
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a258c55c149d6ff44be7a60f2726a98c, type: 3}
+  - name: spr_square10
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square10.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square10_0.png
+    width: 248
+    height: 248
+    xorig: 124
+    yorig: 124
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 01b3f5b6ca084e34aa2a6aa72f0cfee9, type: 3}
+  - name: spr_square11
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square11.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square11_0.png
+    width: 388
+    height: 157
+    xorig: 194
+    yorig: 78
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 276bf137e58b29847888491247ad64d1, type: 3}
+  - name: spr_square12
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square12.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square12_0.png
+    width: 220
+    height: 146
+    xorig: 110
+    yorig: 73
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 8e3a4ef03ed31f342855076ebe3b0fc5, type: 3}
+  - name: spr_square13
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square13.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square13_0.png
+    width: 336
+    height: 169
+    xorig: 168
+    yorig: 84
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 989eeee5c1b489946ac63c024bb75971, type: 3}
+  - name: spr_square14
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square14.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square14_0.png
+    width: 154
+    height: 240
+    xorig: 77
+    yorig: 120
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 65d1c328638e5be4d981d48f86b07a02, type: 3}
+  - name: spr_square15
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square15.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square15_0.png
+    width: 107
+    height: 141
+    xorig: 53
+    yorig: 70
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 3d00287e14b6c384da7b82673d01c60d, type: 3}
+  - name: spr_square16
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square16.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square16_0.png
+    width: 188
+    height: 188
+    xorig: 94
+    yorig: 94
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b2c879e0caf60f0409a6d353fb14426b, type: 3}
+  - name: spr_square2
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square2_0.png
+    width: 272
+    height: 272
+    xorig: 136
+    yorig: 136
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1f52f5ef39f6a594db721142b22873ec, type: 3}
+  - name: spr_square3
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square3_0.png
+    width: 104
+    height: 104
+    xorig: 52
+    yorig: 52
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d34b9b08e27cb7444b868c5ed2b5c3e1, type: 3}
+  - name: spr_square4
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square4.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square4_0.png
+    width: 279
+    height: 279
+    xorig: 139
+    yorig: 139
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 18c4119a5c225014abd6e0509604023f, type: 3}
+  - name: spr_square5
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square5.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square5_0.png
+    width: 152
+    height: 152
+    xorig: 76
+    yorig: 76
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a8b5f75775e70fe409ddfc0dde93e03f, type: 3}
+  - name: spr_square6
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square6.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square6_0.png
+    width: 236
+    height: 296
+    xorig: 118
+    yorig: 148
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 7ede186a274ba7a4c99d71a021fa139a, type: 3}
+  - name: spr_square7
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square7.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square7_0.png
+    width: 269
+    height: 203
+    xorig: 134
+    yorig: 101
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 03d8e65ae71c8494991a47aa1bc9cbf2, type: 3}
+  - name: spr_square8
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square8.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square8_0.png
+    width: 348
+    height: 247
+    xorig: 174
+    yorig: 123
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4e9c267e198f0b049b54b2f50f43c400, type: 3}
+  - name: spr_square9
+    group: game/shapes/squares
+    inProject: 1
+    originalPath: sprites\spr_square9.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_square9_0.png
+    width: 373
+    height: 176
+    xorig: 186
+    yorig: 88
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a67ed18fd8ab1cb4185a1d2077dd1956, type: 3}
+  - name: spr_symbol_degree
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_symbol_degree.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_symbol_degree_0.png
+    width: 9
+    height: 9
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 784c5f7dd09b4064b93f3c31ff93e57a, type: 3}
+  - name: spr_tank_bottom
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_tank_bottom.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tank_bottom_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 271dddefe6927b644ad9f8471481eebf, type: 3}
+  - name: spr_tank_top
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_tank_top.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tank_top_0.png
+    width: 64
+    height: 64
+    xorig: 32
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 8a3baf045aafe3a438295b8630f8b24f, type: 3}
+  - name: spr_teleporter
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_teleporter.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_teleporter_0.png
+    - sprites\images\spr_teleporter_1.png
+    - sprites\images\spr_teleporter_2.png
+    - sprites\images\spr_teleporter_3.png
+    - sprites\images\spr_teleporter_4.png
+    - sprites\images\spr_teleporter_5.png
+    width: 18
+    height: 11
+    xorig: 9
+    yorig: 5
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d6a20f8b6b0dad646960ff9195555d24, type: 3}
+    - {fileID: 21300000, guid: e567d56b56da86f4f8f2a8b6696325f3, type: 3}
+    - {fileID: 21300000, guid: d431871a3c8ff9946b9338665bceea41, type: 3}
+    - {fileID: 21300000, guid: 99ba09734ad2d7141bed65c0ed301bb4, type: 3}
+    - {fileID: 21300000, guid: 6b40c524915ddb449a29cba9d8c50e57, type: 3}
+    - {fileID: 21300000, guid: 070cb69dce609d443827adda00e5a311, type: 3}
+  - name: spr_tinyarrowdown
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowdown.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowdown_0.png
+    width: 28
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 83a16fdd3db60bc4db2db2406310f44f, type: 3}
+  - name: spr_tinyarrowdown_back
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowdown_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowdown_back_0.png
+    width: 28
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: af91ce1542b06aa4ebbf67fe81bf53bd, type: 3}
+  - name: spr_tinyarrowdown_over
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowdown_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowdown_over_0.png
+    width: 28
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 279783eb24bd4fa4dacf86bdb01270cd, type: 3}
+  - name: spr_tinyarrowleft
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowleft.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowleft_0.png
+    width: 33
+    height: 43
+    xorig: 16
+    yorig: 21
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: a9dd52cd7d7be554e8ed65d24f8f584d, type: 3}
+  - name: spr_tinyarrowleft_back
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowleft_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowleft_back_0.png
+    width: 33
+    height: 43
+    xorig: 16
+    yorig: 21
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: fe751f4219bf1364db1ff53016796810, type: 3}
+  - name: spr_tinyarrowleft_over
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowleft_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowleft_over_0.png
+    width: 33
+    height: 43
+    xorig: 16
+    yorig: 21
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 1cba0044f21467e44ab1028e7d9a1c01, type: 3}
+  - name: spr_tinyarrowright
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowright.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowright_0.png
+    width: 33
+    height: 43
+    xorig: 16
+    yorig: 21
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: fa15da9e7ab752541a6c05822fe4c92c, type: 3}
+  - name: spr_tinyarrowright_back
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowright_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowright_back_0.png
+    width: 33
+    height: 43
+    xorig: 16
+    yorig: 21
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 07d6b70d28613524f8b1a0a152778b79, type: 3}
+  - name: spr_tinyarrowright_over
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowright_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowright_over_0.png
+    width: 33
+    height: 43
+    xorig: 16
+    yorig: 21
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ebef47f2f7c4ffe4d8926111f8fa819c, type: 3}
+  - name: spr_tinyarrowup
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowup.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowup_0.png
+    width: 28
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: bef9c9f8ee332044e832bcacd0c6f768, type: 3}
+  - name: spr_tinyarrowup_back
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowup_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowup_back_0.png
+    width: 28
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 04dd7470ea39222499957aa51485e0b5, type: 3}
+  - name: spr_tinyarrowup_over
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinyarrowup_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinyarrowup_over_0.png
+    width: 28
+    height: 25
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b5825b24b4eb79b40a870fb2c8915e41, type: 3}
+  - name: spr_tinybutton
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinybutton.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinybutton_0.png
+    width: 75
+    height: 32
+    xorig: 37
+    yorig: 16
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: d7c868bc764b54e4ea90e811f6cba5f7, type: 3}
+  - name: spr_tinybutton_back
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinybutton_back.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinybutton_back_0.png
+    width: 75
+    height: 32
+    xorig: 37
+    yorig: 16
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 4a220ff8ab1beed49bfde896f63e31dd, type: 3}
+  - name: spr_tinybutton_over
+    group: game/gui
+    inProject: 1
+    originalPath: sprites\spr_tinybutton_over.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tinybutton_over_0.png
+    width: 75
+    height: 32
+    xorig: 37
+    yorig: 16
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 716cda99aaad9504a84b09783cd8269c, type: 3}
+  - name: spr_top_border
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_top_border.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_top_border_0.png
+    width: 1920
+    height: 64
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f69bcb5444e59bf4e812d0e92a21c9d1, type: 3}
+  - name: spr_topborder
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_topborder.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_topborder_0.png
+    width: 1920
+    height: 64
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: cd86faf74414ca24d95ae696cb52d2f7, type: 3}
+  - name: spr_torso
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_torso.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_torso_0.png
+    width: 256
+    height: 256
+    xorig: 128
+    yorig: 128
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 63f5b1dc2d9a5024294b78f6a22180f9, type: 3}
+  - name: spr_tracer
+    group: 
+    inProject: 1
+    originalPath: sprites\spr_tracer.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tracer_0.png
+    width: 8
+    height: 8
+    xorig: 4
+    yorig: 4
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: dc3666afa0ded454797d4975f9fd3564, type: 3}
+  - name: spr_tracks
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_tracks.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_tracks_0.png
+    width: 4
+    height: 64
+    xorig: 2
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 3a239366bc74714478c1561739414e93, type: 3}
+  - name: spr_triangle1
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle1.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle1_0.png
+    width: 273
+    height: 140
+    xorig: 136
+    yorig: 70
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 514a3bd53745ff7488ee2848cf2eabb1, type: 3}
+  - name: spr_triangle10
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle10.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle10_0.png
+    width: 350
+    height: 172
+    xorig: 175
+    yorig: 86
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e5d442f3c717c434890db9d8a0660845, type: 3}
+  - name: spr_triangle11
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle11.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle11_0.png
+    width: 390
+    height: 195
+    xorig: 195
+    yorig: 97
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: bf2ebb58ba1816446bcd9a0fe3aa84af, type: 3}
+  - name: spr_triangle12
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle12.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle12_0.png
+    width: 260
+    height: 148
+    xorig: 130
+    yorig: 74
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 51c5d765e82559f41adc6de6116094f2, type: 3}
+  - name: spr_triangle13
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle13.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle13_0.png
+    width: 170
+    height: 72
+    xorig: 85
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 914a2c43ae0ad504fab8ec1ca99673c4, type: 3}
+  - name: spr_triangle14
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle14.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle14_0.png
+    width: 134
+    height: 147
+    xorig: 67
+    yorig: 73
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 507b41b3a9aef5a4a860fa0fa86c483b, type: 3}
+  - name: spr_triangle15
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle15.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle15_0.png
+    width: 294
+    height: 313
+    xorig: 147
+    yorig: 156
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: bce9c9ae12e444140a4e505551369d17, type: 3}
+  - name: spr_triangle16
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle16.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle16_0.png
+    width: 199
+    height: 293
+    xorig: 99
+    yorig: 146
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b1a4b163726bfd944bbbf541f68910ce, type: 3}
+  - name: spr_triangle2
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle2.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle2_0.png
+    width: 393
+    height: 198
+    xorig: 196
+    yorig: 99
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 53322800d5cb2e3408a10f9e138b81fb, type: 3}
+  - name: spr_triangle3
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle3.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle3_0.png
+    width: 160
+    height: 133
+    xorig: 80
+    yorig: 66
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: db3e1d8484ebc474db9a7de813ef209d, type: 3}
+  - name: spr_triangle4
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle4.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle4_0.png
+    width: 277
+    height: 177
+    xorig: 138
+    yorig: 88
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 0bc2c593b6c5ad14eb840f30ce385817, type: 3}
+  - name: spr_triangle5
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle5.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle5_0.png
+    width: 227
+    height: 95
+    xorig: 113
+    yorig: 47
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 416d46105bfd8da41a6cccd4b2f4c106, type: 3}
+  - name: spr_triangle6
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle6.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle6_0.png
+    width: 383
+    height: 112
+    xorig: 191
+    yorig: 56
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: be10873f4d9769c44b1c9312f181e12c, type: 3}
+  - name: spr_triangle7
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle7.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle7_0.png
+    width: 219
+    height: 112
+    xorig: 109
+    yorig: 56
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 5f9a42ad0429f0a48941a05f96822d02, type: 3}
+  - name: spr_triangle8
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle8.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle8_0.png
+    width: 162
+    height: 108
+    xorig: 81
+    yorig: 54
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b9a6049770564a940a4188de37193663, type: 3}
+  - name: spr_triangle9
+    group: game/shapes/triangles
+    inProject: 1
+    originalPath: sprites\spr_triangle9.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_triangle9_0.png
+    width: 361
+    height: 101
+    xorig: 180
+    yorig: 50
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 5afccb2297ee69344991888b7b557327, type: 3}
+  - name: spr_turnarrow
+    group: game
+    inProject: 1
+    originalPath: sprites\spr_turnarrow.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_turnarrow_0.png
+    - sprites\images\spr_turnarrow_1.png
+    - sprites\images\spr_turnarrow_2.png
+    - sprites\images\spr_turnarrow_3.png
+    - sprites\images\spr_turnarrow_4.png
+    - sprites\images\spr_turnarrow_5.png
+    width: 32
+    height: 32
+    xorig: 0
+    yorig: 0
+    imageSpeed: 0.2
+    frames:
+    - {fileID: 21300000, guid: d007a2d4bf3faeb4abc5d41c5943deaf, type: 3}
+    - {fileID: 21300000, guid: 3cf2f3370b95c4947a319aa7d438f93d, type: 3}
+    - {fileID: 21300000, guid: d706767fbc7600644b73c3b7d273ace7, type: 3}
+    - {fileID: 21300000, guid: 1c6731e70fad4b54abe04cb0d56bc17c, type: 3}
+    - {fileID: 21300000, guid: cd4e52e99b9b5b741b935031f95d20d5, type: 3}
+    - {fileID: 21300000, guid: 4900c8e7a5d1fb047b334c1033e7df06, type: 3}
+  - name: spr_vortex
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_vortex.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_vortex_0.png
+    width: 550
+    height: 550
+    xorig: 275
+    yorig: 275
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f3bb55105b4267545a0ce37b740d7615, type: 3}
+  - name: spr_vortex_device
+    group: game/weapons
+    inProject: 1
+    originalPath: sprites\spr_vortex_device.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_vortex_device_0.png
+    width: 15
+    height: 15
+    xorig: 7
+    yorig: 7
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: e029714996973cd44804c577d381022b, type: 3}
+  - name: spr_weapon_fall
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_weapon_fall.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_weapon_fall_0.png
+    width: 54
+    height: 72
+    xorig: 27
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: 30a546a7bf72ba04abb3de9d562d090f, type: 3}
+  - name: spr_weapon_land
+    group: game/items
+    inProject: 1
+    originalPath: sprites\spr_weapon_land.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_weapon_land_0.png
+    width: 54
+    height: 72
+    xorig: 27
+    yorig: 36
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: b3802d4af197b5945b2e5112b026357b, type: 3}
+  - name: spr_worldmap
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\spr_worldmap.sprite.gmx
+    originalFrames:
+    - sprites\images\spr_worldmap_0.png
+    width: 1920
+    height: 1080
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: ddab28926715fbc49bd0a0ed5a26f3d3, type: 3}
+  - name: sprite265
+    group: Unlisted
+    inProject: 0
+    originalPath: sprites\sprite265.sprite.gmx
+    originalFrames:
+    - sprites\images\sprite265_0.png
+    width: 16
+    height: 16
+    xorig: 0
+    yorig: 0
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: af814a93c8db2d44ab8d1ed2081e6bca, type: 3}
+  - name: srp_btn_resume
+    group: game/pause
+    inProject: 1
+    originalPath: sprites\srp_btn_resume.sprite.gmx
+    originalFrames:
+    - sprites\images\srp_btn_resume_0.png
+    width: 238
+    height: 64
+    xorig: 119
+    yorig: 32
+    imageSpeed: 1
+    frames:
+    - {fileID: 21300000, guid: f9d66f055ee0d8e43a8cc2d39a00ce50, type: 3}
+  _backgrounds:
+  - name: bg_apple
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_apple.background.gmx
+    originalImage: background\images\bg_apple.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: cce52c8114ad9e5438569e1a1549a68b, type: 3}
+  - name: bg_banana
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_banana.background.gmx
+    originalImage: background\images\bg_banana.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 22af4514f45218341aa62a44e826645d, type: 3}
+  - name: bg_black
+    group: 
+    inProject: 1
+    originalPath: background\bg_black.background.gmx
+    originalImage: background\images\bg_black.png
+    width: 32
+    height: 32
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: a2552190ee14daf48b42e91f9295acbd, type: 3}
+  - name: bg_blackearth
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_blackearth.background.gmx
+    originalImage: background\images\bg_blackearth.png
+    width: 240
+    height: 240
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 5405d0c0286f8364c82315375ba99307, type: 3}
+  - name: bg_bluegrass
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_bluegrass.background.gmx
+    originalImage: background\images\bg_bluegrass.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: eacee54ba505a544b90abf15f41a4afe, type: 3}
+  - name: bg_bluehoneycomb
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_bluehoneycomb.background.gmx
+    originalImage: background\images\bg_bluehoneycomb.png
+    width: 440
+    height: 378
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 35380dd6cbf1dd4448b049316f766d77, type: 3}
+  - name: bg_brownbrick
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_brownbrick.background.gmx
+    originalImage: background\images\bg_brownbrick.png
+    width: 520
+    height: 425
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: d468b599ff680a6438c1bcda45181c3a, type: 3}
+  - name: bg_brownskin
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_brownskin.background.gmx
+    originalImage: background\images\bg_brownskin.png
+    width: 1600
+    height: 1600
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: c49743c9ebe49d34999bb9a9dc0e3546, type: 3}
+  - name: bg_brownstone
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_brownstone.background.gmx
+    originalImage: background\images\bg_brownstone.png
+    width: 520
+    height: 520
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: eae3dcdb29477e4409761a48303caf06, type: 3}
+  - name: bg_cardboard
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_cardboard.background.gmx
+    originalImage: background\images\bg_cardboard.png
+    width: 1072
+    height: 1072
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 32dfe2da2cc016742977e9eb270dbae0, type: 3}
+  - name: bg_controls
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_controls.background.gmx
+    originalImage: background\images\bg_controls.png
+    width: 1920
+    height: 1080
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: a121e434efdd8a4429d60d58bed33c23, type: 3}
+  - name: bg_cracked
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_cracked.background.gmx
+    originalImage: background\images\bg_cracked.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 47a65ef01245a9d45bee0dfeaa977645, type: 3}
+  - name: bg_crackedgrey
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_crackedgrey.background.gmx
+    originalImage: background\images\bg_crackedgrey.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 48453f8499723a44da07bc6240f8c00a, type: 3}
+  - name: bg_darkwoodtile
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_darkwoodtile.background.gmx
+    originalImage: background\images\bg_darkwoodtile.png
+    width: 1920
+    height: 1080
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 4997c7b2a1d8bda48b6605859ed7c25e, type: 3}
+  - name: bg_dirt
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_dirt.background.gmx
+    originalImage: background\images\bg_dirt.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 3c965db711e57dd4a8a1e095da99e227, type: 3}
+  - name: bg_eggshell
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_eggshell.background.gmx
+    originalImage: background\images\bg_eggshell.png
+    width: 1600
+    height: 1600
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 72dd0b49401ec214880bac3f1761964c, type: 3}
+  - name: bg_erosion
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_erosion.background.gmx
+    originalImage: background\images\bg_erosion.png
+    width: 640
+    height: 640
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 6276add382d8d7c4e8e4041af9a30be8, type: 3}
+  - name: bg_fire
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_fire.background.gmx
+    originalImage: background\images\bg_fire.png
+    width: 818
+    height: 879
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: fcddf74525e45ee4089282fb36b93050, type: 3}
+  - name: bg_foghex
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_foghex.background.gmx
+    originalImage: background\images\bg_foghex.png
+    width: 600
+    height: 600
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: e07e042ddc656ff42834ef3b8b7dfba2, type: 3}
+  - name: bg_granite
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_granite.background.gmx
+    originalImage: background\images\bg_granite.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: c7dfb4de3037a504b8ccb6c76abd00cb, type: 3}
+  - name: bg_grape
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_grape.background.gmx
+    originalImage: background\images\bg_grape.png
+    width: 320
+    height: 320
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 2d9fd64c14b469e4c91a27bd00511ecb, type: 3}
+  - name: bg_grass
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_grass.background.gmx
+    originalImage: background\images\bg_grass.png
+    width: 600
+    height: 600
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: b9a28c76f490bb64ab4e2d978fa8c481, type: 3}
+  - name: bg_greyhex
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_greyhex.background.gmx
+    originalImage: background\images\bg_greyhex.png
+    width: 450
+    height: 380
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 7149ba65da7383747b0b65bab8a33e35, type: 3}
+  - name: bg_ice
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_ice.background.gmx
+    originalImage: background\images\bg_ice.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: b7d165a45c4758443a9020bf385119a7, type: 3}
+  - name: bg_icegrass
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_icegrass.background.gmx
+    originalImage: background\images\bg_icegrass.png
+    width: 1024
+    height: 1024
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 13191d4199ecfd64ca07eb3784d24a1d, type: 3}
+  - name: bg_jelly
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_jelly.background.gmx
+    originalImage: background\images\bg_jelly.png
+    width: 640
+    height: 640
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: dfe5d0793bf131a459981c2ac3452fb9, type: 3}
+  - name: bg_limestone
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_limestone.background.gmx
+    originalImage: background\images\bg_limestone.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 3c79b3909761ba741946dc062f47d2bd, type: 3}
+  - name: bg_mars
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_mars.background.gmx
+    originalImage: background\images\bg_mars.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 2addf22b0a78bed4f87138e95a5af11a, type: 3}
+  - name: bg_metal
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_metal.background.gmx
+    originalImage: background\images\bg_metal.png
+    width: 592
+    height: 592
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 1f0c3d396ed31cb4eb9c6ce41424fef6, type: 3}
+  - name: bg_metal2
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_metal2.background.gmx
+    originalImage: background\images\bg_metal2.png
+    width: 320
+    height: 320
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 61d295db536a5f4428816c111abcec4b, type: 3}
+  - name: bg_moonwave
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_moonwave.background.gmx
+    originalImage: background\images\bg_moonwave.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 6b5f5fe7c0bcf5948be2de08d84afb2d, type: 3}
+  - name: bg_moss
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_moss.background.gmx
+    originalImage: background\images\bg_moss.png
+    width: 350
+    height: 350
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 7997286c8b370b743ac28d30f0c58689, type: 3}
+  - name: bg_oldwood
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_oldwood.background.gmx
+    originalImage: background\images\bg_oldwood.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: eb229694cf9126b458eacffb99b7363a, type: 3}
+  - name: bg_panther
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_panther.background.gmx
+    originalImage: background\images\bg_panther.png
+    width: 600
+    height: 600
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: b67c6f5158a5ae94d951770e8889bc64, type: 3}
+  - name: bg_patchysand
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_patchysand.background.gmx
+    originalImage: background\images\bg_patchysand.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: b92818821be0f8c44a34b98363051c4a, type: 3}
+  - name: bg_pear
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_pear.background.gmx
+    originalImage: background\images\bg_pear.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 165e1d70a5ee61a49acda9a3f08b3266, type: 3}
+  - name: bg_pinktile
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_pinktile.background.gmx
+    originalImage: background\images\bg_pinktile.png
+    width: 450
+    height: 450
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 580de2a81b370724ea4299ee2a1d0a47, type: 3}
+  - name: bg_potato
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_potato.background.gmx
+    originalImage: background\images\bg_potato.png
+    width: 320
+    height: 320
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 6cf4a6c41715b7e48ba61323d2e43716, type: 3}
+  - name: bg_purpletile
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_purpletile.background.gmx
+    originalImage: background\images\bg_purpletile.png
+    width: 450
+    height: 450
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: e39ebb282a3c77e4c98c5f4e49808552, type: 3}
+  - name: bg_redcarpet
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_redcarpet.background.gmx
+    originalImage: background\images\bg_redcarpet.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 8ffc91903a8d23f489a6b0d39d76d933, type: 3}
+  - name: bg_redsand
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_redsand.background.gmx
+    originalImage: background\images\bg_redsand.png
+    width: 480
+    height: 480
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 09dddae05bf727a43b51e7b548222dd3, type: 3}
+  - name: bg_rocky
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_rocky.background.gmx
+    originalImage: background\images\bg_rocky.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: acc8abc55c581c8439a108bb2285641c, type: 3}
+  - name: bg_rockysand
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_rockysand.background.gmx
+    originalImage: background\images\bg_rockysand.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: c4732c43d532bb242b27b5ce7116cce5, type: 3}
+  - name: bg_roughground
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_roughground.background.gmx
+    originalImage: background\images\bg_roughground.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 0ce7156a3a528964ea55493e77b3e936, type: 3}
+  - name: bg_sand
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_sand.background.gmx
+    originalImage: background\images\bg_sand.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: f81ea3f3efe4feb4db54bd28049ff858, type: 3}
+  - name: bg_saturn
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_saturn.background.gmx
+    originalImage: background\images\bg_saturn.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 0d312f9ff65633d41acdb5ead396eefb, type: 3}
+  - name: bg_sherbert
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_sherbert.background.gmx
+    originalImage: background\images\bg_sherbert.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: aa9ee4317e5a0c64a936a83405c37b2d, type: 3}
+  - name: bg_silverhex
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_silverhex.background.gmx
+    originalImage: background\images\bg_silverhex.png
+    width: 300
+    height: 300
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: b58103b9d1251664c9bfd62fbea1584e, type: 3}
+  - name: bg_skin
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_skin.background.gmx
+    originalImage: background\images\bg_skin.png
+    width: 400
+    height: 400
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 433300403a1e3e543adf5802df06b637, type: 3}
+  - name: bg_skin2
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_skin2.background.gmx
+    originalImage: background\images\bg_skin2.png
+    width: 320
+    height: 320
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 3c6027720f7d6a048a6c0946ab226e09, type: 3}
+  - name: bg_smoothmetal
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_smoothmetal.background.gmx
+    originalImage: background\images\bg_smoothmetal.png
+    width: 886
+    height: 901
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: abef656b6241deb45b9d123d7cca9d88, type: 3}
+  - name: bg_snow
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_snow.background.gmx
+    originalImage: background\images\bg_snow.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 8ac0def1ea5368a49a5bee0653ed11b7, type: 3}
+  - name: bg_spotlight
+    group: 
+    inProject: 1
+    originalPath: background\bg_spotlight.background.gmx
+    originalImage: background\images\bg_spotlight.png
+    width: 1920
+    height: 1080
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: a662f25e5e8ed8e4fb063e1eef09e62c, type: 3}
+  - name: bg_spotlight2
+    group: 
+    inProject: 1
+    originalPath: background\bg_spotlight2.background.gmx
+    originalImage: background\images\bg_spotlight2.png
+    width: 1920
+    height: 1080
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: f0a211e69c0d67e4da80ac081f6bacfc, type: 3}
+  - name: bg_stadium
+    group: 
+    inProject: 1
+    originalPath: background\bg_stadium.background.gmx
+    originalImage: background\images\bg_stadium.png
+    width: 1920
+    height: 1080
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: d285fd733ceee6347bdb0a6651dc91a2, type: 3}
+  - name: bg_stucco
+    group: tiles
+    inProject: 1
+    originalPath: background\bg_stucco.background.gmx
+    originalImage: background\images\bg_stucco.png
+    width: 320
+    height: 320
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: a5ee4c202bee65b4596fed0f482b827a, type: 3}
+  - name: bg_tilehex
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_tilehex.background.gmx
+    originalImage: background\images\bg_tilehex.png
+    width: 450
+    height: 380
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 6ced5919bbf8578448bb9c83e13337f5, type: 3}
+  - name: bg_titlescreen
+    group: 
+    inProject: 1
+    originalPath: background\bg_titlescreen.background.gmx
+    originalImage: background\images\bg_titlescreen.png
+    width: 1920
+    height: 1080
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: d1e16dea5df9d0d489adf1fc7f60d0a5, type: 3}
+  - name: bg_wallpaper
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_wallpaper.background.gmx
+    originalImage: background\images\bg_wallpaper.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 1ba6338d96f31864c9610ba6418514ac, type: 3}
+  - name: bg_whitemarble
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_whitemarble.background.gmx
+    originalImage: background\images\bg_whitemarble.png
+    width: 1600
+    height: 1600
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: a1286a0d9328d7a4ea9db0ccf507260e, type: 3}
+  - name: bg_wood
+    group: Unlisted
+    inProject: 0
+    originalPath: background\bg_wood.background.gmx
+    originalImage: background\images\bg_wood.png
+    width: 512
+    height: 512
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: 8d77b981d71dc784fa78a23ae82d23d2, type: 3}
+  - name: bg_worldmap
+    group: 
+    inProject: 1
+    originalPath: background\bg_worldmap.background.gmx
+    originalImage: background\images\bg_worldmap.png
+    width: 1920
+    height: 1080
+    tileHorizontal: 1
+    tileVertical: 1
+    sprite: {fileID: 21300000, guid: cb8a5b6cf9bdc5d428d0e0ab7885edfc, type: 3}
+  _fonts:
+  - name: fnt_count
+    family: Impact
+    size: 8
+    inProject: 1
+    originalPath: fonts\fnt_count.font.gmx
+    originalImage: fonts\fnt_count.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: c2c16ebb6b2414548b0ffcc6e2e87be0, type: 2}
+    outline1: {fileID: -2804542593403891622, guid: c2c16ebb6b2414548b0ffcc6e2e87be0, type: 2}
+    outline2: {fileID: 284282399515050996, guid: c2c16ebb6b2414548b0ffcc6e2e87be0, type: 2}
+  - name: fnt_credits
+    family: Verdana
+    size: 10
+    inProject: 0
+    originalPath: fonts\fnt_credits.font.gmx
+    originalImage: fonts\fnt_credits.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: 6ca0245c4e46f6a4a8aad432d39dbbe2, type: 2}
+    outline1: {fileID: -290771871999465090, guid: 6ca0245c4e46f6a4a8aad432d39dbbe2, type: 2}
+    outline2: {fileID: -6530850516540447574, guid: 6ca0245c4e46f6a4a8aad432d39dbbe2, type: 2}
+  - name: fnt_impact
+    family: Impact
+    size: 32
+    inProject: 1
+    originalPath: fonts\fnt_impact.font.gmx
+    originalImage: fonts\fnt_impact.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: d1d2c55e0a885cc48a3c435dff43391e, type: 2}
+    outline1: {fileID: 818001269287733884, guid: d1d2c55e0a885cc48a3c435dff43391e, type: 2}
+    outline2: {fileID: -4882864146891120716, guid: d1d2c55e0a885cc48a3c435dff43391e, type: 2}
+  - name: fnt_mono
+    family: Monotype Corsiva
+    size: 22
+    inProject: 1
+    originalPath: fonts\fnt_mono.font.gmx
+    originalImage: fonts\fnt_mono.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: 3064fa330792a724dae52d12b128f91f, type: 2}
+    outline1: {fileID: 2756972885808546937, guid: 3064fa330792a724dae52d12b128f91f, type: 2}
+    outline2: {fileID: -5728469852052675794, guid: 3064fa330792a724dae52d12b128f91f, type: 2}
+  - name: fnt_score
+    family: Impact
+    size: 12
+    inProject: 1
+    originalPath: fonts\fnt_score.font.gmx
+    originalImage: fonts\fnt_score.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: cde440e4a02484c478b6b62d9e1ed668, type: 2}
+    outline1: {fileID: 1111342580032314987, guid: cde440e4a02484c478b6b62d9e1ed668, type: 2}
+    outline2: {fileID: 2984580905313124886, guid: cde440e4a02484c478b6b62d9e1ed668, type: 2}
+  - name: fnt_score_shadow
+    family: Impact
+    size: 14
+    inProject: 0
+    originalPath: fonts\fnt_score_shadow.font.gmx
+    originalImage: fonts\fnt_score_shadow.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: d2b26a25431f674458db63190077db85, type: 2}
+    outline1: {fileID: 4435462264723020134, guid: d2b26a25431f674458db63190077db85, type: 2}
+    outline2: {fileID: -4574527199196603831, guid: d2b26a25431f674458db63190077db85, type: 2}
+  - name: fnt_small
+    family: Impact
+    size: 8
+    inProject: 1
+    originalPath: fonts\fnt_small.font.gmx
+    originalImage: fonts\fnt_small.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: b261c86be4db65e41bbfd607b79da173, type: 2}
+    outline1: {fileID: -8666546249975062945, guid: b261c86be4db65e41bbfd607b79da173, type: 2}
+    outline2: {fileID: 5847421798632465249, guid: b261c86be4db65e41bbfd607b79da173, type: 2}
+  - name: font4
+    family: Arial
+    size: 12
+    inProject: 0
+    originalPath: fonts\font4.font.gmx
+    originalImage: fonts\font4.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: ad331d9a510414a419116a27bed98cfe, type: 2}
+    outline1: {fileID: 5468473084192460913, guid: ad331d9a510414a419116a27bed98cfe, type: 2}
+    outline2: {fileID: 7081265952443202382, guid: ad331d9a510414a419116a27bed98cfe, type: 2}
+  - name: font5
+    family: Arial
+    size: 12
+    inProject: 0
+    originalPath: fonts\font5.font.gmx
+    originalImage: fonts\font5.png
+    spriteFont: 0
+    font: {fileID: 11400000, guid: 07b696ec2b42f4e44a715d5104e53ff1, type: 2}
+    outline1: {fileID: 2837300883498822742, guid: 07b696ec2b42f4e44a715d5104e53ff1, type: 2}
+    outline2: {fileID: 2537920298434580166, guid: 07b696ec2b42f4e44a715d5104e53ff1, type: 2}
+  - name: spr_spritefont
+    family: spr_spritefont
+    size: 50
+    inProject: 0
+    originalPath: sprites\spr_spritefont.sprite.gmx
+    originalImage: sprites\images\spr_spritefont_0.png
+    spriteFont: 1
+    font: {fileID: 11400000, guid: 40e8d9ec8de6ea04c908b38fbb3a11b1, type: 2}
+    outline1: {fileID: 0}
+    outline2: {fileID: 0}
