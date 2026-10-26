@@ -83,6 +83,33 @@ namespace Ricochet.Core.Arsenal
             return changed;
         }
 
+        /// <summary>
+        /// obj_icon_weapon_*'s Left Pressed (U.RICO-T49): selects <paramref name="weapon"/> when the player has any of it
+        /// (the original's sfx_flick), and refuses otherwise (sfx_disabled). Returns false when refused.
+        /// </summary>
+        public bool Select(Weapon weapon)
+        {
+            if ((int)weapon < 0 || (int)weapon >= ArsenalRules.Kinds || !Has(weapon))
+            {
+                return false;
+            }
+
+            Weapon = weapon;
+            return true;
+        }
+
+        /// <summary>obj_item_*'s Left Pressed (U.RICO-T49): selects <paramref name="item"/> when the player has any of it.</summary>
+        public bool Select(Item item)
+        {
+            if ((int)item < 0 || (int)item >= ArsenalRules.Kinds || !Has(item))
+            {
+                return false;
+            }
+
+            Item = item;
+            return true;
+        }
+
         /// <summary>cycle_item_right / cycle_item_left: selects the next item the player has any of.</summary>
         public bool CycleItem(int direction)
         {

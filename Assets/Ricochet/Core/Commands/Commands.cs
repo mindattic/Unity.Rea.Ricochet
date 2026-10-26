@@ -78,6 +78,28 @@ namespace Ricochet.Core.Commands
         public int Direction { get; }
     }
 
+    /// <summary>Select this weapon (a click on its HUD icon, obj_icon_weapon_*, U.RICO-T49); refused when the player has none.</summary>
+    public sealed class SelectWeaponCommand : Command
+    {
+        public SelectWeaponCommand(int playerId, Ricochet.Core.Arsenal.Weapon weapon) : base(playerId)
+        {
+            Weapon = weapon;
+        }
+
+        public Ricochet.Core.Arsenal.Weapon Weapon { get; }
+    }
+
+    /// <summary>Select this item (a click on its HUD icon, obj_item_*, U.RICO-T49); refused when the player has none.</summary>
+    public sealed class SelectItemCommand : Command
+    {
+        public SelectItemCommand(int playerId, Ricochet.Core.Arsenal.Item item) : base(playerId)
+        {
+            Item = item;
+        }
+
+        public Ricochet.Core.Arsenal.Item Item { get; }
+    }
+
     /// <summary>The grenade fuse keys: negative shortens, +1 lengthens, +2 or more sets the longest.</summary>
     public sealed class FuseCommand : Command
     {

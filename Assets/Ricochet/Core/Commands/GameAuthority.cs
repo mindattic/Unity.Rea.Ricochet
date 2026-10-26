@@ -539,6 +539,20 @@ namespace Ricochet.Core.Commands
                         }
 
                         break;
+                    case SelectWeaponCommand select:
+                        if (MayAct(state) && state.Loadout.Weapon != select.Weapon && state.Loadout.Select(select.Weapon))
+                        {
+                            Emit(new LoadoutChanged(state.Id));
+                        }
+
+                        break;
+                    case SelectItemCommand select:
+                        if (MayAct(state) && state.Loadout.Item != select.Item && state.Loadout.Select(select.Item))
+                        {
+                            Emit(new LoadoutChanged(state.Id));
+                        }
+
+                        break;
                     case FuseCommand fuse:
                         DoFuse(state, fuse.Change);
                         break;

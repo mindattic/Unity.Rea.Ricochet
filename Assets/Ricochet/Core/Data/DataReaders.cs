@@ -109,12 +109,14 @@ namespace Ricochet.Core.Data
 
             var weapons = new string[ArsenalRules.Kinds];
             var items = new string[ArsenalRules.Kinds];
-            ReadKinds(r, "weapons", typeof(Weapon), weapons, (i, start, inPlay) =>
+            var weaponsAbout = new string[ArsenalRules.Kinds];
+            var itemsAbout = new string[ArsenalRules.Kinds];
+            ReadKinds(r, "weapons", typeof(Weapon), weapons, weaponsAbout, (i, start, inPlay) =>
             {
                 rules.SetStartCount((Weapon)i, start);
                 rules.SetInPlay((Weapon)i, inPlay);
             });
-            ReadKinds(r, "items", typeof(Item), items, (i, start, inPlay) =>
+            ReadKinds(r, "items", typeof(Item), items, itemsAbout, (i, start, inPlay) =>
             {
                 rules.SetStartCount((Item)i, start);
                 rules.SetInPlay((Item)i, inPlay);
@@ -123,10 +125,12 @@ namespace Ricochet.Core.Data
             data.Arsenal = rules;
             data.WeaponNames = weapons;
             data.ItemNames = items;
+            data.WeaponAbout = weaponsAbout;
+            data.ItemAbout = itemsAbout;
         }
 
         // Each entry's id must be the enum's name for that place (so an id can only name a weapon or item that exists, once).
-        private static void ReadKinds(SettingsReader r, string key, Type enumType, string[] names, Action<int, int, bool> set)
+        private static void ReadKinds(SettingsReader r, string key, Type enumType, string[] names, string[] about, Action<int, int, bool> set)
         {
             string[] expected = Enum.GetNames(enumType);
             var seen = new HashSet<string>();
@@ -139,6 +143,7 @@ namespace Ricochet.Core.Data
                 string name = e.Text("name");
                 int start = e.Integer("start", 0, ArsenalRules.Unlimited);
                 bool inPlay = e.Flag("inPlay");
+                string what = e.Text("about"); // its HUD icon's hover text (U.RICO-T49)
                 e.Done();
                 if (!seen.Add(id))
                 {
@@ -152,6 +157,7 @@ namespace Ricochet.Core.Data
                 if (i < names.Length)
                 {
                     names[i] = name;
+                    about[i] = what;
                     set(i, start, inPlay);
                 }
             }
@@ -159,6 +165,7 @@ namespace Ricochet.Core.Data
             for (int i = 0; i < names.Length; i++)
             {
                 names[i] = names[i] ?? expected[i];
+                about[i] = about[i] ?? string.Empty;
             }
         }
 

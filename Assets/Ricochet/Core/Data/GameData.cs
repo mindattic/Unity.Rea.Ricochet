@@ -64,6 +64,12 @@ namespace Ricochet.Core.Data
         /// <summary>The items' names, in <see cref="Item"/> order.</summary>
         public IReadOnlyList<string> ItemNames { get; internal set; }
 
+        /// <summary>What each weapon does, in <see cref="Weapon"/> order: its HUD icon's hover text (U.RICO-T49).</summary>
+        public IReadOnlyList<string> WeaponAbout { get; internal set; }
+
+        /// <summary>What each item does, in <see cref="Item"/> order: its HUD icon's hover text (U.RICO-T49).</summary>
+        public IReadOnlyList<string> ItemAbout { get; internal set; }
+
         public IReadOnlyList<MapInfo> Maps { get; internal set; }
 
         /// <summary>The random arena's index in <see cref="Maps"/>.</summary>

@@ -355,6 +355,25 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
+        public void SelectWeaponAndItem_PickWhatTheIconNames_OnlyWhenCarried_AndNotWhileAShotIsInTheAir()
+        {
+            // U.RICO-T49: obj_icon_weapon_* and obj_item_*'s Left Pressed (sfx_flick when carried, sfx_disabled when not).
+            GameAuthority authority = Practice(out PlayerState ann, out _, rules => rules.SetStartCount(Weapon.Railgun, 0));
+            Assert.That(Of<LoadoutChanged>(authority.Apply(new SelectWeaponCommand(1, Weapon.Grenade))), Has.Count.EqualTo(1));
+            Assert.That(ann.Loadout.Weapon, Is.EqualTo(Weapon.Grenade));
+            Assert.That(authority.Apply(new SelectWeaponCommand(1, Weapon.Railgun)), Is.Empty, "none carried: refused");
+            Assert.That(ann.Loadout.Weapon, Is.EqualTo(Weapon.Grenade));
+            Assert.That(authority.Apply(new SelectWeaponCommand(1, Weapon.Grenade)), Is.Empty, "already selected: nothing changes");
+
+            Assert.That(Of<LoadoutChanged>(authority.Apply(new SelectItemCommand(1, Item.Teleporter))), Has.Count.EqualTo(1));
+            Assert.That(ann.Loadout.Item, Is.EqualTo(Item.Teleporter));
+
+            authority.Apply(new FireCommand(1, 90, 1));
+            Assert.That(authority.Apply(new SelectItemCommand(1, Item.ShieldWall)), Is.Empty, "nothing of yours may change while it flies");
+            Assert.That(ann.Loadout.Item, Is.EqualTo(Item.Teleporter));
+        }
+
+        [Test]
         public void Fuse_ShortensLengthensAndMaxesOut_OnlyForTheCaller()
         {
             GameAuthority authority = Practice(out PlayerState ann, out _);

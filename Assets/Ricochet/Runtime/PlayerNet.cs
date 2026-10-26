@@ -34,6 +34,14 @@ namespace Ricochet
         [ToServer(RateLimit = 10)]
         public partial void CycleItem(int direction);
 
+        // client -> server (U.RICO-T49): a click on a weapon's HUD icon (obj_icon_weapon_*'s Left Pressed) selects it.
+        [ToServer(RateLimit = 10)]
+        public partial void SelectWeapon(int weapon);
+
+        // client -> server (U.RICO-T49): a click on an item's HUD icon (obj_item_*'s Left Pressed) selects it.
+        [ToServer(RateLimit = 10)]
+        public partial void SelectItem(int item);
+
         // client -> server: the grenade fuse keys: -1 shorter, +1 longer, +2 the longest.
         [ToServer(RateLimit = 10)]
         public partial void Fuse(int change);

@@ -145,6 +145,10 @@ namespace Ricochet
 
         private void OnCycleItem(int direction) => Run(new Cmd.CycleItemCommand(State.Id, direction), mirror: false);
 
+        private void OnSelectWeapon(int weapon) => Run(new Cmd.SelectWeaponCommand(State.Id, (Weapon)weapon), mirror: false);
+
+        private void OnSelectItem(int item) => Run(new Cmd.SelectItemCommand(State.Id, (Item)item), mirror: false);
+
         private void OnFuse(int change) => Run(new Cmd.FuseCommand(State.Id, change), mirror: false);
 
         // Server: use_item.gml. The selected item, if carried and in play, before this turn's shot.

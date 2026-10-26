@@ -166,6 +166,22 @@ namespace Ricochet.Core.Arsenal
             return index >= 0 && index < names.Count ? names[index] : item.ToString();
         }
 
+        /// <summary>What <paramref name="weapon"/> does: its HUD icon's hover text (arsenal.json's about, U.RICO-T49).</summary>
+        public static string About(Weapon weapon)
+        {
+            int index = (int)weapon;
+            var about = Ricochet.Core.Data.GameData.Current.WeaponAbout;
+            return about != null && index >= 0 && index < about.Count ? about[index] : string.Empty;
+        }
+
+        /// <summary>What <paramref name="item"/> does: its HUD icon's hover text (arsenal.json's about, U.RICO-T49).</summary>
+        public static string About(Item item)
+        {
+            int index = (int)item;
+            var about = Ricochet.Core.Data.GameData.Current.ItemAbout;
+            return about != null && index >= 0 && index < about.Count ? about[index] : string.Empty;
+        }
+
         /// <summary>"x3", or "unlimited" (the original drew an infinity sign; the default HUD font may lack the glyph).</summary>
         public static string CountLabel(int count) => count >= Unlimited ? "unlimited" : "x" + count.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
