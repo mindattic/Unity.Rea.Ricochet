@@ -108,6 +108,50 @@ namespace Ricochet.Core.Tests
             Assert.That(Announcer.Text(new Announcement(AnnouncementKind.Lose, 99, 0, -1), null), Does.Contain("someone"), "line clamped, no names");
         }
 
+        // U.RICO-T51: the drawn line picks the personality's recording, random_<key>_<kind>'s sfx_<key>_<kind><n>.
+        [Test]
+        public void TheDrawnLinePicksThePersonalitysRecording()
+        {
+            Assert.That(Announcer.Recording(Announcer.VoiceAt(0), new Announcement(AnnouncementKind.Win, 2, 0, 1)), Is.EqualTo("sfx_sly_win3"));
+            Assert.That(Announcer.Recording(Announcer.VoiceAt(6), new Announcement(AnnouncementKind.Welcome, 9, -1, -1)), Is.EqualTo("sfx_scottish_welcome10"));
+            Assert.That(Announcer.Recording(Announcer.VoiceAt(2), new Announcement(AnnouncementKind.Lose, 0, 0, -1)), Is.EqualTo("sfx_sid_lose1"));
+            Assert.That(Announcer.Recording(Announcer.VoiceAt(3), new Announcement(AnnouncementKind.Lose, 99, 0, -1)), Is.EqualTo("sfx_vlad_lose10"), "line clamped");
+            Assert.That(Announcer.ResourcePath(Announcer.VoiceAt(4), new Announcement(AnnouncementKind.Win, 0, 0, 1)), Is.EqualTo("Ricochet/Voice/sfx_baxter_win1"));
+
+            // Every personality has all thirty, one per kind and line.
+            var all = new HashSet<string>();
+            foreach (AnnouncerVoice voice in Announcer.Voices)
+            {
+                foreach (AnnouncementKind kind in Enum.GetValues(typeof(AnnouncementKind)))
+                {
+                    for (int line = 0; line < Announcer.LinesPerKind; line++)
+                    {
+                        all.Add(Announcer.Recording(voice, new Announcement(kind, line, 0, 1)));
+                    }
+                }
+            }
+
+            Assert.That(all.Count, Is.EqualTo(210));
+        }
+
+        [Test]
+        public void TheCardHoldsWhileTheLineIsHeard_OrForTheCaptionWhenMuted()
+        {
+            Assert.That(Announcer.CardSeconds(2.7), Is.EqualTo(2.7), "obj_announcer: on screen while audio_is_playing");
+            Assert.That(Announcer.CardSeconds(0), Is.EqualTo(Announcer.CaptionSeconds), "nobody hears it: the written line stands alone");
+            Assert.That(Announcer.CardSeconds(double.NaN), Is.EqualTo(Announcer.CaptionSeconds));
+        }
+
+        [Test]
+        public void EachPersonalityHasTheOriginalsPortrait_FourSharingTheDummy()
+        {
+            Assert.That(Announcer.Voices.Select(v => v.Portrait), Is.EqualTo(new[]
+            {
+                "spr_profile_sly", "spr_profile_rye", "spr_profile_sid",
+                "spr_profile_dummy", "spr_profile_dummy", "spr_profile_dummy", "spr_profile_dummy",
+            }));
+        }
+
         [Test]
         public void TheSetupCarriesTheAnnouncer_ThroughTheVotesText()
         {

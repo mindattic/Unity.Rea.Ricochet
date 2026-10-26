@@ -7,9 +7,11 @@
 // (random_announcement_lose, from obj_explosion, which bullet_step.gml made at the bounce limit). The "announcements"
 // setting (obj_btn_announcer_less/more, 0 to 4) is how often it speaks: 0 never; 1 every time; 2, 3 and 4 one time in 3,
 // 6 and 9 (the welcome always, unless 0). Lines are drawn without repeats until all ten of a kind have been heard
-// (random_win_number's shuffled list). The original's lines were voice recordings; here they are written lines with the
-// players' names in them, the same for every personality, shown in the personality's name box. The personalities, the
-// odds and the lines are data (announcer.json, UR-T35).
+// (random_win_number's shuffled list). The original's lines were voice recordings: U.RICO-T51 imports each personality's
+// thirty (Resources/Ricochet/Voice, Tools/import-gml-sound.ps1) and the line drawn here picks the recording
+// (Recording: sfx_<key>_<kind><line + 1>), which plays when its card appears; the written line, with the players' names
+// in it, stays on the card as its caption, and is all there is when the sound is muted. Each personality's portrait is
+// data too (Portrait: the original's sprite, spr_profile_dummy shared by four). The personalities, the odds and the lines are data (announcer.json, UR-T35).
 using System;
 using System.Collections.Generic;
 
@@ -30,22 +32,29 @@ namespace Ricochet.Core.Match
     /// <summary>One of the on-air personalities.</summary>
     public sealed class AnnouncerVoice
     {
-        internal AnnouncerVoice(string key, string name, byte r, byte g, byte b)
+        internal AnnouncerVoice(string key, string name, byte r, byte g, byte b, string portrait)
         {
             Key = key;
             Name = name;
             R = r;
             G = g;
             B = b;
+            Portrait = portrait ?? string.Empty;
         }
 
-        /// <summary>The original's settings key ("sly", "rye", ...).</summary>
+        /// <summary>The original's settings key ("sly", "rye", ...), which also names the recordings (sfx_sly_win1).</summary>
         public string Key { get; }
 
         /// <summary>The name in the name box ("Kurt Sly").</summary>
         public string Name { get; }
 
-        /// <summary>The portrait's colour (the original had a drawn profile for two of them, a placeholder for the rest).</summary>
+        /// <summary>
+        /// The GML sprite the card's portrait draws (obj_announcer_portrait's sprite_index): spr_profile_sly, spr_profile_rye,
+        /// spr_profile_sid, or the shared spr_profile_dummy.
+        /// </summary>
+        public string Portrait { get; }
+
+        /// <summary>The colour of the panel shown in the portrait's place only when the art is missing.</summary>
         public byte R { get; }
 
         public byte G { get; }
@@ -109,6 +118,12 @@ namespace Ricochet.Core.Match
 
         /// <summary>The personality the original started with (globals.gml's announcer = "sly").</summary>
         public const int DefaultVoice = 0;
+
+        /// <summary>The Resources folder the voice lines are imported into (Tools/import-gml-sound.ps1, U.RICO-T51).</summary>
+        public const string VoiceFolder = "Ricochet/Voice";
+
+        /// <summary>How long the card holds a line nobody hears (muted, or the recording is missing): long enough to read it.</summary>
+        public const double CaptionSeconds = 4.5;
 
         private readonly Random _dice;
         private readonly List<int>[] _decks = { new List<int>(), new List<int>(), new List<int>() };
@@ -174,6 +189,45 @@ namespace Ricochet.Core.Match
             var lines = Data.Announcer.Lines(announcement.Kind);
             string line = lines[Math.Max(0, Math.Min(lines.Count - 1, announcement.Line))];
             return string.Format(line, NameOf(announcement.Subject, nameOf), NameOf(announcement.Other, nameOf));
+        }
+
+        /// <summary>
+        /// The recording <paramref name="voice"/> says <paramref name="announcement"/> with: random_&lt;key&gt;_&lt;kind&gt;'s
+        /// current_announcement, sfx_&lt;key&gt;_&lt;welcome|win|lose&gt;&lt;line + 1&gt; (sfx_sly_win3 for Kurt Sly's third win line).
+        /// </summary>
+        public static string Recording(AnnouncerVoice voice, Announcement announcement)
+        {
+            if (voice == null)
+            {
+                throw new ArgumentNullException(nameof(voice));
+            }
+
+            int line = Math.Max(0, Math.Min(LinesPerKind - 1, announcement.Line)) + 1;
+            return "sfx_" + voice.Key + "_" + KindWord(announcement.Kind) + line.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>The Resources path the runtime loads <see cref="Recording"/> from.</summary>
+        public static string ResourcePath(AnnouncerVoice voice, Announcement announcement) => VoiceFolder + "/" + Recording(voice, announcement);
+
+        /// <summary>
+        /// How long the card stays up for a line whose recording plays for <paramref name="heardSeconds"/> (0 when it is not
+        /// heard). obj_announcer held the card while audio_is_playing(current_announcement); a line nobody hears keeps its
+        /// written caption up for <see cref="CaptionSeconds"/> instead.
+        /// </summary>
+        public static double CardSeconds(double heardSeconds)
+        {
+            return heardSeconds > 0 && !double.IsNaN(heardSeconds) ? heardSeconds : CaptionSeconds;
+        }
+
+        private static string KindWord(AnnouncementKind kind)
+        {
+            switch (kind)
+            {
+                case AnnouncementKind.Welcome: return "welcome";
+                case AnnouncementKind.Win: return "win";
+                case AnnouncementKind.Lose: return "lose";
+                default: throw new ArgumentOutOfRangeException(nameof(kind));
+            }
         }
 
         private static string NameOf(int seat, Func<int, string> nameOf)

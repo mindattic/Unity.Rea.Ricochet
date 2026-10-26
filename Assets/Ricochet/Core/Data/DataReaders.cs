@@ -311,6 +311,7 @@ namespace Ricochet.Core.Data
             {
                 string id = v.Text("id");
                 string name = v.Text("name");
+                string portrait = v.Text("portrait");
                 double[] color = v.Numbers("color", 3, false, 0, 255);
                 v.Done();
                 if (!keys.Add(id))
@@ -318,8 +319,10 @@ namespace Ricochet.Core.Data
                     v.Error("id '" + id + "' is used twice");
                 }
 
+                v.Check(string.IsNullOrEmpty(id) || System.Text.RegularExpressions.Regex.IsMatch(id, "^[a-z]+$"), "id", "must be lower-case letters only (it names the recordings, sfx_<id>_win1)");
+                v.Check(string.IsNullOrEmpty(portrait) || portrait.StartsWith("spr_", StringComparison.Ordinal), "portrait", "must name a GML sprite (spr_...)");
                 v.Check(color[0] == Math.Floor(color[0]) && color[1] == Math.Floor(color[1]) && color[2] == Math.Floor(color[2]), "color", "must be three whole numbers 0 to 255");
-                voices.Add(new AnnouncerVoice(id, name, (byte)color[0], (byte)color[1], (byte)color[2]));
+                voices.Add(new AnnouncerVoice(id, name, (byte)color[0], (byte)color[1], (byte)color[2], portrait));
             }
 
             var names = new List<string>();

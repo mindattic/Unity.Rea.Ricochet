@@ -1,6 +1,5 @@
 {
   "source": "gmlRicochet 09-05-13_2.20am (GameMaker 8.1 / Studio project, \"Beta 18\"), read by Tools/import-gml-sound.ps1; paths below are relative to it",
-  "excluded": "the announcers' voice lines (sfx_{announce,baxter,doctor,rye,scottish,sid,sly,vlad}_*, U.RICO-T51)",
   "sounds": [
     {
       "name": "sfx_applause",
@@ -863,6 +862,2108 @@
       "resource": "Ricochet/Music/music_windsong"
     }
   ],
+  "voices": [
+    {
+      "name": "sfx_baxter_lose1",
+      "originalPath": "sound\\sfx_baxter_lose1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose1.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose1.ogg",
+      "bytes": 35285,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose1.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose1"
+    },
+    {
+      "name": "sfx_baxter_lose10",
+      "originalPath": "sound\\sfx_baxter_lose10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose10.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose10.ogg",
+      "bytes": 34544,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose10.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose10"
+    },
+    {
+      "name": "sfx_baxter_lose2",
+      "originalPath": "sound\\sfx_baxter_lose2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose2.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose2.ogg",
+      "bytes": 36141,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose2.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose2"
+    },
+    {
+      "name": "sfx_baxter_lose3",
+      "originalPath": "sound\\sfx_baxter_lose3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose3.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose3.ogg",
+      "bytes": 37209,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose3.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose3"
+    },
+    {
+      "name": "sfx_baxter_lose4",
+      "originalPath": "sound\\sfx_baxter_lose4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose4.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose4.ogg",
+      "bytes": 35454,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose4.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose4"
+    },
+    {
+      "name": "sfx_baxter_lose5",
+      "originalPath": "sound\\sfx_baxter_lose5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose5.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose5.ogg",
+      "bytes": 35382,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose5.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose5"
+    },
+    {
+      "name": "sfx_baxter_lose6",
+      "originalPath": "sound\\sfx_baxter_lose6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose6.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose6.ogg",
+      "bytes": 34290,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose6.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose6"
+    },
+    {
+      "name": "sfx_baxter_lose7",
+      "originalPath": "sound\\sfx_baxter_lose7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose7.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose7.ogg",
+      "bytes": 36057,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose7.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose7"
+    },
+    {
+      "name": "sfx_baxter_lose8",
+      "originalPath": "sound\\sfx_baxter_lose8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose8.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose8.ogg",
+      "bytes": 36786,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose8.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose8"
+    },
+    {
+      "name": "sfx_baxter_lose9",
+      "originalPath": "sound\\sfx_baxter_lose9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_lose9.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_lose9.ogg",
+      "bytes": 35531,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_lose9.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_lose9"
+    },
+    {
+      "name": "sfx_baxter_welcome1",
+      "originalPath": "sound\\sfx_baxter_welcome1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome1.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome1.ogg",
+      "bytes": 34923,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome1.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome1"
+    },
+    {
+      "name": "sfx_baxter_welcome10",
+      "originalPath": "sound\\sfx_baxter_welcome10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome10.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome10.ogg",
+      "bytes": 35312,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome10.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome10"
+    },
+    {
+      "name": "sfx_baxter_welcome2",
+      "originalPath": "sound\\sfx_baxter_welcome2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome2.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome2.ogg",
+      "bytes": 35667,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome2.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome2"
+    },
+    {
+      "name": "sfx_baxter_welcome3",
+      "originalPath": "sound\\sfx_baxter_welcome3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome3.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome3.ogg",
+      "bytes": 36136,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome3.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome3"
+    },
+    {
+      "name": "sfx_baxter_welcome4",
+      "originalPath": "sound\\sfx_baxter_welcome4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome4.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome4.ogg",
+      "bytes": 36026,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome4.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome4"
+    },
+    {
+      "name": "sfx_baxter_welcome5",
+      "originalPath": "sound\\sfx_baxter_welcome5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome5.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome5.ogg",
+      "bytes": 34440,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome5.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome5"
+    },
+    {
+      "name": "sfx_baxter_welcome6",
+      "originalPath": "sound\\sfx_baxter_welcome6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome6.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome6.ogg",
+      "bytes": 34937,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome6.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome6"
+    },
+    {
+      "name": "sfx_baxter_welcome7",
+      "originalPath": "sound\\sfx_baxter_welcome7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome7.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome7.ogg",
+      "bytes": 35935,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome7.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome7"
+    },
+    {
+      "name": "sfx_baxter_welcome8",
+      "originalPath": "sound\\sfx_baxter_welcome8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome8.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome8.ogg",
+      "bytes": 32655,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome8.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome8"
+    },
+    {
+      "name": "sfx_baxter_welcome9",
+      "originalPath": "sound\\sfx_baxter_welcome9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_welcome9.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_welcome9.ogg",
+      "bytes": 35679,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_welcome9.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_welcome9"
+    },
+    {
+      "name": "sfx_baxter_win1",
+      "originalPath": "sound\\sfx_baxter_win1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win1.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win1.ogg",
+      "bytes": 25661,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win1.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win1"
+    },
+    {
+      "name": "sfx_baxter_win10",
+      "originalPath": "sound\\sfx_baxter_win10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win10.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win10.ogg",
+      "bytes": 36425,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win10.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win10"
+    },
+    {
+      "name": "sfx_baxter_win2",
+      "originalPath": "sound\\sfx_baxter_win2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win2.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win2.ogg",
+      "bytes": 35407,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win2.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win2"
+    },
+    {
+      "name": "sfx_baxter_win3",
+      "originalPath": "sound\\sfx_baxter_win3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win3.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win3.ogg",
+      "bytes": 34770,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win3.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win3"
+    },
+    {
+      "name": "sfx_baxter_win4",
+      "originalPath": "sound\\sfx_baxter_win4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win4.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win4.ogg",
+      "bytes": 34678,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win4.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win4"
+    },
+    {
+      "name": "sfx_baxter_win5",
+      "originalPath": "sound\\sfx_baxter_win5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win5.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win5.ogg",
+      "bytes": 35868,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win5.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win5"
+    },
+    {
+      "name": "sfx_baxter_win6",
+      "originalPath": "sound\\sfx_baxter_win6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win6.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win6.ogg",
+      "bytes": 36697,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win6.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win6"
+    },
+    {
+      "name": "sfx_baxter_win7",
+      "originalPath": "sound\\sfx_baxter_win7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win7.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win7.ogg",
+      "bytes": 34071,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win7.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win7"
+    },
+    {
+      "name": "sfx_baxter_win8",
+      "originalPath": "sound\\sfx_baxter_win8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win8.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win8.ogg",
+      "bytes": 35557,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win8.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win8"
+    },
+    {
+      "name": "sfx_baxter_win9",
+      "originalPath": "sound\\sfx_baxter_win9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_baxter_win9.wav",
+      "importedFrom": "sound\\audio\\sfx_baxter_win9.ogg",
+      "bytes": 36229,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_baxter_win9.ogg",
+      "resource": "Ricochet/Voice/sfx_baxter_win9"
+    },
+    {
+      "name": "sfx_doctor_lose1",
+      "originalPath": "sound\\sfx_doctor_lose1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose1.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose1.ogg",
+      "bytes": 35370,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose1.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose1"
+    },
+    {
+      "name": "sfx_doctor_lose10",
+      "originalPath": "sound\\sfx_doctor_lose10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose10.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose10.ogg",
+      "bytes": 35418,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose10.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose10"
+    },
+    {
+      "name": "sfx_doctor_lose2",
+      "originalPath": "sound\\sfx_doctor_lose2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose2.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose2.ogg",
+      "bytes": 35542,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose2.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose2"
+    },
+    {
+      "name": "sfx_doctor_lose3",
+      "originalPath": "sound\\sfx_doctor_lose3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose3.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose3.ogg",
+      "bytes": 35589,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose3.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose3"
+    },
+    {
+      "name": "sfx_doctor_lose4",
+      "originalPath": "sound\\sfx_doctor_lose4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose4.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose4.ogg",
+      "bytes": 36496,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose4.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose4"
+    },
+    {
+      "name": "sfx_doctor_lose5",
+      "originalPath": "sound\\sfx_doctor_lose5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose5.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose5.ogg",
+      "bytes": 35457,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose5.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose5"
+    },
+    {
+      "name": "sfx_doctor_lose6",
+      "originalPath": "sound\\sfx_doctor_lose6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose6.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose6.ogg",
+      "bytes": 35390,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose6.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose6"
+    },
+    {
+      "name": "sfx_doctor_lose7",
+      "originalPath": "sound\\sfx_doctor_lose7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose7.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose7.ogg",
+      "bytes": 34947,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose7.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose7"
+    },
+    {
+      "name": "sfx_doctor_lose8",
+      "originalPath": "sound\\sfx_doctor_lose8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose8.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose8.ogg",
+      "bytes": 36105,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose8.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose8"
+    },
+    {
+      "name": "sfx_doctor_lose9",
+      "originalPath": "sound\\sfx_doctor_lose9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_lose9.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_lose9.ogg",
+      "bytes": 35300,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_lose9.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_lose9"
+    },
+    {
+      "name": "sfx_doctor_welcome1",
+      "originalPath": "sound\\sfx_doctor_welcome1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome1.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome1.ogg",
+      "bytes": 35773,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome1.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome1"
+    },
+    {
+      "name": "sfx_doctor_welcome10",
+      "originalPath": "sound\\sfx_doctor_welcome10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome10.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome10.ogg",
+      "bytes": 34530,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome10.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome10"
+    },
+    {
+      "name": "sfx_doctor_welcome2",
+      "originalPath": "sound\\sfx_doctor_welcome2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome2.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome2.ogg",
+      "bytes": 35868,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome2.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome2"
+    },
+    {
+      "name": "sfx_doctor_welcome3",
+      "originalPath": "sound\\sfx_doctor_welcome3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome3.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome3.ogg",
+      "bytes": 35498,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome3.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome3"
+    },
+    {
+      "name": "sfx_doctor_welcome4",
+      "originalPath": "sound\\sfx_doctor_welcome4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome4.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome4.ogg",
+      "bytes": 35413,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome4.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome4"
+    },
+    {
+      "name": "sfx_doctor_welcome5",
+      "originalPath": "sound\\sfx_doctor_welcome5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome5.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome5.ogg",
+      "bytes": 34757,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome5.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome5"
+    },
+    {
+      "name": "sfx_doctor_welcome6",
+      "originalPath": "sound\\sfx_doctor_welcome6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome6.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome6.ogg",
+      "bytes": 36409,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome6.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome6"
+    },
+    {
+      "name": "sfx_doctor_welcome7",
+      "originalPath": "sound\\sfx_doctor_welcome7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome7.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome7.ogg",
+      "bytes": 36369,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome7.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome7"
+    },
+    {
+      "name": "sfx_doctor_welcome8",
+      "originalPath": "sound\\sfx_doctor_welcome8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome8.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome8.ogg",
+      "bytes": 34871,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome8.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome8"
+    },
+    {
+      "name": "sfx_doctor_welcome9",
+      "originalPath": "sound\\sfx_doctor_welcome9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_welcome9.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_welcome9.ogg",
+      "bytes": 32370,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_welcome9.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_welcome9"
+    },
+    {
+      "name": "sfx_doctor_win1",
+      "originalPath": "sound\\sfx_doctor_win1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win1.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win1.ogg",
+      "bytes": 25205,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win1.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win1"
+    },
+    {
+      "name": "sfx_doctor_win10",
+      "originalPath": "sound\\sfx_doctor_win10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win10.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win10.ogg",
+      "bytes": 35671,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win10.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win10"
+    },
+    {
+      "name": "sfx_doctor_win2",
+      "originalPath": "sound\\sfx_doctor_win2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win2.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win2.ogg",
+      "bytes": 33023,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win2.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win2"
+    },
+    {
+      "name": "sfx_doctor_win3",
+      "originalPath": "sound\\sfx_doctor_win3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win3.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win3.ogg",
+      "bytes": 29053,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win3.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win3"
+    },
+    {
+      "name": "sfx_doctor_win4",
+      "originalPath": "sound\\sfx_doctor_win4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win4.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win4.ogg",
+      "bytes": 34316,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win4.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win4"
+    },
+    {
+      "name": "sfx_doctor_win5",
+      "originalPath": "sound\\sfx_doctor_win5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win5.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win5.ogg",
+      "bytes": 36994,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win5.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win5"
+    },
+    {
+      "name": "sfx_doctor_win6",
+      "originalPath": "sound\\sfx_doctor_win6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win6.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win6.ogg",
+      "bytes": 35934,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win6.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win6"
+    },
+    {
+      "name": "sfx_doctor_win7",
+      "originalPath": "sound\\sfx_doctor_win7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win7.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win7.ogg",
+      "bytes": 37111,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win7.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win7"
+    },
+    {
+      "name": "sfx_doctor_win8",
+      "originalPath": "sound\\sfx_doctor_win8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win8.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win8.ogg",
+      "bytes": 35052,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win8.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win8"
+    },
+    {
+      "name": "sfx_doctor_win9",
+      "originalPath": "sound\\sfx_doctor_win9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_doctor_win9.wav",
+      "importedFrom": "sound\\audio\\sfx_doctor_win9.ogg",
+      "bytes": 34906,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_doctor_win9.ogg",
+      "resource": "Ricochet/Voice/sfx_doctor_win9"
+    },
+    {
+      "name": "sfx_rye_lose1",
+      "originalPath": "sound\\sfx_rye_lose1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose1.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose1.ogg",
+      "bytes": 16229,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose1.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose1"
+    },
+    {
+      "name": "sfx_rye_lose10",
+      "originalPath": "sound\\sfx_rye_lose10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose10.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose10.ogg",
+      "bytes": 13939,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose10.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose10"
+    },
+    {
+      "name": "sfx_rye_lose2",
+      "originalPath": "sound\\sfx_rye_lose2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose2.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose2.ogg",
+      "bytes": 16949,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose2.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose2"
+    },
+    {
+      "name": "sfx_rye_lose3",
+      "originalPath": "sound\\sfx_rye_lose3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose3.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose3.ogg",
+      "bytes": 14215,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose3.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose3"
+    },
+    {
+      "name": "sfx_rye_lose4",
+      "originalPath": "sound\\sfx_rye_lose4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose4.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose4.ogg",
+      "bytes": 13026,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose4.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose4"
+    },
+    {
+      "name": "sfx_rye_lose5",
+      "originalPath": "sound\\sfx_rye_lose5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose5.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose5.ogg",
+      "bytes": 14790,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose5.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose5"
+    },
+    {
+      "name": "sfx_rye_lose6",
+      "originalPath": "sound\\sfx_rye_lose6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose6.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose6.ogg",
+      "bytes": 15050,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose6.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose6"
+    },
+    {
+      "name": "sfx_rye_lose7",
+      "originalPath": "sound\\sfx_rye_lose7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose7.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose7.ogg",
+      "bytes": 15536,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose7.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose7"
+    },
+    {
+      "name": "sfx_rye_lose8",
+      "originalPath": "sound\\sfx_rye_lose8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose8.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose8.ogg",
+      "bytes": 20517,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose8.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose8"
+    },
+    {
+      "name": "sfx_rye_lose9",
+      "originalPath": "sound\\sfx_rye_lose9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_lose9.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_lose9.ogg",
+      "bytes": 14318,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_lose9.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_lose9"
+    },
+    {
+      "name": "sfx_rye_welcome1",
+      "originalPath": "sound\\sfx_rye_welcome1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome1.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome1.ogg",
+      "bytes": 26414,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome1.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome1"
+    },
+    {
+      "name": "sfx_rye_welcome10",
+      "originalPath": "sound\\sfx_rye_welcome10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome10.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome10.ogg",
+      "bytes": 33552,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome10.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome10"
+    },
+    {
+      "name": "sfx_rye_welcome2",
+      "originalPath": "sound\\sfx_rye_welcome2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome2.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome2.ogg",
+      "bytes": 30649,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome2.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome2"
+    },
+    {
+      "name": "sfx_rye_welcome3",
+      "originalPath": "sound\\sfx_rye_welcome3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome3.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome3.ogg",
+      "bytes": 32626,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome3.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome3"
+    },
+    {
+      "name": "sfx_rye_welcome4",
+      "originalPath": "sound\\sfx_rye_welcome4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome4.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome4.ogg",
+      "bytes": 26655,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome4.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome4"
+    },
+    {
+      "name": "sfx_rye_welcome5",
+      "originalPath": "sound\\sfx_rye_welcome5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome5.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome5.ogg",
+      "bytes": 22767,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome5.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome5"
+    },
+    {
+      "name": "sfx_rye_welcome6",
+      "originalPath": "sound\\sfx_rye_welcome6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome6.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome6.ogg",
+      "bytes": 25662,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome6.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome6"
+    },
+    {
+      "name": "sfx_rye_welcome7",
+      "originalPath": "sound\\sfx_rye_welcome7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome7.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome7.ogg",
+      "bytes": 22713,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome7.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome7"
+    },
+    {
+      "name": "sfx_rye_welcome8",
+      "originalPath": "sound\\sfx_rye_welcome8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome8.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome8.ogg",
+      "bytes": 20661,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome8.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome8"
+    },
+    {
+      "name": "sfx_rye_welcome9",
+      "originalPath": "sound\\sfx_rye_welcome9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_welcome9.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_welcome9.ogg",
+      "bytes": 11043,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_welcome9.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_welcome9"
+    },
+    {
+      "name": "sfx_rye_win1",
+      "originalPath": "sound\\sfx_rye_win1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win1.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win1.ogg",
+      "bytes": 15331,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win1.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win1"
+    },
+    {
+      "name": "sfx_rye_win10",
+      "originalPath": "sound\\sfx_rye_win10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win10.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win10.ogg",
+      "bytes": 31458,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win10.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win10"
+    },
+    {
+      "name": "sfx_rye_win2",
+      "originalPath": "sound\\sfx_rye_win2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win2.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win2.ogg",
+      "bytes": 15806,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win2.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win2"
+    },
+    {
+      "name": "sfx_rye_win3",
+      "originalPath": "sound\\sfx_rye_win3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win3.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win3.ogg",
+      "bytes": 14441,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win3.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win3"
+    },
+    {
+      "name": "sfx_rye_win4",
+      "originalPath": "sound\\sfx_rye_win4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win4.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win4.ogg",
+      "bytes": 11543,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win4.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win4"
+    },
+    {
+      "name": "sfx_rye_win5",
+      "originalPath": "sound\\sfx_rye_win5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win5.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win5.ogg",
+      "bytes": 12963,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win5.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win5"
+    },
+    {
+      "name": "sfx_rye_win6",
+      "originalPath": "sound\\sfx_rye_win6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win6.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win6.ogg",
+      "bytes": 23920,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win6.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win6"
+    },
+    {
+      "name": "sfx_rye_win7",
+      "originalPath": "sound\\sfx_rye_win7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win7.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win7.ogg",
+      "bytes": 13932,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win7.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win7"
+    },
+    {
+      "name": "sfx_rye_win8",
+      "originalPath": "sound\\sfx_rye_win8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win8.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win8.ogg",
+      "bytes": 11676,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win8.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win8"
+    },
+    {
+      "name": "sfx_rye_win9",
+      "originalPath": "sound\\sfx_rye_win9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_rye_win9.wav",
+      "importedFrom": "sound\\audio\\sfx_rye_win9.ogg",
+      "bytes": 11043,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_rye_win9.ogg",
+      "resource": "Ricochet/Voice/sfx_rye_win9"
+    },
+    {
+      "name": "sfx_scottish_lose1",
+      "originalPath": "sound\\sfx_scottish_lose1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose1.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose1.ogg",
+      "bytes": 35766,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose1.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose1"
+    },
+    {
+      "name": "sfx_scottish_lose10",
+      "originalPath": "sound\\sfx_scottish_lose10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose10.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose10.ogg",
+      "bytes": 35191,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose10.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose10"
+    },
+    {
+      "name": "sfx_scottish_lose2",
+      "originalPath": "sound\\sfx_scottish_lose2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose2.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose2.ogg",
+      "bytes": 31198,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose2.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose2"
+    },
+    {
+      "name": "sfx_scottish_lose3",
+      "originalPath": "sound\\sfx_scottish_lose3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose3.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose3.ogg",
+      "bytes": 27604,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose3.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose3"
+    },
+    {
+      "name": "sfx_scottish_lose4",
+      "originalPath": "sound\\sfx_scottish_lose4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose4.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose4.ogg",
+      "bytes": 31694,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose4.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose4"
+    },
+    {
+      "name": "sfx_scottish_lose5",
+      "originalPath": "sound\\sfx_scottish_lose5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose5.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose5.ogg",
+      "bytes": 35314,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose5.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose5"
+    },
+    {
+      "name": "sfx_scottish_lose6",
+      "originalPath": "sound\\sfx_scottish_lose6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose6.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose6.ogg",
+      "bytes": 36068,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose6.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose6"
+    },
+    {
+      "name": "sfx_scottish_lose7",
+      "originalPath": "sound\\sfx_scottish_lose7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose7.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose7.ogg",
+      "bytes": 34902,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose7.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose7"
+    },
+    {
+      "name": "sfx_scottish_lose8",
+      "originalPath": "sound\\sfx_scottish_lose8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose8.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose8.ogg",
+      "bytes": 35512,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose8.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose8"
+    },
+    {
+      "name": "sfx_scottish_lose9",
+      "originalPath": "sound\\sfx_scottish_lose9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_lose9.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_lose9.ogg",
+      "bytes": 35900,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_lose9.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_lose9"
+    },
+    {
+      "name": "sfx_scottish_welcome1",
+      "originalPath": "sound\\sfx_scottish_welcome1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome1.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome1.ogg",
+      "bytes": 19953,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome1.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome1"
+    },
+    {
+      "name": "sfx_scottish_welcome10",
+      "originalPath": "sound\\sfx_scottish_welcome10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome10.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome10.ogg",
+      "bytes": 35131,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome10.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome10"
+    },
+    {
+      "name": "sfx_scottish_welcome2",
+      "originalPath": "sound\\sfx_scottish_welcome2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome2.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome2.ogg",
+      "bytes": 34279,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome2.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome2"
+    },
+    {
+      "name": "sfx_scottish_welcome3",
+      "originalPath": "sound\\sfx_scottish_welcome3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome3.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome3.ogg",
+      "bytes": 32225,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome3.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome3"
+    },
+    {
+      "name": "sfx_scottish_welcome4",
+      "originalPath": "sound\\sfx_scottish_welcome4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome4.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome4.ogg",
+      "bytes": 32876,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome4.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome4"
+    },
+    {
+      "name": "sfx_scottish_welcome5",
+      "originalPath": "sound\\sfx_scottish_welcome5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome5.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome5.ogg",
+      "bytes": 33863,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome5.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome5"
+    },
+    {
+      "name": "sfx_scottish_welcome6",
+      "originalPath": "sound\\sfx_scottish_welcome6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome6.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome6.ogg",
+      "bytes": 34655,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome6.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome6"
+    },
+    {
+      "name": "sfx_scottish_welcome7",
+      "originalPath": "sound\\sfx_scottish_welcome7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome7.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome7.ogg",
+      "bytes": 34611,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome7.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome7"
+    },
+    {
+      "name": "sfx_scottish_welcome8",
+      "originalPath": "sound\\sfx_scottish_welcome8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome8.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome8.ogg",
+      "bytes": 35871,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome8.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome8"
+    },
+    {
+      "name": "sfx_scottish_welcome9",
+      "originalPath": "sound\\sfx_scottish_welcome9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_welcome9.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_welcome9.ogg",
+      "bytes": 32966,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_welcome9.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_welcome9"
+    },
+    {
+      "name": "sfx_scottish_win1",
+      "originalPath": "sound\\sfx_scottish_win1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win1.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win1.ogg",
+      "bytes": 34945,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win1.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win1"
+    },
+    {
+      "name": "sfx_scottish_win10",
+      "originalPath": "sound\\sfx_scottish_win10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win10.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win10.ogg",
+      "bytes": 34190,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win10.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win10"
+    },
+    {
+      "name": "sfx_scottish_win2",
+      "originalPath": "sound\\sfx_scottish_win2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win2.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win2.ogg",
+      "bytes": 35685,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win2.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win2"
+    },
+    {
+      "name": "sfx_scottish_win3",
+      "originalPath": "sound\\sfx_scottish_win3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win3.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win3.ogg",
+      "bytes": 28020,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win3.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win3"
+    },
+    {
+      "name": "sfx_scottish_win4",
+      "originalPath": "sound\\sfx_scottish_win4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win4.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win4.ogg",
+      "bytes": 34763,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win4.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win4"
+    },
+    {
+      "name": "sfx_scottish_win5",
+      "originalPath": "sound\\sfx_scottish_win5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win5.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win5.ogg",
+      "bytes": 25444,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win5.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win5"
+    },
+    {
+      "name": "sfx_scottish_win6",
+      "originalPath": "sound\\sfx_scottish_win6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win6.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win6.ogg",
+      "bytes": 34899,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win6.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win6"
+    },
+    {
+      "name": "sfx_scottish_win7",
+      "originalPath": "sound\\sfx_scottish_win7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win7.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win7.ogg",
+      "bytes": 36226,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win7.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win7"
+    },
+    {
+      "name": "sfx_scottish_win8",
+      "originalPath": "sound\\sfx_scottish_win8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win8.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win8.ogg",
+      "bytes": 28992,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win8.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win8"
+    },
+    {
+      "name": "sfx_scottish_win9",
+      "originalPath": "sound\\sfx_scottish_win9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_scottish_win9.wav",
+      "importedFrom": "sound\\audio\\sfx_scottish_win9.ogg",
+      "bytes": 28992,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_scottish_win9.ogg",
+      "resource": "Ricochet/Voice/sfx_scottish_win9"
+    },
+    {
+      "name": "sfx_sid_lose1",
+      "originalPath": "sound\\sfx_sid_lose1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_lose1.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_lose1.ogg",
+      "bytes": 28093,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose1.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_lose1"
+    },
+    {
+      "name": "sfx_sid_lose10",
+      "originalPath": "sound\\sfx_sid_lose10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_lose10.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_lose10.ogg",
+      "bytes": 35097,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose10.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_lose10"
+    },
+    {
+      "name": "sfx_sid_lose2",
+      "originalPath": "sound\\sfx_sid_lose2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_lose2.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_lose2.ogg",
+      "bytes": 35697,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose2.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_lose2"
+    },
+    {
+      "name": "sfx_sid_lose3",
+      "originalPath": "sound\\sfx_sid_lose3.sound.gmx",
+      "originalRecording": "",
+      "importedFrom": "takes: sfx\\announcers\\sid\\NN-Loss-3.wav",
+      "bytes": 889388,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose3.wav",
+      "resource": "Ricochet/Voice/sfx_sid_lose3"
+    },
+    {
+      "name": "sfx_sid_lose4",
+      "originalPath": "sound\\sfx_sid_lose4.sound.gmx",
+      "originalRecording": "",
+      "importedFrom": "takes: sfx\\announcers\\sid\\NN-Loss-4.wav",
+      "bytes": 889388,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose4.wav",
+      "resource": "Ricochet/Voice/sfx_sid_lose4"
+    },
+    {
+      "name": "sfx_sid_lose5",
+      "originalPath": "sound\\sfx_sid_lose5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_lose5.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_lose5.ogg",
+      "bytes": 35714,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose5.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_lose5"
+    },
+    {
+      "name": "sfx_sid_lose6",
+      "originalPath": "sound\\sfx_sid_lose6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_lose6.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_lose6.ogg",
+      "bytes": 35476,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose6.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_lose6"
+    },
+    {
+      "name": "sfx_sid_lose7",
+      "originalPath": "sound\\sfx_sid_lose7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_lose7.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_lose7.ogg",
+      "bytes": 32381,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose7.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_lose7"
+    },
+    {
+      "name": "sfx_sid_lose8",
+      "originalPath": "sound\\sfx_sid_lose8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_lose8.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_lose8.ogg",
+      "bytes": 36279,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose8.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_lose8"
+    },
+    {
+      "name": "sfx_sid_lose9",
+      "originalPath": "sound\\sfx_sid_lose9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_lose9.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_lose9.ogg",
+      "bytes": 35373,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_lose9.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_lose9"
+    },
+    {
+      "name": "sfx_sid_welcome1",
+      "originalPath": "sound\\sfx_sid_welcome1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome1.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome1.ogg",
+      "bytes": 34533,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome1.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome1"
+    },
+    {
+      "name": "sfx_sid_welcome10",
+      "originalPath": "sound\\sfx_sid_welcome10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome10.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome10.ogg",
+      "bytes": 35682,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome10.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome10"
+    },
+    {
+      "name": "sfx_sid_welcome2",
+      "originalPath": "sound\\sfx_sid_welcome2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome2.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome2.ogg",
+      "bytes": 36218,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome2.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome2"
+    },
+    {
+      "name": "sfx_sid_welcome3",
+      "originalPath": "sound\\sfx_sid_welcome3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome3.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome3.ogg",
+      "bytes": 35888,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome3.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome3"
+    },
+    {
+      "name": "sfx_sid_welcome4",
+      "originalPath": "sound\\sfx_sid_welcome4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome4.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome4.ogg",
+      "bytes": 36155,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome4.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome4"
+    },
+    {
+      "name": "sfx_sid_welcome5",
+      "originalPath": "sound\\sfx_sid_welcome5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome5.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome5.ogg",
+      "bytes": 34121,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome5.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome5"
+    },
+    {
+      "name": "sfx_sid_welcome6",
+      "originalPath": "sound\\sfx_sid_welcome6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome6.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome6.ogg",
+      "bytes": 34476,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome6.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome6"
+    },
+    {
+      "name": "sfx_sid_welcome7",
+      "originalPath": "sound\\sfx_sid_welcome7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome7.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome7.ogg",
+      "bytes": 35790,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome7.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome7"
+    },
+    {
+      "name": "sfx_sid_welcome8",
+      "originalPath": "sound\\sfx_sid_welcome8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome8.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome8.ogg",
+      "bytes": 36662,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome8.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome8"
+    },
+    {
+      "name": "sfx_sid_welcome9",
+      "originalPath": "sound\\sfx_sid_welcome9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_welcome9.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_welcome9.ogg",
+      "bytes": 35837,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_welcome9.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_welcome9"
+    },
+    {
+      "name": "sfx_sid_win1",
+      "originalPath": "sound\\sfx_sid_win1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win1.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win1.ogg",
+      "bytes": 35867,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win1.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win1"
+    },
+    {
+      "name": "sfx_sid_win10",
+      "originalPath": "sound\\sfx_sid_win10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win10.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win10.ogg",
+      "bytes": 34260,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win10.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win10"
+    },
+    {
+      "name": "sfx_sid_win2",
+      "originalPath": "sound\\sfx_sid_win2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win2.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win2.ogg",
+      "bytes": 36345,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win2.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win2"
+    },
+    {
+      "name": "sfx_sid_win3",
+      "originalPath": "sound\\sfx_sid_win3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win3.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win3.ogg",
+      "bytes": 35052,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win3.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win3"
+    },
+    {
+      "name": "sfx_sid_win4",
+      "originalPath": "sound\\sfx_sid_win4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win4.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win4.ogg",
+      "bytes": 36910,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win4.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win4"
+    },
+    {
+      "name": "sfx_sid_win5",
+      "originalPath": "sound\\sfx_sid_win5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win5.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win5.ogg",
+      "bytes": 37045,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win5.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win5"
+    },
+    {
+      "name": "sfx_sid_win6",
+      "originalPath": "sound\\sfx_sid_win6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win6.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win6.ogg",
+      "bytes": 36399,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win6.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win6"
+    },
+    {
+      "name": "sfx_sid_win7",
+      "originalPath": "sound\\sfx_sid_win7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win7.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win7.ogg",
+      "bytes": 36874,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win7.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win7"
+    },
+    {
+      "name": "sfx_sid_win8",
+      "originalPath": "sound\\sfx_sid_win8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win8.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win8.ogg",
+      "bytes": 36485,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win8.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win8"
+    },
+    {
+      "name": "sfx_sid_win9",
+      "originalPath": "sound\\sfx_sid_win9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sid_win9.wav",
+      "importedFrom": "sound\\audio\\sfx_sid_win9.ogg",
+      "bytes": 36348,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sid_win9.ogg",
+      "resource": "Ricochet/Voice/sfx_sid_win9"
+    },
+    {
+      "name": "sfx_sly_lose1",
+      "originalPath": "sound\\sfx_sly_lose1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_lose1.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_lose1.ogg",
+      "bytes": 20611,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose1.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_lose1"
+    },
+    {
+      "name": "sfx_sly_lose10",
+      "originalPath": "sound\\sfx_sly_lose10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_lose10.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_lose10.ogg",
+      "bytes": 22955,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose10.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_lose10"
+    },
+    {
+      "name": "sfx_sly_lose2",
+      "originalPath": "sound\\sfx_sly_lose2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_lose2.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_lose2.ogg",
+      "bytes": 17342,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose2.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_lose2"
+    },
+    {
+      "name": "sfx_sly_lose3",
+      "originalPath": "sound\\sfx_sly_lose3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_lose3.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_lose3.ogg",
+      "bytes": 24049,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose3.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_lose3"
+    },
+    {
+      "name": "sfx_sly_lose4",
+      "originalPath": "sound\\sfx_sly_lose4.sound.gmx",
+      "originalRecording": "",
+      "importedFrom": "takes: sfx\\announcers\\sly\\sly_lose4.wav",
+      "bytes": 864052,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose4.wav",
+      "resource": "Ricochet/Voice/sfx_sly_lose4"
+    },
+    {
+      "name": "sfx_sly_lose5",
+      "originalPath": "sound\\sfx_sly_lose5.sound.gmx",
+      "originalRecording": "",
+      "importedFrom": "takes: sfx\\announcers\\sly\\sly_lose5.wav",
+      "bytes": 486556,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose5.wav",
+      "resource": "Ricochet/Voice/sfx_sly_lose5"
+    },
+    {
+      "name": "sfx_sly_lose6",
+      "originalPath": "sound\\sfx_sly_lose6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_lose6.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_lose6.ogg",
+      "bytes": 16490,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose6.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_lose6"
+    },
+    {
+      "name": "sfx_sly_lose7",
+      "originalPath": "sound\\sfx_sly_lose7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_lose7.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_lose7.ogg",
+      "bytes": 25100,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose7.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_lose7"
+    },
+    {
+      "name": "sfx_sly_lose8",
+      "originalPath": "sound\\sfx_sly_lose8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_lose8.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_lose8.ogg",
+      "bytes": 18157,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose8.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_lose8"
+    },
+    {
+      "name": "sfx_sly_lose9",
+      "originalPath": "sound\\sfx_sly_lose9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_lose9.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_lose9.ogg",
+      "bytes": 18637,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_lose9.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_lose9"
+    },
+    {
+      "name": "sfx_sly_welcome1",
+      "originalPath": "sound\\sfx_sly_welcome1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome1.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome1.ogg",
+      "bytes": 24528,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome1.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome1"
+    },
+    {
+      "name": "sfx_sly_welcome10",
+      "originalPath": "sound\\sfx_sly_welcome10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome10.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome10.ogg",
+      "bytes": 25760,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome10.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome10"
+    },
+    {
+      "name": "sfx_sly_welcome2",
+      "originalPath": "sound\\sfx_sly_welcome2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome2.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome2.ogg",
+      "bytes": 30620,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome2.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome2"
+    },
+    {
+      "name": "sfx_sly_welcome3",
+      "originalPath": "sound\\sfx_sly_welcome3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome3.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome3.ogg",
+      "bytes": 30382,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome3.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome3"
+    },
+    {
+      "name": "sfx_sly_welcome4",
+      "originalPath": "sound\\sfx_sly_welcome4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome4.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome4.ogg",
+      "bytes": 28367,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome4.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome4"
+    },
+    {
+      "name": "sfx_sly_welcome5",
+      "originalPath": "sound\\sfx_sly_welcome5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome5.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome5.ogg",
+      "bytes": 31114,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome5.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome5"
+    },
+    {
+      "name": "sfx_sly_welcome6",
+      "originalPath": "sound\\sfx_sly_welcome6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome6.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome6.ogg",
+      "bytes": 39026,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome6.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome6"
+    },
+    {
+      "name": "sfx_sly_welcome7",
+      "originalPath": "sound\\sfx_sly_welcome7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome7.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome7.ogg",
+      "bytes": 66270,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome7.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome7"
+    },
+    {
+      "name": "sfx_sly_welcome8",
+      "originalPath": "sound\\sfx_sly_welcome8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome8.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome8.ogg",
+      "bytes": 34442,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome8.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome8"
+    },
+    {
+      "name": "sfx_sly_welcome9",
+      "originalPath": "sound\\sfx_sly_welcome9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_welcome9.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_welcome9.ogg",
+      "bytes": 25945,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_welcome9.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_welcome9"
+    },
+    {
+      "name": "sfx_sly_win1",
+      "originalPath": "sound\\sfx_sly_win1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win1.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win1.ogg",
+      "bytes": 17463,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win1.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win1"
+    },
+    {
+      "name": "sfx_sly_win10",
+      "originalPath": "sound\\sfx_sly_win10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win10.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win10.ogg",
+      "bytes": 25662,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win10.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win10"
+    },
+    {
+      "name": "sfx_sly_win2",
+      "originalPath": "sound\\sfx_sly_win2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win2.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win2.ogg",
+      "bytes": 21185,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win2.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win2"
+    },
+    {
+      "name": "sfx_sly_win3",
+      "originalPath": "sound\\sfx_sly_win3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win3.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win3.ogg",
+      "bytes": 21383,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win3.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win3"
+    },
+    {
+      "name": "sfx_sly_win4",
+      "originalPath": "sound\\sfx_sly_win4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win4.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win4.ogg",
+      "bytes": 20862,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win4.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win4"
+    },
+    {
+      "name": "sfx_sly_win5",
+      "originalPath": "sound\\sfx_sly_win5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win5.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win5.ogg",
+      "bytes": 18342,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win5.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win5"
+    },
+    {
+      "name": "sfx_sly_win6",
+      "originalPath": "sound\\sfx_sly_win6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win6.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win6.ogg",
+      "bytes": 19213,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win6.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win6"
+    },
+    {
+      "name": "sfx_sly_win7",
+      "originalPath": "sound\\sfx_sly_win7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win7.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win7.ogg",
+      "bytes": 17353,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win7.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win7"
+    },
+    {
+      "name": "sfx_sly_win8",
+      "originalPath": "sound\\sfx_sly_win8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win8.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win8.ogg",
+      "bytes": 17939,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win8.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win8"
+    },
+    {
+      "name": "sfx_sly_win9",
+      "originalPath": "sound\\sfx_sly_win9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_sly_win9.wav",
+      "importedFrom": "sound\\audio\\sfx_sly_win9.ogg",
+      "bytes": 31320,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_sly_win9.ogg",
+      "resource": "Ricochet/Voice/sfx_sly_win9"
+    },
+    {
+      "name": "sfx_vlad_lose1",
+      "originalPath": "sound\\sfx_vlad_lose1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose1.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose1.ogg",
+      "bytes": 35270,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose1.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose1"
+    },
+    {
+      "name": "sfx_vlad_lose10",
+      "originalPath": "sound\\sfx_vlad_lose10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose10.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose10.ogg",
+      "bytes": 36055,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose10.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose10"
+    },
+    {
+      "name": "sfx_vlad_lose2",
+      "originalPath": "sound\\sfx_vlad_lose2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose2.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose2.ogg",
+      "bytes": 35132,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose2.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose2"
+    },
+    {
+      "name": "sfx_vlad_lose3",
+      "originalPath": "sound\\sfx_vlad_lose3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose3.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose3.ogg",
+      "bytes": 34624,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose3.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose3"
+    },
+    {
+      "name": "sfx_vlad_lose4",
+      "originalPath": "sound\\sfx_vlad_lose4.sound.gmx",
+      "originalRecording": "",
+      "importedFrom": "takes: sfx\\announcers\\vlad\\Vlad-Loss-4.wav",
+      "bytes": 557612,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose4.wav",
+      "resource": "Ricochet/Voice/sfx_vlad_lose4"
+    },
+    {
+      "name": "sfx_vlad_lose5",
+      "originalPath": "sound\\sfx_vlad_lose5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose5.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose5.ogg",
+      "bytes": 34805,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose5.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose5"
+    },
+    {
+      "name": "sfx_vlad_lose6",
+      "originalPath": "sound\\sfx_vlad_lose6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose6.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose6.ogg",
+      "bytes": 28798,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose6.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose6"
+    },
+    {
+      "name": "sfx_vlad_lose7",
+      "originalPath": "sound\\sfx_vlad_lose7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose7.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose7.ogg",
+      "bytes": 35098,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose7.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose7"
+    },
+    {
+      "name": "sfx_vlad_lose8",
+      "originalPath": "sound\\sfx_vlad_lose8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose8.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose8.ogg",
+      "bytes": 34143,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose8.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose8"
+    },
+    {
+      "name": "sfx_vlad_lose9",
+      "originalPath": "sound\\sfx_vlad_lose9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_lose9.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_lose9.ogg",
+      "bytes": 35156,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_lose9.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_lose9"
+    },
+    {
+      "name": "sfx_vlad_welcome1",
+      "originalPath": "sound\\sfx_vlad_welcome1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome1.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome1.ogg",
+      "bytes": 33614,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome1.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome1"
+    },
+    {
+      "name": "sfx_vlad_welcome10",
+      "originalPath": "sound\\sfx_vlad_welcome10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome10.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome10.ogg",
+      "bytes": 34746,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome10.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome10"
+    },
+    {
+      "name": "sfx_vlad_welcome2",
+      "originalPath": "sound\\sfx_vlad_welcome2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome2.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome2.ogg",
+      "bytes": 34513,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome2.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome2"
+    },
+    {
+      "name": "sfx_vlad_welcome3",
+      "originalPath": "sound\\sfx_vlad_welcome3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome3.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome3.ogg",
+      "bytes": 35470,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome3.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome3"
+    },
+    {
+      "name": "sfx_vlad_welcome4",
+      "originalPath": "sound\\sfx_vlad_welcome4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome4.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome4.ogg",
+      "bytes": 34938,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome4.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome4"
+    },
+    {
+      "name": "sfx_vlad_welcome5",
+      "originalPath": "sound\\sfx_vlad_welcome5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome5.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome5.ogg",
+      "bytes": 36123,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome5.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome5"
+    },
+    {
+      "name": "sfx_vlad_welcome6",
+      "originalPath": "sound\\sfx_vlad_welcome6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome6.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome6.ogg",
+      "bytes": 24086,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome6.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome6"
+    },
+    {
+      "name": "sfx_vlad_welcome7",
+      "originalPath": "sound\\sfx_vlad_welcome7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome7.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome7.ogg",
+      "bytes": 35020,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome7.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome7"
+    },
+    {
+      "name": "sfx_vlad_welcome8",
+      "originalPath": "sound\\sfx_vlad_welcome8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome8.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome8.ogg",
+      "bytes": 34016,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome8.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome8"
+    },
+    {
+      "name": "sfx_vlad_welcome9",
+      "originalPath": "sound\\sfx_vlad_welcome9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_welcome9.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_welcome9.ogg",
+      "bytes": 35639,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_welcome9.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_welcome9"
+    },
+    {
+      "name": "sfx_vlad_win1",
+      "originalPath": "sound\\sfx_vlad_win1.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win1.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win1.ogg",
+      "bytes": 34276,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win1.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win1"
+    },
+    {
+      "name": "sfx_vlad_win10",
+      "originalPath": "sound\\sfx_vlad_win10.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win10.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win10.ogg",
+      "bytes": 32868,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win10.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win10"
+    },
+    {
+      "name": "sfx_vlad_win2",
+      "originalPath": "sound\\sfx_vlad_win2.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win2.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win2.ogg",
+      "bytes": 34083,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win2.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win2"
+    },
+    {
+      "name": "sfx_vlad_win3",
+      "originalPath": "sound\\sfx_vlad_win3.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win3.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win3.ogg",
+      "bytes": 33799,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win3.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win3"
+    },
+    {
+      "name": "sfx_vlad_win4",
+      "originalPath": "sound\\sfx_vlad_win4.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win4.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win4.ogg",
+      "bytes": 33626,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win4.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win4"
+    },
+    {
+      "name": "sfx_vlad_win5",
+      "originalPath": "sound\\sfx_vlad_win5.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win5.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win5.ogg",
+      "bytes": 34123,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win5.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win5"
+    },
+    {
+      "name": "sfx_vlad_win6",
+      "originalPath": "sound\\sfx_vlad_win6.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win6.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win6.ogg",
+      "bytes": 34055,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win6.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win6"
+    },
+    {
+      "name": "sfx_vlad_win7",
+      "originalPath": "sound\\sfx_vlad_win7.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win7.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win7.ogg",
+      "bytes": 29792,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win7.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win7"
+    },
+    {
+      "name": "sfx_vlad_win8",
+      "originalPath": "sound\\sfx_vlad_win8.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win8.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win8.ogg",
+      "bytes": 34440,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win8.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win8"
+    },
+    {
+      "name": "sfx_vlad_win9",
+      "originalPath": "sound\\sfx_vlad_win9.sound.gmx",
+      "originalRecording": "sound\\audio\\sfx_vlad_win9.wav",
+      "importedFrom": "sound\\audio\\sfx_vlad_win9.ogg",
+      "bytes": 35657,
+      "volume": 1,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Voice/sfx_vlad_win9.ogg",
+      "resource": "Ricochet/Voice/sfx_vlad_win9"
+    }
+  ],
   "skipped": [
     {
       "name": "sfx_bounce_shotgun3",
@@ -873,6 +2974,11 @@
       "name": "music_spacefighter",
       "originalPath": "sound\\music_spacefighter.sound.gmx",
       "reason": "the definition names no recording"
+    },
+    {
+      "name": "sfx_announce_*",
+      "originalPath": "sound\\sfx_announce_{welcome,win,lose}1..10.sound.gmx",
+      "reason": "30 voice lines no script or object plays (random_announcement_* and play_random_announcement call only the seven personalities' random_<key>_* scripts)"
     }
   ]
 }

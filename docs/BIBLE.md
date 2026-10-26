@@ -105,8 +105,8 @@ copy of any of these is a bug.
   `Tests/PlayMode/HazardTests.cs`).
 - ✅ Announcer and HUD: the start-match vote carries one of the original's seven on-air personalities and how often they
   speak (0 off, 1 every time, 2–4 one time in 3/6/9); their portrait and name box slide in with a welcome at the match's
-  start, a cheer for a knock-out and a heckle for a shot that hits nobody, ten written lines a kind drawn without repeats
-  (the original's were recordings); a hit on an opponent scores the shooter 100 + 25 a bounce + 5 a tenth of a second in
+  start, a cheer for a knock-out and a heckle for a shot that hits nobody, ten lines a kind drawn without repeats, each
+  played as the personality's own recording with its written line as the caption (U.RICO-T51, below); a hit on an opponent scores the shooter 100 + 25 a bounce + 5 a tenth of a second in
   the air for the whole match (hit.gml/draw_potential.gml), shown on each seat's bar; a turn card shows everyone whose
   turn it is with their score, weapon, item and combo (draw_weaponinfo/draw_iteminfo). The cards are MindAttic Components
   widgets; the per-colour health bars are MatchHud's own uGUI (UR-T8, IMGUI until UR-T38; `Core/Announcer.cs`, `MatchRules.Points` and `Match`'s scores
@@ -598,3 +598,35 @@ splash's sfx_tech, sfx_startup, sfx_whoosh, sfx_static1-6 and sfx_type_quiet (U.
 (the kit's lobby), and the endgame's (U.RICO-T56). sfx_bounce, sfx_bounce_shotgun (sfx_bounce_shotgun1's bytes),
 sfx_dummy, sfx_fire, sfx_shoot_vortex, sfx_static, sfx_fuse4-6 and sfx_woot are in the original's folder but played
 nowhere; each is imported and has its cue.
+
+## Announcer voices and portraits (U.RICO-T51)
+
+Source: the original's `sound/sfx_{sly,rye,sid,vlad,baxter,doctor,scottish}_{welcome,win,lose}1..10.sound.gmx`,
+play_random_announcement, random_announcement_{welcome,win,lose}, random_<key>_<kind>, random_{welcome,win,lose}_number,
+obj_announcer, obj_announcer_portrait, obj_speaker and the spr_profile_* sprites.
+
+- The 210 voice lines (seven personalities x three kinds x ten) are imported by `Tools/import-gml-sound.ps1` into
+  `Resources/Ricochet/Voice/<name>` (Git LFS) and listed under `voices` in `Assets/Ricochet/Audio/gml-sound.json`. Each is
+  the .ogg the original's `sound/audio` holds beside the definition's .wav (the same take: the .wavs are 162 MB that Unity
+  would re-encode to Vorbis on import anyway, the .oggs 6 MB).
+- The line Core's `Announcer` draws (the existing no-repeat deck) picks the recording: `Announcer.Recording` gives
+  `sfx_<key>_<kind><line + 1>`. When `HudOverlay` slides the card in, `GameAudio.Announce` plays it on a source of its own
+  at the effect volume, first stopping a line still playing (play_random_announcement's audio_stop_sound). The card holds
+  while it is heard (obj_announcer's audio_is_playing), with obj_speaker's spr_speaker beside the portrait flicking to a
+  random frame every 5-10 steps. The written line stays on the card as the caption; muted (the player's effects mute or a
+  session mute) nothing is heard and the card holds the caption for 4.5 s.
+- Portraits are the original's own, named in `announcer.json` (`portrait`): spr_profile_sly, spr_profile_rye,
+  spr_profile_sid, and spr_profile_dummy shared by Vlad, Matt Baxter, Doctor and Haggis McKnight, drawn as they are. The
+  colour and monogram show only if the art is missing.
+- Tested by `Tests/Core.Tests/AnnouncerTests.cs` (recording names, the card's hold, the portraits) and
+  `Tests/PlayMode/AnnouncerTests.cs` (the card's portrait and the recording asked for, on a client).
+
+Fixed defects: (1) five definitions name no recording (sfx_sid_lose3, sfx_sid_lose4, sfx_sly_lose4, sfx_sly_lose5,
+sfx_vlad_lose4), so those lines played silence; each is filled from the voice actor's own take in the project's
+`sfx/announcers` folder (NN-Loss-3.wav, sly_lose4.wav, ...), whose takes are byte-identical to the numbered recordings
+wherever both exist. (2) Sid Steinburger has a drawn portrait, spr_profile_sid, that play_random_announcement never used
+(it set spr_profile_dummy for him); the rebuild shows it.
+
+Deviation: random_sly_* and random_rye_* drew with irandom_range (repeats possible) where the other five used the
+no-repeat random_*_number scripts; every personality uses the no-repeat deck, as the rebuild already did. The eighth set
+in the folder, sfx_announce_*, is not imported: no script or object plays it.

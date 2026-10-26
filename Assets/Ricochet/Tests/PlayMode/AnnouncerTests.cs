@@ -23,6 +23,8 @@ namespace Ricochet.Tests
         private int _weaponDamage;
         private double _endTurnSeconds;
         private MatchHud _hud;
+        private GameAudio _audio;
+        private bool _ownAudio;
 
         public AnnouncerTests() : base(Topology.Host, clients: 1) { }
 
@@ -56,6 +58,14 @@ namespace Ricochet.Tests
                 Object.Destroy(_hud.gameObject);
                 _hud = null;
             }
+
+            if (_ownAudio && _audio != null)
+            {
+                Object.Destroy(_audio.gameObject);
+            }
+
+            _audio = null;
+            _ownAudio = false;
         }
 
         [UnityTest]
@@ -64,6 +74,9 @@ namespace Ricochet.Tests
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
+            _ownAudio = GameAudio.Instance == null;
+            _audio = GameAudio.Create();
+            Assert.That(_audio, Is.Not.Null, "the editor always has audio");
             _hud = MatchHud.Create(Client);
 
             Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, AnnouncerVoice = 3, Announcements = 1 }), Is.True);
@@ -74,6 +87,23 @@ namespace Ricochet.Tests
 
             yield return WaitUntil(() => _hud.Overlay.AnnouncerShowing && _hud.Overlay.AnnouncerName == "Vlad", "the HUD never slid Vlad's card in");
             Assert.That(_hud.Overlay.AnnouncerLine, Is.Not.Empty.And.Not.Contain("{"));
+
+            // U.RICO-T51: Vlad's card shows the original's shared placeholder, and the drawn line's recording is the one asked
+            // for (heard by nobody in a muted run, where the written line stands alone).
+            if (GameArt.Frame("spr_profile_dummy") != null)
+            {
+                Assert.That(_hud.Overlay.PortraitSprite, Is.EqualTo("spr_profile_dummy"));
+            }
+
+            string recording = Announcer.Recording(Announcer.VoiceAt(3), turns.LastAnnouncement);
+            Assert.That(recording, Does.StartWith("sfx_vlad_welcome"));
+            Assert.That(_audio.AnnouncementRequests.Select(r => r.Recording), Does.Contain(recording));
+            Assert.That(_audio.VoiceClip(Announcer.VoiceAt(3), turns.LastAnnouncement), Is.Not.Null, recording + " was not imported");
+            if (GameAudio.SessionMuted)
+            {
+                Assert.That(_hud.Overlay.LastHeardSeconds, Is.EqualTo(0f));
+                Assert.That(_hud.Overlay.SpeakerShowing, Is.False, "nothing is heard, so obj_speaker stays hidden");
+            }
 
             yield return WaitUntil(() => _hud.Overlay.TurnCardShowing && _hud.Overlay.TurnCardText.Contains(host.DisplayName),
                 () => "the turn card never named the host: " + _hud.Overlay.TurnCardText);

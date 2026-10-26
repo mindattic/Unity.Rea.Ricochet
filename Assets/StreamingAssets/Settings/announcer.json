@@ -1,9 +1,10 @@
 {
-  "_source": "The announcer (see Announcer.cs): personalities, how often each setting speaks, and the lines. In a line {0} is the subject's name and {1} the other's.",
+  "_source": "The announcer (see Announcer.cs): personalities, how often each setting speaks, and the lines. In a line {0} is the subject's name and {1} the other's. A personality's portrait is the GML sprite its card draws (obj_announcer_portrait) (the four besides Kurt Sly, Rye Wheatley and Sid Steinburger share spr_profile_dummy, as in the original; U.RICO-T51). Each line is also a recording, sfx_<id>_<kind><n> (Resources/Ricochet/Voice).",
   "voices": [
     {
       "id": "sly",
       "name": "Kurt Sly",
+      "portrait": "spr_profile_sly",
       "color": [
         214,
         158,
@@ -13,6 +14,7 @@
     {
       "id": "rye",
       "name": "Rye Wheatley",
+      "portrait": "spr_profile_rye",
       "color": [
         196,
         120,
@@ -22,6 +24,7 @@
     {
       "id": "sid",
       "name": "Sid Steinburger",
+      "portrait": "spr_profile_sid",
       "color": [
         72,
         150,
@@ -31,6 +34,7 @@
     {
       "id": "vlad",
       "name": "Vlad",
+      "portrait": "spr_profile_dummy",
       "color": [
         150,
         60,
@@ -40,6 +44,7 @@
     {
       "id": "baxter",
       "name": "Matt Baxter",
+      "portrait": "spr_profile_dummy",
       "color": [
         70,
         170,
@@ -49,6 +54,7 @@
     {
       "id": "doctor",
       "name": "Doctor",
+      "portrait": "spr_profile_dummy",
       "color": [
         200,
         70,
@@ -58,6 +64,7 @@
     {
       "id": "scottish",
       "name": "Haggis McKnight",
+      "portrait": "spr_profile_dummy",
       "color": [
         60,
         120,

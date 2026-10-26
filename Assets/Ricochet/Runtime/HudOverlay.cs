@@ -1,9 +1,10 @@
 // The match HUD's MindAttic Components half (UR-T8), on every peer, read from the synced state only (Turns and each
 // Player). Two cards on a canvas of their own:
-//   The announcer (obj_announcer, obj_announcer_portrait): when Turns carries a new line, the personality's portrait
-//   (their colour and monogram; the original had drawn profiles for two of its seven and a placeholder for the rest) and
-//   name box slide in from the bottom left with the line, hold, and slide back out, easing as obj_announcer's
-//   x += 1 + 0.1 * (onScreen - x) did each step.
+//   The announcer (obj_announcer, obj_announcer_portrait, obj_speaker): when Turns carries a new line, the personality's
+//   portrait (the original's own sprite: spr_profile_sly, _rye, _sid, and spr_profile_dummy for the other four) and name
+//   box slide in from the bottom left with the line, its recording plays (U.RICO-T51) with obj_speaker's speaker flickering
+//   beside the portrait, the card holds while it is heard (or AnnounceSeconds when muted, the written line standing alone),
+//   and slides back out, easing as obj_announcer's x += 1 + 0.1 * (onScreen - x) did each step.
 //   The turn card (draw_weaponinfo, draw_iteminfo, draw_potential, draw_scores): whose turn it is, in their colour, with
 //   their score, the weapon they carry (and a grenade's fuse), their item, and the combo the shot in the air would score.
 //   In practice it shows the local player's own loadout. Everyone sees it, as everyone at the original's one screen did.
@@ -25,8 +26,16 @@ namespace Ricochet
 {
     public sealed class HudOverlay : MonoBehaviour
     {
-        /// <summary>Seconds a line stays up once its card has slid in (the original held it while the recording played).</summary>
-        public const float AnnounceSeconds = 4.5f;
+        /// <summary>
+        /// Seconds a line nobody hears stays up once its card has slid in (the original held it while the recording played;
+        /// a heard line holds for its recording, Announcer.CardSeconds).
+        /// </summary>
+        public const float AnnounceSeconds = (float)Announcer.CaptionSeconds;
+
+        // obj_speaker: while the line plays, the speaker beside the portrait shows a random one of its frames, changed every
+        // 5 to 10 steps (its alarm[0] = irandom_range(5, 10)) of the 60-step room.
+        private const string Speaker = "spr_speaker";
+        private const float StepSeconds = 1f / 60f;
 
         private const float AnnouncerWidth = 820f;
         private const float AnnouncerHeight = 150f;
@@ -49,6 +58,9 @@ namespace Ricochet
         private MaText _announcerName;
         private MaText _announcerLine;
         private float _announcerX = -AnnouncerWidth - 40f;
+        private Image _speaker;
+        private float _speakingUntil = -1f;
+        private float _nextSpeakerFrame;
         private Turns _lastTurns;
         private int _seenAnnounced;
         private float _shownUntil = -1f;
@@ -78,6 +90,15 @@ namespace Ricochet
 
         /// <summary>The announcer's last line, with the players' names in it ("" before the first).</summary>
         public string AnnouncerLine => _announcerLine != null ? _announcerLine.Text : string.Empty;
+
+        /// <summary>The GML sprite the portrait draws now (spr_profile_sly...), "" when the catalogue lacks it.</summary>
+        public string PortraitSprite { get; private set; } = string.Empty;
+
+        /// <summary>Seconds the last line is heard for (0 when nobody hears it, and the caption stands alone).</summary>
+        public float LastHeardSeconds { get; private set; }
+
+        /// <summary>True while obj_speaker's speaker shows beside the portrait (the line is being heard).</summary>
+        public bool SpeakerShowing => _speaker != null && _speaker.gameObject.activeSelf;
 
         /// <summary>True while the turn card is up.</summary>
         public bool TurnCardShowing => _turnRoot != null && _turnRoot.gameObject.activeSelf;
@@ -136,16 +157,23 @@ namespace Ricochet
                 _seenAnnounced = turns.Announced;
                 AnnouncerVoice voice = Announcer.VoiceAt(turns.Voice);
                 _announcerName.Text = voice.Name;
-                _initials.Text = voice.Initials;
-                _face.color = new Color32(voice.R, voice.G, voice.B, 255);
+                ShowPortrait(voice);
                 _announcerLine.Text = Announcer.Text(turns.LastAnnouncement, NameOf);
-                _shownUntil = Time.time + AnnounceSeconds;
+
+                // The recording the drawn line picks plays as the card comes in, which holds while it is heard (obj_announcer's
+                // audio_is_playing); muted, the written line is the announcement and holds AnnounceSeconds.
+                LastHeardSeconds = GameAudio.Announce(voice, turns.LastAnnouncement);
+                _speakingUntil = LastHeardSeconds > 0f ? Time.time + LastHeardSeconds : -1f;
+                _shownUntil = Time.time + (float)Announcer.CardSeconds(LastHeardSeconds);
             }
 
             if (turns == null)
             {
                 _shownUntil = -1f;
+                _speakingUntil = -1f;
             }
+
+            UpdateSpeaker();
 
             // obj_announcer's step: ease towards on screen while the line plays, back off screen after.
             float target = AnnouncerShowing ? Margin : -AnnouncerWidth - 40f;
@@ -154,6 +182,34 @@ namespace Ricochet
             _announcerX = Mathf.Abs(distance) <= step ? target : _announcerX + Mathf.Sign(distance) * step;
             _announcerRoot.anchoredPosition = new Vector2(_announcerX, AboveAimLine);
             _announcerRoot.gameObject.SetActive(_announcerX > -AnnouncerWidth - 39f);
+        }
+
+        // obj_announcer_portrait: the original's sprite for the personality, as drawn (U.RICO-T51: spr_profile_sly, _rye,
+        // _sid, and the shared spr_profile_dummy for the other four); only when the art is missing, a panel of their colour
+        // with their monogram.
+        private void ShowPortrait(AnnouncerVoice voice)
+        {
+            Sprite sprite = string.IsNullOrEmpty(voice.Portrait) ? null : GameArt.Frame(voice.Portrait);
+            PortraitSprite = sprite != null ? voice.Portrait : string.Empty;
+            _face.sprite = sprite;
+            _face.preserveAspect = sprite != null;
+            _face.color = sprite != null ? Color.white : (Color)new Color32(voice.R, voice.G, voice.B, 255);
+            _initials.Text = sprite != null ? string.Empty : voice.Initials;
+        }
+
+        // obj_speaker: shown only while the line is heard, flicking to a random frame every 5 to 10 steps.
+        private void UpdateSpeaker()
+        {
+            bool speaking = Time.time < _speakingUntil;
+            Sprite[] frames = speaking ? GameArt.Frames(Speaker) : null;
+            _speaker.gameObject.SetActive(frames != null);
+            if (frames == null || Time.unscaledTime < _nextSpeakerFrame && _speaker.sprite != null)
+            {
+                return;
+            }
+
+            _speaker.sprite = frames[UnityEngine.Random.Range(0, frames.Length)];
+            _nextSpeakerFrame = Time.unscaledTime + UnityEngine.Random.Range(5, 11) * StepSeconds;
         }
 
         private void UpdateTurnCard(Turns turns)
@@ -324,7 +380,7 @@ namespace Ricochet
             MaPanel card = MaPanel.Create(_announcerRoot, PanelStyle.Surface, "Card");
             Stretch(card.RectTransform, 0f);
             HorizontalLayoutGroup row = card.gameObject.AddComponent<HorizontalLayoutGroup>();
-            row.spacing = 24f;
+            row.spacing = 52f; // room beside the portrait for obj_speaker's speaker
             row.padding = new RectOffset(20, 20, 16, 16);
             row.childAlignment = TextAnchor.MiddleLeft;
             row.childControlWidth = row.childControlHeight = true;
@@ -342,6 +398,21 @@ namespace Ricochet
             Stretch((RectTransform)_face.transform, 6f);
             _initials = MaText.Create(portrait, string.Empty, TextStyle.Title, TextAlignmentOptions.Center).WithColor(Color.white);
             Stretch(_initials.RectTransform, 0f);
+
+            // obj_speaker: beside the portrait's top edge (the original's x = border + 104, just past the 96-pixel profile),
+            // at the profile's scale, while the line is heard.
+            _speaker = new GameObject("Speaker", typeof(RectTransform)).AddComponent<Image>();
+            _speaker.gameObject.layer = 5;
+            _speaker.raycastTarget = false;
+            _speaker.preserveAspect = true;
+            _speaker.transform.SetParent(portrait.transform, false);
+            var speakerRect = (RectTransform)_speaker.transform;
+            speakerRect.anchorMin = speakerRect.anchorMax = new Vector2(1f, 1f);
+            speakerRect.pivot = new Vector2(0f, 1f);
+            speakerRect.anchoredPosition = new Vector2(10f, 0f);
+            speakerRect.sizeDelta = new Vector2(34f, 33f); // spr_speaker's 28 x 27 at the portrait's 118 / 96
+            _speaker.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            _speaker.gameObject.SetActive(false);
 
             var words = new GameObject("Name box", typeof(RectTransform)).GetComponent<RectTransform>();
             words.gameObject.layer = 5;

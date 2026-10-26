@@ -21,6 +21,11 @@
 // (randomize_level.gml) and each new turn (next_player.gml) of a match picks one of play_random_music.gml's five at random
 // and plays it on the music source, which carries the mix's music volume and mute (0 under a session mute, where it still
 // plays but is never heard and nothing is saved). Tests read the choice (MusicRequests, CurrentTrack, Music.volume).
+//
+// U.RICO-T51: the announcer speaks. When HudOverlay slides a card in, Announce plays the recording Core's Announcer picked for
+// the line it drew (Resources/Ricochet/Voice/sfx_<key>_<kind><n>) on a source of its own at the effect volume, cutting off
+// any line still playing, and says how long it is heard so the card holds while it plays (obj_announcer). Muted, nothing is
+// heard and the written caption carries the line alone. Tests read the choice (AnnouncementRequests).
 using System.Collections.Generic;
 using Ricochet.Core.Arsenal;
 using Ricochet.Core.Match;
@@ -48,6 +53,9 @@ namespace Ricochet
         private readonly Dictionary<int, Volley> _shotVolleys = new Dictionary<int, Volley>();
         private AudioSource _effects;
         private AudioSource _music;
+        private AudioSource _announcer;
+        private readonly Dictionary<string, AudioClip> _voiceLines = new Dictionary<string, AudioClip>();
+        private readonly List<AnnouncementRequest> _announcementRequests = new List<AnnouncementRequest>();
         private AudioMix _mix = new AudioMix();
         private int _pellets;
         private readonly List<MusicRequest> _musicRequests = new List<MusicRequest>();
@@ -308,6 +316,94 @@ namespace Ricochet
         /// <summary>The volume a cue is given now (SoundBook.Volume: the mix's effect volume, 0 when muted or session-muted).</summary>
         public float CueVolume => SoundBook.Volume(_mix, Profiles.SessionMuted);
 
+        // --- the announcer's voice (U.RICO-T51) ------------------------------------------------------------------------
+
+        /// <summary>A voice line the game chose, and the volume it was given (0 when muted or session-muted).</summary>
+        public readonly struct AnnouncementRequest
+        {
+            public AnnouncementRequest(string recording, float volume, float seconds)
+            {
+                Recording = recording;
+                Volume = volume;
+                Seconds = seconds;
+            }
+
+            /// <summary>The recording's name (sfx_sly_win3).</summary>
+            public string Recording { get; }
+
+            public float Volume { get; }
+
+            /// <summary>How long it is heard for (0 when it is not: muted, or the recording is missing).</summary>
+            public float Seconds { get; }
+
+            public override string ToString() => Recording + " @ " + Volume.ToString("0.00");
+        }
+
+        /// <summary>The most recent voice lines chosen, oldest first (at most <see cref="RequestsKept"/>).</summary>
+        public IReadOnlyList<AnnouncementRequest> AnnouncementRequests => _announcementRequests;
+
+        /// <summary>The source the announcer speaks from (one line at a time).</summary>
+        public AudioSource AnnouncerSource => _announcer;
+
+        /// <summary>
+        /// The announcer says <paramref name="announcement"/> in <paramref name="voice"/>: the recording Core's Announcer picked
+        /// for the line it drew, at the effect volume (every voice line's GameMaker volume is 1). A line still playing is cut
+        /// off first (play_random_announcement's audio_stop_sound(current_announcement)). Returns the seconds it is heard
+        /// for, 0 when nobody hears it (muted, session-muted, no audio, or the recording is missing), so the card knows how
+        /// long to hold its caption.
+        /// </summary>
+        public static float Announce(AnnouncerVoice voice, Announcement announcement)
+        {
+            return Instance != null && voice != null ? Instance.Speak(voice, announcement) : 0f;
+        }
+
+        /// <summary>The recording for <paramref name="voice"/>'s <paramref name="announcement"/> (loaded from Resources/Ricochet/Voice), or null.</summary>
+        public AudioClip VoiceClip(AnnouncerVoice voice, Announcement announcement)
+        {
+            string recording = Announcer.Recording(voice, announcement);
+            if (!_voiceLines.TryGetValue(recording, out AudioClip clip))
+            {
+                clip = Resources.Load<AudioClip>(Announcer.ResourcePath(voice, announcement));
+                if (clip == null)
+                {
+                    Debug.LogWarning("[GameAudio] The voice line " + recording + " is missing from Resources/" + Announcer.VoiceFolder + "; its caption stands alone.");
+                }
+
+                _voiceLines[recording] = clip;
+            }
+
+            return clip;
+        }
+
+        private float Speak(AnnouncerVoice voice, Announcement announcement)
+        {
+            float volume = CueVolume;
+            AudioClip clip = VoiceClip(voice, announcement);
+            float seconds = clip != null && volume > 0f ? clip.length : 0f;
+            _announcementRequests.Add(new AnnouncementRequest(Announcer.Recording(voice, announcement), volume, seconds));
+            if (_announcementRequests.Count > RequestsKept)
+            {
+                _announcementRequests.RemoveAt(0);
+            }
+
+            if (_announcer == null)
+            {
+                return 0f;
+            }
+
+            _announcer.Stop();
+            if (seconds <= 0f)
+            {
+                return 0f;
+            }
+
+            _announcer.clip = clip;
+            _announcer.volume = volume;
+            _announcer.mute = false;
+            _announcer.Play();
+            return seconds;
+        }
+
         /// <summary>
         /// Applies <paramref name="mix"/> to the sources without saving it. During a session mute the sources and the
         /// listener stay silent whatever the mix says (AudioListener.volume is never saved, so this lasts for this run only).
@@ -334,6 +430,12 @@ namespace Ricochet
                     voice.volume = CueVolume;
                     voice.mute = session || _mix.MuteSfx;
                 }
+            }
+
+            if (_announcer != null)
+            {
+                _announcer.volume = CueVolume;
+                _announcer.mute = session || _mix.MuteSfx;
             }
 
             if (_music != null)
@@ -660,6 +762,9 @@ namespace Ricochet
             _music.playOnAwake = false;
             _music.loop = true;
             _music.spatialBlend = 0f;
+            _announcer = gameObject.AddComponent<AudioSource>();
+            _announcer.playOnAwake = false;
+            _announcer.spatialBlend = 0f;
             if (FindAnyObjectByType<AudioListener>() == null)
             {
                 gameObject.AddComponent<AudioListener>();
@@ -727,6 +832,7 @@ namespace Ricochet
             }
 
             _tracks.Clear();
+            _voiceLines.Clear();
             _clips.Clear(); // the recordings are assets: Resources keeps them, nothing here destroys them
         }
     }

@@ -5,8 +5,8 @@
 // Resources/Ricochet/Sound (Assets/Ricochet/Audio/gml-sound.json records where each came from). SoundBook says which
 // cue each moment of play plays (fire_weapon.gml's shoot_* scripts, the *_step scripts' bounces, use_item.gml, the drops,
 // turn_countdown.gml, hit.gml, play_movement_sound.gml / stop_moving.gml, the buttons) and at what volume; the runtime
-// (GameAudio) loads the recordings and plays what this says. The announcers' voice lines are U.RICO-T51's and the music
-// U.RICO-T27's.
+// (GameAudio) loads the recordings and plays what this says. The announcers' voice lines are U.RICO-T51's (Announcer.Recording,
+// played at this same effect volume) and the music U.RICO-T27's.
 using System;
 using System.Collections.Generic;
 using Ricochet.Core.Aim;

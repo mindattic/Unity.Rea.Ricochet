@@ -14,3 +14,7 @@ Assets/Ricochet/Resources/Ricochet/Sound/*.ogg filter=lfs diff=lfs merge=lfs -te
 Assets/Ricochet/Resources/Ricochet/Music/*.mp3 filter=lfs diff=lfs merge=lfs -text
 Assets/Ricochet/Resources/Ricochet/Music/*.ogg filter=lfs diff=lfs merge=lfs -text
 Assets/Ricochet/Resources/Ricochet/Music/*.wav filter=lfs diff=lfs merge=lfs -text
+
+# U.RICO-T51: the announcers' voice lines (the seven personalities' sfx_<key>_{welcome,win,lose}1..10, Vorbis).
+Assets/Ricochet/Resources/Ricochet/Voice/*.ogg filter=lfs diff=lfs merge=lfs -text
+Assets/Ricochet/Resources/Ricochet/Voice/*.wav filter=lfs diff=lfs merge=lfs -text
