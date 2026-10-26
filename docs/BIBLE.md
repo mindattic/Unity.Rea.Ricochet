@@ -261,7 +261,7 @@ depth 1), `objects/obj_tracks` and `sprites/spr_tracks` (depth 2), `scripts/setu
   them at the room speed (`ArtCatalogue.RoomSpeed`). "Driving" is the authority's held drive key (`PlayerState.DriveDirection`,
   synced as `Player.TankMoving`), the original's `isMoving`, so a tank pushing against a wall still turns its hull and
   lays prints, as in the original. The name over the tank stays `PlayerLabels`' world label (U.RICO-T38, in fnt_score
-  since U.RICO-T44); the turn marker stays the rebuild's until U.RICO-T49 brings spr_turnarrow.
+  since U.RICO-T44); the turn marker over the tank is spr_turnarrow since U.RICO-T49 (HUD details).
 - Without the art (an empty catalogue) the player keeps its code-drawn square and barrel.
 
 Fixed defect: `isMoving` is a global and spawn_tracks runs in every obj_bottom's Step, so in the original every tank on
@@ -447,3 +447,67 @@ like one a shot struck (obj_shieldwall's vortex collision). (5) Two crates colle
 
 Fixed defects: obj_glass rolled one of five but drew spr_glass1 for two of the rolls and spr_glass5 for none, though the
 sprite shipped; each of the five is drawn. Not carried: obj_hitscore (created nowhere; obj_float_text is the same text).
+
+## HUD details (U.RICO-T49)
+
+Source: `scripts/setup_weapons.gml`, `setup_items.gml`, `draw_angle.gml`, `draw_scores.gml`, `draw_turntime.gml`,
+`draw_weaponinfo.gml`, `draw_iteminfo.gml`, `gui_draw.gml`, `setup_players.gml`, `next_player.gml`,
+`mouseover_message_draw.gml`, `mouseover_powerup_draw.gml`, `draw_text_outline(_color).gml`, `globals.gml` (border, maxhp),
+the gamescreen room's instances, and the objects `obj_icon_weapon_cannon/laser/shotgun/grenade/railgun/vortex`,
+`obj_item_extrabounce/shieldwall/shrinkray/teleporter/aimassist/redirector` (and the unplaced `obj_item_extrabounces`,
+`obj_item_lasersight`), `obj_lbl_count_*`, `obj_infinity`, `obj_weapon_icon`, `obj_hover_icon`, `obj_displaybox`,
+`obj_degree`, `obj_degree_gui`, `obj_turnarrow`, `obj_guide`, `obj_indicator_extrabounce`, `obj_healthbar`.
+
+- Core's `HudLooks` holds every position and rule (`Tests/Core.Tests/HudLooksTests`); positions are the original room's
+  pixels, which the HUD canvas's 1920x1080 reference matches one for one, and `GameArt.PixelsToUnits` in the world.
+- **Icons** (`HudIcons`, obj_icon_weapon_* / obj_item_*): weapons on the row at room_height - border*2, items on
+  room_height - border, the n-th at border*(n+1) + 10n (32, 74, 116, 158, 200, 242). setup_weapons / setup_items: the _off
+  sprite at 0.2 with none carried, the plain sprite at 1 carried, the _selected sprite for the one in hand; over a carried
+  one its count in fnt_count outlined 2 px at x + 28, y + 15, or spr_infinity at x + 28, y + 24 for an unlimited one
+  (obj_infinity). They show the current player's loadout (player[current]); in practice the local player's. A click on one
+  (Left Pressed) selects it for the local player on their own turn, through `SelectWeaponCommand` / `SelectItemCommand`
+  (refused with none carried or a shot in the air, as `MayAct` refuses cycling). On a canvas of their own that takes the
+  pointer, sorting with the HUD under the announcer cards and every menu.
+- **Hover text**: hovering an icon says "Name: what it does" in mouseover_message_draw's white fnt_score, from arsenal.json's
+  `about` (a deviation, below).
+- **Angle** (`TurnGuide`, draw_angle / obj_degree): while the turn runs (Aiming or a shot in the air: isReady && turnStarted),
+  the current player's angle in whole degrees in fnt_score outlined 1 px, its top left at the tank's x and 36 px under it
+  while it aims up (image_angle < 180), 60 px over it otherwise; spr_symbol_degree at string_width / 2 + 20 from its left
+  edge. obj_degree_gui: the local player's angle the same way over the pad's turn buttons (`ControlPad`), as it sat by
+  obj_btn_degreeleft.
+- **Guide** (`TurnGuide`, obj_guide): while the turn runs and its player has not driven, circles of 60 and 61 px in their
+  colour at 0.7 and of 59 and 62 px in white at 0.4 round the tank, and a tick along the aim from 49 to 71 px, 3 px wide in
+  white, under one from 50 to 70 px, 1 px wide in their colour.
+- **Turn arrow** (obj_turnarrow): spr_turnarrow's six frames at image_speed 0.2 in the column left of the current seat's
+  slot, where the original drew it at x - sprite_width beside the score; and over the current tank, turned to point down at
+  it, in place of the rebuild's yellow diamond (which stays when the art is missing).
+- **Seat slots** (`MatchHud`, draw_scores / obj_healthbar): draw_scores' spr_icon_player or spr_icon_computer, the name in
+  the player's colour and the score; under them obj_healthbar's 171x25 bar: spr_healthbar_back at 0.25,
+  spr_healthbar_fill in the player's colour scaled to the health shown (image_xscale), spr_healthbar over them and
+  "shown/max" in fnt_count outlined 1 px, centred, 4 px down. The shown health keeps U.RICO-T67's easing. Code-drawn
+  rects and an "[AI]" tag when the art is missing.
+- **Extra-bounce indicator** (obj_indicator_extrabounce): spr_indicator_extrabounce just left of the angle readout while the
+  current player has an extra bounce on this turn.
+- The aim line (draw_bounceinfo, U.RICO-T44) moved right of the icons, to x 290 where draw_weaponinfo wrote.
+- `Tests/PlayMode/HudDetailTests` plays the icons' sprites, counts and infinity sign, a click on someone else's turn
+  ignored and on Ann's own selecting the grenade and the shield wall, the hover text, the slots' health text, art bar and
+  arrow, the tank's arrow, guide and angle with its degree sign, and the pad's angle; `ArtShowcaseTests.TheHudDetails`
+  saves `U.RICO-T49-*` screenshots (the HUD, the current tank close up, a hover).
+
+Deviations: (1) The icons' hover text is the rebuild's: the original's icons had no Mouse Enter (mouseover_message_draw
+served the setup room's labels and buttons), and it drew at room_height - 30, where the rebuild's aim line runs, so it sits
+just over the icons. (2) A slot keeps the rebuild's layout (U.RICO-T17's two rows of eight that shrink to fit, the turn
+outline, the score and "away" / "OUT" / "next round"); the original's single row of 200 px columns held at most eight.
+(3) The turn arrow is drawn over the tank as well as beside the slot (the original had only the slot's), replacing the
+rebuild's diamond there. (4) sfx_flick and sfx_disabled on a click wait for U.RICO-T50.
+
+Fixed defect: obj_indicator_extrabounce was never created (no instance in any room, no instance_create), so its sprite
+never showed; it is drawn while an extra bounce is on, at the angle readout it was meant to follow (its Step set only its y,
+to draw_angle's).
+
+Not carried: `obj_lbl_count_*` (the setup room's counts with spr_infinity_large; the setup is the kit's front end),
+`obj_displaybox` (obj_multiplayer_host's name boxes; the kit's lobby), `obj_weapon_icon` and `obj_infinity` (created
+nowhere; the icons draw spr_infinity themselves), `obj_item_extrabounces` and `obj_item_lasersight` (not in the room; the
+laser sight is dormant), `mouseover_powerup_draw` (the dormant powerup HUD stubs, RECONSTRUCTION 1.2). `obj_hover_icon` is
+the crates' floating icon (U.RICO-T44's). `obj_bar1-16`, `obj_circle1-16` and `obj_square1-16` are the random level's
+shapes (`GmlSprites.Shape`, U.RICO-T46), not HUD markers.

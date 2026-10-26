@@ -2,8 +2,8 @@
 // Screenshots/ (gitignored): the Ready card in fnt_impact and fnt_mono with draw_text_outline's outlines, the four
 // crates with their icons, a shell in flight, its spr_smallexplosion, a grenade's spr_bigexplosion, and the tanks with
 // one driving and leaving tracks (U.RICO-T45), and the level backdrop with a random level's shapes (U.RICO-T46); and the
-// weapons and hazards (U.RICO-T47, TheWeaponsAndHazards), and the hit and knock-out effects (U.RICO-T48,
-// TheHitAndKnockOutEffects). Explicit: it needs graphics (Tools/unity.ps1 -Graphics), so it runs only when asked for by name:
+// weapons and hazards (U.RICO-T47, TheWeaponsAndHazards), the hit and knock-out effects (U.RICO-T48,
+// TheHitAndKnockOutEffects), and the HUD details (U.RICO-T49, TheHudDetails). Explicit: it needs graphics (Tools/unity.ps1 -Graphics), so it runs only when asked for by name:
 //   powershell -File Tools/unity.ps1 -Graphics -Log art-showcase -Extra "-runTests -testPlatform PlayMode -testFilter Ricochet.Tests.ArtShowcaseTests -testResults Logs/TestResults-ArtShowcase.xml"
 using System.Collections;
 using System.IO;
@@ -352,6 +352,65 @@ namespace Ricochet.Tests
                 TestMatches.StockReadyCard();
                 FieldEffects.Clear();
                 GmlParticles.Clear();
+            }
+        }
+
+        // U.RICO-T49: the HUD details in a match on the practice range with two AI: the icons with their counts and the infinity
+        // sign, the slots' health bars, marks and turn arrow, the guide ring, angle and turn arrow at the current tank, the
+        // extra-bounce indicator, and a hover's text.
+        [UnityTest]
+        [Timeout(180000)]
+        public IEnumerator TheHudDetails()
+        {
+            TestMatches.WithoutReadyCard();
+            try
+            {
+                yield return StartAndJoinAll();
+                Arena arena = Arena.Serve(Server, GamePrefabs.Dummy);
+                var hostSpawn = WaitForSpawn<Player>(Server, owner: Server.LocalClientId);
+                yield return hostSpawn;
+                var annSpawn = WaitForSpawn<Player>(Server, owner: Client.LocalClientId);
+                yield return annSpawn;
+                yield return WaitUntil(() => Player.In(Client).Count() == 2, "the client never saw both players");
+
+                Level level = Arena.Level;
+                _level = LevelView.Create(level);
+                var cameraObject = new GameObject("Showcase camera");
+                _camera = cameraObject.AddComponent<Camera>();
+                _camera.orthographic = true;
+                _camera.orthographicSize = 7f;
+                _camera.transform.position = new Vector3(0f, 0f, -10f);
+                _camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
+                _camera.clearFlags = CameraClearFlags.SolidColor;
+                RenderStyle.Current.ConfigureCamera(_camera);
+                // No backdrop: its border sprites would sort over the HUD once Capture moves the canvases onto the camera.
+
+                _hud = MatchHud.Create(Client);
+                Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange(2)), Is.True);
+                yield return WaitUntil(() => Turns.For(Client) != null && Turns.For(Server).MatchPhase == MatchPhase.Aiming && _hud.Icons.Showing, "the match never opened", 10f);
+                Player host = hostSpawn.Result;
+                host.ServerAim(60f, 0.6f);
+                host.ServerCycleWeapon(1);
+                host.ServerUseItem(60f, 0.6f); // an extra bounce on this turn
+                yield return new WaitForSeconds(0.6f);
+                yield return Capture("hud", "U.RICO-T49");
+
+                // Close in on the current tank: the turn arrow, the guide, the angle and its degree sign, the extra bounce.
+                Vector3 keep = _camera.transform.position;
+                _camera.orthographicSize = 2.5f;
+                _camera.transform.position = new Vector3(host.Position.x, host.Position.y, -10f);
+                yield return Capture("hud-tank", "U.RICO-T49");
+                _camera.orthographicSize = 7f;
+                _camera.transform.position = keep;
+
+                var hover = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(_hud.Icons.IconObject((int)Weapon.Vortex), hover, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+                yield return null;
+                yield return Capture("hud-hover", "U.RICO-T49");
+            }
+            finally
+            {
+                TestMatches.StockReadyCard();
             }
         }
 

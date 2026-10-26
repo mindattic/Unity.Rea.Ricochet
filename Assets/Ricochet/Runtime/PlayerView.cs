@@ -40,14 +40,18 @@ namespace Ricochet
         private SpriteRenderer _body;    // the code-drawn square and barrel when the art is missing
         private SpriteRenderer _barrel;
         private SpriteRenderer _turnMarker;
+        private bool _turnArrowArt;
 
         /// <summary>The tank drawn from the original's art, or null when it fell back to squares.</summary>
         public TankView Tank => _tank;
 
+        /// <summary>The aim this peer shows: the owner's own, responsive one, everyone else's synced one (draw_angle reads it).</summary>
+        public float ShownHeading => LocallyControlled && IsSpawned ? (float)_aim.Heading : Heading;
+
         // Every peer: the tank as the synced state has it (the owner's turret follows its own, responsive aim).
         private void DrawTank()
         {
-            float shownHeading = LocallyControlled ? (float)_aim.Heading : Heading;
+            float shownHeading = ShownHeading;
 
             // Out of the round (no health left, or waiting for the next one): drawn faint.
             Color32 color = Color;
@@ -65,7 +69,22 @@ namespace Ricochet
             }
 
             _turnMarker.enabled = HasTurn;
+            if (_turnArrowArt && _turnMarker.enabled)
+            {
+                // obj_turnarrow: spr_turnarrow's six frames at image_speed 0.2.
+                Sprite frame = GameArt.FrameAt(GmlSprites.TurnArrow, Time.time, true, (float)HudLooks.TurnArrowImageSpeed);
+                if (frame != null && _turnMarker.sprite != frame)
+                {
+                    _turnMarker.sprite = frame;
+                }
+            }
         }
+
+        /// <summary>True while the turn marker over this tank is drawn (obj_turnarrow's spr_turnarrow when the art is there).</summary>
+        public bool TurnMarkerShowing => _turnMarker != null && _turnMarker.enabled;
+
+        /// <summary>True when the turn marker is the original's spr_turnarrow rather than the code-drawn diamond.</summary>
+        public bool TurnMarkerFromArt => _turnArrowArt;
 
         private DottedBeam _previewBeam;
         private ShotView _shotView;

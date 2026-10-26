@@ -243,12 +243,36 @@ namespace Ricochet
                 barrel.transform.localScale = new Vector3(0.9f, 0.18f, 1f);
             }
 
+            // The turn marker over the tank: obj_turnarrow's spr_turnarrow (U.RICO-T49) turned to point down at it, at the
+            // original's pixel size, or the rebuild's yellow diamond when the art is missing.
             GameObject marker = Child("Turn marker");
-            _turnMarker = Shapes.Square(marker, 1f, 2);
-            marker.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
             marker.transform.localPosition = new Vector3(0f, 0.95f, 0f);
-            marker.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            _turnMarker.color = new UnityEngine.Color(1f, 0.92f, 0.2f);
+            Sprite arrow = GameArt.Frame(GmlSprites.TurnArrow);
+            if (arrow != null)
+            {
+                marker.transform.localScale = new Vector3(1f / BodyScale, 1f / BodyScale, 1f);
+                marker.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+                GameObject art = Child(marker.transform, "Arrow");
+                _turnMarker = art.GetComponent<SpriteRenderer>();
+                if (_turnMarker == null) // Unity's null, which ?? would not see
+                {
+                    _turnMarker = art.AddComponent<SpriteRenderer>();
+                }
+
+                _turnMarker.sprite = arrow;
+                _turnMarker.sortingOrder = 2;
+                _turnMarker.color = UnityEngine.Color.white;
+                art.transform.localPosition = -arrow.bounds.center; // turn about the arrow's middle, not its top-left origin
+                _turnArrowArt = true;
+            }
+            else
+            {
+                _turnMarker = Shapes.Square(marker, 1f, 2);
+                marker.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
+                marker.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                _turnMarker.color = new UnityEngine.Color(1f, 0.92f, 0.2f);
+            }
+
             _turnMarker.enabled = false;
 
             if (!s_spawned.Contains(this))
@@ -318,16 +342,18 @@ namespace Ricochet
             }
         }
 
-        private GameObject Child(string childName)
+        private GameObject Child(string childName) => Child(transform, childName);
+
+        private static GameObject Child(Transform parent, string childName)
         {
-            Transform existing = transform.Find(childName);
+            Transform existing = parent.Find(childName);
             if (existing != null)
             {
                 return existing.gameObject;
             }
 
             var child = new GameObject(childName);
-            child.transform.SetParent(transform, false);
+            child.transform.SetParent(parent, false);
             return child;
         }
 

@@ -5,6 +5,7 @@
 // The buttons only feed OnScreenControls; GameInput merges them with the keys, so every rule (your turn, a shot in the air,
 // no shooting after driving) is PlayerAim's and the server's, same as for a key. It shows whenever the local human has a tank.
 using MindAttic.Components.Unity; // MaCanvas, MaText, TextStyle
+using Ricochet.Core.Art;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -123,6 +124,8 @@ namespace Ricochet
         private readonly PadButton[] _buttons = new PadButton[7];
         private MatchHud _hud;
         private Canvas _canvas;
+        private MaText _angle;
+        private Image _degree;
 
         /// <summary>Adds the pad to <paramref name="hud"/>'s GameObject.</summary>
         public static ControlPad Create(MatchHud hud)
@@ -150,9 +153,16 @@ namespace Ricochet
             }
         }
 
+        /// <summary>obj_degree_gui's readout at the turn buttons: the local player's angle ("" while the pad is hidden).</summary>
+        public string AngleText => Showing && _angle != null ? _angle.Tmp.text : string.Empty;
+
+        /// <summary>True while spr_symbol_degree stands after that angle.</summary>
+        public bool DegreeShowing => Showing && _degree != null && _degree.gameObject.activeSelf;
+
         private void Update()
         {
-            bool show = HasLocalTank();
+            Player local = LocalPlayer();
+            bool show = local != null;
             if (show && _canvas == null)
             {
                 Build();
@@ -166,19 +176,29 @@ namespace Ricochet
                     OnScreenControls.Reset();
                 }
             }
+
+            if (show)
+            {
+                // draw_angle's GUI line and obj_degree_gui (U.RICO-T49): the angle outlined 1 px over the turn buttons, the
+                // degree sign at string_width / 2 + 20 from its left edge.
+                HudParts.Set(_angle, HudLooks.AngleText(local.ShownHeading));
+                float width = _angle.Tmp.preferredWidth;
+                RectTransform sign = _degree.rectTransform;
+                sign.anchoredPosition = new Vector2(_angle.RectTransform.anchoredPosition.x + (float)HudLooks.DegreeX(width), sign.anchoredPosition.y);
+            }
         }
 
-        private bool HasLocalTank()
+        private Player LocalPlayer()
         {
             foreach (Player player in Player.In(_hud.CurrentSession))
             {
                 if (player.IsLocalHuman)
                 {
-                    return true;
+                    return player;
                 }
             }
 
-            return false;
+            return null;
         }
 
         private void Build()
@@ -198,6 +218,26 @@ namespace Ricochet
             Add(Control.EndTurn, "End Turn", new Vector2(WideWidth, Square), new Vector2(-wideX, Margin));
             Add(Control.UseItem, "Use Item", new Vector2(WideWidth, Square), new Vector2(-wideX, Margin + Square + Gap));
             Add(Control.Fire, "Fire", new Vector2(WideWidth, Square), new Vector2(-wideX, Margin + (Square + Gap) * 2f));
+
+            // The angle over the turn buttons, as obj_degree_gui sat by obj_btn_degreeleft; it never takes the pointer.
+            float angleLeft = turnLeft + Square;
+            float angleY = Margin + Square + Gap;
+            _angle = HudParts.Label(_canvas.transform, TextStyle.Body, Color.white, 10f, GameArt.CanvasFontSize(GmlFonts.Score, 24f), TextAlignmentOptions.BottomLeft,
+                gmlFont: GmlFonts.Score, outline: HudLooks.AngleOutline);
+            RectTransform angle = _angle.RectTransform;
+            angle.anchorMin = angle.anchorMax = angle.pivot = new Vector2(1f, 0f);
+            angle.pivot = new Vector2(0f, 0f);
+            angle.sizeDelta = new Vector2(Square * 2f, 30f);
+            angle.anchoredPosition = new Vector2(-angleLeft + 4f, angleY);
+            _angle.Tmp.overflowMode = TextOverflowModes.Overflow;
+            _degree = HudParts.Solid("Degree", _canvas.transform, Color.white);
+            _degree.sprite = GameArt.Frame(GmlSprites.Degree);
+            RectTransform sign = _degree.rectTransform;
+            sign.anchorMin = sign.anchorMax = new Vector2(1f, 0f);
+            sign.pivot = new Vector2(0f, 1f);
+            sign.sizeDelta = new Vector2(9f, 9f);
+            sign.anchoredPosition = new Vector2(-angleLeft, angleY + 24f);
+            _degree.gameObject.SetActive(_degree.sprite != null);
         }
 
         private void Add(Control control, string text, Vector2 size, Vector2 position)

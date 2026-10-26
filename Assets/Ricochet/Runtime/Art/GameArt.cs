@@ -47,8 +47,20 @@ namespace Ricochet
         public const string IconGear = "spr_icon_gear";
         public const string IconHealth = "spr_icon_health";
 
-        // An unlimited count (obj_infinity), drawn after the weapon and item names on the turn card.
+        // An unlimited count (obj_infinity), drawn after the weapon and item names on the turn card and on the HUD's icons.
         public const string Infinity = "spr_infinity";
+
+        // The HUD details (U.RICO-T49): obj_turnarrow, obj_degree / obj_degree_gui's degree sign, obj_indicator_extrabounce,
+        // obj_healthbar's three layers and draw_scores' human and computer marks. The weapon and item icons are
+        // HudLooks.WeaponIcon / ItemIcon.
+        public const string TurnArrow = "spr_turnarrow";
+        public const string Degree = "spr_symbol_degree";
+        public const string ExtraBounceIndicator = "spr_indicator_extrabounce";
+        public const string HealthBar = "spr_healthbar";
+        public const string HealthBarBack = "spr_healthbar_back";
+        public const string HealthBarFill = "spr_healthbar_fill";
+        public const string IconPlayer = "spr_icon_player";
+        public const string IconComputer = "spr_icon_computer";
 
         /// <summary>
         /// The sprite of the level shape <paramref name="kind"/> number <paramref name="index"/> (0 to 15): obj_polygon1..16,
@@ -186,6 +198,19 @@ namespace Ricochet
 
             return pixels >= 2 ? entry.outline2 : pixels == 1 ? entry.outline1 : null;
         }
+
+        /// <summary>
+        /// The HUD canvas font size that draws GML font <paramref name="name"/> at the original's pixel size (the canvas's
+        /// 1920x1080 reference is the original room, and the font's face is its font.gmx size), or <paramref name="fallback"/>.
+        /// </summary>
+        public static float CanvasFontSize(string name, float fallback)
+        {
+            ArtCatalogue.FontEntry entry = Catalogue != null ? Catalogue.Font(name) : null;
+            return entry != null && entry.font != null ? entry.size : fallback;
+        }
+
+        /// <summary>GML pixels to world units (the original's 1920 px room is 22 units).</summary>
+        public static float PixelsToUnits(float pixels) => pixels / (Catalogue != null ? Catalogue.PixelsPerUnit : 1920f / 22f);
 
         /// <summary>
         /// The world TextMeshPro font size that draws GML font <paramref name="name"/> at the original's pixel size (a
