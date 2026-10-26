@@ -90,18 +90,22 @@ namespace Ricochet
             return frames[i < 0 ? i + frames.Length : i];
         }
 
-        /// <summary>Frames a second the sprite animates at: its image_speed at the room speed (normalFPS).</summary>
-        public static float FramesPerSecond(string name)
+        /// <summary>
+        /// Frames a second the sprite animates at: <paramref name="imageSpeed"/> (or, when it is negative, the image_speed the
+        /// first object showing it sets; objects sharing a sprite can disagree, so a view names its own object's) at the
+        /// room speed (normalFPS).
+        /// </summary>
+        public static float FramesPerSecond(string name, float imageSpeed = -1f)
         {
             ArtCatalogue.SpriteEntry entry = Catalogue != null ? Catalogue.Sprite(name) : null;
-            return entry != null ? entry.imageSpeed * Catalogue.RoomSpeed : 0f;
+            return entry != null ? (imageSpeed >= 0f ? imageSpeed : entry.imageSpeed) * Catalogue.RoomSpeed : 0f;
         }
 
         /// <summary>
         /// The frame showing <paramref name="seconds"/> after the sprite started (GameMaker's image_index advancing by
         /// image_speed a step), looping, or holding the last frame when <paramref name="loop"/> is false; null if missing.
         /// </summary>
-        public static Sprite FrameAt(string name, float seconds, bool loop = true)
+        public static Sprite FrameAt(string name, float seconds, bool loop = true, float imageSpeed = -1f)
         {
             Sprite[] frames = Frames(name);
             if (frames == null)
@@ -109,15 +113,15 @@ namespace Ricochet
                 return null;
             }
 
-            int index = Mathf.FloorToInt(Mathf.Max(0f, seconds) * FramesPerSecond(name));
+            int index = Mathf.FloorToInt(Mathf.Max(0f, seconds) * FramesPerSecond(name, imageSpeed));
             return frames[loop ? index % frames.Length : Mathf.Min(index, frames.Length - 1)];
         }
 
         /// <summary>How long one pass through the sprite's frames takes, in seconds (0 if it does not animate).</summary>
-        public static float Duration(string name)
+        public static float Duration(string name, float imageSpeed = -1f)
         {
             Sprite[] frames = Frames(name);
-            float fps = FramesPerSecond(name);
+            float fps = FramesPerSecond(name, imageSpeed);
             return frames != null && fps > 0f ? frames.Length / fps : 0f;
         }
 
@@ -148,9 +152,20 @@ namespace Ricochet
         }
 
         /// <summary>
+        /// The world TextMeshPro font size that draws GML font <paramref name="name"/> at the original's pixel size (a
+        /// world point is a tenth of a unit, and the font's face is its font.gmx size), or 0 when the catalogue lacks it.
+        /// </summary>
+        public static float WorldFontSize(string name)
+        {
+            ArtCatalogue.FontEntry entry = Catalogue != null ? Catalogue.Font(name) : null;
+            return entry != null && entry.font != null ? entry.size * 10f / Catalogue.PixelsPerUnit : 0f;
+        }
+
+        /// <summary>
         /// Draws <paramref name="text"/> in GML font <paramref name="name"/>, outlined as draw_text_outline does when
-        /// <paramref name="outline"/> is 1 or 2 (the text is then white, as that script forces). Returns false, leaving the
-        /// text as it was, when the catalogue lacks the font.
+        /// <paramref name="outline"/> is 1 or 2 (black, that many pixels wide; draw_text_outline draws the face white, and
+        /// draw_text_outline_color in a colour of the caller's, so the colour stays the caller's to set). Returns false,
+        /// leaving the text as it was, when the catalogue lacks the font.
         /// </summary>
         public static bool ApplyFont(TMP_Text text, string name, int outline = 0)
         {
@@ -168,11 +183,6 @@ namespace Ricochet
             Material material = outline > 0 ? Outline(name, outline) : null;
             text.fontSharedMaterial = material != null ? material : font.material;
             text.fontStyle &= ~FontStyles.Bold; // GameMaker baked the face as it is; bold would only thicken the field
-            if (material != null)
-            {
-                text.color = Color.white;
-            }
-
             return true;
         }
     }

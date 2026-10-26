@@ -335,28 +335,39 @@ namespace Ricochet
             _fade.interactable = false;
             _fade.blocksRaycasts = false;
 
-            // obj_ready's draw: "Ready" in white at the middle, the player's name in their colour 32 pixels above it.
-            _ready = HudParts.Label(_root, TextStyle.Title, Color.white, 40f, 96f, TextAlignmentOptions.Center, bold: true);
+            // obj_ready's draw: "Ready" in white fnt_impact at the middle (draw_text_outline, 2 px), the player's name in their
+            // colour in fnt_mono 32 pixels above it (draw_text_outline_color, 2 px black), and the name again in white
+            // fnt_score over the tank (draw_text_outline, 1 px). U.RICO-T44 draws them in the original's fonts and outlines.
+            _ready = HudParts.Label(_root, TextStyle.Title, Color.white, 40f, 96f, TextAlignmentOptions.Center, bold: true, gmlFont: GmlFonts.Impact, outline: 2);
             Place(_ready.RectTransform, new Vector2(1200f, 110f), new Vector2(0f, -40f));
             HudParts.Set(_ready, "Ready");
             Outline(_ready);
-            _name = HudParts.Label(_root, TextStyle.Heading, Color.white, 24f, 54f, TextAlignmentOptions.Center, bold: true);
+            _name = HudParts.Label(_root, TextStyle.Heading, Color.white, 24f, 54f, TextAlignmentOptions.Center, bold: true, gmlFont: GmlFonts.Mono, outline: 2);
             Place(_name.RectTransform, new Vector2(1200f, 70f), new Vector2(0f, 50f));
             Outline(_name);
 
             _worldRoot = new GameObject("Ready card: name over the tank");
-            _overTank = WorldText.Create(_worldRoot.transform, "Name", 0.3f, Color.white, bold: true);
+            _overTank = WorldText.Create(_worldRoot.transform, "Name", GmlFonts.Score, 1, Color.white, 0.3f);
             _overTank.sortingOrder = WorldText.Order + 1;
-            _overTank.outlineWidth = 0.2f;
-            _overTank.outlineColor = Color.black;
+            if (_overTank.font != GameArt.Font(GmlFonts.Score))
+            {
+                _overTank.fontStyle = FontStyles.Bold;
+                _overTank.outlineWidth = 0.2f;
+                _overTank.outlineColor = Color.black;
+            }
 
             _root.gameObject.SetActive(false);
             _worldRoot.SetActive(false);
         }
 
-        // draw_text_outline: the card's words have a black edge.
+        // draw_text_outline: the card's words have a black edge (the GML font's outlined material has it already).
         private static void Outline(MaText text)
         {
+            if (text.GetComponent<GmlFontLabel>() != null && text.Tmp.font == GameArt.Font(text.GetComponent<GmlFontLabel>().FontName))
+            {
+                return;
+            }
+
             text.Tmp.outlineWidth = 0.2f;
             text.Tmp.outlineColor = Color.black;
         }

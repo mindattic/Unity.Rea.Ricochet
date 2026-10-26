@@ -46,8 +46,13 @@ namespace Ricochet
             return image;
         }
 
-        /// <summary>A themed label that shrinks to fit its box between <paramref name="minSize"/> and <paramref name="maxSize"/>.</summary>
-        public static MaText Label(Transform parent, TextStyle style, Color color, float minSize, float maxSize, TextAlignmentOptions alignment, bool bold = false)
+        /// <summary>
+        /// A themed label that shrinks to fit its box between <paramref name="minSize"/> and <paramref name="maxSize"/>, drawn in
+        /// the original's GML font <paramref name="gmlFont"/> when one is named (U.RICO-T44; outlined <paramref name="outline"/>
+        /// pixels as draw_text_outline does), so the theme keeps its layout but not its face.
+        /// </summary>
+        public static MaText Label(Transform parent, TextStyle style, Color color, float minSize, float maxSize, TextAlignmentOptions alignment,
+            bool bold = false, string gmlFont = null, int outline = 0)
         {
             MaText text = MaText.Create(parent, string.Empty, style, alignment).WithColor(color);
             TextMeshProUGUI tmp = text.Tmp;
@@ -61,6 +66,11 @@ namespace Ricochet
             if (bold)
             {
                 tmp.fontStyle |= FontStyles.Bold;
+            }
+
+            if (!string.IsNullOrEmpty(gmlFont))
+            {
+                GmlFontLabel.Attach(tmp, gmlFont, outline);
             }
 
             return text;

@@ -38,6 +38,23 @@ namespace Ricochet
             return text;
         }
 
+        /// <summary>
+        /// A centred label in the original's GML font <paramref name="gmlFont"/> at its pixel size (U.RICO-T44), outlined
+        /// <paramref name="outline"/> pixels as draw_text_outline does; the theme's font at <paramref name="fallbackHeight"/>
+        /// when the catalogue lacks it.
+        /// </summary>
+        public static TextMeshPro Create(Transform parent, string name, string gmlFont, int outline, Color color, float fallbackHeight)
+        {
+            TextMeshPro text = Create(parent, name, fallbackHeight, color);
+            float size = GameArt.WorldFontSize(gmlFont);
+            if (size > 0f && GameArt.ApplyFont(text, gmlFont, outline))
+            {
+                text.fontSize = size;
+            }
+
+            return text;
+        }
+
         /// <summary>Sets the text only when it changed.</summary>
         public static void Set(TMP_Text text, string value)
         {

@@ -362,7 +362,7 @@ namespace Ricochet
             _matchRoot = HudParts.Rect("Match", _canvas.transform, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             HudParts.Stretch(_matchRoot);
 
-            _clock = HudParts.Label(_matchRoot, TextStyle.Title, Yellow, 20f, 39f, TextAlignmentOptions.Top, bold: true);
+            _clock = HudParts.Label(_matchRoot, TextStyle.Title, Yellow, 20f, 39f, TextAlignmentOptions.Top, bold: true, gmlFont: GmlFonts.Score);
             Place(_clock.RectTransform, new Vector2(0.5f, 1f), new Vector2(210f, 51f), new Vector2(0f, -TopMargin + 3f));
 
             for (int i = 0; i < _slots.Length; i++)
@@ -370,21 +370,21 @@ namespace Ricochet
                 _slots[i] = BuildSlot(i);
             }
 
-            _caption = HudParts.Label(_matchRoot, TextStyle.Body, Color.white, 12f, 21f, TextAlignmentOptions.Top);
+            _caption = HudParts.Label(_matchRoot, TextStyle.Body, Color.white, 12f, 21f, TextAlignmentOptions.Top, gmlFont: GmlFonts.Score);
             Place(_caption.RectTransform, new Vector2(0.5f, 1f), new Vector2(1300f, 33f), new Vector2(0f, -(TopMargin + SlotHeight * 2f + 6f)));
 
-            _moveWarning = HudParts.Label(_matchRoot, TextStyle.Body, Warning, 12f, 27f, TextAlignmentOptions.Center, bold: true);
+            _moveWarning = HudParts.Label(_matchRoot, TextStyle.Body, Warning, 12f, 27f, TextAlignmentOptions.Center, bold: true, gmlFont: GmlFonts.Score);
             _moveWarning.Tmp.text = "You cannot move and shoot within the same turn. Press [F] to finish current turn";
             Place(_moveWarning.RectTransform, new Vector2(0.5f, 0f), new Vector2(1500f, 39f), new Vector2(0f, 93f));
 
-            _thinking = HudParts.Label(_matchRoot, TextStyle.Body, Color.white, 12f, 27f, TextAlignmentOptions.Center, bold: true);
+            _thinking = HudParts.Label(_matchRoot, TextStyle.Body, Color.white, 12f, 27f, TextAlignmentOptions.Center, bold: true, gmlFont: GmlFonts.Score);
             Place(_thinking.RectTransform, new Vector2(0.5f, 0f), new Vector2(1500f, 39f), new Vector2(0f, 150f));
             _thinkingFade = _thinking.gameObject.AddComponent<CanvasGroup>();
 
             // The local player's own lines, outside the match root: they show in practice too.
-            _aim = HudParts.Label(_canvas.transform, TextStyle.Body, Color.white, 11f, 24f, TextAlignmentOptions.MidlineLeft);
+            _aim = HudParts.Label(_canvas.transform, TextStyle.Body, Color.white, 11f, 24f, TextAlignmentOptions.MidlineLeft, gmlFont: GmlFonts.Score, outline: 1);
             Place(_aim.RectTransform, new Vector2(0f, 0f), new Vector2(1800f, 36f), new Vector2(18f, 12f));
-            _vortex = HudParts.Label(_canvas.transform, TextStyle.Body, new Color(1f, 0.35f, 0.3f), 11f, 24f, TextAlignmentOptions.Center);
+            _vortex = HudParts.Label(_canvas.transform, TextStyle.Body, new Color(1f, 0.35f, 0.3f), 11f, 24f, TextAlignmentOptions.Center, gmlFont: GmlFonts.Score);
             Place(_vortex.RectTransform, new Vector2(0.5f, 0f), new Vector2(1500f, 36f), new Vector2(0f, 54f));
 
             // A HUD never takes the pointer, so it cannot swallow a click meant for a menu or the world.
@@ -409,9 +409,9 @@ namespace Ricochet
             slot.Turn.rectTransform.offsetMin = new Vector2(-5f, 1f);
             slot.Turn.rectTransform.offsetMax = new Vector2(5f, 3f);
 
-            slot.Name = HudParts.Label(slot.Root, TextStyle.Body, Color.white, 10f, 20f, TextAlignmentOptions.TopLeft);
+            slot.Name = HudParts.Label(slot.Root, TextStyle.Body, Color.white, 10f, 20f, TextAlignmentOptions.TopLeft, gmlFont: GmlFonts.Score);
             Place(slot.Name.RectTransform, new Vector2(0f, 1f), new Vector2(BaseBarWidth - 45f, NameLineHeight), Vector2.zero);
-            slot.Score = HudParts.Label(slot.Root, TextStyle.Body, new Color(1f, 1f, 1f, 0.85f), 10f, 20f, TextAlignmentOptions.TopRight, bold: true);
+            slot.Score = HudParts.Label(slot.Root, TextStyle.Body, new Color(1f, 1f, 1f, 0.85f), 10f, 20f, TextAlignmentOptions.TopRight, bold: true, gmlFont: GmlFonts.Score);
             Place(slot.Score.RectTransform, new Vector2(1f, 1f), new Vector2(42f, NameLineHeight), Vector2.zero);
 
             slot.Back = HudParts.Solid("Bar", slot.Root, new Color(0f, 0f, 0f, 0.6f));

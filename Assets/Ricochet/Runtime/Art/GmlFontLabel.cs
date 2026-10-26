@@ -8,6 +8,7 @@ namespace Ricochet
     /// <summary>
     /// Keeps a themed label (a MindAttic Components MaText, which restyles itself from the theme on enable and on every
     /// theme change) in its GML font: added after the label, it reapplies the font each time the theme would reset it.
+    /// When the catalogue lacks the font it leaves the theme's.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class GmlFontLabel : MonoBehaviour
@@ -45,6 +46,15 @@ namespace Ricochet
         private void OnDisable()
         {
             MaTheme.Changed -= OnTheme;
+        }
+
+        // MaText also restyles itself (font included) whenever its colour is overridden, so check each frame too.
+        private void LateUpdate()
+        {
+            if (_text != null && _text.font != GameArt.Font(_font))
+            {
+                Apply();
+            }
         }
 
         private void OnTheme(ThemeTokens theme)

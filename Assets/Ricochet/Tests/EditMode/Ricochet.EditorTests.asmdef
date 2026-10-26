@@ -5,6 +5,7 @@
         "Ricochet.Runtime",
         "Ricochet.Core",
         "Ricochet.Editor",
+        "Unity.TextMeshPro",
         "Unity.Multiplayer",
         "Unity.Multiplayer.Core",
         "Unity.Multiplayer.Editor",

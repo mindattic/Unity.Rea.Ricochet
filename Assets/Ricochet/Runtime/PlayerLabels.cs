@@ -38,10 +38,11 @@ namespace Ricochet
         {
             _root = new GameObject("Labels: " + owner);
             _root.AddComponent<Tether>().Owner = tether;
-            _name = WorldText.Create(_root.transform, "Name", 0.27f, Color.white);
+            // fnt_score, as draw_scores, obj_float_text (show_float_text) and obj_hitscore draw them (U.RICO-T44).
+            _name = WorldText.Create(_root.transform, "Name", GmlFonts.Score, 0, Color.white, 0.27f);
             _name.transform.localPosition = new Vector3(0f, -0.78f, 0f);
-            _pickup = WorldText.Create(_root.transform, "Pickup", 0.27f, Color.white);
-            _hurt = WorldText.Create(_root.transform, "Damage", 0.27f, Color.white, bold: true);
+            _pickup = WorldText.Create(_root.transform, "Pickup", GmlFonts.Score, 0, Color.white, 0.27f);
+            _hurt = WorldText.Create(_root.transform, "Damage", GmlFonts.Score, 0, Color.white, 0.27f);
 
             var back = new GameObject("Bar");
             back.transform.SetParent(_root.transform, false);
