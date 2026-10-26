@@ -210,6 +210,52 @@ namespace Ricochet.Tests
             Assert.That(arena.HazardsOnField, Has.Member(arc));
         }
 
+        // UR-T25: the settings screen's "Pause redirectors once placed" box, carried into the match by the setup: off, a
+        // placed redirector turns HazardRules.RedirectorSpinDegrees every turn; on, it stays as it was set down.
+        [UnityTest]
+        public IEnumerator APlacedRedirectorTurnsEveryTurn_WhenTheSetupDoesNotPauseIt()
+        {
+            yield return RedirectorAcrossATurn(pause: false, expectedTurn: Arena.HazardRules.RedirectorSpinDegrees);
+        }
+
+        [UnityTest]
+        public IEnumerator APlacedRedirectorStaysPut_WhenTheSetupPausesIt()
+        {
+            yield return RedirectorAcrossATurn(pause: true, expectedTurn: 0);
+        }
+
+        private IEnumerator RedirectorAcrossATurn(bool pause, double expectedTurn)
+        {
+            Arena.MatchRules.EndTurnSeconds = 0.2;
+            bool spinWas = Arena.HazardRules.RedirectorsSpin;
+            try
+            {
+                Arena arena = null;
+                Player host = null, ann = null;
+                yield return Begin(false, a => arena = a, (h, c) => { host = h; ann = c; });
+                MatchSetup setup = TestMatches.OnThePracticeRange();
+                setup.PauseRedirector = pause;
+                Assert.That(arena.StartMatch(setup), Is.True);
+                Assert.That(Arena.HazardRules.RedirectorsSpin, Is.EqualTo(!pause), "the match start gave the hazard rules the setup's choice");
+                yield return WaitUntil(() => Turns.For(Server) != null && Turns.For(Server).Current == host.Seat, "the host's turn never came");
+
+                host.CycleItem(-1);
+                yield return WaitUntil(() => host.Loadout.Item == Item.Redirector, "the redirector was never selected");
+                host.ServerUseItem(0f, 0f);
+                Hazard placed = null;
+                yield return WaitUntil(() => (placed = arena.HazardsOnField.FirstOrDefault(h => h.Kind == HazardKind.Redirector)) != null, "no redirector was set down");
+                double before = placed.Heading;
+
+                host.ServerFire(90f, 1f); // anywhere: the turn only has to pass
+                yield return WaitUntil(() => Turns.For(Server).Current == ann.Seat, "the turn never passed", 15f);
+                Assert.That(Angles.Normalize(placed.Heading - before), Is.EqualTo(Angles.Normalize(expectedTurn)).Within(1e-6));
+            }
+            finally
+            {
+                Arena.HazardRules.RedirectorsSpin = spinWas;
+            }
+        }
+
         private Player Mine() => Player.In(Client).First(p => p.OwnerClientId == Client.LocalClientId);
 
         // Starts both sessions, serves the arena (laying its hazards or not), and waits for both players to have their seats.

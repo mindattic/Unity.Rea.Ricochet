@@ -56,23 +56,24 @@ namespace Ricochet.Tests
         [UnityTest]
         public IEnumerator AFullySkilledAiThinksOutLoud_TurnsOntoAnOpponent_AndHitsThem()
         {
-            Arena.MatchRules.TurnSeconds = 1.5;                    // the humans let their clocks run out
             Arena.MatchRules.AiThinkSeconds = 0.5;
             Arena.MatchRules.EndTurnSeconds = 0.2;
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 1, AiSkill = Ai.MaxSkill }), Is.True);
+            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 1, AiSkill = Ai.MaxSkill, TurnSeconds = MatchSetup.MinTurnSeconds }), Is.True);
+            // StartMatch applies the setup's rules, so the test's tuning goes in after it (the first turn keeps the setup's 5 s clock):
+            Arena.MatchRules.TurnSeconds = 1.5;  // the humans let their clocks run out
             Assert.That(arena.Setup.AiSkill, Is.EqualTo(Ai.MaxSkill));
 
             Player ai = arena.PlayerAt(2);
             Assert.That(ai.IsAi, Is.True);
             Turns turns = null;
             yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.Current == ai.Seat && turns.ThinkingLine >= 0,
-                "the client never saw the AI thinking", 10f);
+                "the client never saw the AI thinking", 20f);
             Assert.That(Ai.ThinkingLine(turns.ThinkingLine), Does.StartWith(" ").And.EndWith("..."));
 
-            yield return WaitUntil(() => ai.Shots >= 1, "the AI never fired", 5f);
+            yield return WaitUntil(() => ai.Shots >= 1, "the AI never fired", 10f);
             AiPlan plan = arena.AiTurn != null ? arena.AiTurn.Plan : null;
             Assert.That(ai.LastShot.End, Is.EqualTo(ShotEndKind.Target), "plan " + plan);
             int hit = Arena.SeatOf(ai.LastShot.TargetId);

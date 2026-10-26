@@ -161,15 +161,16 @@ namespace Ricochet.Tests
         [UnityTest]
         public IEnumerator WhenTheClockRunsOutTheTurnPasses()
         {
-            Arena.MatchRules.TurnSeconds = 1;
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(0), Is.True);
+            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, TurnSeconds = MatchSetup.MinTurnSeconds }), Is.True);
+            // StartMatch applies the setup's rules, so the test's tuning goes in after it (the first turn keeps the setup's 5 s clock):
+            Arena.MatchRules.TurnSeconds = 1;
             Turns turns = null;
             yield return WaitUntil(() => (turns = Turns.For(Client)) != null, "the client never got the match");
 
-            yield return WaitUntil(() => turns.Current == ann.Seat, "the clock never passed the turn", 5f);
+            yield return WaitUntil(() => turns.Current == ann.Seat, "the clock never passed the turn", 12f);
             Assert.That(turns.ShownTimeLeft, Is.LessThanOrEqualTo(1f));
             Assert.That(Seating.FormatClock(turns.ShownTimeLeft), Does.Match(@"^0[01]\.\d\d$"));
         }
@@ -177,18 +178,19 @@ namespace Ricochet.Tests
         [UnityTest]
         public IEnumerator AnAiSeatTakesItsTurnOnItsOwn()
         {
-            Arena.MatchRules.TurnSeconds = 0.5;                    // the humans let their clocks run out
             Arena.MatchRules.AiThinkSeconds = 0.2;                 // and the AI fires well inside its own
             Arena.MatchRules.EndTurnSeconds = 0.2;
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
-            Assert.That(arena.StartMatch(1), Is.True);
+            Assert.That(arena.StartMatch(new MatchSetup { AiCount = 1, TurnSeconds = MatchSetup.MinTurnSeconds }), Is.True);
+            // StartMatch applies the setup's rules, so the test's tuning goes in after it (the first turn keeps the setup's 5 s clock):
+            Arena.MatchRules.TurnSeconds = 0.5;  // the humans let their clocks run out
 
             Player ai = arena.PlayerAt(2);
             Assert.That(ai, Is.Not.Null);
             Assert.That(ai.IsAi, Is.True);
-            yield return WaitUntil(() => ai.Shots >= 1, "the AI never fired", 10f);
+            yield return WaitUntil(() => ai.Shots >= 1, "the AI never fired", 20f);
             Player aiOnClient = null;
             yield return WaitUntil(() => (aiOnClient = Player.In(Client).FirstOrDefault(p => p.IsAi)) != null && aiOnClient.LastShot != null,
                 "the client never saw the AI's shot");

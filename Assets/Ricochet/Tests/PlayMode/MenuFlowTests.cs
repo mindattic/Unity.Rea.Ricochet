@@ -9,6 +9,7 @@ using System.Linq;
 using MindAttic.Components.Unity;
 using NUnit.Framework;
 using Ricochet.Core.Aim;
+using Ricochet.Core.Arsenal;
 using Ricochet.Core.Level;
 using Ricochet.Core.Match;
 using Ricochet.Core.Menu;
@@ -60,7 +61,6 @@ namespace Ricochet.Tests
         [UnityTest]
         public IEnumerator AOneRoundGameEnds_TheClientSeesTheChampionAndTheRecap_NobodyFires_AndANewMatchClosesIt()
         {
-            Arena.MatchRules.WeaponDamage = 1000; // one hit is a knock-out
             Arena.MatchRules.RoundOverSeconds = 0.3;
             Arena arena = null;
             Player host = null, ann = null;
@@ -68,6 +68,8 @@ namespace Ricochet.Tests
             _hud = MatchHud.Create(Client);
 
             Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, Map = 0, Goal = MatchSetup.OneRound, Announcements = 0 }), Is.True);
+            // StartMatch applies the setup's rules, so the test's tuning goes in after it:
+            Arena.MatchRules.WeaponDamage = 1000;  // one hit is a knock-out
             Turns turns = null;
             yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.Round == 1, "the client never got the match");
             Assert.That(turns.GoalPoints, Is.EqualTo(MatchSetup.OneRound));
@@ -93,6 +95,42 @@ namespace Ricochet.Tests
             Assert.That(arena.StartMatch(arena.Setup), Is.True, "a rematch");
             yield return WaitUntil(() => turns.MatchPhase == MatchPhase.Aiming && !_hud.Recap.Showing, "the rematch never closed the recap");
             Assert.That(turns.ChampionSeat, Is.EqualTo(-1));
+        }
+
+        // UR-T25: starting a match gives the arena's live rules the setup's turn time, bounces, damage, boxes and drops.
+        [UnityTest]
+        public IEnumerator StartingAMatchAppliesTheSetupsRulesToTheArena()
+        {
+            double turnSeconds = Arena.MatchRules.TurnSeconds;
+            int bounces = Arena.Rules.MaxBounces;
+            bool railgunOn = Arena.ArsenalRules.InPlay(Weapon.Railgun);
+            bool healthDrops = Arena.DropRules.Enabled(DropKind.Health);
+            bool spins = Arena.HazardRules.RedirectorsSpin;
+            try
+            {
+                Arena arena = null;
+                Player host = null, ann = null;
+                yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
+                var setup = new MatchSetup { AiCount = 0, Map = 0, TurnSeconds = 45, MaxBounces = 7, WeaponDamage = 33, PauseRedirector = false };
+                setup.SetWeaponOn(Weapon.Railgun, !railgunOn);
+                setup.SetDropOn(DropKind.Health, !healthDrops);
+                Assert.That(arena.StartMatch(setup), Is.True);
+
+                Assert.That(Arena.MatchRules.TurnSeconds, Is.EqualTo(45));
+                Assert.That(Arena.MatchRules.WeaponDamage, Is.EqualTo(33));
+                Assert.That(Arena.Rules.MaxBounces, Is.EqualTo(7));
+                Assert.That(Arena.ArsenalRules.InPlay(Weapon.Railgun), Is.EqualTo(!railgunOn));
+                Assert.That(Arena.DropRules.Enabled(DropKind.Health), Is.EqualTo(!healthDrops));
+                Assert.That(Arena.HazardRules.RedirectorsSpin, Is.True, "pause_redirector off: placed redirectors turn");
+            }
+            finally
+            {
+                Arena.Rules.MaxBounces = bounces;
+                Arena.MatchRules.TurnSeconds = turnSeconds;
+                Arena.ArsenalRules.SetInPlay(Weapon.Railgun, railgunOn);
+                Arena.DropRules.SetEnabled(DropKind.Health, healthDrops);
+                Arena.HazardRules.RedirectorsSpin = spins;
+            }
         }
 
         [UnityTest]
@@ -194,6 +232,54 @@ namespace Ricochet.Tests
             Assert.That(started, Is.True);
         }
 
+        // UR-T25: the settings room's rule controls: turn time, bounces and damage, a box and a starting count for each
+        // weapon (never the cannon) and item, the drops' boxes and the pause-redirector box, all writing to the setup.
+        [UnityTest]
+        public IEnumerator TheSettingsScreenSetsTheMatchRules_OnTheSetup()
+        {
+            _stack = MenuStack.Create();
+            var setup = new MatchSetup();
+            MenuScreen settings = _stack.Push(MenuFlow.Title(Room.Settings), s => Menus.AddGameSettings(s, setup));
+            yield return null;
+
+            MaRange[] ranges = settings.GetComponentsInChildren<MaRange>();
+            // After the announcements range: the turn time, the bounces and the damage.
+            MaRange turn = ranges[1], bounces = ranges[2], damage = ranges[3];
+            Assert.That((turn.Min, turn.Max), Is.EqualTo(((float)MatchSetup.MinTurnSeconds, (float)MatchSetup.MaxTurnSeconds)));
+            Assert.That((bounces.Min, bounces.Max), Is.EqualTo((1f, (float)MatchSetup.MaxBouncesLimit)));
+            Assert.That((damage.Min, damage.Max), Is.EqualTo((1f, (float)MatchSetup.MaxWeaponDamage)));
+            Assert.That(turn.Value, Is.EqualTo(setup.TurnSeconds));
+            turn.Value = 50;
+            bounces.Value = 4;
+            damage.Value = 25;
+            Assert.That((setup.TurnSeconds, setup.MaxBounces, setup.WeaponDamage), Is.EqualTo((50, 4, 25)));
+
+            Assert.That(Toggle(settings, ArsenalRules.Name(Weapon.Cannon) + " in play"), Is.Null, "the cannon is always in play");
+            MaToggle railgun = Toggle(settings, ArsenalRules.Name(Weapon.Railgun) + " in play");
+            Assert.That(railgun, Is.Not.Null);
+            bool railgunWas = setup.WeaponOn(Weapon.Railgun);
+            railgun.Value = !railgunWas;
+            Assert.That(setup.WeaponOn(Weapon.Railgun), Is.EqualTo(!railgunWas));
+
+            MaToggle teleporter = Toggle(settings, ArsenalRules.Name(Item.Teleporter) + " in play");
+            Assert.That(teleporter, Is.Not.Null);
+            teleporter.Value = !setup.ItemOn(Item.Teleporter);
+            Assert.That(setup.ItemOn(Item.Teleporter), Is.EqualTo(teleporter.Value));
+
+            foreach ((string label, DropKind kind) in new[] { ("Weapon drops", DropKind.Weapon), ("Item drops", DropKind.Item), ("Health drops", DropKind.Health), ("Random drops", DropKind.Powerup) })
+            {
+                MaToggle drops = Toggle(settings, label);
+                Assert.That(drops, Is.Not.Null, label);
+                drops.Value = !setup.DropOn(kind);
+                Assert.That(setup.DropOn(kind), Is.EqualTo(drops.Value), label);
+            }
+
+            MaToggle pause = Toggle(settings, "Pause redirectors once placed");
+            Assert.That(pause.Value, Is.EqualTo(setup.PauseRedirector));
+            pause.Value = !setup.PauseRedirector;
+            Assert.That(setup.PauseRedirector, Is.EqualTo(pause.Value));
+        }
+
         [UnityTest]
         public IEnumerator HowToPlayTurnsItsSlidesBothWays_WithTheCounter()
         {
@@ -218,6 +304,8 @@ namespace Ricochet.Tests
             Assert.That(button, Is.Not.Null, "no " + label + " button on " + screen.Title);
             return button;
         }
+
+        private static MaToggle Toggle(MenuScreen screen, string label) => screen.GetComponentsInChildren<MaToggle>().FirstOrDefault(t => t.Label == label);
 
         private static string[] Texts(MenuScreen screen) => screen.GetComponentsInChildren<MaText>().Select(t => t.Text).ToArray();
     }
