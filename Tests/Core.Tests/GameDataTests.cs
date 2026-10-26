@@ -139,7 +139,7 @@ namespace Ricochet.Core.Tests
             Assert.That(MenuFlow.Slides.Count, Is.EqualTo(11));
             Assert.That(MenuFlow.Slides[0].Title, Is.EqualTo("Introduction"));
             Assert.That(MenuFlow.Slides[5].Lines.Count, Is.EqualTo(4));
-            Assert.That(MenuFlow.Controls.Count, Is.EqualTo(10));
+            Assert.That(MenuFlow.Controls.Count, Is.EqualTo(11));
             Assert.That(MenuFlow.Controls[0].ToString(), Is.EqualTo("Left / Right (A / D): Turn your tank and its aim"));
             Assert.That(MenuFlow.Credits.Count, Is.EqualTo(7));
             Assert.That(MenuFlow.Title(Room.Settings), Is.EqualTo("Game settings"));

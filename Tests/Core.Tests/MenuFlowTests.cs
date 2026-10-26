@@ -77,7 +77,7 @@ namespace Ricochet.Core.Tests
             }
 
             string keys = string.Join("\n", MenuFlow.Controls.Select(c => c.Keys));
-            foreach (string key in new[] { "Left", "Up", "Space", "Q", "Z", "F", "1", "Esc" })
+            foreach (string key in new[] { "Left", "Up", "Space", "Q", "Z", "F", "1", "P", "Esc" })
             {
                 Assert.That(keys, Does.Contain(key));
             }

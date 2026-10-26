@@ -157,6 +157,11 @@ namespace Ricochet
 
         private void OwnerInput()
         {
+            if (Turns.PausedIn(Session))
+            {
+                return; // paused (UR-T43): no turning, charging, driving, firing or ending the turn until it resumes
+            }
+
             if (GameInput.Reroll())
             {
                 Reroll(); // R / PageUp / PageDown: the server only obeys it in practice

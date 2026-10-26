@@ -291,9 +291,9 @@ namespace Ricochet
         // An AI seat's turn, a frame at a time: think, plan (and pick the weapon), turn the barrel, fire.
         private void PlayAi(float seconds)
         {
-            if (_aiTurn == null || _match.Phase != MatchPhase.Aiming || _match.Current != _aiTurn.Seat)
+            if (_aiTurn == null || _authority.Paused || _match.Phase != MatchPhase.Aiming || _match.Current != _aiTurn.Seat)
             {
-                return;
+                return; // paused (UR-T43): the AI's thinking, turning and firing wait too
             }
 
             Player ai = PlayerAt(_aiTurn.Seat);
@@ -479,6 +479,7 @@ namespace Ricochet
             if (_turns != null && _turns.IsSpawned)
             {
                 _turns.Mirror(_match);
+                _turns.MirrorPaused(_authority.Paused);
                 _turns.MirrorAi(_aiTurn != null && _aiTurn.Seat == _match.Current && _match.Phase == MatchPhase.Aiming ? _aiTurn.Message : -1);
                 _turns.MirrorWait(_match.WaitingForCurrent ? (int)Math.Ceiling(_match.Seat(_match.Current).AwayLeft) : -1);
             }

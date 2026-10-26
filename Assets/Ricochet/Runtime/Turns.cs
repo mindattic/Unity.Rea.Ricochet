@@ -63,6 +63,10 @@ namespace Ricochet
         // Reconnects (UR-T13): the seconds the current seat's dropped player has left to come back, or -1 (not waiting).
         [Synced] private int _waitSeconds = -1;
 
+        // The pause menu (UR-T43): the match is paused for everyone, and how many times a round has been quit from it.
+        [Synced] private bool _frozen;
+        [Synced] private int _quits;
+
         private float _shownTime;
         private float _lastSyncedTime = -1f;
 
@@ -89,7 +93,39 @@ namespace Ricochet
         public static bool MayFire(NetSession session, int seat)
         {
             Turns turns = For(session);
-            return turns == null || turns.MatchPhase == MatchPhase.Practice || (turns.MatchPhase == MatchPhase.Aiming && turns.Current == seat && !turns.Waiting);
+            return turns == null || turns.MatchPhase == MatchPhase.Practice
+                || (turns.MatchPhase == MatchPhase.Aiming && turns.Current == seat && !turns.Waiting && !turns.IsPaused);
+        }
+
+        /// <summary>
+        /// True while the match is paused (UR-T43, isPaused): every peer's clock, Ready card, AI and shots wait and nobody
+        /// acts but to vote. Set only by the server (the host, or a vote that passed).
+        /// </summary>
+        public bool IsPaused => Frozen;
+
+        /// <summary>How many rounds have been quit from the pause menu this session (each peer notices it go up).</summary>
+        public int QuitCount => Quits;
+
+        /// <summary>True when <paramref name="session"/> is in a match that is paused.</summary>
+        public static bool PausedIn(NetSession session)
+        {
+            Turns turns = For(session);
+            return turns != null && turns.IsPaused;
+        }
+
+        /// <summary>Server: paused or not, as the authority has it.</summary>
+        internal void MirrorPaused(bool paused)
+        {
+            if (Frozen != paused)
+            {
+                Frozen = paused;
+            }
+        }
+
+        /// <summary>Server: a round was quit from the pause menu.</summary>
+        internal void CountQuit()
+        {
+            Quits = Quits + 1;
         }
 
         /// <summary>The current seat drove this turn and may not shoot until it ends.</summary>
@@ -276,7 +312,7 @@ namespace Ricochet
                 _lastSyncedTime = TimeLeft;
                 _shownTime = TimeLeft;
             }
-            else if (MatchPhase == MatchPhase.Aiming && !Waiting)
+            else if (MatchPhase == MatchPhase.Aiming && !Waiting && !IsPaused)
             {
                 _shownTime = Mathf.Max(Mathf.Max(0f, TimeLeft - ClockStep), _shownTime - Time.deltaTime);
             }

@@ -59,6 +59,10 @@
       "action": "Grenade fuse: shorter, longer, longest"
     },
     {
+      "keys": "P",
+      "action": "Pause the match for everyone: resume, randomize the level, music, quit the round"
+    },
+    {
       "keys": "Esc",
       "action": "The in-game menu: players, map, settings, votes, invite, leave"
     }

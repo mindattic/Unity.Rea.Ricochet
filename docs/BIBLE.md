@@ -172,3 +172,25 @@ opacity (overlaps add, nothing re-fogs). Only tanks still in the round light it 
 same inputs (the synced players, shots and crates); nothing about the fog is sent. As in the original, every tank is a
 light, so tanks are never hidden, only the ground and drops not yet reached (this replaces UR-T26's invented 5-unit
 circle around the local tank only).
+
+## Pause menu (U.RICO-T43)
+
+Source: `obj_pausemenu`, `obj_btn_resume`, `obj_btn_randomize`, `obj_btn_music`, `obj_btn_quit_round`, `isPaused`.
+
+- The original's Esc set `isPaused`, which froze the clock, the clouds and every shot, and drew "Paused" with Resume,
+  Randomize (`randomize_level`, only while `!hasFired`), Next Track and Setup (back to the players room).
+- Here Core's `GameAuthority.SetPaused` pauses a running match: the turn clock, the Ready hold, crates, hazards, shots and
+  drives wait, and every command but votes and seat joins and leaves is refused (`Tests/Core.Tests/PauseTests.cs`). `Turns`
+  carries the pause to every peer, so each peer's clock, Ready card, input and shot flight stop too, and the AI waits.
+- The pause menu (`Runtime/PauseMenu.cs`, under the HUD) is up on every peer while paused: Resume, Randomize the level
+  (`GameAuthority.RerollRound`: a fresh random level, fresh spots, crates, hazards and loadouts, the current turn started
+  over with its Ready card), Music and Vote to quit the round (`GameAuthority.QuitMatch`).
+- `Tests/PlayMode/PauseMenuTests.cs` plays it on a host and a client.
+
+Deviations: (1) Networked, so pause is the host's at once and anyone else's a vote (pause and resume votes), and it freezes
+every peer. (2) The Pause key is P, Pause or the right stick's press, and the in-game menu's "Pause the game": Esc stays the
+kit's in-game menu (invite, settings, votes, leave). (3) Randomize is the host's alone, still only before the round's first
+shot. (4) The music button is an on/off toggle of the player's own profile mute (`GameAudio.SetMusicMuted`), not Next Track
+(there is no music to step through until UR-T27); under the CLI session mute the game stays silent and only the player's
+own values are saved. (5) Quit round is a vote, and it ends the match back to practice with everyone on the in-game menu
+(whose Players and Map rooms start the next one), not the setup screen.

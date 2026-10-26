@@ -64,6 +64,10 @@ namespace Ricochet
                 NetVotes.Instance.AddKind(_arena.CreateRestartVote());
                 NetVotes.Instance.AddKind(_arena.CreateMatchVote());
                 NetVotes.Instance.AddKind(_arena.CreateKickVote());
+                // The pause menu (UR-T43): a guest's pause and resume, and everyone's quit round, ask everyone.
+                NetVotes.Instance.AddKind(_arena.CreatePauseVote());
+                NetVotes.Instance.AddKind(_arena.CreateResumeVote());
+                NetVotes.Instance.AddKind(_arena.CreateQuitRoundVote());
             }
 
             // Sound (UR-T10): the volumes and mutes are the active MindAttic profile's (none on a headless peer).
@@ -107,6 +111,12 @@ namespace Ricochet
             });
             frontEnd.AddPauseMenuItems(s =>
             {
+                // UR-T43: the Esc menu stays the kit's; this pauses the match (the host at once, anyone else by a vote).
+                s.AddButton(VoteMenu.PauseButton, () =>
+                {
+                    BackToTheGame();
+                    PauseMenu.TogglePause(frontEnd.Session);
+                });
                 s.AddButton("Vote to start a match", StartMatchVote);
                 s.AddButton(VoteMenu.RestartButton, StartRestartVote);
             });

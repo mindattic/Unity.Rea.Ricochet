@@ -89,6 +89,63 @@ namespace Ricochet.Core.Menu
             ? "They are removed from the game: their seat drops out of the round, and the turn passes if it was theirs."
             : "They are removed from the game.";
 
+        // ---- the pause menu (UR-T43: obj_pausemenu and its buttons). The host pauses, resumes and randomizes at once; anyone
+        // else asks everyone by a vote, and quitting the round is always a vote.
+
+        /// <summary>The pause menu's title (obj_pausemenu's "Paused").</summary>
+        public const string PausedTitle = "Paused";
+
+        /// <summary>The pause menu's line for the host, who decides alone.</summary>
+        public const string PausedForHost = "The game is paused for everyone: every clock, the AI and every shot wait.";
+
+        /// <summary>The pause menu's line for everyone else, whose Resume and Quit round ask everyone.</summary>
+        public const string PausedForGuest = "The game is paused for everyone: every clock, the AI and every shot wait. Resume and Quit round ask everyone by a vote.";
+
+        /// <summary>The in-game menu's button that pauses the match (the Pause key does the same).</summary>
+        public const string PauseButton = "Pause the game";
+
+        /// <summary>obj_btn_resume, for the host.</summary>
+        public const string ResumeButton = "Resume";
+
+        /// <summary>obj_btn_resume, for everyone else.</summary>
+        public const string ResumeVoteButton = "Vote to resume";
+
+        /// <summary>obj_btn_randomize (host only, before the round's first shot).</summary>
+        public const string RandomizeButton = "Randomize the level";
+
+        /// <summary>obj_btn_music: the player's own music on or off (their profile's mute).</summary>
+        public const string MusicToggle = "Music";
+
+        /// <summary>obj_btn_quit_round, always a vote.</summary>
+        public const string QuitRoundButton = "Vote to quit the round";
+
+        /// <summary>The pause vote's question.</summary>
+        public const string PauseTitle = "Pause the game?";
+
+        /// <summary>The pause vote's second line.</summary>
+        public const string PauseDescription = "Every clock, the AI and every shot wait until the game is resumed.";
+
+        /// <summary>The resume vote's question.</summary>
+        public const string ResumeTitle = "Resume the game?";
+
+        /// <summary>The resume vote's second line.</summary>
+        public const string ResumeDescription = "The clock, the AI and every shot carry on where they stopped.";
+
+        /// <summary>The quit-round vote's question.</summary>
+        public const string QuitRoundTitle = "Quit the round?";
+
+        /// <summary>The quit-round vote's second line.</summary>
+        public const string QuitRoundDescription = "The match ends and everyone goes back to practice; start the next one from Players.";
+
+        /// <summary>A pause vote while the game is paused, or no match to pause.</summary>
+        public const string AlreadyPaused = "The game is already paused.";
+
+        public const string NothingToPause = "There is no match to pause.";
+
+        public const string NotPaused = "The game is not paused.";
+
+        public const string NothingToQuit = "There is no round to quit.";
+
         /// <summary>The restart vote's question.</summary>
         public const string RestartTitle = "Restart the round?";
 

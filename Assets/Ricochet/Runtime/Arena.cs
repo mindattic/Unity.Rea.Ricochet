@@ -243,7 +243,7 @@ namespace Ricochet
                 case Cmd.LayoutChanged layout:
                     AdoptServerLayout(layout);
                     break;
-                case Cmd.LevelRerolled _:
+                case Cmd.LevelRerolled _ when !MatchRunning: // a match's Randomize (UR-T43) has no dummies to stand up
                     ResetDummies();
                     break;
                 case Cmd.TurnStarted turn:

@@ -630,7 +630,18 @@
                 {
                     "name": "",
                     "id": "70a22fa4-391b-42d2-8357-ea9dd34c931c",
-                    "path": "<Keyboard>/escape",
+                    "path": "<Keyboard>/p",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5d0c7e1a-43b2-4f6e-9a8c-2f1e7b9d4c31",
+                    "path": "<Keyboard>/pause",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -641,7 +652,7 @@
                 {
                     "name": "",
                     "id": "f3d625c9-b872-45ce-b097-365b36fdf3a2",
-                    "path": "<Gamepad>/start",
+                    "path": "<Gamepad>/rightStickPress",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",

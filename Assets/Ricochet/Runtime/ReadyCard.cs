@@ -139,6 +139,11 @@ namespace Ricochet
             _lastPhase = phase;
             _lastCurrent = current;
 
+            if (turns != null && turns.IsPaused && _shownAt >= 0f)
+            {
+                _shownAt += Time.deltaTime; // paused (UR-T43): the card holds as long as the server's hold does
+            }
+
             Refresh(session);
             UpdateRings();
         }

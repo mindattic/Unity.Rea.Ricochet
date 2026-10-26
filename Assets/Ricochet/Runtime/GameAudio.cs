@@ -149,6 +149,22 @@ namespace Ricochet
         }
 
         /// <summary>
+        /// The pause menu's Music toggle (UR-T43, obj_btn_music): the player's profile's muteMusic, set and saved, the other
+        /// three values as settings.json holds them (re-read first, past any session mute). During a session mute (U.RICO-T71)
+        /// the game stays silent whatever the toggle says, and the mute's forced values are never what gets saved.
+        /// </summary>
+        public bool SetMusicMuted(bool muted)
+        {
+            Reload();
+            AudioMix mix = Mix;
+            mix.MuteMusic = muted;
+            return Save(mix);
+        }
+
+        /// <summary>The player's own music setting (the profile's, not the session mute): false when they muted it.</summary>
+        public bool MusicOn => !_mix.MuteMusic;
+
+        /// <summary>
         /// Applies <paramref name="mix"/> to the sources without saving it. During a session mute the sources and the
         /// listener stay silent whatever the mix says (AudioListener.volume is never saved, so this lasts for this run only).
         /// </summary>

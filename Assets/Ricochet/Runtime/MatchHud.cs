@@ -80,8 +80,12 @@ namespace Ricochet
             hud.Recap = EndgameRecap.Create(hud);
             hud.Ready = ReadyCard.Create(hud);
             hud.Fog = FogOfWar.Create(hud);
+            hud.Pause = PauseMenu.Create(hud);
             return hud;
         }
+
+        /// <summary>The pause menu (UR-T43): up on every peer while the match is paused.</summary>
+        public PauseMenu Pause { get; private set; }
 
         /// <summary>The fog of war that hides the arena around the local player's tank (UR-T26).</summary>
         public FogOfWar Fog { get; private set; }

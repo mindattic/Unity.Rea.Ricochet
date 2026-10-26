@@ -167,6 +167,11 @@ namespace Ricochet
 
         private void Update()
         {
+            if (_owner != null && Turns.PausedIn(_owner.Session))
+            {
+                return; // paused (UR-T43): the shot hangs where it is on every peer, as the server's own flight does
+            }
+
             if (_flight != null && !_flight.Landed)
             {
                 for (int i = 0; i < _flight.Flights.Count; i++)

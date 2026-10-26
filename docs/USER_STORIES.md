@@ -48,7 +48,7 @@ _Nothing recorded yet._
 ## Epic PAR — Parity with the original
 - **UR-US-PAR1 ⬜** As a player, my last match setup (players, AI, skills, names, map, goal and every rule) is remembered between sessions, as the original's config.ini was.
 - **UR-US-PAR2 ⬜** As a player, a round starts with a Ready card showing whose turn it is, a sonar ping on their tank and a short hold before the clock runs, as the original did every turn.
-- **UR-US-PAR3 ⬜** As a player in a match, I can pause with Esc and see Resume, Randomize, Music and Quit round, as the original's pause menu offered.
+- **UR-US-PAR3 ✅** As a player in a match, I can pause (P, Pause or the right stick; Esc stays the kit's menu) and see Resume, Randomize, Music and Quit round, as the original's pause menu offered (U.RICO-T43; `Tests/PlayMode/PauseMenuTests.cs`, `Tests/Core.Tests/PauseTests.cs`).
 - **UR-US-PAR4 ⬜** As a player, tanks, shots and the level are drawn with the original's art (sprites, backgrounds and fonts imported and used), not placeholder shapes.
 - **UR-US-PAR5 ⬜** As a player, I see the original's tank: a turret that turns over a hull, and tracks left behind when it drives.
 - **UR-US-PAR6 ⬜** As a player, each round has its own backdrop: one of the original's 64 backgrounds in three groups, drifting clouds, soft spotlights and coloured lights.
