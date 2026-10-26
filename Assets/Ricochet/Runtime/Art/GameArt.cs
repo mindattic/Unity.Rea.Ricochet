@@ -41,6 +41,26 @@ namespace Ricochet
 
         // An unlimited count (obj_infinity), drawn after the weapon and item names on the turn card.
         public const string Infinity = "spr_infinity";
+
+        /// <summary>
+        /// The sprite of the level shape <paramref name="kind"/> number <paramref name="index"/> (0 to 15): obj_polygon1..16,
+        /// obj_triangle1..16, obj_bar1..16, obj_circle1..16 and obj_square1..16 draw spr_polygon1..16 and so on (U.RICO-T46).
+        /// </summary>
+        public static string Shape(Ricochet.Core.Level.ShapeKind kind, int index)
+        {
+            string stem;
+            switch (kind)
+            {
+                case Ricochet.Core.Level.ShapeKind.Abstract: stem = "spr_polygon"; break;
+                case Ricochet.Core.Level.ShapeKind.Triangles: stem = "spr_triangle"; break;
+                case Ricochet.Core.Level.ShapeKind.Bars: stem = "spr_bar"; break;
+                case Ricochet.Core.Level.ShapeKind.Circles: stem = "spr_circle"; break;
+                case Ricochet.Core.Level.ShapeKind.Squares: stem = "spr_square"; break;
+                default: return null;
+            }
+
+            return stem + (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
     }
 
     /// <summary>The GML names of the original's nine fonts and its sprite font.</summary>

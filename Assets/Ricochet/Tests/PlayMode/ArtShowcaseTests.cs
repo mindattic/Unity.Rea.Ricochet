@@ -25,6 +25,7 @@ namespace Ricochet.Tests
         private MatchHud _hud;
         private Camera _camera;
         private LevelView _level;
+        private BackdropView _backdrop;
 
         public ArtShowcaseTests() : base(Topology.Host, clients: 1) { }
 
@@ -55,6 +56,11 @@ namespace Ricochet.Tests
             {
                 Object.Destroy(_level.gameObject);
             }
+
+            if (_backdrop != null)
+            {
+                Object.Destroy(_backdrop.gameObject);
+            }
         }
 
         [UnityTest]
@@ -82,6 +88,17 @@ namespace Ricochet.Tests
             _camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
             _camera.clearFlags = CameraClearFlags.SolidColor;
             RenderStyle.Current.ConfigureCamera(_camera);
+
+            // U.RICO-T46: the backdrop (floor, clouds, spotlight, lights, border sprites) on the practice range, then on a
+            // random level with its shapes drawn as their sprites.
+            _backdrop = BackdropView.Create();
+            _camera.orthographicSize = 7f;
+            yield return new WaitForSeconds(0.3f);
+            yield return Capture("backdrop-practice");
+            Assert.That(arena.RerollLevel(), Is.True);
+            yield return new WaitForSeconds(0.3f);
+            Debug.Log("[Ricochet] Backdrop floor " + _backdrop.Background + ", " + _level.ShapesFromArt + " shapes from art, " + _backdrop.LightCount + " lights");
+            yield return Capture("backdrop-random");
 
             _hud = MatchHud.Create(Client);
             Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange()), Is.True);

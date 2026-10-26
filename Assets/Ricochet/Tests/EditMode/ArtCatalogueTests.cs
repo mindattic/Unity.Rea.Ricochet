@@ -159,5 +159,37 @@ namespace Ricochet.EditorTests
                 Object.DestroyImmediate(go);
             }
         }
+
+        // U.RICO-T46: every floor, cloud, spotlight and border backdrop.json names, and all eighty level shapes, are in the art.
+        [Test]
+        public void TheBackdropsArtAndEveryLevelShapesSpriteResolve()
+        {
+            ArtCatalogue catalogue = Catalogue();
+            BackdropRules rules = BackdropRules.Default;
+            foreach (string background in rules.Groups.SelectMany(g => g))
+            {
+                Assert.That(catalogue.Background(background)?.sprite, Is.Not.Null, background);
+                Assert.That(catalogue.Background(background).tileHorizontal && catalogue.Background(background).tileVertical, Is.True, background + " tiles");
+            }
+
+            var sprites = rules.Clouds.Select(c => c.Sprite)
+                .Concat(new[] { rules.SpotlightSprite, rules.TopBorder, rules.BottomBorder, rules.LeftBorder, rules.RightBorder });
+            foreach (string sprite in sprites)
+            {
+                Assert.That(GameArt.Frame(sprite), Is.Not.Null, sprite);
+            }
+
+            foreach (Ricochet.Core.Level.ShapeKind kind in new[]
+            {
+                Ricochet.Core.Level.ShapeKind.Abstract, Ricochet.Core.Level.ShapeKind.Triangles, Ricochet.Core.Level.ShapeKind.Bars,
+                Ricochet.Core.Level.ShapeKind.Circles, Ricochet.Core.Level.ShapeKind.Squares,
+            })
+            {
+                for (int i = 0; i < Ricochet.Core.Level.ShapeLibrary.PerKind; i++)
+                {
+                    Assert.That(GameArt.Frame(GmlSprites.Shape(kind, i)), Is.Not.Null, GmlSprites.Shape(kind, i));
+                }
+            }
+        }
     }
 }

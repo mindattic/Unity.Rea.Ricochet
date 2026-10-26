@@ -27,6 +27,9 @@ namespace Ricochet
         // The round being played: the map's level and where each seat stands (a random map's come from LevelSeed, UR-T23).
         private static RoundLayout s_layout = Maps.At(0).Layout(0);
 
+        /// <summary>The round <see cref="Level"/> belongs to: its seat spots and, on a random map, the shapes it laid (U.RICO-T46 draws them).</summary>
+        public static RoundLayout Layout => s_layout;
+
         /// <summary>The map <see cref="Level"/> was built from (an index into Maps.All).</summary>
         public static int MapIndex { get; private set; }
 

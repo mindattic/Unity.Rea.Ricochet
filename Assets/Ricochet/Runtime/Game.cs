@@ -51,6 +51,10 @@ namespace Ricochet
 
             // The level is the same Core data on every peer; draw it. The match HUD draws once a match starts.
             LevelView.Create(Arena.Level);
+            // U.RICO-T46: the round's floor, clouds, spotlight, lights and border sprites, the same on every peer; the
+            // clouds stop while the match is paused, as isPaused stopped them.
+            NetSession session = bootstrap.Session;
+            BackdropView.Create(() => Turns.PausedIn(session));
             MatchHud.Create();
 
             // Server rules: dummies spawn when the session runs as a host or dedicated server, and the level is laid with its
