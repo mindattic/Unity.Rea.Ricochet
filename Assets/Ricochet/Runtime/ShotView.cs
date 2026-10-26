@@ -1,21 +1,31 @@
 // Draws one player's volley in the air: each projectile walking its flight (one shell, a beam, a railgun slug, a
-// grenade, or a shotgun's fan of pellets), the trail behind it, and a brief flash where it lands; a grenade's flash is
-// its blast, drawn at the blast's size. Every peer flies the volley the server solved (UR-T12: Player's ShotResolved
-// carries it, packed by Core's ShotWire), so this is presentation only; the server's own flight decides what the volley
-// struck. A vortex set off in mid-flight carries on along the cut-short volley the server sends again (Detonate) and
-// goes off where the server set it off (UR-T6). It never reaches into Core's state (UR-T65): it plays the events its owner's
-// shot raises on the Presentation feed (ShotFired launches it, ShotCut cuts it short) and says what its own flight does
-// there (a bounce, a landing) for the audio and anything else listening.
+// grenade, or a shotgun's fan of pellets), the trail behind it, and what it sets off where it lands. Every peer flies the
+// volley the server solved (UR-T12: Player's ShotResolved carries it, packed by Core's ShotWire), so this is presentation
+// only; the server's own flight decides what the volley struck. A vortex set off in mid-flight carries on along the
+// cut-short volley the server sends again (Detonate) and goes off where the server set it off (UR-T6). It never reaches
+// into Core's state (UR-T65): it plays the events its owner's shot raises on the Presentation feed (ShotFired launches it,
+// ShotCut cuts it short) and says what its own flight does there (a bounce, a landing) for the audio and anything else
+// listening.
 //
 // U.RICO-T44: the shots are the original's sprites (GameArt): obj_bullet's spr_mortar turned along its flight, obj_pellet's
-// spr_pellet, obj_laser's spr_raingun_ring, obj_rail_swirl's spr_railgun_swirl along the aim, obj_grenade's spr_grenade and
-// obj_vortex's spr_vortex_device spinning 3 degrees a step (the other way after each bounce), all untinted as GameMaker's
-// draw_self draws them; a shell landing plays obj_explosion's spr_smallexplosion (image_speed 0.5) and a grenade
-// obj_grenade_explosion's spr_bigexplosion at three times its size, 70% opaque (image_speed 0.2). The coloured squares
-// remain only as the fallback when the catalogue lacks a sprite.
+// spr_pellet, obj_grenade's spr_grenade and obj_vortex's spr_vortex_device spinning 3 degrees a step (the other way after
+// each bounce), all untinted as GameMaker's draw_self draws them; a grenade landing plays obj_grenade_explosion's
+// spr_bigexplosion at three times its size, 70% opaque (image_speed 0.2). The coloured squares remain only as the fallback
+// when the catalogue lacks a sprite.
+//
+// U.RICO-T47 (WeaponEffects, WeaponLooks): the laser is laser_draw's beam with obj_laser_pulse's rings riding it (no sprite
+// at its head, as obj_laser's Draw drew none), running out once spent; the railgun is railgun_draw's rail with
+// generate_swirl's spr_railgun_swirl every 56 px, fading at railFade; the cannon and shotgun, grenade and vortex keep the
+// rebuild's trail in their player's colour. A shell that runs out of bounces plays obj_explosion's spr_smallexplosion
+// where it stops (a pellet, a laser or a rail plays nothing there, as in the original); whoever a shot strikes gets
+// obj_boom_normal's (hit.gml) on them. A grenade's blast is spr_bigexplosion under obj_grenade_explosion's circle growing
+// 2 px a step, both gone when it reaches the blast radius. The vortex grows from a quarter of its size in flight; where it
+// goes off it plays obj_boom (set off) or obj_explosion (spent) and vortex_step's implosion.
 using System.Collections.Generic;
 using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
+using Ricochet.Core.Art;
+using Ricochet.Core.Level;
 using Ricochet.Core.Net;
 using UnityEngine;
 using Cmd = Ricochet.Core.Commands;
@@ -38,24 +48,59 @@ namespace Ricochet
         /// <summary>obj_grenade_explosion's image_speed.</summary>
         public const float BigExplosionSpeed = 0.2f;
 
-        /// <summary>obj_grenade_explosion draws itself at this alpha.</summary>
-        private const float BigExplosionAlpha = 0.7f;
-
         private readonly List<Part> _parts = new List<Part>();
+        private readonly List<Vector2> _struck = new List<Vector2>();
         private VolleyFlight _flight;
         private SpriteRenderer _blast;
-        private LineRenderer _blastRing;
         private bool _blastArt;
         private float _blastAge;
         private float _flashLeft;
         private Color _color = Color.white;
         private Player _owner;
+        private bool _detonated;
+        private LaserBeam _laser;
+        private Rail _rail;
+        private BlastRing _ring;
+        private Implosion _implosion;
+
+        /// <summary>The player whose shots it draws.</summary>
+        public Player Owner => _owner;
 
         /// <summary>The volley being drawn (null before the first).</summary>
         public VolleyFlight Flight => _flight;
 
         /// <summary>True while any projectile is in the air.</summary>
         public bool Flying => _flight != null && !_flight.Landed;
+
+        /// <summary>True while the laser's beam (or its pulses) is drawn.</summary>
+        public bool LaserShowing => _laser != null && _laser.Showing;
+
+        /// <summary>Pulses riding the laser's beam now.</summary>
+        public int LaserPulses => _laser != null ? _laser.PulseCount : 0;
+
+        /// <summary>True while the railgun's rail is drawn.</summary>
+        public bool RailShowing => _rail != null && _rail.Showing;
+
+        /// <summary>The rail's swirls drawn now.</summary>
+        public int RailSwirls => _rail != null ? _rail.SwirlCount : 0;
+
+        /// <summary>railAlpha now (0 with no rail).</summary>
+        public float RailAlpha => _rail != null && _rail.Showing ? _rail.Alpha : 0f;
+
+        /// <summary>True while obj_grenade_explosion's circle is drawn.</summary>
+        public bool BlastShowing => _ring != null && _ring.Showing;
+
+        /// <summary>The grenade circle's radius now, in units.</summary>
+        public float BlastRadius => _ring != null ? _ring.Radius : 0f;
+
+        /// <summary>True while a vortex's implosion is drawn.</summary>
+        public bool Imploding => _implosion != null && _implosion.Showing;
+
+        /// <summary>The implosion's mode (Done when there is none).</summary>
+        public VortexMode ImplosionMode => _implosion != null ? _implosion.Mode : VortexMode.Done;
+
+        /// <summary>The size the first projectile is drawn at (a vortex grows in flight).</summary>
+        public float ProjectileScale => _parts.Count > 0 ? _parts[0].Projectile.transform.localScale.x : 0f;
 
         /// <summary>Raised when the whole volley has landed.</summary>
         public event System.Action<Volley> Landed;
@@ -68,7 +113,7 @@ namespace Ricochet
             return view;
         }
 
-        /// <summary>The GML sprite a weapon's projectile is drawn with.</summary>
+        /// <summary>The GML sprite a weapon's projectile is drawn with (the laser's is its pulses', the railgun's its swirls').</summary>
         public static string SpriteOf(Weapon weapon)
         {
             switch (weapon)
@@ -82,13 +127,12 @@ namespace Ricochet
             }
         }
 
-        /// <summary>How a weapon's sprite turns: along its flight (the shell, the rail swirl), spinning (grenade, vortex) or not at all.</summary>
+        /// <summary>How a weapon's sprite turns: along its flight (the shell), spinning (grenade, vortex) or not at all.</summary>
         private static Turning TurningOf(Weapon weapon)
         {
             switch (weapon)
             {
                 case Weapon.Cannon:
-                case Weapon.Railgun:
                     return Turning.Heading;
                 case Weapon.Grenade:
                 case Weapon.Vortex:
@@ -97,6 +141,9 @@ namespace Ricochet
                     return Turning.None;
             }
         }
+
+        // The laser and the railgun draw their own beam and rail where the others leave a trail.
+        private static bool DrawsHead(Weapon weapon) => weapon != Weapon.Laser && weapon != Weapon.Railgun;
 
         private void OnEnable()
         {
@@ -129,17 +176,20 @@ namespace Ricochet
 
         private void Launch(Volley volley, Color color)
         {
-            EnsureBlast();
+            EnsureEffects();
             _flight = new VolleyFlight(volley);
             _color = color;
+            _detonated = false;
             while (_parts.Count < volley.Paths.Count)
             {
                 _parts.Add(new Part(transform, _parts.Count));
             }
 
-            Sprite art = GameArt.Frame(SpriteOf(volley.Weapon));
-            Turning turning = TurningOf(volley.Weapon);
-            float size = volley.Weapon == Weapon.Shotgun ? 0.14f : volley.Weapon == Weapon.Grenade ? 0.3f : 0.22f;
+            Weapon weapon = volley.Weapon;
+            bool head = DrawsHead(weapon);
+            Sprite art = head ? GameArt.Frame(SpriteOf(weapon)) : null;
+            Turning turning = TurningOf(weapon);
+            float size = weapon == Weapon.Shotgun ? 0.14f : weapon == Weapon.Grenade ? 0.3f : 0.22f;
             for (int i = 0; i < _parts.Count; i++)
             {
                 Part part = _parts[i];
@@ -149,12 +199,18 @@ namespace Ricochet
                 part.Trail.positionCount = 0;
                 part.Points.Clear();
                 part.Landed = !used;
+                part.Vortex = null;
                 if (!used)
                 {
                     continue;
                 }
 
-                if (art != null)
+                if (!head)
+                {
+                    part.Projectile.sprite = null; // obj_laser's and obj_rail's own Draw draws no sprite at the head
+                    part.Projectile.transform.localScale = Vector3.one;
+                }
+                else if (art != null)
                 {
                     part.Projectile.sprite = art;
                     part.Projectile.color = Color.white;
@@ -167,23 +223,51 @@ namespace Ricochet
                     part.Projectile.transform.localScale = new Vector3(size, size, 1f);
                 }
 
+                part.HasTrail = head;
                 part.Turning = art != null ? turning : Turning.None;
                 part.Spin = SpinPerStep;
                 part.Angle = (float)volley.Paths[i].Heading;
                 part.Projectile.transform.rotation = part.Turning == Turning.None ? Quaternion.identity : Quaternion.Euler(0f, 0f, part.Angle);
+                if (weapon == Weapon.Vortex && art != null)
+                {
+                    part.Vortex = new Vortex(); // vortex_create: a quarter of its size, growing as it flies
+                    part.VortexClock = 0f;
+                    float scale = (float)part.Vortex.Scale;
+                    part.Projectile.transform.localScale = new Vector3(scale, scale, 1f);
+                }
 
-                float width = volley.Weapon == Weapon.Laser || volley.Weapon == Weapon.Railgun ? 0.11f : 0.07f;
+                const float width = 0.07f;
                 part.Trail.startWidth = width;
                 part.Trail.endWidth = width;
                 part.Trail.startColor = new Color(color.r, color.g, color.b, 0.15f);
                 part.Trail.endColor = new Color(color.r, color.g, color.b, 0.8f);
-                part.Points.Add(Arena.ToUnity(volley.Paths[i].Start));
-                Lines.Set(part.Trail, part.Points);
+                if (head)
+                {
+                    part.Points.Add(Arena.ToUnity(volley.Paths[i].Start));
+                    Lines.Set(part.Trail, part.Points);
+                }
+
                 Place(part.Projectile.transform, volley.Paths[i].Start);
             }
 
+            if (weapon == Weapon.Laser)
+            {
+                _laser.Launch(volley.Main);
+            }
+            else
+            {
+                _laser.Hide();
+            }
+
+            if (weapon == Weapon.Railgun)
+            {
+                _rail.Launch(volley.Main);
+            }
+
+            Struck(volley);
             _blast.enabled = false;
-            _blastRing.positionCount = 0;
+            _ring.Hide();
+            _implosion.Hide();
             _flashLeft = 0f;
         }
 
@@ -207,6 +291,8 @@ namespace Ricochet
             }
 
             _flight = flight;
+            _detonated = true;
+            Struck(cut);
             for (int i = 0; i < _parts.Count; i++)
             {
                 bool used = i < cut.Paths.Count;
@@ -215,18 +301,57 @@ namespace Ricochet
             }
         }
 
+        // Where each player or dummy the volley strikes stands as it is fired (obj_boom_normal goes off on them, hit.gml).
+        private void Struck(Volley volley)
+        {
+            _struck.Clear();
+            if (volley.Strikes.Count == 0 || _owner == null)
+            {
+                return;
+            }
+
+            List<Target> targets = Arena.Targets(_owner.Session);
+            foreach (Strike strike in volley.Strikes)
+            {
+                foreach (Target target in targets)
+                {
+                    if (target.Id == strike.TargetId)
+                    {
+                        _struck.Add(Arena.ToUnity(target.Center));
+                        break;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Adds a light for each projectile in the air (UR-T77: obj_bullet, obj_pellet, obj_laser, obj_grenade, obj_rail_swirl and
-        /// obj_vortex all light obj_fogscreen's surface): its place and its lightSize (the pellet and the laser 0.5, the vortex 0.7).
+        /// obj_vortex all light obj_fogscreen's surface): its place and its lightSize (the pellet and the laser 0.5, the vortex 0.7);
+        /// every swirl of a rail still drawn (swirl_create's lightSize 1) and a vortex imploding (0.7).
         /// </summary>
         public void CollectLights(List<(Vector2 Spot, double Size)> lights)
         {
+            if (_rail != null && _rail.Showing)
+            {
+                _rail.CollectLights(lights);
+            }
+
+            if (_implosion != null && _implosion.Showing && _flight != null)
+            {
+                lights.Add((Arena.ToUnity(_flight.Volley.BlastCenter), 0.7));
+            }
+
             if (_flight == null || _flight.Landed)
             {
                 return;
             }
 
             Weapon weapon = _flight.Volley.Weapon;
+            if (weapon == Weapon.Railgun)
+            {
+                return; // its swirls light it
+            }
+
             double size = weapon == Weapon.Shotgun || weapon == Weapon.Laser ? 0.5 : weapon == Weapon.Vortex ? 0.7 : 1.0;
             for (int i = 0; i < _parts.Count && i < _flight.Flights.Count; i++)
             {
@@ -247,105 +372,168 @@ namespace Ricochet
             float dt = Time.deltaTime;
             if (_flight != null && !_flight.Landed)
             {
-                for (int i = 0; i < _flight.Flights.Count; i++)
-                {
-                    ProjectileFlight flight = _flight.Flights[i];
-                    Part part = _parts[i];
-                    if (part.Landed)
-                    {
-                        continue;
-                    }
-
-                    int before = flight.Contacts;
-                    int passed = flight.Advance(dt);
-                    for (int c = 0; c < passed; c++)
-                    {
-                        Vec2 point = flight.Path.Contacts[before + c].Point;
-                        part.Points.Add(Arena.ToUnity(point));
-                        part.Spin = -part.Spin; // grenade_step.gml: a bounce turns the spin round
-                        Presentation.Raise(_owner, new Cmd.Bounced(_owner.PlayerId, _owner.LastVolleyShot, before + c + 1, point));
-                    }
-
-                    Place(part.Projectile.transform, flight.Position);
-                    Turn(part, flight, dt);
-                    part.Points.Add(part.Projectile.transform.position);
-                    Lines.Set(part.Trail, part.Points);
-                    part.Points.RemoveAt(part.Points.Count - 1);
-
-                    if (flight.Landed)
-                    {
-                        part.Landed = true;
-                        part.Projectile.enabled = false;
-                        if (!_flight.Volley.HasBlast)
-                        {
-                            StartFlash(part, flight.Path.Impact);
-                        }
-                    }
-                }
-
-                if (_flight.Landed)
-                {
-                    _flashLeft = FlashSeconds;
-                    if (_flight.Volley.HasBlast)
-                    {
-                        StartBlast(_flight.Volley.BlastCenter);
-                        Ring(_flight.Volley.BlastCenter, _flight.Volley.BlastRadius);
-                    }
-
-                    Presentation.Raise(_owner, new Cmd.ShotLanded(_owner.PlayerId, _owner.Seat, _owner.LastVolleyShot, _flight.Volley, null, false, -1));
-                    Landed?.Invoke(_flight.Volley);
-                }
+                Fly(dt);
             }
             else if (_flashLeft > 0f)
             {
-                _flashLeft -= dt;
-                float t = Mathf.Clamp01(_flashLeft / FlashSeconds);
-                foreach (Part part in _parts)
-                {
-                    if (part.Flash.enabled && !part.FlashArt)
-                    {
-                        part.Flash.transform.localScale = Vector3.one * Mathf.Lerp(1.4f, 0.4f, t);
-                        part.Flash.color = new Color(_color.r, _color.g, _color.b, t);
-                    }
-
-                    part.Trail.startColor = new Color(_color.r, _color.g, _color.b, 0.15f * t);
-                    part.Trail.endColor = new Color(_color.r, _color.g, _color.b, 0.8f * t);
-                }
-
-                if (_blast.enabled && !_blastArt)
-                {
-                    float diameter = (float)(_flight.Volley.BlastRadius * 2.0) * Mathf.Lerp(1f, 0.6f, t);
-                    _blast.transform.localScale = new Vector3(diameter, diameter, 1f);
-                    _blast.color = new Color(1f, 0.6f, 0.2f, 0.45f * t);
-                }
-
-                _blastRing.startColor = _blastRing.endColor = new Color(1f, 1f, 1f, 0.7f * t);
-
-                if (_flashLeft <= 0f)
-                {
-                    foreach (Part part in _parts)
-                    {
-                        if (!part.FlashArt)
-                        {
-                            part.Flash.enabled = false;
-                        }
-
-                        part.Trail.positionCount = 0;
-                    }
-
-                    if (!_blastArt)
-                    {
-                        _blast.enabled = false;
-                    }
-
-                    _blastRing.positionCount = 0;
-                }
+                FadeTrails(dt);
             }
 
+            Effects(dt);
             Animate(dt);
         }
 
-        // The landing effects drawn from the original's sprites play their frames once at the room speed, then go.
+        private void Fly(float dt)
+        {
+            Volley volley = _flight.Volley;
+            for (int i = 0; i < _flight.Flights.Count; i++)
+            {
+                ProjectileFlight flight = _flight.Flights[i];
+                Part part = _parts[i];
+                if (part.Landed)
+                {
+                    continue;
+                }
+
+                int before = flight.Contacts;
+                int passed = flight.Advance(dt);
+                for (int c = 0; c < passed; c++)
+                {
+                    Vec2 point = flight.Path.Contacts[before + c].Point;
+                    part.Points.Add(Arena.ToUnity(point));
+                    part.Spin = -part.Spin; // grenade_step.gml: a bounce turns the spin round
+                    Presentation.Raise(_owner, new Cmd.Bounced(_owner.PlayerId, _owner.LastVolleyShot, before + c + 1, point));
+                }
+
+                Place(part.Projectile.transform, flight.Position);
+                Turn(part, flight, dt);
+                Grow(part, dt);
+                if (part.HasTrail)
+                {
+                    part.Points.Add(part.Projectile.transform.position);
+                    Lines.Set(part.Trail, part.Points);
+                    part.Points.RemoveAt(part.Points.Count - 1);
+                }
+
+                if (i == 0 && volley.Weapon == Weapon.Laser)
+                {
+                    _laser.Fly(flight.Travelled);
+                }
+                else if (i == 0 && volley.Weapon == Weapon.Railgun)
+                {
+                    _rail.Reach(flight.Travelled);
+                }
+
+                if (flight.Landed)
+                {
+                    part.Landed = true;
+                    part.Projectile.enabled = false;
+                    if (volley.Weapon == Weapon.Cannon && flight.Path.End == ShotEndKind.Spent)
+                    {
+                        StartFlash(part, flight.Path.Impact); // bullet_step.gml: obj_explosion where the last bounce is spent
+                    }
+
+                    if (i == 0 && volley.Weapon == Weapon.Laser)
+                    {
+                        _laser.Spend();
+                    }
+                }
+            }
+
+            if (!_flight.Landed)
+            {
+                return;
+            }
+
+            _flashLeft = FlashSeconds;
+            foreach (Vector2 spot in _struck)
+            {
+                SpriteBurst.Play(GmlSprites.SmallExplosion, spot, (float)WeaponLooks.HitFlashImageSpeed);
+            }
+
+            if (volley.HasBlast && volley.Weapon == Weapon.Vortex)
+            {
+                Vector2 center = Arena.ToUnity(volley.BlastCenter);
+                // vortex_detonate.gml's obj_boom where it is set off, vortex_step.gml's obj_explosion where it is spent.
+                SpriteBurst.Play(GmlSprites.SmallExplosion, center, _detonated ? (float)WeaponLooks.DetonateFlashImageSpeed : SmallExplosionSpeed);
+                _implosion.Start(center, WeaponLooks.ShotStepsPerSecond(Arena.Rules.Speed));
+            }
+            else if (volley.HasBlast)
+            {
+                StartBlast(volley.BlastCenter);
+                _ring.Start(Arena.ToUnity(volley.BlastCenter), volley.BlastRadius);
+            }
+
+            Presentation.Raise(_owner, new Cmd.ShotLanded(_owner.PlayerId, _owner.Seat, _owner.LastVolleyShot, volley, null, false, -1));
+            Landed?.Invoke(volley);
+        }
+
+        // The trails, and the code-drawn flash and blast squares where the art is missing, fade after the landing.
+        private void FadeTrails(float dt)
+        {
+            _flashLeft -= dt;
+            float t = Mathf.Clamp01(_flashLeft / FlashSeconds);
+            foreach (Part part in _parts)
+            {
+                if (part.Flash.enabled && !part.FlashArt)
+                {
+                    part.Flash.transform.localScale = Vector3.one * Mathf.Lerp(1.4f, 0.4f, t);
+                    part.Flash.color = new Color(_color.r, _color.g, _color.b, t);
+                }
+
+                part.Trail.startColor = new Color(_color.r, _color.g, _color.b, 0.15f * t);
+                part.Trail.endColor = new Color(_color.r, _color.g, _color.b, 0.8f * t);
+            }
+
+            if (_blast.enabled && !_blastArt && _flight != null)
+            {
+                float diameter = (float)(_flight.Volley.BlastRadius * 2.0) * Mathf.Lerp(1f, 0.6f, t);
+                _blast.transform.localScale = new Vector3(diameter, diameter, 1f);
+                _blast.color = new Color(1f, 0.6f, 0.2f, 0.45f * t);
+            }
+
+            if (_flashLeft <= 0f)
+            {
+                foreach (Part part in _parts)
+                {
+                    if (!part.FlashArt)
+                    {
+                        part.Flash.enabled = false;
+                    }
+
+                    part.Trail.positionCount = 0;
+                }
+
+                if (!_blastArt)
+                {
+                    _blast.enabled = false;
+                }
+            }
+        }
+
+        // The laser running out, the rail fading, the grenade's circle and the vortex's implosion.
+        private void Effects(float dt)
+        {
+            if (_laser == null)
+            {
+                return;
+            }
+
+            if (_laser.Showing && (_flight == null || _flight.Landed))
+            {
+                _laser.Fade(dt, _flight != null ? _flight.Volley.Speed : 1);
+            }
+
+            _rail.Step(dt);
+            if (_ring.Showing && !_ring.Step(dt) && _blastArt)
+            {
+                _blast.enabled = false; // obj_grenade_explosion is gone once its circle reaches grenadeRadius
+            }
+
+            _implosion.Step(dt);
+        }
+
+        // The landing effects drawn from the original's sprites play their frames at the room speed.
         private void Animate(float dt)
         {
             foreach (Part part in _parts)
@@ -369,14 +557,7 @@ namespace Ricochet
             if (_blast != null && _blast.enabled && _blastArt)
             {
                 _blastAge += dt;
-                if (_blastAge >= GameArt.Duration(GmlSprites.BigExplosion, BigExplosionSpeed))
-                {
-                    _blast.enabled = false;
-                }
-                else
-                {
-                    _blast.sprite = GameArt.FrameAt(GmlSprites.BigExplosion, _blastAge, false, BigExplosionSpeed);
-                }
+                _blast.sprite = GameArt.FrameAt(GmlSprites.BigExplosion, _blastAge, false, BigExplosionSpeed); // its Animation End holds the last frame
             }
         }
 
@@ -388,13 +569,32 @@ namespace Ricochet
                     part.Angle = (float)flight.Heading;
                     break;
                 case Turning.Spin:
-                    part.Angle += part.Spin * dt * (GameArt.Catalogue != null ? GameArt.Catalogue.RoomSpeed : 60);
+                    part.Angle += part.Spin * dt * Steps.PerSecond;
                     break;
                 default:
                     return;
             }
 
             part.Projectile.transform.rotation = Quaternion.Euler(0f, 0f, part.Angle);
+        }
+
+        // vortex_step.gml "flying": the device grows 0.01 a step to its full size.
+        private static void Grow(Part part, float dt)
+        {
+            if (part.Vortex == null)
+            {
+                return;
+            }
+
+            part.VortexClock += dt * Steps.PerSecond;
+            while (part.VortexClock >= 1f)
+            {
+                part.VortexClock -= 1f;
+                part.Vortex.Step();
+            }
+
+            float scale = (float)part.Vortex.Scale;
+            part.Projectile.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
         private void StartFlash(Part part, Vec2 impact)
@@ -427,7 +627,7 @@ namespace Ricochet
             if (_blastArt)
             {
                 _blast.sprite = art;
-                _blast.color = new Color(1f, 1f, 1f, BigExplosionAlpha);
+                _blast.color = new Color(1f, 1f, 1f, (float)WeaponLooks.BlastAlpha);
                 _blast.transform.localScale = new Vector3(BigExplosionScale, BigExplosionScale, 1f);
             }
             else
@@ -439,19 +639,7 @@ namespace Ricochet
             Place(_blast.transform, center);
         }
 
-        // obj_grenade_explosion's draw_circle outline at the blast's full radius.
-        private void Ring(Vec2 center, double radius)
-        {
-            const int Segments = 40;
-            _blastRing.positionCount = Segments + 1;
-            for (int i = 0; i <= Segments; i++)
-            {
-                float a = i * Mathf.PI * 2f / Segments;
-                _blastRing.SetPosition(i, new Vector3((float)(center.X + radius * Mathf.Cos(a)), (float)(center.Y + radius * Mathf.Sin(a)), 0f));
-            }
-        }
-
-        private void EnsureBlast()
+        private void EnsureEffects()
         {
             if (_blast != null)
             {
@@ -462,7 +650,10 @@ namespace Ricochet
             blast.transform.SetParent(transform, false);
             _blast = Shapes.Square(blast, 1f, 3);
             _blast.enabled = false;
-            _blastRing = Lines.Create(transform, "Blast ring", Color.white, 0.05f, 4);
+            _laser = new LaserBeam(transform, 0);
+            _rail = new Rail(transform);
+            _ring = new BlastRing(transform);
+            _implosion = new Implosion(transform);
         }
 
         private static void Place(Transform t, Vec2 point)
@@ -504,6 +695,8 @@ namespace Ricochet
 
             public bool Landed { get; set; }
 
+            public bool HasTrail { get; set; }
+
             public Turning Turning { get; set; }
 
             public float Angle { get; set; }
@@ -513,6 +706,10 @@ namespace Ricochet
             public bool FlashArt { get; set; }
 
             public float FlashAge { get; set; }
+
+            public Vortex Vortex { get; set; }
+
+            public float VortexClock { get; set; }
         }
     }
 }

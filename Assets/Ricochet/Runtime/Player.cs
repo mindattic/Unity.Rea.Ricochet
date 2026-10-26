@@ -307,11 +307,12 @@ namespace Ricochet
                     ShowOutcome(outcome);
                 }
             };
-            _assistLine = Lines.Create(_shotView.transform, "Aim assist", new UnityEngine.Color(0.55f, 0.95f, 1f, 1f), 0.08f, 3);
+            // obj_aimassist's beam and the preview, both in draw_beam's dotted style (U.RICO-T47).
+            _assistBeam = DottedBeam.Create(_shotView.transform, "Aim assist", 3);
             if (LocallyControlled)
             {
                 _aim.Set(Heading, Power);
-                _previewLine = Lines.Create(_shotView.transform, "Preview", new UnityEngine.Color(1f, 1f, 1f, 0.45f), 0.05f, 2);
+                _previewBeam = DottedBeam.Create(_shotView.transform, "Preview", 2);
             }
         }
 

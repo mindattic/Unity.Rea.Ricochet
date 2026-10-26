@@ -262,21 +262,23 @@ namespace Ricochet
                 _preview = SolveVolley(loadout.Weapon, heading, power, loadout.Fuse, ExtraBounces);
             }
 
-            if (_previewLine != null)
+            if (_previewBeam != null)
             {
                 if (ShotInFlight || !mayFire || Moved) // obj_guide: no guide once the tank has driven
                 {
-                    _previewLine.positionCount = 0;
+                    _previewBeam.Clear();
                 }
                 else
                 {
+                    // draw_beam's dotted line from the muzzle (obj_aimassist's Len = 40) along every leg of the path.
                     ShotPath main = _preview.Main;
-                    _previewLine.positionCount = main.Points.Count + 1;
-                    _previewLine.SetPosition(0, Position);
+                    _beamPoints.Clear();
                     for (int i = 0; i < main.Points.Count; i++)
                     {
-                        _previewLine.SetPosition(i + 1, Arena.ToUnity(main.Points[i]));
+                        _beamPoints.Add(Arena.ToUnity(main.Points[i]));
                     }
+
+                    _previewBeam.Set(_beamPoints, 1f);
                 }
             }
         }

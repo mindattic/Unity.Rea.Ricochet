@@ -214,6 +214,33 @@ namespace Ricochet.Core.Aim
             return new ShotPath(Origin, Heading, Power, points, contacts, ShotEndKind.Detonated, null);
         }
 
+        /// <summary>
+        /// The stretch of the path between <paramref name="from"/> and <paramref name="to"/> along it (each clamped to the
+        /// path), as points into <paramref name="into"/> (cleared first): the two ends and every corner between. Empty when
+        /// the stretch is empty. What a beam drawn along the path shows (laser_draw's line from the origin to the head).
+        /// </summary>
+        public void Slice(double from, double to, List<Vec2> into)
+        {
+            into.Clear();
+            from = Math.Max(0, Math.Min(Length, from));
+            to = Math.Max(0, Math.Min(Length, to));
+            if (double.IsNaN(from) || double.IsNaN(to) || to <= from)
+            {
+                return;
+            }
+
+            into.Add(PositionAt(from, out _));
+            for (int i = 1; i < _points.Count - 1; i++)
+            {
+                if (_cumulative[i] > from && _cumulative[i] < to)
+                {
+                    into.Add(_points[i]);
+                }
+            }
+
+            into.Add(PositionAt(to, out _));
+        }
+
         /// <summary>Contacts at or before <paramref name="distance"/> along the path.</summary>
         public int ContactsBefore(double distance)
         {

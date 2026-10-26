@@ -2,16 +2,20 @@
 // ...) when its HazardField adds one (Arena) and despawns when it goes. Every peer reads them all back (Collect) to build
 // the level a shot sees, so the preview, the AI and the server's solve bounce off and stop in the same things; only a
 // laser gate's on/off ever changes after it spawns. Each kind draws itself:
-//   Shield wall  a hologram line in its owner's colour that fades in (obj_shieldwall's image_alpha += 0.01 to 0.9).
+//   Shield wall  obj_shieldwall's spr_shieldwall across the aim, untinted, playing at image_speed 1 and fading in 0.01 a
+//                step to 0.9 (U.RICO-T47); without the art a hologram line in its owner's colour that fades in.
 //   Electricity  draw_electricity.gml: a bolt redrawn every few frames through points a step apart along the arc, each
-//                shaken off the line at random, over a wider faint glow, between two pylons.
+//                shaken off the line at random, with its glow circles as soft lights (IRenderStyle.AddGlow, draw_glow's
+//                look) shaken half as far, between two pylons; a wider faint line for the glow where there are no lights.
 //   Laser        check_source_laser.gml: as the gate comes on, the beam's end walks from the emitter toward the receiver
-//                until it is there; while off, only a faint guide line between the two.
+//                until it is there, drawn as laser_draw.gml draws a laser (U.RICO-T47); while off, only a faint guide line.
 //   Foliage      a tuft (two crossed squares) of grass.
 //   Breach       a dark gap over the border, its ends marked.
-//   Redirector   a rail redirector with a tick pointing the way it sends a shot, as LevelView draws the level's own.
+//   Redirector   obj_redirector's spr_redirector_arrow along the way it sends a shot, growing from 0.3 of its size 0.01 a
+//                step (U.RICO-T47); without the art a rail redirector with a tick, as LevelView draws the level's own.
 using System.Collections.Generic;
 using Ricochet.Core.Aim;
+using Ricochet.Core.Art;
 using Ricochet.Core.Level;
 using Unity.Multiplayer;      // NetEntity, NetSession
 using Unity.Multiplayer.Core; // [Synced]
@@ -52,6 +56,8 @@ namespace Ricochet
         private SpriteRenderer _endB;
         private SpriteRenderer _tuft;
         private SpriteRenderer _tuftCross;
+        private SpriteRenderer _art;
+        private readonly List<Transform> _sparks = new List<Transform>();
         private float _spawnedAt;
         private float _beam = 1f;      // a laser's beam: the share of the way from emitter to receiver it reaches
         private bool _wasActive = true;
@@ -155,7 +161,8 @@ namespace Ricochet
             }
 
             _line = _glow = _tick = null;
-            _endA = _endB = _tuft = _tuftCross = null;
+            _endA = _endB = _tuft = _tuftCross = _art = null;
+            _sparks.Clear();
             _builtKind = Kind;
             _builtA = A;
             _builtB = B;
@@ -163,15 +170,23 @@ namespace Ricochet
             switch (HazardKind)
             {
                 case HazardKind.Electricity:
-                    _glow = Lines.Create(transform, "Glow", new Color(ArcColor.r, ArcColor.g, ArcColor.b, 0.18f), 0.34f, -3);
                     _line = Lines.Create(transform, "Bolt", ArcColor, 0.06f, -2);
+                    BuildSparks();
+                    if (_sparks.Count == 0)
+                    {
+                        // No 2D lights on this pipeline: draw_electricity's glow circles as a wide faint line instead.
+                        _glow = Lines.Create(transform, "Glow", new Color(ArcColor.r, ArcColor.g, ArcColor.b, 0.18f), 0.34f, -3);
+                    }
+
                     _endA = End("Pylon A", A, 0.3f, new Color(0.7f, 0.75f, 0.85f));
                     _endB = End("Pylon B", B, 0.3f, new Color(0.7f, 0.75f, 0.85f));
                     break;
                 case HazardKind.Laser:
                     _glow = Lines.Create(transform, "Guide", new Color(LaserColor.r, LaserColor.g, LaserColor.b, 0.15f), 0.04f, -3);
                     Lines.Set(_glow, A, B);
-                    _line = Lines.Create(transform, "Beam", LaserColor, 0.09f, -2);
+                    // laser_draw.gml's beam: laser_color 4 px at 0.7 under a white 1 px core at 0.9 (U.RICO-T47).
+                    _line = Steps.Line(transform, "Beam", Steps.Of(WeaponLooks.LaserColor, (float)WeaponLooks.LaserOuterAlpha), (float)WeaponLooks.LaserOuterWidth, -2);
+                    _tick = Steps.Line(transform, "Beam core", new Color(1f, 1f, 1f, (float)WeaponLooks.LaserInnerAlpha), (float)WeaponLooks.LaserInnerWidth, -1);
                     _endA = End("Emitter", A, 0.28f, new Color(0.45f, 0.1f, 0.1f));
                     _endB = End("Receiver", B, 0.22f, new Color(0.45f, 0.1f, 0.1f));
                     break;
@@ -199,6 +214,13 @@ namespace Ricochet
                     break;
                 case HazardKind.Redirector:
                 {
+                    // obj_redirector's spr_redirector_arrow along its heading (U.RICO-T47); the line and tick without the art.
+                    _art = ArtSprite("Redirector", GmlSprites.RedirectorArrow, (A + B) * 0.5f, -3);
+                    if (_art != null)
+                    {
+                        break;
+                    }
+
                     _line = Lines.Create(transform, "Redirector", RedirectorColor, 0.18f, -3);
                     Lines.Set(_line, A, B);
                     Vector2 center = (A + B) * 0.5f;
@@ -209,6 +231,16 @@ namespace Ricochet
                 }
 
                 default: // a shield wall
+                    // obj_shieldwall's spr_shieldwall across the aim, playing and fading in (U.RICO-T47); lines without the art.
+                    _art = ArtSprite("Shield wall", GmlSprites.ShieldWall, (A + B) * 0.5f, -2);
+                    if (_art != null)
+                    {
+                        Vector2 across = B - A;
+                        _art.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(across.y, across.x) * Mathf.Rad2Deg - 90f);
+                        _art.color = new Color(1f, 1f, 1f, 0f);
+                        break;
+                    }
+
                     _glow = Lines.Create(transform, "Glow", Color.white, 0.32f, -3);
                     Lines.Set(_glow, A, B);
                     _line = Lines.Create(transform, "Wall", Color.white, 0.12f, -2);
@@ -216,6 +248,47 @@ namespace Ricochet
                     break;
             }
         }
+
+        /// <summary>The hazard drawn from the original's art (a shield wall, a placed redirector), or null.</summary>
+        public SpriteRenderer Art => _art;
+
+        // A GML sprite of the hazard at <paramref name="at"/>, or null when the catalogue lacks it.
+        private SpriteRenderer ArtSprite(string childName, string sprite, Vector2 at, int order)
+        {
+            Sprite first = GameArt.Frame(sprite);
+            if (first == null)
+            {
+                return null;
+            }
+
+            SpriteRenderer renderer = Steps.Sprite(transform, childName, order);
+            renderer.sprite = first;
+            renderer.transform.position = at;
+            return renderer;
+        }
+
+        // draw_electricity's glow: a soft light (IRenderStyle.AddGlow, as draw_glow's circles) every other vertex of the arc.
+        private void BuildSparks()
+        {
+            _sparks.Clear();
+            float length = Vector2.Distance(A, B);
+            for (float d = BoltStep; d < length; d += BoltStep * 2f)
+            {
+                var holder = new GameObject("Spark");
+                holder.transform.SetParent(transform, false);
+                if (RenderStyle.Current.AddGlow(holder.transform, ArcColor * 0.5f, BoltShake * 4f) == null)
+                {
+                    Destroy(holder);
+                    _sparks.Clear();
+                    return;
+                }
+
+                _sparks.Add(holder.transform);
+            }
+        }
+
+        /// <summary>The soft lights along an electric arc (none on a pipeline without 2D lights).</summary>
+        public int Sparks => _sparks.Count;
 
         private void Update()
         {
@@ -253,16 +326,35 @@ namespace Ricochet
                     if (Active)
                     {
                         Lines.Set(_line, A, Vector2.Lerp(A, B, _beam));
-                        float flicker = 0.8f + 0.2f * Mathf.Sin(Time.time * 40f);
-                        _line.startColor = _line.endColor = new Color(LaserColor.r, LaserColor.g, LaserColor.b, flicker);
+                        Lines.Set(_tick, A, Vector2.Lerp(A, B, _beam));
                     }
                     else
                     {
                         _line.positionCount = 0;
+                        _tick.positionCount = 0;
                     }
 
                     _endA.color = Active ? LaserColor : new Color(0.45f, 0.1f, 0.1f);
                     break;
+                case HazardKind.Redirector:
+                    if (_art != null)
+                    {
+                        // redirector_detonate / redirector_step: from 0.3 of its size, growing 0.01 a step, along its heading.
+                        float scale = (float)WeaponLooks.RedirectorScaleAt((Time.time - _spawnedAt) * Steps.PerSecond);
+                        _art.transform.localScale = new Vector3(scale, scale, 1f);
+                        _art.transform.rotation = Quaternion.Euler(0f, 0f, Heading);
+                    }
+
+                    break;
+                case HazardKind.ShieldWall when _art != null:
+                {
+                    // obj_shieldwall: image_speed 1, image_alpha += 0.01 a step to 0.9, untinted.
+                    float age = Time.time - _spawnedAt;
+                    _art.sprite = GameArt.FrameAt(GmlSprites.ShieldWall, age, true, (float)WeaponLooks.ShieldWallImageSpeed);
+                    _art.color = new Color(1f, 1f, 1f, (float)WeaponLooks.ShieldWallAlphaAt(age * Steps.PerSecond));
+                    break;
+                }
+
                 case HazardKind.ShieldWall:
                 {
                     float alpha = Mathf.Clamp01((Time.time - _spawnedAt) / FadeInSeconds) * 0.9f;
@@ -297,7 +389,16 @@ namespace Ricochet
                 _points[i] = a + along * (i * BoltStep) + Random.insideUnitCircle * (BoltShake * 0.5f);
             }
 
-            Lines.Set(_glow, _points);
+            // The glow circles are shaken half as far, afresh each time (draw_electricity's second random offsets).
+            for (int i = 0; i < _sparks.Count; i++)
+            {
+                _sparks[i].position = a + along * ((2 * i + 1) * BoltStep) + Random.insideUnitCircle * (BoltShake * 0.5f);
+            }
+
+            if (_glow != null)
+            {
+                Lines.Set(_glow, _points);
+            }
         }
 
         private Color OwnerColor()

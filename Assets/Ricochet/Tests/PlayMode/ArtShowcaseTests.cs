@@ -1,14 +1,16 @@
 // U.RICO-T44: looks at the original's art in a running match and saves what the camera and the HUD show to
 // Screenshots/ (gitignored): the Ready card in fnt_impact and fnt_mono with draw_text_outline's outlines, the four
 // crates with their icons, a shell in flight, its spr_smallexplosion, a grenade's spr_bigexplosion, and the tanks with
-// one driving and leaving tracks (U.RICO-T45), and the level backdrop with a random level's shapes (U.RICO-T46). Explicit: it
-// needs graphics (Tools/unity.ps1 -Graphics), so it runs only when asked for by name:
+// one driving and leaving tracks (U.RICO-T45), and the level backdrop with a random level's shapes (U.RICO-T46); and the
+// weapons and hazards (U.RICO-T47, TheWeaponsAndHazards). Explicit: it needs graphics (Tools/unity.ps1 -Graphics), so it
+// runs only when asked for by name:
 //   powershell -File Tools/unity.ps1 -Graphics -Log art-showcase -Extra "-runTests -testPlatform PlayMode -testFilter Ricochet.Tests.ArtShowcaseTests -testResults Logs/TestResults-ArtShowcase.xml"
 using System.Collections;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Ricochet.Core.Arsenal;
+using Ricochet.Core.Art;
 using Ricochet.Core.Level;
 using Ricochet.Core.Match;
 using Unity.Multiplayer;
@@ -164,8 +166,104 @@ namespace Ricochet.Tests
             yield return Capture("tanks");
         }
 
+        // U.RICO-T47: the weapons and hazards as the original drew them, in practice: the preview in draw_beam's dots, the
+        // laser's beam and pulses, the railgun's rail and swirls, a vortex set off, a grenade's circle, the shield wall and
+        // redirector items, and then a laid level's electric arc and laser gate in a match.
+        [UnityTest]
+        [Timeout(180000)]
+        public IEnumerator TheWeaponsAndHazards()
+        {
+            yield return StartAndJoinAll();
+            Arena arena = Arena.Serve(Server, GamePrefabs.Dummy, true);
+            var hostSpawn = WaitForSpawn<Player>(Server, owner: Server.LocalClientId);
+            yield return hostSpawn;
+            var annSpawn = WaitForSpawn<Player>(Server, owner: Client.LocalClientId);
+            yield return annSpawn;
+            Player host = hostSpawn.Result;
+            Player ann = annSpawn.Result;
+            yield return WaitUntil(() => Player.In(Client).Count() == 2, "the client never saw both players");
+
+            Level level = Arena.Level;
+            _level = LevelView.Create(level);
+            var cameraObject = new GameObject("Showcase camera");
+            _camera = cameraObject.AddComponent<Camera>();
+            _camera.orthographic = true;
+            _camera.orthographicSize = 7f;
+            _camera.transform.position = new Vector3((float)(level.MinX + level.MaxX) / 2f, (float)(level.MinY + level.MaxY) / 2f, -10f);
+            _camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
+            _camera.clearFlags = CameraClearFlags.SolidColor;
+            RenderStyle.Current.ConfigureCamera(_camera);
+            _backdrop = BackdropView.Create();
+
+            // The host's own preview, drawn on the host's peer.
+            yield return WaitUntil(() => host.PreviewBeam != null && host.PreviewBeam.DashCount > 0, "the preview was never drawn");
+            yield return Capture("preview", "U.RICO-T47");
+
+            ShotView view = Object.FindObjectsByType<ShotView>().First(v => v.Owner == host);
+            host.ServerCycleWeapon(1);
+            Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Laser));
+            host.ServerFire(35f, 1f);
+            yield return WaitUntil(() => view.LaserPulses > 1 || !view.Flying, "no pulses rode the beam", 10f);
+            yield return Capture("laser", "U.RICO-T47");
+            yield return WaitUntil(() => !view.Flying, "the laser never landed", 10f);
+            yield return null;
+            yield return Capture("laser-running-out", "U.RICO-T47");
+            yield return WaitUntil(() => !view.LaserShowing && !host.ShotInFlight, "the beam never ran out", 10f);
+
+            host.ServerCycleWeapon(-1);
+            host.ServerCycleWeapon(-1);
+            host.ServerCycleWeapon(-1);
+            Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Railgun));
+            host.ServerFire(35f, 1f);
+            yield return WaitUntil(() => !view.Flying && view.RailShowing, "the rail never reached the border", 5f);
+            yield return Capture("railgun", "U.RICO-T47");
+            yield return WaitUntil(() => !view.RailShowing && !host.ShotInFlight, "the rail never faded", 10f);
+
+            host.ServerCycleWeapon(1);
+            Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Vortex));
+            host.ServerFire(60f, 1f);
+            yield return new WaitForSeconds(0.25f);
+            yield return Capture("vortex-flying", "U.RICO-T47");
+            host.ServerDetonate();
+            yield return WaitUntil(() => view.ImplosionMode == VortexMode.Waiting, "the vortex never filled out", 10f);
+            yield return Capture("vortex", "U.RICO-T47");
+            yield return WaitUntil(() => view.ImplosionMode == VortexMode.Waiting2, "the vortex never blew", 10f);
+            yield return Capture("vortex-blown", "U.RICO-T47");
+            yield return WaitUntil(() => !view.Imploding && !host.ShotInFlight, "the vortex never finished", 10f);
+
+            host.ServerCycleWeapon(-1);
+            host.ServerCycleWeapon(-1);
+            Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Grenade));
+            host.Loadout.SetFuse(0.5);
+            host.MirrorLoadout();
+            host.ServerFire(200f, 1f);
+            yield return WaitUntil(() => view.BlastShowing, "the grenade never went off", 10f);
+            yield return new WaitForSeconds(0.4f);
+            yield return Capture("grenade-circle", "U.RICO-T47");
+
+            // Ann's shield wall and redirector, as they stand.
+            Player annOnHerClient = Player.In(Client).First(p => p.OwnerClientId == Client.LocalClientId);
+            annOnHerClient.CycleItem(1);
+            yield return WaitUntil(() => ann.Loadout.Item == Item.ShieldWall, "the shield wall was never selected");
+            ann.ServerUseItem(0f, 0.5f);
+            annOnHerClient.CycleItem(-1);
+            yield return WaitUntil(() => ann.Loadout.Item == Item.ExtraBounce, "the extra bounce was never selected");
+            annOnHerClient.CycleItem(-1);
+            yield return WaitUntil(() => ann.Loadout.Item == Item.Redirector, "the redirector was never selected");
+            ann.ServerUseItem(90f, 0.2f);
+            yield return WaitUntil(() => LevelHazard.In(Client).Count(h => h.Ready && h.Art != null) == 2, "the items never stood", 5f);
+            yield return new WaitForSeconds(1.6f);
+            yield return Capture("items", "U.RICO-T47");
+
+            // A laid level's arc and laser gate (the gate is on every other turn: shown on whichever turn has it on).
+            Assert.That(arena.StartMatch(0), Is.True);
+            yield return WaitUntil(() => LevelHazard.In(Client).Any(h => h.Ready && h.HazardKind == HazardKind.Electricity), "the arc was never laid", 10f);
+            yield return new WaitForSeconds(1f);
+            yield return Capture("hazards", "U.RICO-T47");
+        }
+
         // Renders the camera with every overlay canvas moved onto it, into a 1920x1080 PNG under Screenshots/.
-        private IEnumerator Capture(string name)
+        private IEnumerator Capture(string name, string ticket = "U.RICO-T44")
         {
             yield return null; // WaitForEndOfFrame never resumes in batch mode
             Debug.Log("[Ricochet] Capturing " + name);
@@ -189,7 +287,7 @@ namespace Ricochet.Tests
                 image.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
                 image.Apply();
                 Directory.CreateDirectory("Screenshots");
-                string path = Path.Combine("Screenshots", "U.RICO-T44-" + name + ".png");
+                string path = Path.Combine("Screenshots", ticket + "-" + name + ".png");
                 File.WriteAllBytes(path, image.EncodeToPNG());
                 Object.Destroy(image);
                 Debug.Log("[Ricochet] Saved " + Path.GetFullPath(path));

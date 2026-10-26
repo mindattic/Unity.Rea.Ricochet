@@ -66,6 +66,10 @@ namespace Ricochet.Tests
                 "her client never saw her wall");
             Assert.That(wallOnClient.OwnerSeat, Is.EqualTo(ann.Seat));
             Assert.That(wallOnClient.A.x, Is.EqualTo(-3f).Within(1e-4f));
+            // U.RICO-T47: obj_shieldwall's spr_shieldwall, standing across her aim and fading in.
+            Assert.That(wallOnClient.Art, Is.Not.Null, "the wall fell back to lines");
+            Assert.That(wallOnClient.Art.transform.up.x, Is.EqualTo(0f).Within(1e-3f), "its long side runs across the aim");
+            yield return WaitUntil(() => wallOnClient.Art.color.a > 0.3f, "the wall never faded in");
             Assert.That(ann.Loadout.Count(Item.ShieldWall), Is.EqualTo(3), "practice is free: nothing spent");
 
             // Her own shot passes through it.
@@ -106,6 +110,10 @@ namespace Ricochet.Tests
                 "her client never saw the redirector");
             Assert.That(placed.Heading, Is.EqualTo(0f).Within(1e-3f));
             Assert.That((placed.A.x + placed.B.x) / 2f, Is.EqualTo(2.6f).Within(1e-3f));
+            // U.RICO-T47: obj_redirector's arrow along its heading, growing from 0.3 of its size.
+            Assert.That(placed.Art, Is.Not.Null, "the redirector fell back to lines");
+            Assert.That(placed.Art.transform.right.x, Is.EqualTo(1f).Within(1e-3f));
+            yield return WaitUntil(() => placed.Art.transform.localScale.x > 0.5f, "the redirector never grew");
 
             // The host, below and left of it, fires up and right into it: it leaves heading right.
             Vec2 from = Arena.ToCore(host.Position);

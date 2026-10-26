@@ -191,7 +191,7 @@ namespace Ricochet
             _turnTitle.Text = turns == null
                 ? "Practice: " + subject.DisplayName
                 : subject.DisplayName + (subject.IsLocalHuman ? " (your turn)" : "'s turn") + "   Score " + subject.Score;
-            _weaponLine.Show(WeaponLine(subject.Loadout));
+            _weaponLine.Show(WeaponLine(subject.Loadout, subject.FuseLeft));
             _itemLine.Show(ItemLine(subject.Loadout, subject.ExtraBounces));
 
             // draw_potential: what the shot in the air would score if it hit now (0 before it is fired).
@@ -202,16 +202,24 @@ namespace Ricochet
             _hintText.Text = "W/S drive   A/D turn   Q/E weapon   Z/C item   Ctrl use item   F end turn   Space fire";
         }
 
-        /// <summary>draw_weaponinfo: "Weapon: Grenade x3   Fuse 2.0 s".</summary>
-        public static string WeaponLine(Loadout loadout)
+        /// <summary>
+        /// draw_weaponinfo: "Weapon: Grenade x3   Fuse 2.0 s"; while a grenade flies, its fuse counting down to the
+        /// hundredth (<paramref name="fuseLeft"/>, as draw_weaponinfo drew fuseLeft / shootFPS to two places; U.RICO-T47).
+        /// </summary>
+        public static string WeaponLine(Loadout loadout, double fuseLeft = -1)
         {
             if (loadout == null)
             {
                 return "Weapon: -";
             }
 
-            return "Weapon: " + ArsenalRules.Name(loadout.Weapon) + " " + ArsenalRules.CountLabel(loadout.Count(loadout.Weapon))
-                + (loadout.Weapon == Weapon.Grenade ? "   Fuse " + loadout.Fuse.ToString("0.0") + " s" : string.Empty);
+            string line = "Weapon: " + ArsenalRules.Name(loadout.Weapon) + " " + ArsenalRules.CountLabel(loadout.Count(loadout.Weapon));
+            if (fuseLeft >= 0)
+            {
+                return line + "   Fuse " + fuseLeft.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " s";
+            }
+
+            return line + (loadout.Weapon == Weapon.Grenade ? "   Fuse " + loadout.Fuse.ToString("0.0") + " s" : string.Empty);
         }
 
         /// <summary>draw_iteminfo: "Item: Teleporter x2   +1 bounce", or "Item: none".</summary>

@@ -43,7 +43,8 @@ namespace Ricochet
             line.SetPosition(1, b);
         }
 
-        private static Material Material()
+        /// <summary>The one vertex-coloured material every code-drawn line and mesh shares.</summary>
+        public static Material Material()
         {
             if (s_material == null)
             {

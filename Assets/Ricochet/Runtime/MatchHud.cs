@@ -205,7 +205,7 @@ namespace Ricochet
 
             // The local player's own lines run in practice as well as in a match.
             string aim = local != null ? local.AimReadout : null;
-            string vortex = local != null ? local.VortexHint : null;
+            string vortex = local != null ? local.VortexHint ?? local.GrenadeHint : null; // draw_vortexdetonate / draw_grenadefuse
             HudParts.Show(_aim, !string.IsNullOrEmpty(aim));
             if (!string.IsNullOrEmpty(aim))
             {

@@ -22,9 +22,17 @@ namespace Ricochet
         public const string Grenade = "spr_grenade";
         public const string VortexDevice = "spr_vortex_device";
 
-        // What a landing sets off (obj_explosion where a shell lands, obj_grenade_explosion for a grenade).
+        // What a landing sets off (obj_explosion where a shell lands, obj_grenade_explosion for a grenade; obj_boom_normal
+        // where a hit lands and obj_boom where a vortex is set off share spr_smallexplosion).
         public const string SmallExplosion = "spr_smallexplosion";
         public const string BigExplosion = "spr_bigexplosion";
+
+        // A vortex set off (obj_vortex once it sucks, and obj_vortex_child over it).
+        public const string Vortex = "spr_vortex";
+
+        // The items that stand on the level (obj_shieldwall, obj_redirector).
+        public const string ShieldWall = "spr_shieldwall";
+        public const string RedirectorArrow = "spr_redirector_arrow";
 
         // Crates falling and landed (obj_weapondrop, obj_itemdrop, obj_healthdrop, obj_powerup) and the icon over them.
         public const string WeaponFall = "spr_weapon_fall";

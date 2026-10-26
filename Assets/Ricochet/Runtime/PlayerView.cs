@@ -25,7 +25,8 @@ namespace Ricochet
         private int _seenAssists;        // every peer: the last assist whose beam it drew
         private int _adoptedAssists;     // owner: the last assist its local aim followed
         private float _assistShownUntil = -1f;
-        private LineRenderer _assistLine;
+        private DottedBeam _assistBeam;
+        private readonly List<Vector3> _beamPoints = new List<Vector3>();
         private int _seenPickups;
         private float _pickupShownUntil = -1f;
         private PlayerLabels _labels;           // the world labels (name, bar, floating figures), UR-T38
@@ -69,16 +70,21 @@ namespace Ricochet
             _turnMarker.enabled = HasTurn;
         }
 
-        private LineRenderer _previewLine;
+        private DottedBeam _previewBeam;
         private ShotView _shotView;
+        private readonly List<Vector3> _assistPoints = new List<Vector3>();
 
         /// <summary>True while this peer is drawing an aim-assist beam for this player.</summary>
         public bool AssistShown => _assistShownUntil > Time.time;
 
-        // Every peer: obj_aimassist's beam along the assisted path, fading out, gone once the shot is fired.
+        /// <summary>The owner's preview of the shot in draw_beam's dotted style (null on other peers).</summary>
+        public DottedBeam PreviewBeam => _previewBeam;
+
+        // Every peer: obj_aimassist's beam along the assisted path in draw_beam's dotted style, fading out (its alpha lost
+        // 0.003 a step), gone once the shot is fired.
         private void DrawAssist()
         {
-            if (_assistLine == null)
+            if (_assistBeam == null)
             {
                 return;
             }
@@ -88,24 +94,20 @@ namespace Ricochet
                 _seenAssists = Assists;
                 _assistShownUntil = Time.time + AssistSeconds;
                 ShotPath path = SolveVolley(Weapon.Cannon, AssistHeading, AssistPower, Arena.ArsenalRules.DefaultFuse, ExtraBounces).Main;
-                _assistLine.positionCount = path.Points.Count + 1;
-                _assistLine.SetPosition(0, Position);
+                _assistPoints.Clear();
                 for (int i = 0; i < path.Points.Count; i++)
                 {
-                    _assistLine.SetPosition(i + 1, Arena.ToUnity(path.Points[i]));
+                    _assistPoints.Add(Arena.ToUnity(path.Points[i]));
                 }
             }
 
             if (!AssistShown)
             {
-                _assistLine.positionCount = 0;
+                _assistBeam.Clear();
                 return;
             }
 
-            float alpha = Mathf.Clamp01((_assistShownUntil - Time.time) / AssistSeconds);
-            var color = new UnityEngine.Color(0.55f, 0.95f, 1f, alpha);
-            _assistLine.startColor = color;
-            _assistLine.endColor = color;
+            _assistBeam.Set(_assistPoints, Mathf.Clamp01((_assistShownUntil - Time.time) / AssistSeconds));
         }
 
         // Every peer: draw a volley this player fired: its flight, the fire sound, and the aim-assist beam gone with it.
@@ -242,5 +244,30 @@ namespace Ricochet
                 return null;
             }
         }
+
+        /// <summary>
+        /// draw_grenadefuse.gml: how the owner sets the grenade's fuse, while they hold the grenade on their turn and have
+        /// not driven (the original's keys 1-6; here 1/2/3), or null when it does not apply (U.RICO-T47).
+        /// </summary>
+        public string GrenadeHint
+        {
+            get
+            {
+                if (!IsSpawned || !LocallyControlled || ShotInFlight || Moved)
+                {
+                    return null;
+                }
+
+                return Loadout.Weapon == Weapon.Grenade && Turns.MayFire(Session, Seat) ? "You can adjust the grenade fuse by pressing [1-3]" : null;
+            }
+        }
+
+        /// <summary>
+        /// The seconds left on this player's grenade in the air on this peer (draw_weaponinfo's fuseLeft counting down,
+        /// grenade_countdown.gml), or -1 when no grenade of theirs is flying.
+        /// </summary>
+        public double FuseLeft => ShotInFlight && LastVolley != null && LastVolley.Weapon == Weapon.Grenade
+            ? System.Math.Max(0, ShotFuse - SecondsInFlight)
+            : -1;
     }
 }
