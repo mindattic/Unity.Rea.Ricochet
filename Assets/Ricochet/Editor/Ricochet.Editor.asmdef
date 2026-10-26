@@ -2,7 +2,10 @@
     "name": "Ricochet.Editor",
     "rootNamespace": "Ricochet.Tooling",
     "references": [
-        "Ricochet.Core"
+        "Ricochet.Core",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"

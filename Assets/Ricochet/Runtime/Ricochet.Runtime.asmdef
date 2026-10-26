@@ -13,7 +13,10 @@
         "Unity.TextMeshPro",
         "UnityEngine.UI",
         "Unity.Shared",
-        "Unity.Shared.Core"
+        "Unity.Shared.Core",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

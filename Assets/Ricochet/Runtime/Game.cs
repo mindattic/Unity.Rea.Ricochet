@@ -43,6 +43,11 @@ namespace Ricochet
                 return;
             }
 
+            if (Camera.main != null)
+            {
+                RenderStyle.Current.ConfigureCamera(Camera.main);
+            }
+
             // The level is the same Core data on every peer; draw it. The match HUD draws once a match starts.
             LevelView.Create(Arena.Level);
             MatchHud.Create();
