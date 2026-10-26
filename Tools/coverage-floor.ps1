@@ -9,7 +9,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $file = if (Test-Path $Report -PathType Leaf) { Get-Item $Report }
-        else { Get-ChildItem $Report -Recurse -Filter coverage.cobertura.xml | Select-Object -First 1 }
+        else { Get-ChildItem $Report -Recurse -Filter coverage.cobertura.xml | Sort-Object LastWriteTime -Descending | Select-Object -First 1 }
 if (-not $file) { throw "No coverage.cobertura.xml under '$Report'." }
 [xml]$xml = Get-Content $file.FullName
 $rows = foreach ($class in $xml.SelectNodes('//class')) {

@@ -8,9 +8,15 @@ on:
   pull_request:
     branches: [main]
 
+# The unity-test-runner steps create check runs, which needs checks: write.
+permissions:
+  contents: read
+  checks: write
+
+# Superseded pull-request runs are cancelled; runs on main are not, so each landing keeps its own Unity result.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # The fast job: Core.slnx (Ricochet.Core + its NUnit tests), no Unity, with Ricochet.Core's line coverage held to a floor.
@@ -57,7 +63,7 @@ jobs:
           fi
 
   unity:
-    needs: unity-gate
+    needs: [test, unity-gate]
     if: needs.unity-gate.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 75
@@ -106,21 +112,25 @@ jobs:
         with:
           name: unity-test-results
           path: |
-            Unity.Ricochet/editmode-results
-            Unity.Ricochet/playmode-results
-          if-no-files-found: ignore
+            editmode-results
+            playmode-results
+          if-no-files-found: warn
 
       # Tools/deploy.ps1 drives a local Windows Unity.exe through this same build method; GameCI builds the Windows
       # player from its Linux image with the identical entry point.
+      # !cancelled(): a red PlayMode run still gets its build, so the build is a check in its own right.
       - uses: game-ci/unity-builder@v4
+        if: ${{ !cancelled() }}
         with:
           projectPath: Unity.Ricochet
           targetPlatform: StandaloneWindows64
           buildMethod: Ricochet.Tooling.RicochetBuild.BuildWindows
           allowDirtyBuild: true
       - name: Check the player was produced
+        if: ${{ !cancelled() }}
         run: test -f Unity.Ricochet/Build/Ricochet/Ricochet.exe
       - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
           name: Ricochet-Windows
           path: Unity.Ricochet/Build/Ricochet
