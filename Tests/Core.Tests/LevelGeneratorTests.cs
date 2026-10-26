@@ -44,6 +44,22 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
+        public void SeatsOneToThreeCanAlwaysTradeShotsWithSeatZero()
+        {
+            // U.RICO-T72: a random level used to leave about one seed in ten with no shot between seats 0 and 1.
+            for (int seed = 1; seed <= 100; seed++)
+            {
+                RoundLayout round = LevelGenerator.Generate(seed);
+                for (int seat = 1; seat < 4; seat++)
+                {
+                    var targets = new[] { new Target("a", round.SpawnPoint(0), Seating.PlayerRadius), new Target("b", round.SpawnPoint(seat), Seating.PlayerRadius) };
+                    Assert.That(BounceSolver.FindHeading(round.SpawnPoint(0), 1, "b", round.Level, targets), Is.Not.Null, "seed " + seed + " 0 to " + seat);
+                    Assert.That(BounceSolver.FindHeading(round.SpawnPoint(seat), 1, "a", round.Level, targets), Is.Not.Null, "seed " + seed + " " + seat + " to 0");
+                }
+            }
+        }
+
+        [Test]
         public void SixteenSeatSpots_AreInsideTheLevel_ClearOfEveryWall_TheDummies_AndEachOther()
         {
             for (int seed = 0; seed < 30; seed++)

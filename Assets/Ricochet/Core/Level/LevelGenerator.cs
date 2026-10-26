@@ -112,6 +112,12 @@ namespace Ricochet.Core.Level
 
         private const int Attempts = 150;
 
+        /// <summary>How many spots are tried for a seat that must be able to hit seat 0.</summary>
+        private const int ReachAttempts = 60;
+
+        /// <summary>The seats (from 0) that are guaranteed a shot to and from seat 0: enough for any small game.</summary>
+        private const int ReachSeats = 4;
+
         /// <summary>How many shapes are tried for a wall before it is given up.</summary>
         private const int Picks = 12;
 
@@ -160,7 +166,7 @@ namespace Ricochet.Core.Level
             }
 
             var level = new Level(MinX, MinY, MaxX, MaxY, walls);
-            return new RoundLayout(level, PickSpots(dice, shapes, avoid), shapes.Count);
+            return new RoundLayout(level, PickSpots(dice, shapes, avoid, level), shapes.Count);
         }
 
         /// <summary>setup_shapes.gml's rotation switch: none, one of eight, one of four or any whole angle.</summary>
@@ -245,7 +251,7 @@ namespace Ricochet.Core.Level
             return keep;
         }
 
-        private static List<Vec2> PickSpots(Random dice, List<PlacedShape> shapes, List<Vec2> avoid)
+        private static List<Vec2> PickSpots(Random dice, List<PlacedShape> shapes, List<Vec2> avoid, Level level)
         {
             var spots = new List<Vec2>(MatchRules.MaxSeats);
             double edge = Seating.PlayerRadius + 0.3;
@@ -253,6 +259,16 @@ namespace Ricochet.Core.Level
             {
                 Vec2 spot = default;
                 bool found = false;
+                // First look for a spot that can trade shots with seat 0 (for the first few seats), so a small game never
+                // starts in a level where nobody can hit anybody (U.RICO-T72); a crowded level falls through to the rest.
+                for (int attempt = 0; attempt < ReachAttempts && !found && seat > 0 && seat < ReachSeats; attempt++)
+                {
+                    spot = new Vec2(Between(dice, MinX + edge, MaxX - edge), Between(dice, MinY + edge, MaxY - edge));
+                    found = ClearOfAll(spot, SeatGap, spots) && ClearOfAll(spot, DummyClearance, avoid)
+                        && ClearOfShapes(spot, SeatClearance, shapes)
+                        && CanTradeShots(level, spots[0], spot);
+                }
+
                 // Relax the clearances only if a crowded level leaves no room, so a seat is never left without a spot.
                 for (int relax = 0; relax < 4 && !found; relax++)
                 {
@@ -277,6 +293,13 @@ namespace Ricochet.Core.Level
             }
 
             return spots;
+        }
+
+        /// <summary>True when each of the two standing points has an aim that hits the other (with nobody else in the way).</summary>
+        private static bool CanTradeShots(Level level, Vec2 a, Vec2 b)
+        {
+            var targets = new[] { new Target("a", a, Seating.PlayerRadius), new Target("b", b, Seating.PlayerRadius) };
+            return BounceSolver.FindHeading(a, 1, "b", level, targets) != null && BounceSolver.FindHeading(b, 1, "a", level, targets) != null;
         }
 
         private static bool ClearOfAll(Vec2 point, double distance, List<Vec2> others)
