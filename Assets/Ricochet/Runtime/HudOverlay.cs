@@ -7,7 +7,7 @@
 //   The turn card (draw_weaponinfo, draw_iteminfo, draw_potential, draw_scores): whose turn it is, in their colour, with
 //   their score, the weapon they carry (and a grenade's fuse), their item, and the combo the shot in the air would score.
 //   In practice it shows the local player's own loadout. Everyone sees it, as everyone at the original's one screen did.
-// The health bars, clock, turn order and the AI's thinking line stay MatchHud's IMGUI: MaProgressBar has no per-player
+// The health bars, clock, turn order and the AI's thinking line are MatchHud's own uGUI canvas (UR-T38): MaProgressBar has no per-player
 // colour, and a bar in each player's own colour is the point of them.
 // Both cards sit above the bottom row of seats (UR-T18): their opaque backdrop used to cover the tanks and names of the
 // seats along the bottom of the level on the left, where the announcer card is widest.
@@ -239,7 +239,7 @@ namespace Ricochet
                 return;
             }
 
-            // Below the menus (a MenuStack sorts at 100) and the kit's overlay; IMGUI draws over all of it.
+            // Below the menus (a MenuStack sorts at 100) and the kit's overlay; the HUD's own canvas (8) sits under this one.
             _canvas = MaCanvas.Create("Ricochet HUD", 10);
             _canvas.transform.SetParent(transform, false);
 

@@ -109,7 +109,7 @@ copy of any of these is a bug.
   (the original's were recordings); a hit on an opponent scores the shooter 100 + 25 a bounce + 5 a tenth of a second in
   the air for the whole match (hit.gml/draw_potential.gml), shown on each seat's bar; a turn card shows everyone whose
   turn it is with their score, weapon, item and combo (draw_weaponinfo/draw_iteminfo). The cards are MindAttic Components
-  widgets; the per-colour health bars stay IMGUI (UR-T8; `Core/Announcer.cs`, `MatchRules.Points` and `Match`'s scores
+  widgets; the per-colour health bars are MatchHud's own uGUI (UR-T8, IMGUI until UR-T38; `Core/Announcer.cs`, `MatchRules.Points` and `Match`'s scores
   tested by `dotnet test Core.slnx`, the wire and HUD by `Tests/PlayMode/AnnouncerTests.cs`).
 - ✅ Menu flow and rooms: the original's room graph (titlescreen → mainmenu → players → maproom → gamescreen → endgame,
   with settings, controls, howtoplay and credits off the main menu) as a title screen and MindAttic Components screens on the

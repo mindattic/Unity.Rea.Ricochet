@@ -11,6 +11,7 @@
         "Unity.Multiplayer.UI.Testing",
         "Unity.Shared",
         "Unity.Shared.Core",
+        "Unity.TextMeshPro",
         "MindAttic.Components.Unity",
         "Unity.Netcode.Runtime",
         "Unity.Netcode.Runtime.Tests",

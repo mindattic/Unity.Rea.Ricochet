@@ -25,7 +25,7 @@ namespace Ricochet
 
         private SpriteRenderer _body;
         private float _shownY = float.NaN;
-        private GUIStyle _markStyle;
+        private TMPro.TextMeshPro _mark; // the kit's world label over the square (UR-T38; it was IMGUI)
 
         public DropKind DropKind => (DropKind)Mathf.Clamp(Kind, 0, DropRules.KindCount - 1);
 
@@ -61,6 +61,13 @@ namespace Ricochet
         protected override void OnSpawned()
         {
             _body = Shapes.Square(gameObject, Size, -1);
+            if (_mark == null)
+            {
+                // The crate's own scale is its size, so the label undoes it to stay a normal size in the world.
+                _mark = WorldText.Create(transform, "Mark", 0.35f, Color.white, bold: true);
+                _mark.transform.localScale = Vector3.one / Size;
+            }
+
             _shownY = Landed ? Spot.y : (float)(Arena.Level.MaxY + 1);
             Place();
         }
@@ -93,24 +100,11 @@ namespace Ricochet
                 color.a = Landed ? 1f : 0.7f;
                 _body.color = color;
             }
-        }
 
-        private void OnGUI()
-        {
-            Camera camera = Camera.main;
-            if (!IsSpawned || camera == null)
+            if (_mark != null)
             {
-                return;
+                WorldText.Set(_mark, MarkOf(DropKind));
             }
-
-            if (_markStyle == null)
-            {
-                _markStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = 14 };
-                _markStyle.normal.textColor = Color.white;
-            }
-
-            Vector3 screen = camera.WorldToScreenPoint(transform.position);
-            GUI.Label(new Rect(screen.x - 15f, Screen.height - screen.y - 12f, 30f, 24f), MarkOf(DropKind), _markStyle);
         }
     }
 }

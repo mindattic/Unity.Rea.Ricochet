@@ -149,7 +149,7 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    100 steps at 1020 fps), are `MatchRules.Points` and `Match`'s per-seat `Score` (a pellet scores its share; reset when a
    match starts, kept across rounds), mirrored on each `Player`. draw_weaponinfo/draw_iteminfo/draw_potential became the
    turn card: everyone sees the current seat's weapon, item and combo, as everyone at the one screen did. The health bars,
-   clock and turn order stay IMGUI (MaProgressBar has no per-player colour). Departures: no audio (the recordings are the
+   clock and turn order are MatchHud's own uGUI, built in code (MaProgressBar has no per-player colour; UR-T38 replaced the IMGUI). Departures: no audio (the recordings are the
    original's), and the turn does not wait for a line to finish as check_endgame waited for the recording; the score
    goal that ended a game (goal = 500) belongs with UR-T9's endgame.
 7. **UR-T9** (done): full menu/room flow connecting everything built so far.

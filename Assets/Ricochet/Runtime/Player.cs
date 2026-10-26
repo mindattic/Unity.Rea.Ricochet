@@ -26,7 +26,7 @@
 // the distance it went off at, so every peer cuts its own flight there too.
 // The HUD (UR-T8): the server mirrors each player's match score; the weapon and item the player whose turn it is carries
 // are shown to everyone by MatchHud's turn card (draw_weaponinfo / draw_iteminfo), so this draws only the name, the
-// pickup text, the small health bar and, for its owner, draw_bounceinfo's aim line.
+// pickup text, the small health bar (PlayerLabels) and, for its owner, draw_bounceinfo's aim line (MatchHud reads it).
 // The profile (UR-T10): a human's name and colour are the ones their MindAttic profile (Unity.Shared) holds; the kit's
 // front end sends them with the connection, so they reach the roster this reads. A shot's fire, bounces and landing
 // play through GameAudio at the profile's effect volume.
@@ -195,6 +195,7 @@ namespace Ricochet
         private LineRenderer _assistLine;
         private int _seenPickups;
         private float _pickupShownUntil = -1f;
+        private PlayerLabels _labels;           // the world labels (name, bar, floating figures), UR-T38
 
         private int _seenShots;             // every peer: the last shot it has drawn
         private Volley _preview;            // owner only: the shot as it would fly right now
@@ -720,6 +721,12 @@ namespace Ricochet
         protected override void OnDespawned()
         {
             s_spawned.Remove(this);
+            if (_labels != null)
+            {
+                _labels.Destroy();
+                _labels = null;
+            }
+
             if (_registered != null)
             {
                 _registered.RemovePlayer(_playerId); // back from its synced values if the kit respawns it on a reconnect
@@ -967,6 +974,7 @@ namespace Ricochet
             }
 
             DrawAssist();
+            RefreshLabels();
 
             if (IsServer)
             {
@@ -1307,45 +1315,49 @@ namespace Ricochet
             ? _shotView.Flight.Flights[0].Travelled / LastVolley.Speed
             : 0;
 
-        // The name under the square, and for the owner draw_bounceinfo's line (angle, power, "Bounces: n/max"). The weapon
-        // and item are MatchHud's turn card (Components widgets); this stays IMGUI, drawn at each player's spot.
-        private void OnGUI()
+        // The name under the square, the pickup text, the damage figure and the small health bar are PlayerLabels (world
+        // TextMeshPro, UR-T38); the owner's draw_bounceinfo line and the vortex hint are MatchHud's, read from here.
+        private void RefreshLabels()
         {
-            Camera camera = Camera.main;
-            if (!IsSpawned || camera == null)
+            if (_labels == null)
             {
-                return;
+                _labels = PlayerLabels.Create(name);
             }
 
-            Vector3 screen = camera.WorldToScreenPoint(transform.position + Vector3.down * 0.55f);
-            var label = new Rect(screen.x - 80f, Screen.height - screen.y, 160f, 22f);
-            var centered = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
-            GUI.Label(label, DisplayName + (LocallyControlled ? " (you)" : Away ? " (reconnecting...)" : string.Empty), centered);
-
-            // show_float_text: what the last crate gave, rising over the player for a moment.
+            string pickup = null;
+            float pickupProgress = 0f;
             if (Time.time < _pickupShownUntil)
             {
-                float rise = (1f - (_pickupShownUntil - Time.time) / PickupSeconds) * 30f;
-                GUI.Label(new Rect(screen.x - 120f, Screen.height - screen.y - 70f - rise, 240f, 22f), PickupText(LastPickup), centered);
+                // show_float_text: what the last crate gave, rising over the player for a moment.
+                pickup = PickupText(LastPickup);
+                pickupProgress = 1f - (_pickupShownUntil - Time.time) / PickupSeconds;
             }
 
             // The server's result for a shot that struck this player (UR-T12): the damage it took, rising and fading.
+            string hurt = null;
+            float hurtLeft = 0f;
             if (Time.time < _hurtShownUntil)
             {
-                float left = (_hurtShownUntil - Time.time) / HurtSeconds;
-                var hurt = new GUIStyle(centered) { fontStyle = FontStyle.Bold };
-                hurt.normal.textColor = new UnityEngine.Color(1f, 0.3f, 0.25f, Mathf.Clamp01(left * 2f));
-                GUI.Label(new Rect(screen.x - 60f, Screen.height - screen.y - 50f - (1f - left) * 24f, 120f, 22f), "-" + _hurt, hurt);
+                hurt = "-" + _hurt;
+                hurtLeft = (_hurtShownUntil - Time.time) / HurtSeconds;
             }
 
             // In a match, a small health bar under the name (the roster's bars along the top are MatchHud's).
-            if (Turns.For(Session) != null && Seat >= 0)
-            {
-                MatchHud.Bar(new Rect(screen.x - 30f, Screen.height - screen.y + 20f, 60f, 6f), Health / (float)Arena.MatchRules.MaxHealth, Color, InRound);
-            }
+            bool bar = Turns.For(Session) != null && Seat >= 0;
+            _labels.Refresh(transform.position, DisplayName + (LocallyControlled ? " (you)" : Away ? " (reconnecting...)" : string.Empty),
+                pickup, pickupProgress, hurt, hurtLeft, bar, Health / (float)Arena.MatchRules.MaxHealth, Color, InRound);
+        }
 
-            if (LocallyControlled)
+        /// <summary>The owner's draw_bounceinfo line (angle, power, "Bounces: n/max" and where the shot ends), or null for anyone else.</summary>
+        public string AimReadout
+        {
+            get
             {
+                if (!IsSpawned || !LocallyControlled)
+                {
+                    return null;
+                }
+
                 bool flying = ShotInFlight && _shotView != null && _shotView.Flight != null;
                 ShotPath shown = flying ? _shotView.Flight.Volley.Main : _preview != null ? _preview.Main : null;
                 int bounces = flying ? _shotView.Flight.Flights[0].Contacts : shown != null ? shown.Contacts.Count : 0;
@@ -1355,20 +1367,27 @@ namespace Ricochet
                     : _preview != null && _preview.HasBlast ? string.Empty
                     : shown.End == ShotEndKind.Target ? "  -> HIT"
                     : shown.End == ShotEndKind.Spent ? "  -> falls short" : string.Empty;
-                GUI.Label(new Rect(12f, Screen.height - 34f, 900f, 24f),
-                    "Angle " + Mathf.RoundToInt((float)_aim.Heading) + "°   Power " + Mathf.RoundToInt((float)_aim.Power * 100f) + "%   Bounces: "
-                    + bounces + "/" + (Arena.Rules.MaxBounces + ExtraBounces) + end + "   (A/D aim, Up/Down power, W/S drive, Space fire, F end turn)");
+                return "Angle " + Mathf.RoundToInt((float)_aim.Heading) + "°   Power " + Mathf.RoundToInt((float)_aim.Power * 100f) + "%   Bounces: "
+                    + bounces + "/" + (Arena.Rules.MaxBounces + ExtraBounces) + end + "   (A/D aim, Up/Down power, W/S drive, Space fire, F end turn)";
+            }
+        }
 
-                Loadout loadout = Loadout;
-
-                // draw_vortexdetonate.gml: tell the player how to set the vortex off.
-                if ((loadout.Weapon == Weapon.Vortex && Turns.MayFire(Session, Seat)) || VortexInFlight)
+        /// <summary>draw_vortexdetonate.gml: how the owner sets the vortex off, or null when it does not apply.</summary>
+        public string VortexHint
+        {
+            get
+            {
+                if (!IsSpawned || !LocallyControlled)
                 {
-                    var hint = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
-                    hint.normal.textColor = new UnityEngine.Color(1f, 0.35f, 0.3f);
-                    GUI.Label(new Rect(0f, Screen.height - 28f, Screen.width, 24f),
-                        VortexInFlight ? "Press [SPACE] to detonate the Vortex Device" : "After you fire, press [SPACE] to detonate the Vortex Device", hint);
+                    return null;
                 }
+
+                if ((Loadout.Weapon == Weapon.Vortex && Turns.MayFire(Session, Seat)) || VortexInFlight)
+                {
+                    return VortexInFlight ? "Press [SPACE] to detonate the Vortex Device" : "After you fire, press [SPACE] to detonate the Vortex Device";
+                }
+
+                return null;
             }
         }
 

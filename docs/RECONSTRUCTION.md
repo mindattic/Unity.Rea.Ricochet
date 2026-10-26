@@ -125,7 +125,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Content and tuning as validated data | met: `Assets/StreamingAssets/Settings/*.json` (match, shot, hazards, arsenal, level, shapes, maps, announcer, menu, registry) loaded by `Core/Data/GameData` through an engine-free JSON parser and `ISettingsSource`, every problem reported with file, key and line; `Tests/Core.Tests/GameDataTests.cs` loads every shipped file | UR-T35 |
 | Input System | gap: Active Input Handling is the legacy manager, no actions asset, no rebinding | UR-T36 |
 | URP behind a pipeline-agnostic layer | gap: no pipeline asset assigned in Graphics or Quality | UR-T37 |
-| UI Toolkit or shared components, no IMGUI | gap: `MatchHud`, `Crate`, `Player` still use `OnGUI` | UR-T38 |
+| UI Toolkit or shared components, no IMGUI | done: `MatchHud` is a uGUI canvas of Components labels, `Player`/`Crate` labels are world TextMeshPro (`PlayerLabels`, `WorldText`); no `OnGUI` remains | UR-T38 |
 | Small focused components | gap: `Player.cs` 1174 lines, `Arena.cs` 975 | UR-T39 |
 | Tests and CI | partial: Core and PlayMode tests exist, CI is the nightly smoke only | UR-T40 |
 | Unity.Shared profiles and settings | partial: name, colour and audio read from the profile (UR-T10); the match setup is not stored | UR-T41 |
