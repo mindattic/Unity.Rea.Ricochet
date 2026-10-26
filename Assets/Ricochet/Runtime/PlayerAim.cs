@@ -21,6 +21,7 @@ namespace Ricochet
         private float _aimSentAt = -1f;
         private float _sentHeading = float.NaN;
         private float _sentPower = float.NaN;
+        private readonly EngineSound _engineSound = new EngineSound(); // owner only: the engine's sounds (U.RICO-T50)
         private double? _snapBackHeading;   // owner only: the heading before the last numpad snap (obj_game's previousAngle)
 
         private Volley _preview;            // owner only: the shot as it would fly right now
@@ -191,6 +192,11 @@ namespace Ricochet
                 snapped = true;
             }
 
+            if (snapped)
+            {
+                GameAudio.Play(SoundCue.Type); // obj_game's numpad keys
+            }
+
             bool changed = snapped || _aim.Step(GameInput.Turn(), GameInput.Charge(), Time.deltaTime, Arena.Rules) || assisted;
             float heading = (float)_aim.Heading;
             float power = (float)_aim.Power;
@@ -217,6 +223,8 @@ namespace Ricochet
                 Drive(0); // stop_moving.gml on key release
             }
 
+            HearDriving(drive != 0, GameInput.Turn() != 0f && mayAct);
+
             if (GameInput.EndTurn() && mayFire && !ShotInFlight)
             {
                 EndTurn();
@@ -225,29 +233,49 @@ namespace Ricochet
             int cycleWeapon = GameInput.CycleWeapon();
             if (cycleWeapon != 0 && mayAct)
             {
+                GameAudio.Play(SoundCue.Flick); // cycle_weapon_left / _right.gml
                 CycleWeapon(cycleWeapon);
             }
 
             int cycleItem = GameInput.CycleItem();
             if (cycleItem != 0 && mayAct)
             {
+                GameAudio.Play(SoundCue.Flick); // cycle_item_left / _right.gml
                 CycleItem(cycleItem);
             }
 
             int fuse = GameInput.Fuse();
             if (fuse != 0 && mayAct && Loadout.Weapon == Weapon.Grenade)
             {
+                GameAudio.Play(SoundBook.Fuse(fuse)); // obj_game's keys 1-3: sfx_fuse1-3
                 Fuse(fuse);
             }
 
-            if (GameInput.UseItem() && mayAct)
+            // use_item.gml: sfx_disabled with none of the item left, or once the shot is fired (every peer hears the item's
+            // own sound when the server uses it).
+            bool useItem = GameInput.UseItem();
+            if (useItem && mayAct)
             {
+                if (!Loadout.Has(Loadout.Item))
+                {
+                    GameAudio.Play(SoundCue.Disabled);
+                }
+
                 UseItem(heading, power);
+            }
+            else if (useItem && mayFire)
+            {
+                GameAudio.Play(SoundCue.Disabled);
             }
 
             bool fire = GameInput.Fire();
             if (fire && mayAct && !Moved)
             {
+                if (!Loadout.Has(Loadout.Weapon))
+                {
+                    GameAudio.Play(SoundCue.Disabled); // fire_weapon.gml with none of the weapon left
+                }
+
                 Fire(heading, power);
             }
             else if (fire && VortexInFlight)
@@ -280,6 +308,35 @@ namespace Ricochet
 
                     _previewBeam.Set(_beamPoints, 1f);
                 }
+            }
+        }
+
+        // The owner's tank as the original sounded it (U.RICO-T50): play_movement_sound.gml's sfx_engine_turnon then sfx_engine
+        // while a drive key is held, stop_moving.gml's sfx_engine_shutoff on release; rotate_left / rotate_right.gml's sfx_turn,
+        // again each time it ends, while the barrel turns and the tank stands (stopped on the key's release).
+        private void HearDriving(bool driving, bool turning)
+        {
+            switch (_engineSound.Update(driving, GameAudio.IsPlaying(SoundCue.EngineTurnOn), GameAudio.IsPlaying(SoundCue.Engine)))
+            {
+                case EngineSound.Step.TurnOn:
+                    GameAudio.PlayVoice(SoundCue.EngineTurnOn);
+                    break;
+                case EngineSound.Step.Run:
+                    GameAudio.PlayVoice(SoundCue.Engine);
+                    break;
+                case EngineSound.Step.ShutOff:
+                    GameAudio.Stop(SoundCue.Engine);
+                    GameAudio.Play(SoundCue.EngineShutoff);
+                    break;
+            }
+
+            if (turning && !_engineSound.Moving)
+            {
+                GameAudio.Hold(SoundCue.Turn, this);
+            }
+            else
+            {
+                GameAudio.Release(SoundCue.Turn, this);
             }
         }
 

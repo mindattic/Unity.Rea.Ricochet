@@ -29,6 +29,7 @@ using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
 using Ricochet.Core.Art;
 using Ricochet.Core.Level;
+using Ricochet.Core.Menu;
 using Ricochet.Core.Net;
 using UnityEngine;
 using Cmd = Ricochet.Core.Commands;
@@ -65,6 +66,7 @@ namespace Ricochet
         private Rail _rail;
         private BlastRing _ring;
         private Implosion _implosion;
+        private VortexMode _heardMode = VortexMode.Done;
 
         /// <summary>The player whose shots it draws.</summary>
         public Player Owner => _owner;
@@ -156,6 +158,7 @@ namespace Ricochet
         private void OnDisable()
         {
             Presentation.Raised -= OnEvent;
+            HearImplosion(VortexMode.Done); // a view going lets go of its vortex's sounds
         }
 
         // The events about this view's owner: a shot fired is drawn in their colour, a vortex set off cuts it short.
@@ -539,6 +542,38 @@ namespace Ricochet
             }
 
             _implosion.Step(dt);
+            HearImplosion(_implosion.Showing ? _implosion.Mode : VortexMode.Done);
+        }
+
+        // vortex_step.gml's sounds (U.RICO-T50): sfx_vortex_suck again each time it ends while it pulls in, stopped when it
+        // blows out, and sfx_vortex_blow again each time it ends while it blows; each left to play out after.
+        private void HearImplosion(VortexMode mode)
+        {
+            if (mode == _heardMode)
+            {
+                return;
+            }
+
+            if (_heardMode == VortexMode.Sucking)
+            {
+                GameAudio.Release(SoundCue.VortexSuck, this, stop: false);
+            }
+            else if (_heardMode == VortexMode.Blowing)
+            {
+                GameAudio.Release(SoundCue.VortexBlow, this, stop: false);
+            }
+
+            if (mode == VortexMode.Sucking)
+            {
+                GameAudio.Hold(SoundCue.VortexSuck, this);
+            }
+            else if (mode == VortexMode.Blowing)
+            {
+                GameAudio.Stop(SoundCue.VortexSuck);
+                GameAudio.Hold(SoundCue.VortexBlow, this);
+            }
+
+            _heardMode = mode;
         }
 
         // The landing effects drawn from the original's sprites play their frames at the room speed.

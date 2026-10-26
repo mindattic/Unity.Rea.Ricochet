@@ -140,6 +140,10 @@ namespace Ricochet
             _wasActive = Active;
             _beam = 1f;
             Build();
+            if (HazardKind == HazardKind.Redirector)
+            {
+                GameAudio.Play(Ricochet.Core.Menu.SoundCue.RedirectorGrow); // redirector_detonate.gml: it stops and opens out
+            }
         }
 
         protected override void OnDespawned()

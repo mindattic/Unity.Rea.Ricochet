@@ -137,4 +137,7 @@ for design reference only — no GML source is copied into this repo. Its images
 Tools/import-gml-art.ps1` and `Tools/import-gml-fonts.ps1` mirror every sprite, background and baked font atlas into
 `Assets/Ricochet/Art` and `Fonts` (described, with each one's original path, in `gml-art.json` / `gml-fonts.json`)
 and build the sprites, atlases, TextMeshPro fonts and `Resources/Ricochet/ArtCatalogue` from them in Unity (see the BIBLE's
-"Art and fonts"). The PNGs are in Git LFS: run `git lfs install` once, or `git lfs push origin HEAD` before pushing.
+"Art and fonts"). Its sound effects are: `powershell -File Tools/import-gml-sound.ps1` mirrors the 70 non-voice sfx_*
+recordings into `Assets/Ricochet/Resources/Ricochet/Sound` (described in `Assets/Ricochet/Audio/gml-sound.json`; see the
+BIBLE's "Sound effects"). The PNGs and recordings are in Git LFS: run `git lfs install` once, or `git lfs push origin
+HEAD` before pushing.

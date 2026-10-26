@@ -100,7 +100,7 @@ namespace Ricochet
         public static void CrateBurst(Vector2 at)
         {
             SpriteBurst.Play(GmlSprites.BigExplosion, at, (float)HitLooks.CrateBurstImageSpeed, KnockOutOrder);
-            GameAudio.Play(SoundCue.Blast); // sfx_explode
+            GameAudio.Play(SoundCue.Explode); // sfx_explode
             ScorchAt(at, true);
         }
 
@@ -258,7 +258,7 @@ namespace Ricochet
 
         private void AddKnockOut(Vector2 at)
         {
-            GameAudio.Play(SoundCue.Blast); // sfx_explode
+            GameAudio.Play(SoundCue.Explode); // sfx_explode
             AddScorch(at, true);
             SpriteRenderer renderer = null;
             Sprite first = GameArt.Frame(GmlSprites.BigExplosion);

@@ -11,6 +11,7 @@ using MindAttic.Components.Unity; // MaCanvas, MaText, TextStyle
 using Ricochet.Core.Arsenal;
 using Ricochet.Core.Art;
 using Ricochet.Core.Match;
+using Ricochet.Core.Menu;
 using TMPro;
 using Unity.Multiplayer;          // NetSession
 using UnityEngine;
@@ -213,6 +214,15 @@ namespace Ricochet
         {
             Player player = _subject;
             if (player == null || !player.IsLocalHuman || !Turns.MayFire(_hud.CurrentSession, player.Seat) || player.ShotInFlight)
+            {
+                return;
+            }
+
+            // U.RICO-T50: sfx_flick for one the player carries, sfx_disabled for one they have none of.
+            Loadout loadout = player.Loadout;
+            bool carried = index < ArsenalRules.Kinds ? loadout.Count((Weapon)index) > 0 : loadout.Count((Item)(index - ArsenalRules.Kinds)) > 0;
+            GameAudio.Play(carried ? SoundCue.Flick : SoundCue.Disabled);
+            if (!carried)
             {
                 return;
             }

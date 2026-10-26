@@ -2,25 +2,67 @@
 // profile (Unity.Shared: Profiles.Current.Settings.Common's musicVolume, sfxVolume, muteMusic, muteSfx), the same four
 // every MindAttic game reads, so they are set once and kept from session to session and from game to game; the
 // Settings screen's sliders and toggles (Game adds them beside the kit's name and colour, which the kit already reads
-// from and saves to the same profile) write straight back to it. The effects are Core's Tones rendered into clips once;
-// a player's shot plays them as it fires, bounces and lands, heard from the Presentation feed's ShotFired, Bounced and
-// ShotLanded events (UR-T65), not by being called from the player. Music plays from the music source at the music volume
+// from and saves to the same profile) write straight back to it. Music plays from the music source at the music volume
 // when the game gives it a clip. Nothing is created on a headless peer (a dedicated server or a bot).
+//
+// U.RICO-T50: the effects are the original's own recordings (Resources/Ricochet/Sound, Tools/import-gml-sound.ps1), one per
+// Core SoundCue; Core's SoundBook says which cue each moment plays and at what volume. From the Presentation feed: a shot's
+// fire sound per weapon (ShotFired), its bounces per weapon and sfx_bend off a redirector (Bounced), sfx_explode where it
+// lands (ShotLanded), the laser's loop once its fire sound ends and the grenade's beep while each flies. The views play the
+// rest where they draw it (crates, the vortex, the Ready card, the HUD, the owner's keys), and the server's flourish
+// carries the events no view draws (items, a shrink, a teleport, a pickup, the countdown, a knock-out) to every peer.
+//
+// Sounds the original checked with audio_is_playing (the engine, the turn, the loops, the sonar) play on a voice of their
+// own whose length is kept here, so "is it still playing" answers the same muted (U.RICO-T71) as heard. Every cue chosen
+// is recorded with the volume it was given (Requests, LastCue, LastVolume), so tests see what would be heard without
+// anything being heard.
 using System.Collections.Generic;
-using Ricochet.Core.Commands;
+using Ricochet.Core.Arsenal;
 using Ricochet.Core.Menu;
 using Unity.Shared;
 using Unity.Shared.Core;
 using UnityEngine;
+using Cmd = Ricochet.Core.Commands;
 
 namespace Ricochet
 {
     public sealed class GameAudio : MonoBehaviour
     {
+        /// <summary>How many recent requests <see cref="Requests"/> keeps.</summary>
+        public const int RequestsKept = 128;
+
         private readonly Dictionary<SoundCue, AudioClip> _clips = new Dictionary<SoundCue, AudioClip>();
+        private readonly Dictionary<SoundCue, AudioSource> _voices = new Dictionary<SoundCue, AudioSource>();
+        private readonly Dictionary<SoundCue, float> _busyUntil = new Dictionary<SoundCue, float>();
+        private readonly Dictionary<SoundCue, HashSet<object>> _holds = new Dictionary<SoundCue, HashSet<object>>();
+        private readonly Dictionary<SoundCue, SoundCue?> _holdAfter = new Dictionary<SoundCue, SoundCue?>();
+        private readonly List<SoundCue> _pending = new List<SoundCue>();
+        private readonly List<SoundRequest> _requests = new List<SoundRequest>();
+        private readonly Dictionary<int, Weapon> _shotWeapons = new Dictionary<int, Weapon>();
+        private readonly Dictionary<int, Volley> _shotVolleys = new Dictionary<int, Volley>();
         private AudioSource _effects;
         private AudioSource _music;
         private AudioMix _mix = new AudioMix();
+        private int _pellets;
+
+        /// <summary>The menus' sounds, beside this.</summary>
+        public UiSounds Ui => GetComponent<UiSounds>();
+
+        /// <summary>A cue the game chose, and the volume it was given (0 when muted or session-muted).</summary>
+        public readonly struct SoundRequest
+        {
+            public SoundRequest(SoundCue cue, float volume)
+            {
+                Cue = cue;
+                Volume = volume;
+            }
+
+            public SoundCue Cue { get; }
+
+            public float Volume { get; }
+
+            public override string ToString() => Cue + " @ " + Volume.ToString("0.00");
+        }
 
         /// <summary>The one in the scene (null on a headless peer, or before Game creates it).</summary>
         public static GameAudio Instance { get; private set; }
@@ -28,16 +70,21 @@ namespace Ricochet
         /// <summary>The mix being applied now (a copy: change it through <see cref="Save"/>).</summary>
         public AudioMix Mix => _mix.Copy();
 
-        /// <summary>The source sound effects play from (its volume is the mix's effect volume).</summary>
+        /// <summary>The source one-shot sound effects play from (its volume is the mix's effect volume).</summary>
         public AudioSource Effects => _effects;
 
         /// <summary>The source music plays from (its volume is the mix's music volume).</summary>
         public AudioSource Music => _music;
 
-        /// <summary>The cue played last, and how many have played (for tests and the log).</summary>
+        /// <summary>The cue played last, the volume it was given, and how many have played (for tests and the log).</summary>
         public SoundCue LastCue { get; private set; }
 
+        public float LastVolume { get; private set; }
+
         public int Played { get; private set; }
+
+        /// <summary>The most recent cues chosen, oldest first (at most <see cref="RequestsKept"/>).</summary>
+        public IReadOnlyList<SoundRequest> Requests => _requests;
 
         /// <summary>
         /// The scene's audio, created once and read from the profile; null on a headless peer, which has no one to hear it.
@@ -164,6 +211,9 @@ namespace Ricochet
         /// <summary>The player's own music setting (the profile's, not the session mute): false when they muted it.</summary>
         public bool MusicOn => !_mix.MuteMusic;
 
+        /// <summary>The volume a cue is given now (SoundBook.Volume: the mix's effect volume, 0 when muted or session-muted).</summary>
+        public float CueVolume => SoundBook.Volume(_mix, Profiles.SessionMuted);
+
         /// <summary>
         /// Applies <paramref name="mix"/> to the sources without saving it. During a session mute the sources and the
         /// listener stay silent whatever the mix says (AudioListener.volume is never saved, so this lasts for this run only).
@@ -183,6 +233,15 @@ namespace Ricochet
                 _effects.mute = session || _mix.MuteSfx;
             }
 
+            foreach (AudioSource voice in _voices.Values)
+            {
+                if (voice != null)
+                {
+                    voice.volume = CueVolume;
+                    voice.mute = session || _mix.MuteSfx;
+                }
+            }
+
             if (_music != null)
             {
                 _music.volume = session ? 0f : _mix.EffectiveMusic;
@@ -190,36 +249,261 @@ namespace Ricochet
             }
         }
 
-        /// <summary>Plays <paramref name="cue"/> on the scene's audio, if there is one.</summary>
+        // --- the static calls the views make (each does nothing when there is no audio: a headless peer, a test) ---------
+
+        /// <summary>Plays <paramref name="cue"/> once on the scene's audio, if there is one.</summary>
         public static void Play(SoundCue cue)
         {
-            if (Instance != null)
+            Instance?.PlayCue(cue);
+        }
+
+        /// <summary>Plays <paramref name="cue"/>, if any.</summary>
+        public static void Play(SoundCue? cue)
+        {
+            if (cue.HasValue)
             {
-                Instance.PlayCue(cue);
+                Play(cue.Value);
             }
         }
 
-        /// <summary>The clip <paramref name="cue"/> plays (rendered from Core's Tones the first time it is asked for).</summary>
+        /// <summary>
+        /// Plays <paramref name="cue"/> once, at the end of this frame, settled with the others raised in the same moment
+        /// (SoundBook.Settle: the knock-out that ends a round is applauded, not sighed at).
+        /// </summary>
+        public static void PlaySettled(SoundCue cue)
+        {
+            Instance?._pending.Add(cue);
+        }
+
+        /// <summary>Plays <paramref name="cue"/> on a voice of its own, so <see cref="IsPlaying"/> knows when it ends.</summary>
+        public static void PlayVoice(SoundCue cue)
+        {
+            Instance?.StartVoice(cue);
+        }
+
+        /// <summary>The original's audio_is_playing: true until <paramref name="cue"/>'s voice has played its length (muted or not).</summary>
+        public static bool IsPlaying(SoundCue cue)
+        {
+            return Instance != null && Instance.Busy(cue);
+        }
+
+        /// <summary>The original's audio_stop_sound for a cue played on its own voice.</summary>
+        public static void Stop(SoundCue cue)
+        {
+            Instance?.StopVoice(cue);
+        }
+
+        /// <summary>
+        /// Keeps <paramref name="cue"/> sounding for <paramref name="holder"/>: played again each time it ends (the original's
+        /// "if (!audio_is_playing(x)) audio_play_sound(x)" every step), but not while <paramref name="after"/> is still playing
+        /// (the laser's loop waits for its fire sound). Held until every holder lets go.
+        /// </summary>
+        public static void Hold(SoundCue cue, object holder, SoundCue? after = null)
+        {
+            Instance?.AddHold(cue, holder, after);
+        }
+
+        /// <summary>
+        /// <paramref name="holder"/> lets go of <paramref name="cue"/>; once nobody holds it, it is stopped when
+        /// <paramref name="stop"/> (a crate's flyover, the laser's loop) or left to play out (the grenade's beep).
+        /// </summary>
+        public static void Release(SoundCue cue, object holder, bool stop = true)
+        {
+            Instance?.RemoveHold(cue, holder, stop);
+        }
+
+        /// <summary>True while anyone holds <paramref name="cue"/>.</summary>
+        public static bool Held(SoundCue cue)
+        {
+            return Instance != null && Instance._holds.TryGetValue(cue, out HashSet<object> holders) && holders.Count > 0;
+        }
+
+        /// <summary>The length of <paramref name="cue"/>'s recording in seconds (0 when it is missing or there is no audio).</summary>
+        public static float Length(SoundCue cue)
+        {
+            AudioClip clip = Instance != null ? Instance.ClipFor(cue) : null;
+            return clip != null ? clip.length : 0f;
+        }
+
+        /// <summary>The recording <paramref name="cue"/> plays (loaded from Resources/Ricochet/Sound the first time it is asked for).</summary>
         public AudioClip ClipFor(SoundCue cue)
         {
-            if (!_clips.TryGetValue(cue, out AudioClip clip) || clip == null)
+            if (!_clips.TryGetValue(cue, out AudioClip clip))
             {
-                float[] samples = Tones.Render(cue);
-                clip = AudioClip.Create("Ricochet " + cue, samples.Length, 1, Tones.SampleRate, false);
-                clip.SetData(samples, 0);
+                clip = Resources.Load<AudioClip>(SoundBook.ResourcePath(cue));
+                if (clip == null)
+                {
+                    Debug.LogWarning("[GameAudio] The recording " + SoundBook.Recording(cue) + " is missing from Resources/" + SoundBook.ResourceFolder + "; it plays nothing.");
+                }
+
                 _clips[cue] = clip;
             }
 
             return clip;
         }
 
+        private void Record(SoundCue cue)
+        {
+            float volume = CueVolume;
+            LastCue = cue;
+            LastVolume = volume;
+            Played++;
+            _requests.Add(new SoundRequest(cue, volume));
+            if (_requests.Count > RequestsKept)
+            {
+                _requests.RemoveAt(0);
+            }
+        }
+
         private void PlayCue(SoundCue cue)
         {
-            LastCue = cue;
-            Played++;
-            if (_effects != null && !Profiles.SessionMuted && !_mix.MuteSfx && _mix.SfxVolume > 0f)
+            Record(cue);
+            if (_effects != null && LastVolume > 0f)
             {
-                _effects.PlayOneShot(ClipFor(cue));
+                AudioClip clip = ClipFor(cue);
+                if (clip != null)
+                {
+                    _effects.PlayOneShot(clip);
+                }
+            }
+        }
+
+        private void StartVoice(SoundCue cue)
+        {
+            Record(cue);
+            AudioClip clip = ClipFor(cue);
+            _busyUntil[cue] = Time.time + (clip != null ? clip.length : 0f);
+            if (clip == null)
+            {
+                return;
+            }
+
+            AudioSource voice = VoiceFor(cue);
+            voice.clip = clip;
+            voice.volume = LastVolume;
+            voice.mute = LastVolume <= 0f;
+            if (LastVolume > 0f)
+            {
+                voice.Play();
+            }
+            else
+            {
+                voice.Stop();
+            }
+        }
+
+        private bool Busy(SoundCue cue)
+        {
+            return _busyUntil.TryGetValue(cue, out float until) && Time.time < until;
+        }
+
+        private void StopVoice(SoundCue cue)
+        {
+            _busyUntil.Remove(cue);
+            if (_voices.TryGetValue(cue, out AudioSource voice) && voice != null)
+            {
+                voice.Stop();
+            }
+        }
+
+        private AudioSource VoiceFor(SoundCue cue)
+        {
+            if (!_voices.TryGetValue(cue, out AudioSource voice) || voice == null)
+            {
+                voice = gameObject.AddComponent<AudioSource>();
+                voice.playOnAwake = false;
+                voice.spatialBlend = 0f;
+                _voices[cue] = voice;
+            }
+
+            return voice;
+        }
+
+        private void AddHold(SoundCue cue, object holder, SoundCue? after)
+        {
+            if (!_holds.TryGetValue(cue, out HashSet<object> holders))
+            {
+                holders = new HashSet<object>();
+                _holds[cue] = holders;
+            }
+
+            holders.Add(holder ?? this);
+            _holdAfter[cue] = after;
+            KeepHeld(cue);
+        }
+
+        private void RemoveHold(SoundCue cue, object holder, bool stop)
+        {
+            if (!_holds.TryGetValue(cue, out HashSet<object> holders) || !holders.Remove(holder ?? this) || holders.Count > 0)
+            {
+                return;
+            }
+
+            if (stop)
+            {
+                StopVoice(cue);
+            }
+        }
+
+        private void KeepHeld(SoundCue cue)
+        {
+            if (Busy(cue))
+            {
+                return;
+            }
+
+            if (_holdAfter.TryGetValue(cue, out SoundCue? after) && after.HasValue && Busy(after.Value))
+            {
+                return;
+            }
+
+            StartVoice(cue);
+        }
+
+        private void Update()
+        {
+            foreach (KeyValuePair<SoundCue, HashSet<object>> hold in _holds)
+            {
+                // A holder that is gone (a player who left, a view destroyed) holds nothing any more.
+                if (hold.Value.RemoveWhere(h => h is Object unity && unity == null) > 0 && hold.Value.Count == 0)
+                {
+                    StopVoice(hold.Key);
+                }
+
+                if (hold.Value.Count > 0 && !PausedFor(hold.Value))
+                {
+                    KeepHeld(hold.Key);
+                }
+            }
+        }
+
+        // Paused (UR-T43): a shot in the air hangs, and so does its loop.
+        private static bool PausedFor(HashSet<object> holders)
+        {
+            foreach (object holder in holders)
+            {
+                if (holder is Player player && player != null && Turns.PausedIn(player.Session))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // The moment's settled cues (a knock-out's sigh dropped for the round's applause).
+        private void LateUpdate()
+        {
+            if (_pending.Count == 0)
+            {
+                return;
+            }
+
+            List<SoundCue> settled = SoundBook.Settle(_pending);
+            _pending.Clear();
+            foreach (SoundCue cue in settled)
+            {
+                PlayCue(cue);
             }
         }
 
@@ -245,6 +529,7 @@ namespace Ricochet
                 gameObject.AddComponent<AudioListener>();
             }
 
+            gameObject.AddComponent<UiSounds>(); // the menus' flick, click, select and disabled
             Reload();
         }
 
@@ -257,19 +542,42 @@ namespace Ricochet
             }
         }
 
-        // What the game shows and says: a shot fired, a contact passed, a volley landed (with a blast or without).
-        private void OnEvent(Player who, GameEvent e)
+        // A shot as every peer sees it: fired, passing each contact, landing.
+        private void OnEvent(Player who, Cmd.GameEvent e)
         {
             switch (e)
             {
-                case ShotFired _:
-                    PlayCue(SoundCue.Fire); // UR-T10: at the profile's effect volume
+                case Cmd.ShotFired fired:
+                    _shotWeapons[fired.PlayerId] = fired.Weapon;
+                    _shotVolleys[fired.PlayerId] = fired.Volley;
+                    if (fired.Weapon == Weapon.Laser)
+                    {
+                        PlayVoice(SoundCue.FireLaser); // shoot_laser.gml, then laser_step.gml's loop once it ends
+                        Hold(SoundCue.LoopLaser, who != null ? (object)who : this, SoundCue.FireLaser);
+                    }
+                    else
+                    {
+                        PlayCue(SoundBook.Fire(fired.Weapon));
+                    }
+
+                    if (fired.Weapon == Weapon.Grenade)
+                    {
+                        Hold(SoundCue.GrenadeBeep, who != null ? (object)who : this); // grenade_step.gml, every step it flies
+                    }
+
                     break;
-                case Bounced _:
-                    PlayCue(SoundCue.Bounce);
+                case Cmd.ShotCut cut:
+                    _shotVolleys[cut.PlayerId] = cut.Volley;
                     break;
-                case ShotLanded landed when landed.Volley != null:
-                    PlayCue(landed.Volley.HasBlast ? SoundCue.Blast : SoundCue.Land);
+                case Cmd.Bounced bounced when _shotWeapons.TryGetValue(bounced.PlayerId, out Weapon weapon):
+                    _shotVolleys.TryGetValue(bounced.PlayerId, out Volley volley);
+                    Play(SoundBook.Bounce(weapon, SoundBook.ContactAt(volley, bounced.Bounces, bounced.Point), _pellets++));
+                    break;
+                case Cmd.ShotLanded landed:
+                    object holder = who != null ? (object)who : this;
+                    Release(SoundCue.LoopLaser, holder);
+                    Release(SoundCue.GrenadeBeep, holder, stop: false);
+                    Play(SoundBook.Landing(landed.Volley));
                     break;
             }
         }
@@ -282,15 +590,7 @@ namespace Ricochet
                 Instance = null;
             }
 
-            foreach (AudioClip clip in _clips.Values)
-            {
-                if (clip != null)
-                {
-                    Destroy(clip);
-                }
-            }
-
-            _clips.Clear();
+            _clips.Clear(); // the recordings are assets: Resources keeps them, nothing here destroys them
         }
     }
 }

@@ -149,8 +149,7 @@ namespace Ricochet
             {
                 edit(mix);
                 changed = true;
-                audio.Apply(mix);
-                GameAudio.Play(SoundCue.Bounce); // a click at the new volume
+                audio.Apply(mix); // (UiSounds plays the slider's sfx_select)
             };
 
             s.AddRange("Sound effects volume", 0, 100, Mathf.Round(mix.SfxVolume * 100f), v => change(m => m.SfxVolume = v / 100f), wholeNumbers: true);

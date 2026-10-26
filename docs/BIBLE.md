@@ -428,8 +428,8 @@ and the objects `obj_boom`, `obj_boom_normal`, `obj_explosion`, `obj_grenade_exp
   obj_powerup_explosion (spr_bigexplosion at 0.5, gone at its end, sfx_explode, a big scorch mark).
 - **The round going** (a new round, a reroll, the session ending: the level's version, map or seed changing) sweeps the
   scorch marks, the held blasts and their smoke, the glass and the floating text away, as clear_objects did.
-- Sounds play through `GameAudio`, which honours the profile's and the session's mute: sfx_shatter and sfx_crash as the
-  synthesised `Shatter` and `Crash` cues, sfx_explode as `Blast`, until U.RICO-T50's recordings.
+- Sounds play through `GameAudio`, which honours the profile's and the session's mute: sfx_shatter, sfx_crash and
+  sfx_explode as the original's recordings (U.RICO-T50, "Sound effects" below).
 - `Tests/PlayMode/HitEffectTests` plays the knock-out (points, damage, blast, smoke), a scorch mark swept by a reroll, a
   shield wall's glass, "Bounce +1" and a crate's smoke, landing, ring and burst on a client; `ArtShowcaseTests.
   TheHitAndKnockOutEffects` saves `U.RICO-T48-*` screenshots (glass, crates falling, landing and sparking, knock-out and its
@@ -443,7 +443,7 @@ floated it per hit, and since it destroyed the volley's other pellets on the fir
 knock-out blast is drawn at the knocked-out tank; hit.gml made it at the striking bullet, which was touching the tank.
 (4) A shield wall a railgun breaks plays sfx_shatter too (railgun_step's shatter was silent); one a vortex swallows breaks
 like one a shot struck (obj_shieldwall's vortex collision). (5) Two crates collected by one shot float only the last's text
-(the synced pickup count's last value). (6) sfx_flyover, sfx_powerup and sfx_powerup_activate wait for U.RICO-T50.
+(the synced pickup count's last value). (6) sfx_flyover, sfx_powerup and sfx_powerup_activate are U.RICO-T50's ("Sound effects").
 
 Fixed defects: obj_glass rolled one of five but drew spr_glass1 for two of the rolls and spr_glass5 for none, though the
 sprite shipped; each of the five is drawn. Not carried: obj_hitscore (created nowhere; obj_float_text is the same text).
@@ -499,7 +499,7 @@ served the setup room's labels and buttons), and it drew at room_height - 30, wh
 just over the icons. (2) A slot keeps the rebuild's layout (U.RICO-T17's two rows of eight that shrink to fit, the turn
 outline, the score and "away" / "OUT" / "next round"); the original's single row of 200 px columns held at most eight.
 (3) The turn arrow is drawn over the tank as well as beside the slot (the original had only the slot's), replacing the
-rebuild's diamond there. (4) sfx_flick and sfx_disabled on a click wait for U.RICO-T50.
+rebuild's diamond there. (4) A click plays sfx_flick on a carried icon and sfx_disabled on one with none (U.RICO-T50).
 
 Fixed defect: obj_indicator_extrabounce was never created (no instance in any room, no instance_create), so its sprite
 never showed; it is drawn while an extra bounce is on, at the angle readout it was meant to follow (its Step set only its y,
@@ -511,3 +511,69 @@ nowhere; the icons draw spr_infinity themselves), `obj_item_extrabounces` and `o
 laser sight is dormant), `mouseover_powerup_draw` (the dormant powerup HUD stubs, RECONSTRUCTION 1.2). `obj_hover_icon` is
 the crates' floating icon (U.RICO-T44's). `obj_bar1-16`, `obj_circle1-16` and `obj_square1-16` are the random level's
 shapes (`GmlSprites.Shape`, U.RICO-T46), not HUD markers.
+
+## Sound effects (U.RICO-T50)
+
+Source: the original's `sound/sfx_*.sound.gmx` and `sound/audio/` (the 71 non-voice definitions; the announcers' voice
+
+lines are U.RICO-T51's, the music_* tracks U.RICO-T27's), and every `audio_play_sound` / `audio_is_playing` /
+`audio_stop_sound` in its scripts and objects.
+
+- `Tools/import-gml-sound.ps1` mirrors each definition's recording (its `<data>`, a .wav for all but sfx_tech's .mp3) into
+  `Assets/Ricochet/Resources/Ricochet/Sound/<name>`, in Git LFS, and records each one's definition, recording, bytes,
+  GameMaker volume, kind and preload in `Assets/Ricochet/Audio/gml-sound.json`. 70 recordings; sfx_bounce_shotgun3 names
+  no file and is listed as skipped. Every definition's volume is 1, so none is scaled.
+- Core's `SoundCue` is one cue per recording (70) and `SoundBook` maps each to its recording and says which moment plays
+  which, at the profile's effect volume, 0 when the player muted effects or the session is muted (U.RICO-T71).
+  `GameAudio` loads the recordings from Resources and plays them; it records every cue it chose with the volume it gave
+  (`Requests`, `LastCue`, `LastVolume`), so tests check what would be heard without hearing it.
+- **Shots** (every peer, from the Presentation feed): the fire sound per weapon (shoot_bullet / laser / shotgun / grenade /
+  railgun / vortex: sfx_fire_cannon, _laser, _shotgun, _grenade, _railgun, sfx_vortex_shoot); each contact a projectile
+  passes, its own bounce (sfx_bounce_cannon for a shell and a vortex, _laser, _grenade, a pellet's sfx_bounce_shotgun1 or 2),
+  sfx_bend off a rail redirector, nothing for a rail (railgun_step plays none); sfx_explode where it lands for whoever it
+  struck (obj_boom_normal), a shell's last bounce (obj_explosion), a grenade (obj_grenade_explosion) and a vortex (obj_boom /
+  obj_explosion). The laser's sfx_loop_laser starts once sfx_fire_laser ends and sounds again each time it ends until the
+  laser lands; the grenade's sfx_grenade_beep sounds again each time it ends while it flies; the vortex's sfx_vortex_suck
+  sounds while it pulls in and stops when sfx_vortex_blow starts as it blows out (vortex_step's modes).
+- **Items and the round** (the server's flourish, every peer): the item's own sound as it is used (use_item: sfx_powerup_activate
+  for an extra bounce, sfx_hologram for a shield wall going up, sfx_shrinkray_shoot, sfx_teleporter_shoot, sfx_zoom for an aim
+  assist, sfx_redirector_shoot), sfx_shrink as a shrink ray reaches a tank, sfx_teleport as a teleporter puts its tank down,
+  sfx_powerup for a crate collected, sfx_beep on each of the turn clock's last four seconds, sfx_sigh for a turn that ran out
+  and a knock-out mid-round, sfx_applause for the knock-out that ends the round (in place of its sigh, as hit.gml did). A
+  redirector placed plays sfx_redirector_grow as it opens out (redirector_detonate).
+- **Crates**: sfx_flyover as one starts to fall, stopped as it lands with sfx_crash; sfx_explode as one bursts.
+- **Shield walls**: sfx_shatter when a shot breaks one (U.RICO-T48).
+- **The Ready card**: sfx_switch as it goes up, sfx_sonar_ping as the tank is pinged unless it is still ringing (U.RICO-T42).
+- **The owner's keys** (that peer only, as the original's were): sfx_engine_turnon as a drive key goes down, sfx_engine
+  again each time it ends while it is held, sfx_engine_shutoff on release once the engine ran (play_movement_sound,
+  stop_moving; Core's `EngineSound`); sfx_turn again each time it ends while the barrel turns and the tank stands, stopped
+  on release (rotate_left / rotate_right); sfx_type for a numpad snap; sfx_flick for a weapon or item cycled; sfx_fuse1, 2
+  and 3 for the fuse keys; sfx_disabled for firing a weapon or using an item with none left, or using one after firing.
+- **The HUD icons**: a click plays sfx_flick on a carried weapon or item, sfx_disabled on one with none (obj_icon_* /
+  obj_item_*'s Left Pressed).
+- **The menus** (`UiSounds`): sfx_flick as the pointer comes over a control that can be pressed (the buttons' Mouse Enter),
+  and on a press sfx_click for a button or toggle, sfx_select for a slider (the setup's less / more / last / next steppers),
+  sfx_disabled for one that cannot be pressed.
+- `Tests/Core.Tests/SoundTests` checks the 70 cues against the imported files and the manifest, and every mapping;
+  `Tests/PlayMode/SoundEffectTests` checks every recording loads, every cue plays at volume 0 under a session mute with
+  settings.json untouched, the profile's volume and mute, a shot's fire, bounces, loops and landing from the feed, a held
+  cue, the round's applause in place of a sigh, and the menus' sounds.
+
+Deviations: (1) A sound the original kept going with "if (!audio_is_playing(x)) audio_play_sound(x)" every step (the engine,
+the turn, the laser's loop, the grenade's beep, the vortex) plays on a voice of its own whose length `GameAudio` keeps, so
+it answers the same muted as heard. (2) The engine and turn sounds are the owner's own peer's, as the original's single
+screen was; a shot's, an item's and the round's are every peer's. (3) The menus are the kit's (U.RICO-T9), so their sounds
+come from one watcher over every Selectable instead of each obj_btn_*'s events; a slider stands for a stepper's pair of
+less / more buttons and plays sfx_select once per press. (4) The rebuild's items take effect as they are used (their flights
+are U.RICO-T79), so each item's launch sound and its effect's (sfx_teleport, sfx_shrink, sfx_redirector_grow) play together.
+
+Fixed defect: pellet_step's `choose(sfx_bounce_shotgun1, sfx_bounce_shotgun2, sfx_bounce_shotgun3)` picked sfx_bounce_shotgun3
+a third of the time, and that definition names no recording, so a third of the pellet bounces were silent; the rebuild picks
+between the two that exist.
+
+Not played (no moment of the rebuild makes them yet): sfx_hologram_pass (a shot passing through its owner's own shield wall,
+which leaves no contact on the rebuild's path), sfx_hacktivated (obj_game's debug key), sfx_blip (obj_selector), the
+splash's sfx_tech, sfx_startup, sfx_whoosh, sfx_static1-6 and sfx_type_quiet (U.RICO-T57), sfx_type for the name boxes
+(the kit's lobby), and the endgame's (U.RICO-T56). sfx_bounce, sfx_bounce_shotgun (sfx_bounce_shotgun1's bytes),
+sfx_dummy, sfx_fire, sfx_shoot_vortex, sfx_static, sfx_fuse4-6 and sfx_woot are in the original's folder but played
+nowhere; each is imported and has its cue.

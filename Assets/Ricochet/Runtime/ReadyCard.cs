@@ -54,7 +54,6 @@ namespace Ricochet
         private MatchPhase _lastPhase = MatchPhase.Practice;
         private int _lastCurrent = -1;
         private float _shownAt = -1f;
-        private float _pingedAt = -100f;
 
         /// <summary>Adds the Ready card to <paramref name="hud"/>'s GameObject; it shows whatever match the HUD's session plays.</summary>
         public static ReadyCard Create(MatchHud hud)
@@ -248,10 +247,9 @@ namespace Ricochet
 
             Pings++;
             LastPingSeat = player.Seat;
-            if (Time.time - _pingedAt >= (float)Tones.Seconds(SoundCue.SonarPing))
+            if (!GameAudio.IsPlaying(SoundCue.SonarPing))
             {
-                GameAudio.Play(SoundCue.SonarPing);
-                _pingedAt = Time.time;
+                GameAudio.PlayVoice(SoundCue.SonarPing); // ping_player: unless it is still ringing
             }
 
             Vector3 centre = player.transform.position;

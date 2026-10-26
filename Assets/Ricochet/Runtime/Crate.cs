@@ -193,6 +193,11 @@ namespace Ricochet
         // The drop's Step while it falls: ef_smokeup in darkgrey 25 px over it, every step (U.RICO-T48).
         private void Smoke(float steps)
         {
+            if (!_falling)
+            {
+                GameAudio.PlayVoice(SoundCue.Flyover); // the drops' Create: sfx_flyover as it falls (U.RICO-T50)
+            }
+
             _falling = true;
             _effectClock += steps;
             while (_effectClock >= 1f)
@@ -202,14 +207,15 @@ namespace Ricochet
             }
         }
 
-        // The drop's landing: ef_firework in brown 10 px under it and sfx_crash (a crate already down when this peer saw it
-        // spawn landed before it was here, so it makes neither).
+        // The drop's landing: ef_firework in brown 10 px under it, sfx_flyover stopped and sfx_crash (a crate already down
+        // when this peer saw it spawn landed before it was here, so it makes none of them).
         private void Land()
         {
             _falling = false;
             _effectClock = 0f;
             LandedHere = true;
             GmlParticles.Play(GmEffect.Firework, (Vector2)Spot + Vector2.down * ((float)HitLooks.CrateFireworkBelow * Steps.Pixel), 0, FloatText.Of(HitLooks.Brown));
+            GameAudio.Stop(SoundCue.Flyover); // the drops' landing stops sfx_flyover
             GameAudio.Play(SoundCue.Crash);
         }
 

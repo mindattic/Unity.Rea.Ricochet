@@ -1,9 +1,17 @@
+using System;
+using System.IO;
+using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Menu;
 
 namespace Ricochet.Core.Tests
 {
-    // UR-T10: the profile's audio mix and the synthesised effects.
+    using Ricochet.Core.Aim;
+    using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Commands;
+    using Ricochet.Core.Level;
+    using Ricochet.Core.Menu;
+
+    // UR-T10: the profile's audio mix. U.RICO-T50: the original's recordings, one cue each, and which cue each moment plays.
     public class SoundTests
     {
         [Test]
@@ -49,34 +57,200 @@ namespace Ricochet.Core.Tests
             Assert.That(copy.MuteMusic, Is.True);
         }
 
-        [TestCase(SoundCue.Fire)]
-        [TestCase(SoundCue.Bounce)]
-        [TestCase(SoundCue.Land)]
-        [TestCase(SoundCue.Blast)]
-        [TestCase(SoundCue.Switch)]
-        [TestCase(SoundCue.SonarPing)]
-        [TestCase(SoundCue.Shatter)]
-        [TestCase(SoundCue.Crash)]
-        public void EveryCue_RendersItsLength_InRange_AudibleAndTheSameEveryTime(SoundCue cue)
+        [Test]
+        public void ACuePlaysAtTheProfilesEffectVolume_AndNotAtAllWhenMutedOrSessionMuted()
         {
-            float[] samples = Tones.Render(cue);
-            Assert.That(samples.Length, Is.EqualTo((int)System.Math.Round(Tones.Seconds(cue) * Tones.SampleRate)));
-            float peak = 0f;
-            foreach (float s in samples)
+            var mix = new AudioMix { SfxVolume = 0.35f };
+            Assert.That(SoundBook.Volume(mix, false), Is.EqualTo(0.35f));
+            Assert.That(SoundBook.Volume(mix, true), Is.EqualTo(0f), "the session mute (U.RICO-T71) silences every cue");
+            mix.MuteSfx = true;
+            Assert.That(SoundBook.Volume(mix, false), Is.EqualTo(0f), "the profile's mute");
+            Assert.That(SoundBook.Volume(null, false), Is.EqualTo(0f));
+        }
+
+        // --- the recordings --------------------------------------------------------------------------------------
+
+        [Test]
+        public void ThereAreSeventyCues_EachItsOwnRecording()
+        {
+            Assert.That(SoundBook.Count, Is.EqualTo(70), "the original's 71 non-voice sfx less sfx_bounce_shotgun3, which names no file");
+            string[] names = SoundBook.All.Select(SoundBook.Recording).ToArray();
+            Assert.That(names, Is.Unique);
+            Assert.That(names.All(n => n.StartsWith("sfx_", StringComparison.Ordinal) && n == n.ToLowerInvariant()), Is.True);
+            Assert.That(SoundBook.Recording(SoundCue.FireCannon), Is.EqualTo("sfx_fire_cannon"));
+            Assert.That(SoundBook.Recording(SoundCue.EngineTurnOn), Is.EqualTo("sfx_engine_turnon"));
+            Assert.That(SoundBook.Recording(SoundCue.ShrinkrayShoot), Is.EqualTo("sfx_shrinkray_shoot"));
+            Assert.That(SoundBook.Recording(SoundCue.BounceShotgun1), Is.EqualTo("sfx_bounce_shotgun1"));
+            Assert.That(SoundBook.ResourcePath(SoundCue.Static4), Is.EqualTo("Ricochet/Sound/sfx_static4"));
+            foreach (SoundCue cue in SoundBook.All)
             {
-                Assert.That(s, Is.InRange(-1f, 1f));
-                peak = System.Math.Max(peak, System.Math.Abs(s));
+                Assert.That(SoundBook.FromRecording(SoundBook.Recording(cue)), Is.EqualTo(cue));
             }
 
-            Assert.That(peak, Is.GreaterThan(0.1f), "audible");
-            Assert.That(System.Math.Abs(samples[0]), Is.LessThan(0.01f), "starts from silence, no click");
-            Assert.That(Tones.Render(cue), Is.EqualTo(samples), "deterministic");
+            Assert.That(SoundBook.FromRecording("sfx_bounce_shotgun3"), Is.Null);
+            Assert.Throws<ArgumentOutOfRangeException>(() => SoundBook.Recording((SoundCue)999));
         }
 
         [Test]
-        public void ABadSampleRate_IsRefused()
+        public void EveryCuesRecordingIsImported_AndNothingElseIs()
         {
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => Tones.Render(SoundCue.Fire, 0));
+            string folder = FindUp(Path.Combine("Assets", "Ricochet", "Resources", "Ricochet", "Sound"));
+            string[] imported = Directory.GetFiles(folder).Where(f => !f.EndsWith(".meta", StringComparison.Ordinal))
+                .Select(Path.GetFileNameWithoutExtension).OrderBy(n => n, StringComparer.Ordinal).ToArray();
+            string[] cues = SoundBook.All.Select(SoundBook.Recording).OrderBy(n => n, StringComparer.Ordinal).ToArray();
+            Assert.That(imported, Is.EqualTo(cues));
+
+            string manifest = File.ReadAllText(FindUp(Path.Combine("Assets", "Ricochet", "Audio", "gml-sound.json")));
+            foreach (string name in cues)
+            {
+                Assert.That(manifest, Does.Contain("\"originalPath\": \"sound\\\\" + name + ".sound.gmx\""), name + " records where it came from");
+            }
+
+            Assert.That(manifest, Does.Contain("\"name\": \"sfx_bounce_shotgun3\""), "the empty definition is listed as skipped");
+        }
+
+        // --- which cue each moment plays --------------------------------------------------------------------------
+
+        [TestCase(Weapon.Cannon, SoundCue.FireCannon)]
+        [TestCase(Weapon.Laser, SoundCue.FireLaser)]
+        [TestCase(Weapon.Shotgun, SoundCue.FireShotgun)]
+        [TestCase(Weapon.Grenade, SoundCue.FireGrenade)]
+        [TestCase(Weapon.Railgun, SoundCue.FireRailgun)]
+        [TestCase(Weapon.Vortex, SoundCue.VortexShoot)]
+        public void EveryWeapon_FiresWithItsOwnRecording(Weapon weapon, SoundCue cue)
+        {
+            Assert.That(SoundBook.Fire(weapon), Is.EqualTo(cue));
+        }
+
+        [TestCase(Item.ExtraBounce, SoundCue.PowerupActivate)]
+        [TestCase(Item.ShieldWall, SoundCue.Hologram)]
+        [TestCase(Item.ShrinkRay, SoundCue.ShrinkrayShoot)]
+        [TestCase(Item.Teleporter, SoundCue.TeleporterShoot)]
+        [TestCase(Item.AimAssist, SoundCue.Zoom)]
+        [TestCase(Item.Redirector, SoundCue.RedirectorShoot)]
+        public void EveryItem_IsUsedWithItsOwnRecording(Item item, SoundCue cue)
+        {
+            Assert.That(SoundBook.Use(item), Is.EqualTo(cue));
+            Assert.That(SoundBook.ForEvent(new ItemUsed(1, item)), Is.EqualTo(cue), "every peer hears it from the event");
+        }
+
+        [Test]
+        public void EveryWeapon_BouncesWithItsOwnRecording_AndARedirectorBendsThemAll()
+        {
+            Assert.That(SoundBook.Bounce(Weapon.Cannon, ContactKind.Wall, 0), Is.EqualTo(SoundCue.BounceCannon));
+            Assert.That(SoundBook.Bounce(Weapon.Vortex, ContactKind.Border, 0), Is.EqualTo(SoundCue.BounceCannon), "vortex_step.gml");
+            Assert.That(SoundBook.Bounce(Weapon.Laser, ContactKind.Wall, 0), Is.EqualTo(SoundCue.BounceLaser));
+            Assert.That(SoundBook.Bounce(Weapon.Grenade, ContactKind.Border, 0), Is.EqualTo(SoundCue.BounceGrenade));
+            Assert.That(SoundBook.Bounce(Weapon.Railgun, ContactKind.Wall, 0), Is.Null, "railgun_step.gml makes no sound");
+            foreach (Weapon weapon in Enum.GetValues(typeof(Weapon)))
+            {
+                Assert.That(SoundBook.Bounce(weapon, ContactKind.Redirector, 3), Is.EqualTo(SoundCue.Bend));
+            }
+        }
+
+        [Test]
+        public void APelletBounce_IsAlwaysOneOfTheTwoRecordings_NeverTheEmptyThird()
+        {
+            // pellet_step.gml chose among sfx_bounce_shotgun1, 2 and 3, and 3 names no file: a third of the bounces were
+            // silent. The rebuild picks between the two that exist (a fixed defect).
+            var heard = Enumerable.Range(-4, 9).Select(pick => SoundBook.Bounce(Weapon.Shotgun, ContactKind.Wall, pick)).Distinct().ToArray();
+            Assert.That(heard, Is.EquivalentTo(new SoundCue?[] { SoundCue.BounceShotgun1, SoundCue.BounceShotgun2 }));
+        }
+
+        [Test]
+        public void ABouncesContactKind_IsFoundOnTheVolleysPaths()
+        {
+            var level = new Level(-3, -3, 3, 3);
+            Volley volley = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 1, 2, 0, level, null);
+            Contact first = volley.Main.Contacts[0];
+            Assert.That(SoundBook.ContactAt(volley, 1, first.Point), Is.EqualTo(first.Kind));
+            Assert.That(SoundBook.ContactAt(volley, 1, new Vec2(99, 99)), Is.EqualTo(ContactKind.Wall), "not found: a wall");
+            Assert.That(SoundBook.ContactAt(null, 1, first.Point), Is.EqualTo(ContactKind.Wall));
+        }
+
+        [Test]
+        public void ALanding_ExplodesWhereTheOriginalDid()
+        {
+            var open = new Level(-10, -5, 10, 5);
+            var me = new Target("me", Vec2.Zero, 0.45);
+            var ann = new Target("ann", new Vec2(5, 0), 0.45);
+            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 1, 2, 0, open, new[] { me, ann }.ToList())),
+                Is.EqualTo(SoundCue.Explode), "obj_boom_normal on whoever it struck");
+            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 90, 0, 2, 0, open, null)),
+                Is.EqualTo(SoundCue.Explode), "a shell spent: obj_explosion");
+            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 90, 0.3, 2, 0, open, null)),
+                Is.EqualTo(SoundCue.Explode), "obj_grenade_explosion");
+            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Laser, Vec2.Zero, 90, 1, 2, 0, open, null)), Is.Null, "the laser's end makes none");
+            Assert.That(SoundBook.Landing(null), Is.Null);
+        }
+
+        [Test]
+        public void TheFuseKeys_EachHaveTheirOwnRecording()
+        {
+            Assert.That(SoundBook.Fuse(-1), Is.EqualTo(SoundCue.Fuse1));
+            Assert.That(SoundBook.Fuse(1), Is.EqualTo(SoundCue.Fuse2));
+            Assert.That(SoundBook.Fuse(2), Is.EqualTo(SoundCue.Fuse3));
+            Assert.That(SoundBook.Fuse(0), Is.Null);
+        }
+
+        [Test]
+        public void TheEventsNoViewPlays_SoundAsTheOriginalsScriptsDid()
+        {
+            Assert.That(SoundBook.ForEvent(new Shrunk(2, 0, 0.5)), Is.EqualTo(SoundCue.Shrink));
+            Assert.That(SoundBook.ForEvent(new Moved(1, Vec2.Zero, new Vec2(1, 1), MoveCause.Teleported)), Is.EqualTo(SoundCue.Teleport));
+            Assert.That(SoundBook.ForEvent(new Moved(1, Vec2.Zero, new Vec2(1, 1), MoveCause.Drove)), Is.Null);
+            Assert.That(SoundBook.ForEvent(new CratePickedUp(1, DropKind.Health, 20)), Is.EqualTo(SoundCue.Powerup));
+            Assert.That(SoundBook.ForEvent(new Countdown(3)), Is.EqualTo(SoundCue.Beep));
+            Assert.That(SoundBook.ForEvent(new TurnPassed(0, TurnPassReason.TimedOut)), Is.EqualTo(SoundCue.Sigh));
+            Assert.That(SoundBook.ForEvent(new TurnPassed(0, TurnPassReason.EndedEarly)), Is.Null);
+            Assert.That(SoundBook.ForEvent(new Eliminated(1)), Is.EqualTo(SoundCue.Sigh));
+            Assert.That(SoundBook.ForEvent(new RoundOver(0)), Is.EqualTo(SoundCue.Applause));
+            Assert.That(SoundBook.ForEvent(new RoundOver(-1)), Is.Null, "nobody survived: nobody to applaud");
+            Assert.That(SoundBook.ForEvent(new TurnStarted(0)), Is.Null);
+        }
+
+        [Test]
+        public void TheKnockOutThatEndsTheRound_IsApplauded_NotSighedAt()
+        {
+            Assert.That(SoundBook.Settle(new[] { SoundCue.Explode, SoundCue.Sigh, SoundCue.Applause }),
+                Is.EqualTo(new[] { SoundCue.Explode, SoundCue.Applause }));
+            Assert.That(SoundBook.Settle(new[] { SoundCue.Sigh, SoundCue.Beep }), Is.EqualTo(new[] { SoundCue.Sigh, SoundCue.Beep }));
+            Assert.That(SoundBook.Settle(null), Is.Empty);
+        }
+
+        [Test]
+        public void TheEngine_TurnsOn_Runs_AndShutsOffAsPlayMovementSoundAndStopMovingDid()
+        {
+            var engine = new EngineSound();
+            Assert.That(engine.Update(false, false, false), Is.EqualTo(EngineSound.Step.None), "standing still");
+            Assert.That(engine.Update(true, false, false), Is.EqualTo(EngineSound.Step.TurnOn));
+            Assert.That(engine.Moving, Is.True);
+            Assert.That(engine.Update(true, true, false), Is.EqualTo(EngineSound.Step.None), "while the turn-on plays");
+            Assert.That(engine.Update(true, false, false), Is.EqualTo(EngineSound.Step.Run), "then the engine");
+            Assert.That(engine.Update(true, false, true), Is.EqualTo(EngineSound.Step.None));
+            Assert.That(engine.Update(false, false, true), Is.EqualTo(EngineSound.Step.ShutOff));
+            Assert.That(engine.Moving, Is.False);
+
+            Assert.That(engine.Update(true, false, false), Is.EqualTo(EngineSound.Step.TurnOn));
+            Assert.That(engine.Update(false, true, false), Is.EqualTo(EngineSound.Step.None), "stopped during the turn-on: no shut-off");
+        }
+
+        private static string FindUp(string relative)
+        {
+            var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+            while (dir != null)
+            {
+                string candidate = Path.Combine(dir.FullName, relative);
+                if (Directory.Exists(candidate) || File.Exists(candidate))
+                {
+                    return candidate;
+                }
+
+                dir = dir.Parent;
+            }
+
+            Assert.Fail(relative + " not found above " + TestContext.CurrentContext.TestDirectory);
+            return null;
         }
     }
 }

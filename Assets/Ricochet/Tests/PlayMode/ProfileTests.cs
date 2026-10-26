@@ -3,7 +3,8 @@
 // directory (never the real one), writes a profile's settings.json, and checks the game reads it: the front end's
 // identity source is the profile, the name and colour it carries reach every peer's Player, and GameAudio plays at the
 // profile's volumes and writes a change back to settings.json, where the next session reads it.
-// The mix and the synthesised effects are tested without Unity: dotnet test Core.slnx (Tests/Core.Tests/SoundTests.cs).
+// The mix and which cue each moment plays are tested without Unity: dotnet test Core.slnx (Tests/Core.Tests/SoundTests.cs);
+// the recordings and the cues the game chooses, in SoundEffectTests.
 using System.Collections;
 using System.IO;
 using NUnit.Framework;
@@ -102,10 +103,13 @@ namespace Ricochet.Tests
     {
         private string _root;
         private GameAudio _audio;
+        private SessionMute _unmuted;
 
         [SetUp]
         public void AFreshProfile()
         {
+            // The profile's own volumes are checked, so a CLI's session mute is lifted, with the listener held at 0 (U.RICO-T50).
+            _unmuted = SessionMute.Lifted();
             _root = TempProfiles.Use();
             CommonSettings common = Profiles.Current.Settings.Common;
             common.SfxVolume = 0.3f;
@@ -119,10 +123,13 @@ namespace Ricochet.Tests
         {
             if (_audio != null)
             {
+                _audio.Effects.Stop();
+                _audio.Effects.mute = true;
                 Object.Destroy(_audio.gameObject);
             }
 
             TempProfiles.Release(_root);
+            _unmuted.Dispose();
         }
 
         [UnityTest]
@@ -132,18 +139,21 @@ namespace Ricochet.Tests
             Assert.That(_audio, Is.Not.Null);
             Assert.That(GameAudio.Instance, Is.SameAs(_audio));
             yield return null;
+            Assert.That(AudioListener.volume, Is.EqualTo(0f), "nothing is heard");
 
             Assert.That(_audio.Mix.SfxVolume, Is.EqualTo(0.3f).Within(1e-4));
             Assert.That(_audio.Effects.volume, Is.EqualTo(0.3f).Within(1e-4), "effects at the profile's sfxVolume");
             Assert.That(_audio.Music.volume, Is.EqualTo(0f), "music muted by the profile");
             Assert.That(_audio.Mix.MusicVolume, Is.EqualTo(0.2f).Within(1e-4), "the volume to come back to is kept");
 
-            GameAudio.Play(SoundCue.Fire);
-            Assert.That(_audio.LastCue, Is.EqualTo(SoundCue.Fire));
+            GameAudio.Play(SoundCue.FireCannon);
+            Assert.That(_audio.LastCue, Is.EqualTo(SoundCue.FireCannon));
+            Assert.That(_audio.LastVolume, Is.EqualTo(0.3f).Within(1e-4), "at the profile's sfxVolume");
             Assert.That(_audio.Played, Is.EqualTo(1));
-            AudioClip clip = _audio.ClipFor(SoundCue.Blast);
-            Assert.That(clip.samples, Is.EqualTo(Tones.Render(SoundCue.Blast).Length));
-            Assert.That(clip.frequency, Is.EqualTo(Tones.SampleRate));
+            AudioClip clip = _audio.ClipFor(SoundCue.Explode); // U.RICO-T50: the original's own recording
+            Assert.That(clip, Is.Not.Null);
+            Assert.That(clip.name, Is.EqualTo("sfx_explode"));
+            Assert.That(clip.length, Is.GreaterThan(0f));
 
             AudioMix mix = _audio.Mix;
             mix.SfxVolume = 0.65f;
@@ -216,8 +226,9 @@ namespace Ricochet.Tests
             Assert.That(_audio.Music.volume, Is.EqualTo(0f));
             Assert.That(_audio.Mix.SfxVolume, Is.EqualTo(0.4f).Within(1e-4), "the mix holds the saved value, not the mute's 0");
 
-            GameAudio.Play(SoundCue.Fire);
+            GameAudio.Play(SoundCue.FireCannon);
             Assert.That(_audio.Played, Is.EqualTo(1), "the cue is counted but not heard");
+            Assert.That(_audio.LastVolume, Is.EqualTo(0f));
 
             // The player raises the music during the muted run: still silent, and only that change is saved.
             AudioMix mix = _audio.Mix;

@@ -81,7 +81,7 @@ namespace Ricochet
 
         // server -> every client (U.RICO-T48): something on the level broke that every peer draws, sent once by one player
         // object for the whole session: kind 0 a shield wall (id, a = 1 when a shot broke it), kind 1 a crate gone (id, a its
-        // DropKind, b its DropEnd), at (x, y).
+        // DropKind, b its DropEnd), at (x, y); kind 2 a sound every peer plays (U.RICO-T50: id the SoundCue).
         [ToClients]
         public partial void Flourish(int kind, int id, int a, int b, float x, float y);
 
@@ -380,11 +380,22 @@ namespace Ricochet
                 case Cmd.CrateGone crate:
                     Sender(session)?.Flourish(FlourishCrate, crate.CrateId, (int)crate.Kind, (int)crate.End, (float)crate.Spot.X, (float)crate.Spot.Y);
                     break;
+                default:
+                    // U.RICO-T50: the sounds of the events no view draws (an item used, a shrink, a teleport, a crate
+                    // collected, the countdown, a turn timed out, a knock-out, the round's applause), heard on every peer.
+                    SoundCue? cue = SoundBook.ForEvent(e);
+                    if (cue.HasValue)
+                    {
+                        Sender(session)?.Flourish(FlourishSound, (int)cue.Value, 0, 0, 0f, 0f);
+                    }
+
+                    break;
             }
         }
 
         private const int FlourishWall = 0;
         private const int FlourishCrate = 1;
+        private const int FlourishSound = 2;
 
         // The one player object a session-wide flourish goes out on (any will do; every peer has them all).
         private static Player Sender(NetSession session)
@@ -411,6 +422,9 @@ namespace Ricochet
                     break;
                 case FlourishCrate:
                     Presentation.Raise(this, new Cmd.CrateGone(id, (DropKind)Mathf.Clamp(a, 0, DropRules.KindCount - 1), at, (DropEnd)b));
+                    break;
+                case FlourishSound when id >= 0 && id < SoundBook.Count:
+                    GameAudio.PlaySettled((SoundCue)id);
                     break;
             }
         }
