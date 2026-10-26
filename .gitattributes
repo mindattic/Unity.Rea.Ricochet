@@ -1,0 +1,8 @@
+# Git LFS for the original's art (U.RICO-T44): the sprite frames and backgrounds Tools/import-gml-art.ps1 mirrors, the
+# glyph atlases Tools/import-gml-fonts.ps1 mirrors, and the SDF atlases GmlFontBuilder writes from them. Their .meta
+# files, gml-art.json, gml-fonts.json and the font and catalogue .asset files stay plain text.
+# Pushing them needs the LFS objects uploaded too: run `git lfs install` once (hooks), or `git lfs push origin HEAD`
+# before `git push`.
+Assets/Ricochet/Art/**/*.png filter=lfs diff=lfs merge=lfs -text
+Assets/Ricochet/Fonts/**/*.png filter=lfs diff=lfs merge=lfs -text
+Assets/Ricochet/Resources/Ricochet/Fonts/**/*.png filter=lfs diff=lfs merge=lfs -text
