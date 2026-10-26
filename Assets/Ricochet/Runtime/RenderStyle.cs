@@ -40,19 +40,24 @@ namespace Ricochet
         {
             private const float BloomIntensity = 0.6f;
             private GameObject _volume;
+            private GameObject _globalLight;
 
             public string Name { get { return "URP 2D"; } }
 
             public void ConfigureCamera(Camera camera)
             {
                 camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+                EnsureGlobalLight();
                 if (_volume != null)
                 {
                     return;
                 }
 
                 _volume = new GameObject("RenderStyle Volume");
-                Object.DontDestroyOnLoad(_volume);
+                if (Application.isPlaying)
+                {
+                    Object.DontDestroyOnLoad(_volume);
+                }
                 var volume = _volume.AddComponent<Volume>();
                 volume.isGlobal = true;
                 VolumeProfile profile = ScriptableObject.CreateInstance<VolumeProfile>();
@@ -62,8 +67,28 @@ namespace Ricochet
                 volume.sharedProfile = profile;
             }
 
+            private void EnsureGlobalLight()
+            {
+                if (_globalLight != null)
+                {
+                    return;
+                }
+
+                _globalLight = new GameObject("RenderStyle Global Light");
+                if (Application.isPlaying)
+                {
+                    Object.DontDestroyOnLoad(_globalLight);
+                }
+                var light = _globalLight.AddComponent<Light2D>();
+                light.lightType = Light2D.LightType.Global;
+                light.intensity = 1f;
+                light.color = Color.white;
+            }
+
             public GameObject AddGlow(Transform parent, Color color, float radius)
             {
+                // Lit sprites go dark outside any point light unless a global light lights the rest of the scene.
+                EnsureGlobalLight();
                 var go = new GameObject("Glow");
                 go.transform.SetParent(parent, false);
                 var light = go.AddComponent<Light2D>();

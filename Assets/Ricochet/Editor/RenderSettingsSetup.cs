@@ -45,17 +45,44 @@ namespace Ricochet.Tooling
             }
         }
 
+        // CreateInstance leaves m_PostProcessData empty (Create > 2D Renderer fills it), and without it the 2D renderer
+        // builds no post-process passes, so bloom would never draw.
+        private static void FillPostProcessData(Renderer2DData renderer)
+        {
+            if (renderer == null)
+            {
+                return;
+            }
+
+            var so = new SerializedObject(renderer);
+            if (so.FindProperty("m_PostProcessData").objectReferenceValue != null)
+            {
+                return;
+            }
+
+            var data = AssetDatabase.LoadAssetAtPath<PostProcessData>(PostProcessDataPath);
+            so.FindProperty("m_PostProcessData").objectReferenceValue = data;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(renderer);
+        }
+
+        private const string PostProcessDataPath = "Packages/com.unity.render-pipelines.universal/Runtime/Data/PostProcessData.asset";
+
         private static UniversalRenderPipelineAsset LoadOrCreate(string tier, int index)
         {
             string path = AssetPath(tier);
             var existing = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(path);
+            string rendererPath = Folder + "/Ricochet_" + tier + "_Renderer2D.asset";
             if (existing != null)
             {
+                // Repair an older asset made without post-process data.
+                FillPostProcessData(AssetDatabase.LoadAssetAtPath<Renderer2DData>(rendererPath));
                 return existing;
             }
 
             var renderer = ScriptableObject.CreateInstance<Renderer2DData>();
-            AssetDatabase.CreateAsset(renderer, Folder + "/Ricochet_" + tier + "_Renderer2D.asset");
+            AssetDatabase.CreateAsset(renderer, rendererPath);
+            FillPostProcessData(renderer);
             UniversalRenderPipelineAsset asset = UniversalRenderPipelineAsset.Create(renderer);
             asset.renderScale = 1f;
             asset.msaaSampleCount = index == 0 ? 1 : index == 1 ? 2 : 4;
