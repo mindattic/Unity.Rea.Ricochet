@@ -30,7 +30,7 @@ namespace Ricochet
         public static bool EndTurn() => Act("EndTurn").WasPressedThisFrame();
 
         /// <summary>True on the frame Fire is pressed, unless the click landed on a menu (obj_game never fired through the UI).</summary>
-        public static bool Fire() => Act("Fire").WasPressedThisFrame() && !PointerOverUi();
+        public static bool Fire() => PressedOutsideUi(Act("Fire"));
 
         /// <summary>True on the frame Reroll is pressed: roll another random level (practice only).</summary>
         public static bool Reroll() => Act("Reroll").WasPressedThisFrame();
@@ -45,7 +45,7 @@ namespace Ricochet
         /// True on the frame Use Item (obj_game's vk_control: use the selected item) is pressed, unless the click
         /// landed on a menu.
         /// </summary>
-        public static bool UseItem() => Act("UseItem").WasPressedThisFrame() && !PointerOverUi();
+        public static bool UseItem() => PressedOutsideUi(Act("UseItem"));
 
         /// <summary>True on the frame the shorten-fuse key (obj_game's 1) is pressed.</summary>
         public static bool Fuse1() => Act("Fuse1").WasPressedThisFrame();
@@ -113,6 +113,10 @@ namespace Ricochet
 
         // Space and the mouse buttons double as Fire/UseItem; a click that lands on a menu button must not also
         // fire, the way obj_game's own input never read through its rooms' GUI.
+        // Only a mouse press is blocked: the idle cursor resting over a HUD element must not swallow Space or a gamepad button.
+        private static bool PressedOutsideUi(InputAction action) =>
+            action.WasPressedThisFrame() && !(action.activeControl?.device is Mouse && PointerOverUi());
+
         private static bool PointerOverUi() => EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
 
         /// <summary>Forgets the cached actions (tests only).</summary>

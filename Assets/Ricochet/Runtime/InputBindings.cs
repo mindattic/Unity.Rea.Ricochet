@@ -74,7 +74,10 @@ namespace Ricochet
             _map.Enable();
         }
 
-        /// <summary>Re-reads the active profile's saved overrides (a fresh profile, or another MindAttic game) and applies them.</summary>
+        /// <summary>
+        /// Re-reads the active profile's saved overrides and applies them (replacing any now on the asset). Runs on first
+        /// load; nothing calls it on a mid-session profile switch yet, so callers that switch profiles must call it.
+        /// </summary>
         public static void ApplySavedOverrides()
         {
             EnsureLoaded();
@@ -88,14 +91,14 @@ namespace Ricochet
             // not "keep whatever the previous profile left on this instance".
             RemoveAllOverrides();
 
-            string json = ReadProfileJson();
-            if (string.IsNullOrEmpty(json))
-            {
-                return;
-            }
-
             try
             {
+                string json = ReadProfileJson();
+                if (string.IsNullOrEmpty(json))
+                {
+                    return;
+                }
+
                 _asset.LoadBindingOverridesFromJson(json);
             }
             catch (Exception ex)
