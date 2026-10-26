@@ -56,5 +56,27 @@ namespace Ricochet.Tests
             Assert.That(Arena.HazardRules.RedirectorsSpin, Is.True, "pause_redirector off makes redirectors turn");
             Assert.That(Arena.ArsenalRules.InPlay(Weapon.Grenade), Is.False, "the host took the grenade out of play");
         }
+
+        // U.RICO-T26: the fog of war rule reaches the client, which draws its own fog around its own tank.
+        [UnityTest]
+        public IEnumerator AClientDrawsTheFogOfWarTheHostSet()
+        {
+            yield return StartAndJoinAll();
+            Arena arena = Arena.Serve(Server, GamePrefabs.Dummy);
+            yield return WaitUntil(() => Player.In(Client).Count() == 2, "the client never saw both players");
+            MatchHud hud = MatchHud.Create(Client);
+            try
+            {
+                Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, FogOfWar = true }), Is.True);
+                yield return WaitUntil(() => Turns.For(Client) != null && Turns.For(Client).FogOfWar, "the client never took the fog rule");
+                yield return WaitUntil(() => hud.Fog.Active, "the client never drew its fog");
+                Player mine = Player.In(Client).First(p => p.IsLocalHuman);
+                Assert.That(hud.Fog.Centre.x, Is.EqualTo(mine.transform.position.x).Within(0.01f));
+            }
+            finally
+            {
+                UnityEngine.Object.Destroy(hud.gameObject);
+            }
+        }
     }
 }

@@ -79,8 +79,12 @@ namespace Ricochet
             hud.Overlay = HudOverlay.Create(hud);
             hud.Recap = EndgameRecap.Create(hud);
             hud.Ready = ReadyCard.Create(hud);
+            hud.Fog = FogOfWar.Create(hud);
             return hud;
         }
+
+        /// <summary>The fog of war that hides the arena around the local player's tank (UR-T26).</summary>
+        public FogOfWar Fog { get; private set; }
 
         /// <summary>The turn-start Ready card and ping (UR-T42).</summary>
         public ReadyCard Ready { get; private set; }

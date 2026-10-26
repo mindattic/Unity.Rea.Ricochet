@@ -78,6 +78,7 @@ namespace Ricochet.Core.Match
         private int _maxBounces = DefaultMaxBounces;
         private int _weaponDamage = DefaultWeaponDamage;
         private bool _pauseRedirector = true;
+        private bool _fogOfWar;
         private int _voice = Announcer.DefaultVoice;
         private int _announcements = Announcer.DefaultFrequency;
         private int _goal = DefaultGoal;
@@ -188,6 +189,13 @@ namespace Ricochet.Core.Match
         {
             get { return _weaponDamage; }
             set { _weaponDamage = Math.Max(1, Math.Min(MaxWeaponDamage, value)); }
+        }
+
+        /// <summary>fogofwar (UR-T26): the arena is hidden except around each player's own tank (off by default, as in the original).</summary>
+        public bool FogOfWar
+        {
+            get { return _fogOfWar; }
+            set { _fogOfWar = value; }
         }
 
         /// <summary>pause_redirector: a redirector stops turning once placed (true), or keeps turning every turn (false).</summary>
@@ -340,6 +348,7 @@ namespace Ricochet.Core.Match
             public const string Bounces = "bounces";
             public const string Damage = "damage";
             public const string Pause = "pause";
+            public const string Fog = "fog";
 
             /// <summary>Prefixes of one weapon's box and count, one item's box and count, and one drop kind's box, then its number from 0 (the enum's value): <c>wpn2</c>, <c>wpnct2</c>.</summary>
             public const string WeaponOn = "wpn";
@@ -385,6 +394,7 @@ namespace Ricochet.Core.Match
                 new KeyValuePair<string, int>(Keys.Bounces, MaxBounces),
                 new KeyValuePair<string, int>(Keys.Damage, WeaponDamage),
                 new KeyValuePair<string, int>(Keys.Pause, PauseRedirector ? 1 : 0),
+                new KeyValuePair<string, int>(Keys.Fog, FogOfWar ? 1 : 0),
             };
             for (int i = 0; i < ArsenalRules.Kinds; i++)
             {
@@ -477,6 +487,7 @@ namespace Ricochet.Core.Match
             _maxBounces = other._maxBounces;
             _weaponDamage = other._weaponDamage;
             _pauseRedirector = other._pauseRedirector;
+            _fogOfWar = other._fogOfWar;
             _voice = other._voice;
             _announcements = other._announcements;
             _goal = other._goal;
@@ -492,7 +503,7 @@ namespace Ricochet.Core.Match
             return other != null && _aiCount == other._aiCount && SameItems(_skills, other._skills) && SameItems(_names, other._names)
                 && SameItems(_weaponCount, other._weaponCount) && SameItems(_itemCount, other._itemCount) && SameFlags(_weaponOn, other._weaponOn)
                 && SameFlags(_itemOn, other._itemOn) && SameFlags(_dropOn, other._dropOn) && _turnSeconds == other._turnSeconds
-                && _maxBounces == other._maxBounces && _weaponDamage == other._weaponDamage && _pauseRedirector == other._pauseRedirector
+                && _maxBounces == other._maxBounces && _weaponDamage == other._weaponDamage && _pauseRedirector == other._pauseRedirector && _fogOfWar == other._fogOfWar
                 && _voice == other._voice && _announcements == other._announcements && _goal == other._goal && _map == other._map;
         }
 
@@ -574,6 +585,9 @@ namespace Ricochet.Core.Match
                     return true;
                 case Keys.Pause:
                     PauseRedirector = value != 0;
+                    return true;
+                case Keys.Fog:
+                    FogOfWar = value != 0;
                     return true;
                 default:
                     int index = IndexAfter(key, Keys.WeaponOn, ArsenalRules.Kinds);
@@ -683,7 +697,7 @@ namespace Ricochet.Core.Match
         /// </summary>
         public int[] PackRules()
         {
-            int turn = TurnSeconds | MaxBounces << 6 | WeaponDamage << 11 | (PauseRedirector ? 1 : 0) << 18;
+            int turn = TurnSeconds | MaxBounces << 6 | WeaponDamage << 11 | (PauseRedirector ? 1 : 0) << 18 | (FogOfWar ? 1 : 0) << 23;
             for (int i = 0; i < DropRules.KindCount; i++)
             {
                 turn |= (_dropOn[i] ? 1 : 0) << (19 + i);
@@ -716,6 +730,7 @@ namespace Ricochet.Core.Match
             setup.MaxBounces = packed[0] >> 6 & 31;
             setup.WeaponDamage = packed[0] >> 11 & 127;
             setup.PauseRedirector = (packed[0] >> 18 & 1) != 0;
+            setup.FogOfWar = (packed[0] >> 23 & 1) != 0;
             for (int i = 0; i < DropRules.KindCount; i++)
             {
                 setup._dropOn[i] = (packed[0] >> (19 + i) & 1) != 0;

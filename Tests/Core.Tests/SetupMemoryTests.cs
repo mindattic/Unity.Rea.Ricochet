@@ -48,6 +48,22 @@ namespace Ricochet.Core.Tests
             Assert.That(MatchSetup.IsPackedRules(new int[MatchSetup.PackedRuleWords]), Is.False, "an unwritten pack is not rules");
         }
 
+        // U.RICO-T26: fog of war is off by default, rides the wire, the record and the Default button.
+        [Test]
+        public void FogOfWarIsAMatchRuleThatPacksRecordsAndResets()
+        {
+            var setup = new MatchSetup();
+            Assert.That(setup.FogOfWar, Is.False);
+            setup.FogOfWar = true;
+            Assert.That(MatchSetup.UnpackRules(setup.PackRules()).FogOfWar, Is.True);
+            MatchSetup back = MatchSetup.FromRecord(setup.ToRecord());
+            Assert.That(back.FogOfWar, Is.True);
+            Assert.That(back.SameAs(setup), Is.True);
+            setup.ResetToDefaults();
+            Assert.That(setup.FogOfWar, Is.False);
+            Assert.That(new MatchSetup { FogOfWar = true }.SameAs(new MatchSetup()), Is.False);
+        }
+
         [Test]
         public void ASetupGoesIntoTheProfileAndComesBackTheSame()
         {

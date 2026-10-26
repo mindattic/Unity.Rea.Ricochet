@@ -92,7 +92,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Random levels use the original's 80 shapes (16 each of abstract, triangle, bar, circle, square outlines exported from the sprites' collision masks into `StreamingAssets/Settings/shapes.json`), picked as setup_shapes.gml does with the shape-type setting (five kinds plus random) and its none/45/90/360 rotation; the setup screen's controls for these settings come with UR-T41 | built (UR-T60) |
 | Cannot drive the tank or end a turn early | UR-T24 (open) |
 | Settings room's match rules missing | UR-T25 (built: `MatchSetup` holds the turn time, bounces, damage, each weapon and item box and count, the drop boxes and pause_redirector; `ApplyTo` gives them to MatchRules/ShotRules/ArsenalRules/DropRules/HazardRules at match start) |
-| Fog of war missing | UR-T26 (open) |
+| Fog of war missing | UR-T26 (built) |
 | No music | UR-T27 (open) |
 | One AI skill; no per-AI names | UR-T28 (built: `MatchSetup` keeps a skill and a name index per AI (`SkillOf`/`NameIndexOf`; `AiNames` is the list, -1 is "AI n"), with Default and Random names buttons on the Players room's opponents screen; names ride to clients on `Turns`) |
 | No mouse controls, numpad aim, ping, fullscreen | UR-T29 (open) |

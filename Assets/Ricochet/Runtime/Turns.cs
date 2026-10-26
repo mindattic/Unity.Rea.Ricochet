@@ -138,6 +138,9 @@ namespace Ricochet
             if (AiNames3 != words[3]) AiNames3 = words[3];
         }
 
+        /// <summary>Fog of war (UR-T26) as the host set it: each player sees only around their own tank. Read from the synced rules on every peer.</summary>
+        public bool FogOfWar => MatchSetup.UnpackRules(new[] { Rules0, Rules1, Rules2, Rules3 }).FogOfWar;
+
         /// <summary>Server: the match rules for this match, for every client to take on.</summary>
         internal void MirrorRules(MatchSetup setup)
         {

@@ -216,6 +216,7 @@ namespace Ricochet
             s.AddToggle("Health drops", setup.DropOn(DropKind.Health), v => setup.SetDropOn(DropKind.Health, v));
             s.AddToggle("Random drops", setup.DropOn(DropKind.Powerup), v => setup.SetDropOn(DropKind.Powerup, v));
             s.AddToggle("Pause redirectors once placed", setup.PauseRedirector, v => setup.PauseRedirector = v);
+            s.AddToggle("Fog of war", setup.FogOfWar, v => setup.FogOfWar = v);
         }
 
         /// <summary>The controls room: a line a binding.</summary>
