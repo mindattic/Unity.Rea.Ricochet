@@ -151,11 +151,17 @@ namespace Ricochet.Tests
             int expected = Arena.MatchRules.Points(host.LastShot.Bounces, host.LastVolley.Duration);
 
             Player hostOnClient = Player.In(Client).First(p => p.Seat == host.Seat);
-            yield return WaitUntil(() => hostOnClient.Score > 0, "the client never saw the host score", 20f);
+            // The shot flies on game time (Time.deltaTime, clamped per frame by Unity's maximumDeltaTime) while this wait runs on
+            // real time: on a loaded machine frames stall and the same flight takes several times its Duration (U.RICO-T86). So
+            // the wait is sized from the flight, not a fixed 20 s that a slow frame rate can overrun.
+            float flightWait = 10f + 6f * (float)host.LastVolley.Duration;
+            yield return WaitUntil(() => hostOnClient.Score > 0, "the client never saw the host score", flightWait);
             Assert.That(hostOnClient.Score, Is.EqualTo(expected), "100 + 25 a bounce + 5 a tenth of a second in the air");
 
             Turns turns = Turns.For(Client);
-            yield return WaitUntil(() => turns.Announced == 2, "no cheer for the knock-out");
+            // Poll for "the cheer has been said" (a second line or later), not for the transient moment the count is exactly 2: a
+            // stalled frame must not step over it (U.RICO-T86). What was said is still asserted below.
+            yield return WaitUntil(() => turns.Announced >= 2, () => "no cheer for the knock-out: announced " + turns.Announced + ", last " + turns.LastAnnouncement.Kind + " " + turns.LastAnnouncement.Subject + "/" + turns.LastAnnouncement.Other + ", server " + Turns.For(Server).Announced);
             Assert.That(turns.LastAnnouncement.Kind, Is.EqualTo(AnnouncementKind.Win));
             Assert.That((turns.LastAnnouncement.Subject, turns.LastAnnouncement.Other), Is.EqualTo((host.Seat, ann.Seat)));
         }
