@@ -81,8 +81,16 @@ namespace Ricochet
             hud.Ready = ReadyCard.Create(hud);
             hud.Fog = FogOfWar.Create(hud);
             hud.Pause = PauseMenu.Create(hud);
+            hud.Pad = ControlPad.Create(hud);
             return hud;
         }
+
+        /// <summary>The clickable on-screen controls: turn, drive, Fire, Use Item and End Turn (UR-T29).</summary>
+        public ControlPad Pad { get; private set; }
+
+        /// <summary>The window mode F1 switches to from the given one (the original's window_set_fullscreen(!window_get_fullscreen())).</summary>
+        public static FullScreenMode ToggledFullscreen(FullScreenMode mode) =>
+            mode == FullScreenMode.Windowed ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
 
         /// <summary>The pause menu (UR-T43): up on every peer while the match is paused.</summary>
         public PauseMenu Pause { get; private set; }
@@ -163,6 +171,11 @@ namespace Ricochet
 
         private void Update()
         {
+            if (GameInput.Fullscreen())
+            {
+                Screen.fullScreenMode = ToggledFullscreen(Screen.fullScreenMode); // F1
+            }
+
             NetSession session = CurrentSession;
             Turns turns = Turns.For(session);
             Player local = null;

@@ -7,6 +7,7 @@
 // keys). Ping, Pause and Fullscreen are read here too, for UR-T29/UR-T43 to wire up; nothing here is about networking.
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
@@ -18,19 +19,19 @@ namespace Ricochet
         private static readonly Dictionary<string, InputAction> Cache = new Dictionary<string, InputAction>();
 
         /// <summary>+1 turns the aim counterclockwise (left), -1 clockwise (right), 0 holds it.</summary>
-        public static float Turn() => Act("Aim").ReadValue<float>();
+        public static float Turn() => Mathf.Clamp(Act("Aim").ReadValue<float>() + OnScreenControls.Turn, -1f, 1f);
 
         /// <summary>+1 raises the power, -1 lowers it, 0 holds it.</summary>
         public static float Charge() => Act("Power").ReadValue<float>();
 
         /// <summary>+1 while driving forward (move_forward), -1 while driving backward (move_backward), 0 otherwise.</summary>
-        public static int Drive() => Round(Act("Drive").ReadValue<float>());
+        public static int Drive() => Round(Act("Drive").ReadValue<float>() + OnScreenControls.Drive);
 
         /// <summary>True on the frame End Turn (next_player) is pressed.</summary>
-        public static bool EndTurn() => Act("EndTurn").WasPressedThisFrame();
+        public static bool EndTurn() => Act("EndTurn").WasPressedThisFrame() || OnScreenControls.EndTurn.Take();
 
         /// <summary>True on the frame Fire is pressed, unless the click landed on a menu (obj_game never fired through the UI).</summary>
-        public static bool Fire() => PressedOutsideUi(Act("Fire"));
+        public static bool Fire() => PressedOutsideUi(Act("Fire")) || OnScreenControls.Fire.Take();
 
         /// <summary>True on the frame Reroll is pressed: roll another random level (practice only).</summary>
         public static bool Reroll() => Act("Reroll").WasPressedThisFrame();
@@ -45,7 +46,7 @@ namespace Ricochet
         /// True on the frame Use Item (obj_game's vk_control: use the selected item) is pressed, unless the click
         /// landed on a menu.
         /// </summary>
-        public static bool UseItem() => PressedOutsideUi(Act("UseItem"));
+        public static bool UseItem() => PressedOutsideUi(Act("UseItem")) || OnScreenControls.UseItem.Take();
 
         /// <summary>True on the frame the shorten-fuse key (obj_game's 1) is pressed.</summary>
         public static bool Fuse1() => Act("Fuse1").WasPressedThisFrame();
@@ -72,14 +73,41 @@ namespace Ricochet
             return Fuse3() ? 2 : 0;
         }
 
-        /// <summary>True on the frame Ping (ping_player: show every player's position) is pressed. Read by UR-T29.</summary>
+        /// <summary>True on the frame Ping (ping_player: show every player's position) is pressed. Read by ReadyCard (UR-T29).</summary>
         public static bool Ping() => Act("Ping").WasPressedThisFrame();
 
         /// <summary>True on the frame Pause is pressed. Read by UR-T43's pause menu.</summary>
         public static bool Pause() => Act("Pause").WasPressedThisFrame();
 
-        /// <summary>True on the frame Fullscreen is pressed. Read by UR-T29.</summary>
+        /// <summary>True on the frame Fullscreen is pressed. Read by MatchHud (UR-T29).</summary>
         public static bool Fullscreen() => Act("Fullscreen").WasPressedThisFrame();
+
+        /// <summary>
+        /// The heading the numpad snaps the aim to this frame, or null: obj_game's numpad keys set the barrel straight to
+        /// 6 = 0, 9 = 45, 8 = 90, 7 = 135, 4 = 180, 1 = 225, 2 = 270, 3 = 315 degrees (counterclockwise from the right).
+        /// Fixed keys, like the original's; they are not in the rebind list.
+        /// </summary>
+        public static double? AimSnap()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                return null;
+            }
+
+            if (keyboard.numpad6Key.wasPressedThisFrame) return 0;
+            if (keyboard.numpad9Key.wasPressedThisFrame) return 45;
+            if (keyboard.numpad8Key.wasPressedThisFrame) return 90;
+            if (keyboard.numpad7Key.wasPressedThisFrame) return 135;
+            if (keyboard.numpad4Key.wasPressedThisFrame) return 180;
+            if (keyboard.numpad1Key.wasPressedThisFrame) return 225;
+            if (keyboard.numpad2Key.wasPressedThisFrame) return 270;
+            if (keyboard.numpad3Key.wasPressedThisFrame) return 315;
+            return null;
+        }
+
+        /// <summary>True on the frame numpad 5 is pressed: obj_game puts the aim back where it was before the last numpad snap.</summary>
+        public static bool AimSnapBack() => Keyboard.current != null && Keyboard.current.numpad5Key.wasPressedThisFrame;
 
         // The named action, cached by name; the cache is thrown away whenever InputBindings hands back a different
         // map instance (a rebind-screen reset in a test re-creates it) so a stale InputAction is never read from.
@@ -124,6 +152,7 @@ namespace Ricochet
         {
             _cachedMap = null;
             Cache.Clear();
+            OnScreenControls.Reset();
         }
     }
 }

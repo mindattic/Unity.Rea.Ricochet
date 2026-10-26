@@ -266,6 +266,60 @@ namespace Ricochet.EditorTests
         }
 
         [Test]
+        public void TheNumpadSnapsTheAimToTheEightDirections_AndFiveGoesBack()
+        {
+            (Key key, double heading)[] snaps =
+            {
+                (Key.Numpad6, 0), (Key.Numpad9, 45), (Key.Numpad8, 90), (Key.Numpad7, 135),
+                (Key.Numpad4, 180), (Key.Numpad1, 225), (Key.Numpad2, 270), (Key.Numpad3, 315),
+            };
+            foreach ((Key key, double heading) in snaps)
+            {
+                Press(key);
+                Assert.That(GameInput.AimSnap(), Is.EqualTo(heading), key + " snaps to " + heading);
+                ReleaseKeys();
+            }
+
+            Assert.That(GameInput.AimSnap(), Is.Null, "nothing pressed, nothing to snap to");
+            Press(Key.Numpad5);
+            Assert.That(GameInput.AimSnap(), Is.Null, "numpad 5 is not a direction");
+            Assert.That(GameInput.AimSnapBack(), Is.True, "numpad 5 puts the aim back");
+        }
+
+        [Test]
+        public void AltPings_AndF1TogglesFullscreen()
+        {
+            Press(Key.LeftAlt);
+            Assert.That(GameInput.Ping(), Is.True, "Alt pings every player");
+            ReleaseKeys();
+
+            Press(Key.F1);
+            Assert.That(GameInput.Fullscreen(), Is.True, "F1 toggles fullscreen");
+            Assert.That(MatchHud.ToggledFullscreen(UnityEngine.FullScreenMode.Windowed), Is.EqualTo(UnityEngine.FullScreenMode.FullScreenWindow));
+            Assert.That(MatchHud.ToggledFullscreen(UnityEngine.FullScreenMode.ExclusiveFullScreen), Is.EqualTo(UnityEngine.FullScreenMode.Windowed));
+        }
+
+        [Test]
+        public void TheOnScreenButtons_JoinTheKeys()
+        {
+            OnScreenControls.Turn = 1f;
+            OnScreenControls.Drive = -1;
+            Assert.That(GameInput.Turn(), Is.EqualTo(1f), "the held turn-left button turns the aim");
+            Assert.That(GameInput.Drive(), Is.EqualTo(-1), "the held move-backward button drives");
+
+            Press(Key.D);
+            Assert.That(GameInput.Turn(), Is.EqualTo(0f), "a key and a button pulling opposite ways cancel");
+            ReleaseKeys();
+            OnScreenControls.Reset();
+            Assert.That(GameInput.Turn(), Is.EqualTo(0f));
+            Assert.That(GameInput.Drive(), Is.EqualTo(0));
+
+            OnScreenControls.Fire.Click();
+            Assert.That(GameInput.Fire(), Is.True, "a clicked Fire button fires");
+            Assert.That(GameInput.Fire(), Is.True, "and every read in that frame agrees");
+        }
+
+        [Test]
         public void ARebind_MovesWhereTheGameReadsFireFrom()
         {
             InputAction fire = InputBindings.Gameplay.FindAction("Fire");

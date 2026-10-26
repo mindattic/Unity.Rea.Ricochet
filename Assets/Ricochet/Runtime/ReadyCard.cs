@@ -144,6 +144,12 @@ namespace Ricochet
                 _shownAt += Time.deltaTime; // paused (UR-T43): the card holds as long as the server's hold does
             }
 
+            // Alt: ping_player for every player at once (obj_game's Alt key, UR-T29), in a match or in practice.
+            if (GameInput.Ping() && session != null && session.IsLive)
+            {
+                PingAll(session);
+            }
+
             Refresh(session);
             UpdateRings();
         }
@@ -218,14 +224,30 @@ namespace Ricochet
         // ping_player: the sonar (unless it is still ringing) and two rings, white and the player's colour.
         private void Ping(NetSession session, int seat)
         {
-            Player player = Find(session, seat);
+            Ping(Find(session, seat));
+        }
+
+        /// <summary>obj_game's Alt key: ping_player for every player, so everyone's tank shows where it is.</summary>
+        public void PingAll(NetSession session)
+        {
+            foreach (Player player in Player.In(session))
+            {
+                if (player.Seat >= 0)
+                {
+                    Ping(player);
+                }
+            }
+        }
+
+        private void Ping(Player player)
+        {
             if (player == null)
             {
                 return;
             }
 
             Pings++;
-            LastPingSeat = seat;
+            LastPingSeat = player.Seat;
             if (Time.time - _pingedAt >= (float)Tones.Seconds(SoundCue.SonarPing))
             {
                 GameAudio.Play(SoundCue.SonarPing);

@@ -21,6 +21,7 @@ namespace Ricochet
         private float _aimSentAt = -1f;
         private float _sentHeading = float.NaN;
         private float _sentPower = float.NaN;
+        private double? _snapBackHeading;   // owner only: the heading before the last numpad snap (obj_game's previousAngle)
 
         private Volley _preview;            // owner only: the shot as it would fly right now
 
@@ -175,7 +176,22 @@ namespace Ricochet
                 _aim.Set(AssistHeading, AssistPower);
             }
 
-            bool changed = _aim.Step(GameInput.Turn(), GameInput.Charge(), Time.deltaTime, Arena.Rules) || assisted;
+            // The numpad snaps the aim to an eight-way heading, and 5 puts it back (obj_game's numpad keys, UR-T29).
+            bool snapped = false;
+            double? snap = GameInput.AimSnap();
+            if (snap.HasValue && Turns.MayFire(Session, Seat))
+            {
+                _snapBackHeading = _aim.Heading;
+                _aim.Set(snap.Value, _aim.Power);
+                snapped = true;
+            }
+            else if (GameInput.AimSnapBack() && _snapBackHeading.HasValue && Turns.MayFire(Session, Seat))
+            {
+                _aim.Set(_snapBackHeading.Value, _aim.Power);
+                snapped = true;
+            }
+
+            bool changed = snapped || _aim.Step(GameInput.Turn(), GameInput.Charge(), Time.deltaTime, Arena.Rules) || assisted;
             float heading = (float)_aim.Heading;
             float power = (float)_aim.Power;
             if ((heading != _sentHeading || power != _sentPower) && Time.unscaledTime - _aimSentAt >= 0.05f)
@@ -229,11 +245,12 @@ namespace Ricochet
                 UseItem(heading, power);
             }
 
-            if (GameInput.Fire() && mayAct && !Moved)
+            bool fire = GameInput.Fire();
+            if (fire && mayAct && !Moved)
             {
                 Fire(heading, power);
             }
-            else if (GameInput.Fire() && VortexInFlight)
+            else if (fire && VortexInFlight)
             {
                 Detonate(); // vortex_detonate.gml: fire again to set it off
             }
