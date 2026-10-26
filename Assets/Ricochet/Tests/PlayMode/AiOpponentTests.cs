@@ -42,6 +42,7 @@ namespace Ricochet.Tests
             _turnSeconds = Arena.MatchRules.TurnSeconds;
             _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
             _aiThinkSeconds = Arena.MatchRules.AiThinkSeconds;
+            TestMatches.WithoutReadyCard();
         }
 
         [TearDown]
@@ -50,6 +51,7 @@ namespace Ricochet.Tests
             Arena.MatchRules.TurnSeconds = _turnSeconds;
             Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
             Arena.MatchRules.AiThinkSeconds = _aiThinkSeconds;
+            TestMatches.StockReadyCard();
             new MatchSetup().ApplyTo(Arena.ArsenalRules);
         }
 

@@ -20,6 +20,12 @@ namespace Ricochet.Core.Menu
 
         /// <summary>A grenade or a vortex goes off.</summary>
         Blast,
+
+        /// <summary>A turn's Ready card goes up (obj_ready's sfx_switch, UR-T42).</summary>
+        Switch,
+
+        /// <summary>The tank whose turn it is is pinged as its clock starts (ping_player's sfx_sonar_ping, UR-T42).</summary>
+        SonarPing,
     }
 
     /// <summary>
@@ -88,6 +94,8 @@ namespace Ricochet.Core.Menu
                 case SoundCue.Fire: return 0.12;
                 case SoundCue.Bounce: return 0.05;
                 case SoundCue.Land: return 0.18;
+                case SoundCue.Switch: return 0.08;
+                case SoundCue.SonarPing: return 0.9;
                 default: return 0.45;
             }
         }
@@ -126,6 +134,16 @@ namespace Ricochet.Core.Menu
                     case SoundCue.Land:
                         phase += (180 - 100 * t) / sampleRate;
                         value = Math.Sin(2 * Math.PI * phase) * 0.8;
+                        break;
+                    case SoundCue.Switch:
+                        // A short two-step click: a high blip that drops an octave halfway.
+                        phase += (t < 0.5 ? 1320.0 : 660.0) / sampleRate;
+                        value = ((phase % 1.0) < 0.5 ? 0.5 : -0.5);
+                        break;
+                    case SoundCue.SonarPing:
+                        // A sonar ping: a pure tone that rings out (the decay below, slowed by its own longer length).
+                        phase += 1180.0 / sampleRate;
+                        value = Math.Sin(2 * Math.PI * phase) * 0.7;
                         break;
                     default:
                         noise ^= noise << 13;

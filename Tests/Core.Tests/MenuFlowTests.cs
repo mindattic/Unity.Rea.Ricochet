@@ -182,7 +182,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void ARoundEndingWithTheGoalReached_EndsTheGame_WithTheTopScoreItsChampion()
         {
-            var rules = new MatchRules { WeaponDamage = 1000 }; // every hit a knock-out
+            var rules = NoReadyCard.Rules(new MatchRules { WeaponDamage = 1000 }); // every hit a knock-out
             var match = new Match(rules, seed: 3) { Goal = 200 };
             match.Join(0, SeatKind.Human, "Ann");
             match.Join(1, SeatKind.Ai, "Bot");
@@ -223,7 +223,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void AOneRoundGameEndsAfterItsFirstRound_AndNoGoalNeverEnds()
         {
-            var rules = new MatchRules { WeaponDamage = 1000 };
+            var rules = NoReadyCard.Rules(new MatchRules { WeaponDamage = 1000 });
             var oneRound = new Match(rules, seed: 3) { Goal = MatchSetup.OneRound };
             var endless = new Match(rules, seed: 3) { Goal = 0 };
             foreach (Match match in new[] { oneRound, endless })

@@ -14,7 +14,7 @@ namespace Ricochet.Core.Tests
     {
         private static Match Table(int seats, MatchRules rules = null)
         {
-            var match = new Match(rules, seed: 7);
+            var match = new Match(NoReadyCard.Rules(rules), seed: 7);
             for (int i = 0; i < seats; i++)
             {
                 match.Join(i, i % 2 == 0 ? SeatKind.Human : SeatKind.Ai, "P" + i);
@@ -43,11 +43,84 @@ namespace Ricochet.Core.Tests
             match.Join(2, SeatKind.Ai, "Bot");
             match.Start();
 
-            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Aiming));
+            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Ready), "the Ready card first");
             Assert.That(match.Round, Is.EqualTo(1));
             Assert.That(match.Current, Is.EqualTo(2));
             Assert.That(match.TimeLeft, Is.EqualTo(20));
             Assert.That(match.Seats.All(s => s.Health == 100 && s.Alive), Is.True);
+            match.Tick(match.Rules.ReadySeconds + 0.01);
+            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Aiming));
+        }
+
+        [Test]
+        public void TheReadyCardHoldsEightyStepsAndFadesFifty_AtSixtyASecond()
+        {
+            MatchRules rules = MatchRules.Default;
+            Assert.That(rules.ReadyHoldSeconds, Is.EqualTo(80.0 / 60).Within(1e-12), "obj_ready's alarm[0] = 80");
+            Assert.That(rules.ReadyFadeSeconds, Is.EqualTo(50.0 / 60).Within(1e-12), "alpha -= 0.02 a step");
+            Assert.That(rules.ReadySeconds, Is.EqualTo(130.0 / 60).Within(1e-12));
+        }
+
+        [Test]
+        public void EveryTurnOpensWithTheReadyCard_TheClockStandsFull_NobodyActs_ThenTheClockStarts()
+        {
+            var match = new Match(seed: 7);
+            match.Join(0, SeatKind.Human, "Ann");
+            match.Join(1, SeatKind.Ai, "Bot");
+            var started = new List<int>();
+            var clocks = new List<int>();
+            match.TurnStarted += started.Add;
+            match.ClockStarted += clocks.Add;
+            match.Start();
+
+            Assert.That(started, Is.EqualTo(new[] { 0 }));
+            Assert.That(clocks, Is.Empty, "the clock waits for the card");
+            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Ready));
+            Assert.That(match.MayFire(0), Is.False, "turnStarted is false while the card is up");
+            Assert.That(match.Fire(0), Is.False);
+            Assert.That(match.Move(0), Is.False);
+            Assert.That(match.EndTurn(0), Is.False);
+
+            match.Tick(match.Rules.ReadySeconds - 0.05);
+            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Ready));
+            Assert.That(match.TimeLeft, Is.EqualTo(20), "the clock does not run during the hold");
+
+            match.Tick(0.1);
+            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Aiming));
+            Assert.That(clocks, Is.EqualTo(new[] { 0 }));
+            Assert.That(match.TimeLeft, Is.EqualTo(20), "the hold's leftover is not taken off the clock");
+            match.Tick(1);
+            Assert.That(match.TimeLeft, Is.EqualTo(19).Within(1e-9));
+
+            // The next turn gets its own card: after the shot's pause the AI's card goes up, and its clock waits too.
+            Assert.That(match.Fire(0), Is.True);
+            match.ShotLanded(0, -1, 0);
+            match.Tick(match.Rules.EndTurnSeconds + 0.01);
+            Assert.That(match.Current, Is.EqualTo(1));
+            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Ready));
+            Assert.That(clocks, Is.EqualTo(new[] { 0 }));
+            match.Tick(match.Rules.ReadySeconds + 0.01);
+            Assert.That(clocks, Is.EqualTo(new[] { 0, 1 }));
+        }
+
+        [Test]
+        public void ALeaverDuringTheirReadyCard_PassesTheTurn_AndWithNoHoldTheClockStartsAtOnce()
+        {
+            var match = new Match(seed: 7);
+            match.Join(0, SeatKind.Human, "Ann");
+            match.Join(1, SeatKind.Human, "Bob");
+            match.Join(2, SeatKind.Human, "Cy");
+            match.Start();
+            match.Leave(0);
+            Assert.That(match.Current, Is.EqualTo(1));
+            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Ready), "Bob's own card");
+
+            Match instant = Table(2);
+            var clocks = new List<int>();
+            instant.ClockStarted += clocks.Add;
+            instant.Start();
+            Assert.That(instant.Phase, Is.EqualTo(MatchPhase.Aiming));
+            Assert.That(clocks, Is.EqualTo(new[] { 0 }));
         }
 
         [Test]

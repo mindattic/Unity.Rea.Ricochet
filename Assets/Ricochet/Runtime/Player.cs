@@ -201,7 +201,7 @@ namespace Ricochet
             {
                 Turns turns = Turns.For(Session);
                 return turns != null && Seat >= 0 && turns.Current == Seat
-                    && (turns.MatchPhase == MatchPhase.Aiming || turns.MatchPhase == MatchPhase.ShotInFlight);
+                    && (turns.MatchPhase == MatchPhase.Ready || turns.MatchPhase == MatchPhase.Aiming || turns.MatchPhase == MatchPhase.ShotInFlight);
             }
         }
 

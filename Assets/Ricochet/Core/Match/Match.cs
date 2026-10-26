@@ -11,6 +11,11 @@
 // (Drop) for the kit's reconnect grace: their seat, health and score are kept, and while it is their turn the turn
 // clock waits for them, so a player back in time (Rejoin) resumes the same turn with the time it had left. One who does
 // not come back in time leaves (Leave), which passes the turn.
+// The Ready card (UR-T42): every turn opens in MatchPhase.Ready, obj_ready's hold and fade, with the clock full and
+// standing still and nobody able to act (the original's turnStarted false); after MatchRules.ReadySeconds the clock
+// starts (ClockStarted) and the turn is Aiming. The round itself is never started before it is laid: the authority rolls
+// the round's level and every seat's spot, clear of overlaps (LevelGenerator), in full before the first turn begins, where
+// the original polled check_isready each step until its shapes and players had shuffled themselves apart.
 using System;
 using System.Collections.Generic;
 
@@ -43,6 +48,13 @@ namespace Ricochet.Core.Match
 
         /// <summary>The goal was reached (UR-T9): the match is over and <see cref="Match.Champion"/> won it; nobody fires.</summary>
         GameOver,
+
+        /// <summary>
+        /// A turn has begun and its Ready card is up (UR-T42, obj_ready): <see cref="Match.Current"/> is set and the clock is
+        /// full, but it does not run and nobody may act (turnStarted is still false) until
+        /// <see cref="MatchRules.ReadySeconds"/> have passed; then the turn goes to <see cref="Aiming"/>.
+        /// </summary>
+        Ready,
     }
 
     /// <summary>One seat at the table.</summary>
@@ -138,8 +150,14 @@ namespace Ricochet.Core.Match
         /// <summary>A round began (its number), every seat back at full health, just before its first turn.</summary>
         public event Action<int> RoundStarted;
 
-        /// <summary>A new turn began, for this seat.</summary>
+        /// <summary>A new turn began, for this seat (its Ready card goes up; the clock waits for <see cref="ClockStarted"/>).</summary>
         public event Action<int> TurnStarted;
+
+        /// <summary>
+        /// The Ready card's hold is over and the seat's clock starts (obj_ready's turnStarted = true and ping_player): from
+        /// here it may aim, drive and fire, and an AI starts thinking.
+        /// </summary>
+        public event Action<int> ClockStarted;
 
         /// <summary>The turn timer passed into one of the last whole seconds (4, 3, 2, 1): a beep.</summary>
         public event Action<int> Countdown;
@@ -268,7 +286,7 @@ namespace Ricochet.Core.Match
                 return;
             }
 
-            if (index == Current && Phase == MatchPhase.Aiming)
+            if (index == Current && (Phase == MatchPhase.Aiming || Phase == MatchPhase.Ready))
             {
                 NextTurn();
             }
@@ -491,6 +509,15 @@ namespace Ricochet.Core.Match
 
             switch (Phase)
             {
+                case MatchPhase.Ready:
+                    // obj_ready: the card holds, fades, and only then does the clock run (reset_timer filled it already).
+                    _phaseTime -= seconds;
+                    if (_phaseTime <= 0)
+                    {
+                        StartClock();
+                    }
+
+                    break;
                 case MatchPhase.Aiming:
                     if (WaitingForCurrent)
                     {
@@ -622,13 +649,34 @@ namespace Ricochet.Core.Match
             BeginTurn(first);
         }
 
+        // next_player.gml / randomize_level.gml: the turn is the seat's, its clock full (reset_timer), and obj_ready's card
+        // goes up; the clock starts once the card has held and faded (a hold of 0 starts it at once).
         private void BeginTurn(int seat)
         {
             Current = seat;
             HasMoved = false;
-            Phase = MatchPhase.Aiming;
             TimeLeft = Rules.TurnSeconds;
+            double hold = Rules.ReadySeconds;
+            if (hold > 0 && !double.IsNaN(hold))
+            {
+                Phase = MatchPhase.Ready;
+                _phaseTime = hold;
+                TurnStarted?.Invoke(seat);
+                return;
+            }
+
+            Phase = MatchPhase.Aiming;
             TurnStarted?.Invoke(seat);
+            if (Phase == MatchPhase.Aiming && Current == seat)
+            {
+                ClockStarted?.Invoke(seat);
+            }
+        }
+
+        private void StartClock()
+        {
+            Phase = MatchPhase.Aiming;
+            ClockStarted?.Invoke(Current);
         }
 
         private int NextLiving(int after)

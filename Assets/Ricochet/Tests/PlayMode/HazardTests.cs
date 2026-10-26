@@ -39,12 +39,14 @@ namespace Ricochet.Tests
         public void KeepTheRules()
         {
             _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
+            TestMatches.WithoutReadyCard();
         }
 
         [TearDown]
         public void PutTheRulesBack()
         {
             Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
+            TestMatches.StockReadyCard();
         }
 
         [UnityTest]

@@ -162,7 +162,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void StrikesTakeAShareOfAHit_HealthComesBackUpToTheMaximum_AndTheTurnEndsOnceTheVolleyIsOver()
         {
-            var match = new Match(seed: 7);
+            var match = new Match(NoReadyCard.Rules(), seed: 7);
             match.Join(0, SeatKind.Human, "Ann");
             match.Join(1, SeatKind.Human, "Bob");
             var rounds = new List<int>();
@@ -189,7 +189,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void AVolleyThatKillsTheLastOpponentEndsTheRound()
         {
-            var match = new Match(new MatchRules { WeaponDamage = 200 }, seed: 7);
+            var match = new Match(NoReadyCard.Rules(new MatchRules { WeaponDamage = 200 }), seed: 7);
             match.Join(0, SeatKind.Human, "Ann");
             match.Join(1, SeatKind.Human, "Bob");
             match.Start();

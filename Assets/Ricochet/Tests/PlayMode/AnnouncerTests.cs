@@ -42,6 +42,7 @@ namespace Ricochet.Tests
         {
             _weaponDamage = Arena.MatchRules.WeaponDamage;
             _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
+            TestMatches.WithoutReadyCard();
         }
 
         [TearDown]
@@ -49,6 +50,7 @@ namespace Ricochet.Tests
         {
             Arena.MatchRules.WeaponDamage = _weaponDamage;
             Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
+            TestMatches.StockReadyCard();
             if (_hud != null)
             {
                 Object.Destroy(_hud.gameObject);

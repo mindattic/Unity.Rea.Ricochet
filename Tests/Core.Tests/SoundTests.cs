@@ -53,6 +53,8 @@ namespace Ricochet.Core.Tests
         [TestCase(SoundCue.Bounce)]
         [TestCase(SoundCue.Land)]
         [TestCase(SoundCue.Blast)]
+        [TestCase(SoundCue.Switch)]
+        [TestCase(SoundCue.SonarPing)]
         public void EveryCue_RendersItsLength_InRange_AudibleAndTheSameEveryTime(SoundCue cue)
         {
             float[] samples = Tones.Render(cue);

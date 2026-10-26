@@ -38,11 +38,11 @@ namespace Ricochet.Core.Tests
 
         // Two seats, A (player 1) and B (player 2), playing to one round; health 1 so a single hit knocks out.
         private static GameAuthority TwoSeats(out PlayerState a, out PlayerState b, int health = 100, Action<ArsenalRules> arms = null,
-            int goal = MatchSetup.OneRound)
+            int goal = MatchSetup.OneRound, bool readyCard = false)
         {
             var rules = ArsenalRules.Default;
             arms?.Invoke(rules);
-            var matchRules = MatchRules.Default;
+            var matchRules = readyCard ? MatchRules.Default : NoReadyCard.Rules();
             matchRules.MaxHealth = health;
             var authority = new GameAuthority(new World(), matchRules: matchRules, arms: rules, seed: 7);
             a = authority.AddPlayer(1);
@@ -149,6 +149,57 @@ namespace Ricochet.Core.Tests
             Assert.That(Of<ShotFired>(events).Single().Weapon, Is.EqualTo(Weapon.Laser));
             Assert.That(a.Loadout.Count(Weapon.Laser), Is.EqualTo(2));
             Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.ShotInFlight), "the turn clock stops while it flies");
+        }
+
+        [Test]
+        public void WhileTheReadyCardIsUp_NobodyFiresDrivesOrEndsTheTurn_UntilTheClockStarts()
+        {
+            // UR-T42: obj_ready's hold; turnStarted is false, so fire_weapon, move_forward and next_player all refuse.
+            GameAuthority authority = TwoSeats(out PlayerState a, out _, readyCard: true);
+            Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.Ready));
+            Assert.That(authority.Apply(new FireCommand(1, 90, 1)), Is.Empty);
+            authority.Apply(new DriveCommand(1, 1));
+            authority.AdvanceDrive(1, 0.1);
+            Assert.That(authority.Match.HasMoved, Is.False, "no driving before the clock");
+            Assert.That(authority.Apply(new EndTurnCommand(1)), Is.Empty);
+            Assert.That(authority.Match.Current, Is.EqualTo(0));
+            Assert.That(a.Shots, Is.EqualTo(0));
+
+            authority.Tick(MatchRules.Default.ReadySeconds + 0.01);
+            Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.Aiming));
+            Assert.That(authority.Match.TimeLeft, Is.EqualTo(MatchRules.Default.TurnSeconds), "the clock starts full");
+            Assert.That(Of<ShotFired>(authority.Apply(new FireCommand(1, 90, 1))), Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public void ARandomRoundIsLaidInFull_ClearOfOverlaps_BeforeItsFirstTurnStarts()
+        {
+            // UR-T42: check_isready held the round until every shape and player stood clear; here the level and every
+            // seat's spot are rolled clear of overlaps (LevelGenerator) before the first turn (and its Ready card) begins.
+            var authority = new GameAuthority(new World(), matchRules: NoReadyCard.Rules(), seed: 11);
+            PlayerState a = authority.AddPlayer(1);
+            PlayerState b = authority.AddPlayer(2);
+            authority.SetSeat(1, 0);
+            authority.SetSeat(2, 1);
+            Match match = authority.BeginMatch(Maps.RandomIndex, 0);
+            match.Join(0, SeatKind.Human, "A");
+            match.Join(1, SeatKind.Human, "B");
+            var atFirstTurn = new List<(Vec2 a, Vec2 b, Vec2 spotA, Vec2 spotB, int walls)>();
+            match.TurnStarted += _ => atFirstTurn.Add((a.Position, b.Position, authority.Layout.SpawnPoint(0), authority.Layout.SpawnPoint(1), authority.Layout.Level.Walls.Count));
+            authority.StartMatch();
+
+            Assert.That(atFirstTurn, Has.Count.EqualTo(1));
+            var first = atFirstTurn[0];
+            Assert.That(first.walls, Is.GreaterThan(0), "the round's level is laid");
+            Assert.That(Vec2.Distance(first.a, first.spotA), Is.LessThan(1e-3), "everyone stands at their round's spot");
+            Assert.That(Vec2.Distance(first.b, first.spotB), Is.LessThan(1e-3));
+            foreach (Wall wall in authority.Layout.Level.Walls)
+            {
+                Assert.That(Geometry.SegmentDistance(wall.A, wall.B, first.a, out _), Is.GreaterThan(Seating.PlayerRadius));
+                Assert.That(Geometry.SegmentDistance(wall.A, wall.B, first.b, out _), Is.GreaterThan(Seating.PlayerRadius));
+            }
+
+            Assert.That(Vec2.Distance(first.a, first.b), Is.GreaterThan(Seating.PlayerRadius * 2));
         }
 
         [Test]

@@ -6,6 +6,8 @@
   "weaponDamage": 10,
   "endTurnSeconds": 1.25,
   "roundOverSeconds": 4,
+  "readyHoldSeconds": 1.3333333333333333,
+  "readyFadeSeconds": 0.8333333333333334,
   "aiThinkSeconds": 1.5,
   "aiDegreesPerSecond": 180,
   "pointsHit": 100,

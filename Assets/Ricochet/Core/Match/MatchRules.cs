@@ -33,6 +33,18 @@ namespace Ricochet.Core.Match
         /// <summary>Seconds the round's result stays up before the next round starts.</summary>
         public double RoundOverSeconds { get; set; }
 
+        /// <summary>
+        /// Seconds the turn-start Ready card holds at full strength (UR-T42: obj_ready's alarm[0] = 80 steps at the game
+        /// room's 60 a second) before it fades.
+        /// </summary>
+        public double ReadyHoldSeconds { get; set; }
+
+        /// <summary>Seconds the Ready card takes to fade out (obj_ready's alpha -= 0.02 a step: 50 steps at 60 a second).</summary>
+        public double ReadyFadeSeconds { get; set; }
+
+        /// <summary>The whole hold before a turn's clock starts: the Ready card's hold and its fade.</summary>
+        public double ReadySeconds => Math.Max(0, ReadyHoldSeconds) + Math.Max(0, ReadyFadeSeconds);
+
         /// <summary>Seconds an AI seat "thinks" before it fires (the original's "is thinking..." pause).</summary>
         public double AiThinkSeconds { get; set; }
 
@@ -74,6 +86,8 @@ namespace Ricochet.Core.Match
             WeaponDamage = other.WeaponDamage;
             EndTurnSeconds = other.EndTurnSeconds;
             RoundOverSeconds = other.RoundOverSeconds;
+            ReadyHoldSeconds = other.ReadyHoldSeconds;
+            ReadyFadeSeconds = other.ReadyFadeSeconds;
             AiThinkSeconds = other.AiThinkSeconds;
             AiDegreesPerSecond = other.AiDegreesPerSecond;
             PointsHit = other.PointsHit;

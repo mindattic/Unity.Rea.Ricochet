@@ -34,10 +34,18 @@ namespace Ricochet.Tests
         }
 
         [SetUp]
-        public void KeepTheRules() => _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
+        public void KeepTheRules()
+        {
+            _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
+            TestMatches.WithoutReadyCard();
+        }
 
         [TearDown]
-        public void PutTheRulesBack() => Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
+        public void PutTheRulesBack()
+        {
+            Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
+            TestMatches.StockReadyCard();
+        }
 
         [UnityTest]
         public IEnumerator APlayerWhoDropsOnTheirTurn_AndReconnectsInTime_ResumesTheSameTurnWithTheirSeatAndHealth()

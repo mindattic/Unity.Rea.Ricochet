@@ -5,7 +5,7 @@
 // under the clock the order the living seats play in from now. On an AI seat's turn, obj_ai_gui's line along the bottom:
 // "AI 2 is plotting and scheming...", pulsing between half and full. Each slot also carries the seat's match score
 // (draw_scores.gml's "name: score", UR-T8). The announcer's portrait and name box and the turn card are HudOverlay's
-// widgets, on a canvas of their own. Once the game's goal is reached (UR-T9) the caption names the champion and the
+// widgets, on a canvas of their own; the turn-start Ready card and ping are ReadyCard's (UR-T42). Once the game's goal is reached (UR-T9) the caption names the champion and the
 // endgame recap (EndgameRecap) comes up. A seat whose player dropped reads "away" (UR-T13), and while the turn waits for
 // them the line under the clock says so, with the seconds they have left to reconnect. The canvas sorts under the kit's
 // menus and dialogs (UR-T18), so the Esc menu, the main menu and a modal simply cover it. It lays out on the kit's
@@ -78,8 +78,12 @@ namespace Ricochet
             hud.Session = session;
             hud.Overlay = HudOverlay.Create(hud);
             hud.Recap = EndgameRecap.Create(hud);
+            hud.Ready = ReadyCard.Create(hud);
             return hud;
         }
+
+        /// <summary>The turn-start Ready card and ping (UR-T42).</summary>
+        public ReadyCard Ready { get; private set; }
 
         /// <summary>The session read; null for NetBootstrap's.</summary>
         public NetSession Session { get; set; }

@@ -40,6 +40,7 @@ namespace Ricochet.Tests
         {
             _grenadeRadius = Arena.ArsenalRules.GrenadeRadius;
             _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
+            TestMatches.WithoutReadyCard();
         }
 
         [TearDown]
@@ -47,6 +48,7 @@ namespace Ricochet.Tests
         {
             Arena.ArsenalRules.GrenadeRadius = _grenadeRadius;
             Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
+            TestMatches.StockReadyCard();
         }
 
         [UnityTest]

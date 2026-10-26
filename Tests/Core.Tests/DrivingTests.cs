@@ -11,7 +11,7 @@ namespace Ricochet.Core.Tests
 
         private static Match Started()
         {
-            var match = new Match(seed: 7);
+            var match = new Match(NoReadyCard.Rules(), seed: 7);
             match.Join(0, SeatKind.Human, "A");
             match.Join(1, SeatKind.Human, "B");
             match.Start();

@@ -26,6 +26,8 @@ namespace Ricochet.Core.Data
                 WeaponDamage = r.Integer("weaponDamage", 1, 10000),
                 EndTurnSeconds = r.Number("endTurnSeconds", 0, 60),
                 RoundOverSeconds = r.Number("roundOverSeconds", 0, 600),
+                ReadyHoldSeconds = r.Number("readyHoldSeconds", 0, 60),
+                ReadyFadeSeconds = r.Number("readyFadeSeconds", 0, 60),
                 AiThinkSeconds = r.Number("aiThinkSeconds", 0, 60),
                 AiDegreesPerSecond = r.Number("aiDegreesPerSecond", 1, 3600),
                 PointsHit = r.Integer("pointsHit", 0, 1000000),
