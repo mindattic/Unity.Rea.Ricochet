@@ -16,8 +16,14 @@
 // own whose length is kept here, so "is it still playing" answers the same muted (U.RICO-T71) as heard. Every cue chosen
 // is recorded with the volume it was given (Requests, LastCue, LastVolume), so tests see what would be heard without
 // anything being heard.
+//
+// U.RICO-T27: the music is the original's nine music_* tracks (Resources/Ricochet/Music, streamed). Each new round
+// (randomize_level.gml) and each new turn (next_player.gml) of a match picks one of play_random_music.gml's five at random
+// and plays it on the music source, which carries the mix's music volume and mute (0 under a session mute, where it still
+// plays but is never heard and nothing is saved). Tests read the choice (MusicRequests, CurrentTrack, Music.volume).
 using System.Collections.Generic;
 using Ricochet.Core.Arsenal;
+using Ricochet.Core.Match;
 using Ricochet.Core.Menu;
 using Unity.Shared;
 using Unity.Shared.Core;
@@ -44,6 +50,12 @@ namespace Ricochet
         private AudioSource _music;
         private AudioMix _mix = new AudioMix();
         private int _pellets;
+        private readonly List<MusicRequest> _musicRequests = new List<MusicRequest>();
+        private readonly Dictionary<MusicTrack, AudioClip> _tracks = new Dictionary<MusicTrack, AudioClip>();
+        private Turns _turns;
+        private bool _musicSeen;
+        private int _lastRound = -1;
+        private int _lastTurn = -1;
 
         /// <summary>The menus' sounds, beside this.</summary>
         public UiSounds Ui => GetComponent<UiSounds>();
@@ -63,6 +75,28 @@ namespace Ricochet
 
             public override string ToString() => Cue + " @ " + Volume.ToString("0.00");
         }
+
+        /// <summary>A track the game chose, and the volume it was given (0 when muted or session-muted).</summary>
+        public readonly struct MusicRequest
+        {
+            public MusicRequest(MusicTrack track, float volume)
+            {
+                Track = track;
+                Volume = volume;
+            }
+
+            public MusicTrack Track { get; }
+
+            public float Volume { get; }
+
+            public override string ToString() => Track + " @ " + Volume.ToString("0.00");
+        }
+
+        /// <summary>The track chosen last (play_random_music.gml's current_track), or null before any.</summary>
+        public MusicTrack? CurrentTrack { get; private set; }
+
+        /// <summary>The most recent tracks chosen, oldest first (at most <see cref="RequestsKept"/>).</summary>
+        public IReadOnlyList<MusicRequest> MusicRequests => _musicRequests;
 
         /// <summary>The one in the scene (null on a headless peer, or before Game creates it).</summary>
         public static GameAudio Instance { get; private set; }
@@ -210,6 +244,64 @@ namespace Ricochet
 
         /// <summary>The player's own music setting (the profile's, not the session mute): false when they muted it.</summary>
         public bool MusicOn => !_mix.MuteMusic;
+
+        /// <summary>The volume the music is given now (MusicBook.Volume: the mix's music volume, 0 when muted or session-muted).</summary>
+        public float MusicLevel => MusicBook.Volume(_mix, Profiles.SessionMuted);
+
+        /// <summary>The recording <paramref name="track"/> plays (loaded, streamed, from Resources/Ricochet/Music the first time).</summary>
+        public AudioClip TrackFor(MusicTrack track)
+        {
+            if (!_tracks.TryGetValue(track, out AudioClip clip))
+            {
+                clip = Resources.Load<AudioClip>(MusicBook.ResourcePath(track));
+                if (clip == null)
+                {
+                    Debug.LogWarning("[GameAudio] The track " + MusicBook.Recording(track) + " is missing from Resources/" + MusicBook.ResourceFolder + "; it plays nothing.");
+                }
+
+                _tracks[track] = clip;
+            }
+
+            return clip;
+        }
+
+        /// <summary>
+        /// play_random_music.gml: picks one of the five tracks at random and starts it (replacing the one playing), at the
+        /// mix's music volume (0 when muted or session-muted, when it is chosen all the same and heard by no one).
+        /// </summary>
+        public MusicTrack PlayRandomMusic()
+        {
+            MusicTrack track = MusicBook.Pick(Random.Range(1, MusicBook.Rotation.Count + 1));
+            PlayMusic(track);
+            return track;
+        }
+
+        /// <summary>Starts <paramref name="track"/> on the music source, looping, at the music volume now in force.</summary>
+        public void PlayMusic(MusicTrack track)
+        {
+            float volume = MusicLevel;
+            CurrentTrack = track;
+            _musicRequests.Add(new MusicRequest(track, volume));
+            if (_musicRequests.Count > RequestsKept)
+            {
+                _musicRequests.RemoveAt(0);
+            }
+
+            if (_music == null)
+            {
+                return;
+            }
+
+            AudioClip clip = TrackFor(track);
+            Apply(_mix); // the source's volume and mute are the mix's
+            if (clip == null)
+            {
+                return;
+            }
+
+            _music.clip = clip;
+            _music.Play();
+        }
 
         /// <summary>The volume a cue is given now (SoundBook.Volume: the mix's effect volume, 0 when muted or session-muted).</summary>
         public float CueVolume => SoundBook.Volume(_mix, Profiles.SessionMuted);
@@ -462,6 +554,7 @@ namespace Ricochet
 
         private void Update()
         {
+            WatchMatch();
             foreach (KeyValuePair<SoundCue, HashSet<object>> hold in _holds)
             {
                 // A holder that is gone (a player who left, a view destroyed) holds nothing any more.
@@ -475,6 +568,35 @@ namespace Ricochet
                     KeepHeld(hold.Key);
                 }
             }
+        }
+
+        // A new round or turn of a match, as the synced turn state shows it on every peer: the original's randomize_level.gml
+        // and next_player.gml each call play_random_music. The first look only notes where the match is (joining mid-match
+        // starts music for the turn in progress, as a fresh round would).
+        private void WatchMatch()
+        {
+            if (_turns == null || !_turns.IsSpawned)
+            {
+                _turns = FindAnyObjectByType<Turns>();
+            }
+
+            bool on = _turns != null && _turns.IsSpawned && _turns.MatchPhase != MatchPhase.Practice;
+            if (!on)
+            {
+                _musicSeen = false;
+                return;
+            }
+
+            int round = _turns.Round;
+            int turn = _turns.Current;
+            if (!_musicSeen || MusicBook.IsNewMoment(true, _lastRound, _lastTurn, round, turn))
+            {
+                PlayRandomMusic();
+            }
+
+            _musicSeen = true;
+            _lastRound = round;
+            _lastTurn = turn;
         }
 
         // Paused (UR-T43): a shot in the air hangs, and so does its loop.
@@ -590,6 +712,7 @@ namespace Ricochet
                 Instance = null;
             }
 
+            _tracks.Clear();
             _clips.Clear(); // the recordings are assets: Resources keeps them, nothing here destroys them
         }
     }

@@ -191,7 +191,7 @@ Deviations: (1) Networked, so pause is the host's at once and anyone else's a vo
 every peer. (2) The Pause key is P, Pause or the right stick's press, and the in-game menu's "Pause the game": Esc stays the
 kit's in-game menu (invite, settings, votes, leave). (3) Randomize is the host's alone, still only before the round's first
 shot. (4) The music button is an on/off toggle of the player's own profile mute (`GameAudio.SetMusicMuted`), not Next Track
-(there is no music to step through until UR-T27); under the CLI session mute the game stays silent and only the player's
+(music is a random pick per round and turn, UR-T27, so there is no track to step to); under the CLI session mute the game stays silent and only the player's
 own values are saved. (5) Quit round is a vote, and it ends the match back to practice with everyone on the in-game menu
 (whose Players and Map rooms start the next one), not the setup screen.
 
@@ -512,11 +512,30 @@ laser sight is dormant), `mouseover_powerup_draw` (the dormant powerup HUD stubs
 the crates' floating icon (U.RICO-T44's). `obj_bar1-16`, `obj_circle1-16` and `obj_square1-16` are the random level's
 shapes (`GmlSprites.Shape`, U.RICO-T46), not HUD markers.
 
+## Music (U.RICO-T27)
+
+Source: `sound/music_*.sound.gmx` and `sound/audio/music_*.mp3`, `play_random_music.gml`, `play_next_track.gml`, `obj_jukebox`,
+`randomize_level.gml`, `next_player.gml`.
+
+- `Tools/import-gml-sound.ps1` also mirrors the music (eight mp3s, in Git LFS; music_spacefighter names no recording) into
+  `Resources/Ricochet/Music`, each with a .meta that sets the importer to Streaming, and lists them under `music` in
+  `gml-sound.json`. Core's `MusicBook` holds the tracks, play_random_music.gml's five (phatsketch, gocart, rocket,
+  latinindustries, cutandrun by irandom_range(1,5)) and the volume (the profile's music volume, 0 when Music is muted or
+  the session is muted).
+- `GameAudio` watches the synced turn state on every peer: each new round (randomize_level) and each new turn (next_player)
+  of a match picks a random one of the five and plays it on the looping music source, which carries the Settings Music volume
+  and Mute music (and the pause menu's Music toggle, U.RICO-T43). Under a session mute the pick is made at volume 0 and
+  nothing is saved. Tests read `CurrentTrack`, `MusicRequests` and the source's volume.
+- Deviations: the original's `audio_play_music` calls are commented out in play_random_music.gml (so the shipped game
+  played no music; the port plays it, as the ticket asks); its track restarts on every turn (a new pick, as the script's
+  intent), looping; music_victory is imported for the podium (U.RICO-T56) and not yet played; music_inaheartbeat and
+  music_windsong are imported but, as in the original, never picked.
+
 ## Sound effects (U.RICO-T50)
 
 Source: the original's `sound/sfx_*.sound.gmx` and `sound/audio/` (the 71 non-voice definitions; the announcers' voice
 
-lines are U.RICO-T51's, the music_* tracks U.RICO-T27's), and every `audio_play_sound` / `audio_is_playing` /
+lines are U.RICO-T51's, the music_* tracks U.RICO-T27's, below), and every `audio_play_sound` / `audio_is_playing` /
 `audio_stop_sound` in its scripts and objects.
 
 - `Tools/import-gml-sound.ps1` mirrors each definition's recording (its `<data>`, a .wav for all but sfx_tech's .mp3) into

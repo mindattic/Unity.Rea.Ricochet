@@ -235,6 +235,53 @@ namespace Ricochet.Core.Tests
             Assert.That(engine.Update(false, true, false), Is.EqualTo(EngineSound.Step.None), "stopped during the turn-on: no shut-off");
         }
 
+        // U.RICO-T27: the music.
+        [Test]
+        public void PlayRandomMusic_PicksAmongTheOriginalsFiveTracks_ByItsOneToFiveRoll()
+        {
+            Assert.That(MusicBook.Pick(1), Is.EqualTo(MusicTrack.PhatSketch));
+            Assert.That(MusicBook.Pick(2), Is.EqualTo(MusicTrack.GoCart));
+            Assert.That(MusicBook.Pick(3), Is.EqualTo(MusicTrack.Rocket));
+            Assert.That(MusicBook.Pick(4), Is.EqualTo(MusicTrack.LatinIndustries));
+            Assert.That(MusicBook.Pick(5), Is.EqualTo(MusicTrack.CutAndRun));
+            Assert.That(MusicBook.Pick(0), Is.EqualTo(MusicTrack.CutAndRun), "wrapped, never out of range");
+            Assert.That(MusicBook.Pick(6), Is.EqualTo(MusicTrack.PhatSketch));
+        }
+
+        [Test]
+        public void EveryTrackIsTheOriginalsRecording_ImportedIntoTheMusicFolder()
+        {
+            string folder = FindUp("Assets/Ricochet/Resources/" + MusicBook.ResourceFolder);
+            foreach (MusicTrack track in MusicBook.All)
+            {
+                Assert.That(MusicBook.Recording(track), Does.StartWith("music_"));
+                Assert.That(Directory.GetFiles(folder, MusicBook.Recording(track) + ".*").Any(f => !f.EndsWith(".meta")), Is.True, track + " is imported");
+            }
+
+            Assert.That(MusicBook.ResourcePath(MusicTrack.GoCart), Is.EqualTo("Ricochet/Music/music_gocart"));
+        }
+
+        [Test]
+        public void Music_PlaysAtTheMixsMusicVolume_ZeroWhenMutedOrSessionMuted()
+        {
+            var mix = new AudioMix { MusicVolume = 0.4f, SfxVolume = 0.9f };
+            Assert.That(MusicBook.Volume(mix, false), Is.EqualTo(0.4f).Within(1e-6));
+            mix.MuteMusic = true;
+            Assert.That(MusicBook.Volume(mix, false), Is.EqualTo(0f));
+            mix.MuteMusic = false;
+            Assert.That(MusicBook.Volume(mix, true), Is.EqualTo(0f));
+            Assert.That(MusicBook.Volume(null, false), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void ANewRoundOrTurnOfAMatch_IsAMomentTheOriginalChangedTrack()
+        {
+            Assert.That(MusicBook.IsNewMoment(true, 1, 0, 1, 0), Is.False, "nothing changed");
+            Assert.That(MusicBook.IsNewMoment(true, 1, 0, 1, 1), Is.True, "next_player.gml");
+            Assert.That(MusicBook.IsNewMoment(true, 1, 1, 2, 1), Is.True, "randomize_level.gml");
+            Assert.That(MusicBook.IsNewMoment(false, 1, 0, 2, 1), Is.False, "no match, no track change");
+        }
+
         private static string FindUp(string relative)
         {
             var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);

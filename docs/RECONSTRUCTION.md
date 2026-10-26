@@ -76,7 +76,7 @@ a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `
 | Endgame recap | built as a list (the original had a podium) | `Runtime/EndgameRecap` |
 | Commands and events: every input a command with a player id, one authority, ordered events (new, UR-T34) | built | `Core/Commands/` (`GameAuthority`, `PlayerState`, `Commands`, `GameEvents`) |
 | Real multiplayer, votes, reconnect, profile | built (new, replaces the hotseat rooms) | `Core/Menu/` (`Lobby`, `VoteMenu`), `Core/Net/ShotWire`, kit |
-| Sound | the original's 70 non-voice recordings, one `SoundCue` each (U.RICO-T50); no music, no announcer voices | `Core/Menu/Sound`, `Runtime/GameAudio`, `Runtime/UiSounds` |
+| Sound | the original's 70 non-voice recordings, one `SoundCue` each (U.RICO-T50); no announcer voices | `Core/Menu/Sound`, `Runtime/GameAudio`, `Runtime/UiSounds` |
 | Art | imported whole (U.RICO-T44): every sprite, background and font, catalogued with its original path; shots, crates, HUD text, tanks (U.RICO-T45), the level backdrop and shapes (U.RICO-T46), the weapons, items and hazards (U.RICO-T47) and the hit and knock-out effects (U.RICO-T48) drawn from it, the rest still code-drawn | `Art/`, `Fonts/`, `Resources/Ricochet/ArtCatalogue`, `Runtime/Art/` |
 
 ## 3. Gaps against the original, and the ticket for each
@@ -93,7 +93,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Cannot drive the tank or end a turn early | UR-T24 (open) |
 | Settings room's match rules missing | UR-T25 (built: `MatchSetup` holds the turn time, bounces, damage, each weapon and item box and count, the drop boxes and pause_redirector; `ApplyTo` gives them to MatchRules/ShotRules/ArsenalRules/DropRules/HazardRules at match start) |
 | Fog of war missing | UR-T26 (built) |
-| No music | UR-T27 (open) |
+| No music | UR-T27 (built: eight streamed tracks, a random one each round and turn, on the Settings music volume and mute) |
 | One AI skill; no per-AI names | UR-T28 (built: `MatchSetup` keeps a skill and a name index per AI (`SkillOf`/`NameIndexOf`; `AiNames` is the list, -1 is "AI n"), with Default and Random names buttons on the Players room's opponents screen; names ride to clients on `Turns`) |
 | No mouse controls, numpad aim, ping, fullscreen | UR-T29 (done: ControlPad on-screen buttons, numpad 8-way aim snap, Alt pings every player, F1 fullscreen) |
 | Setup not remembered (`config.ini`, defaults button) | UR-T41 (built: `MatchSetup.ToRecord`/`FromRecord`, `SetupMemory` keeps it in the profile's game block as `matchSetup`, saved as a setup screen closes or a match starts, loaded on start; Players and Map carry Reset to defaults. Per-AI skills and names (UR-T28) joined the record as `skill1..15`/`name1..15`, and an older save's single `skill` still sets every AI; the match rules (UR-T25: turn time, bounces, damage, each weapon and item box and count, the drop boxes, pause_redirector) joined it as `turn`, `bounces`, `damage`, `pause`, `wpn0..5`, `wpnct0..5`, `item0..5`, `itemct0..5`, `drop0..3`, and the start-match vote carries those that differ from the defaults) |

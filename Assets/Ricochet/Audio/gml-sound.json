@@ -1,6 +1,6 @@
 {
   "source": "gmlRicochet 09-05-13_2.20am (GameMaker 8.1 / Studio project, \"Beta 18\"), read by Tools/import-gml-sound.ps1; paths below are relative to it",
-  "excluded": "the announcers' voice lines (sfx_{announce,baxter,doctor,rye,scottish,sid,sly,vlad}_*, U.RICO-T51) and the music_* tracks (U.RICO-T27)",
+  "excluded": "the announcers' voice lines (sfx_{announce,baxter,doctor,rye,scottish,sid,sly,vlad}_*, U.RICO-T51)",
   "sounds": [
     {
       "name": "sfx_applause",
@@ -773,10 +773,105 @@
       "resource": "Ricochet/Sound/sfx_zoom"
     }
   ],
+  "music": [
+    {
+      "name": "music_cutandrun",
+      "originalPath": "sound\\music_cutandrun.sound.gmx",
+      "originalRecording": "sound\\audio\\music_cutandrun.mp3",
+      "bytes": 5157304,
+      "volume": 1,
+      "kind": 3,
+      "streamed": true,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Music/music_cutandrun.mp3",
+      "resource": "Ricochet/Music/music_cutandrun"
+    },
+    {
+      "name": "music_gocart",
+      "originalPath": "sound\\music_gocart.sound.gmx",
+      "originalRecording": "sound\\audio\\music_gocart.mp3",
+      "bytes": 5111627,
+      "volume": 1,
+      "kind": 3,
+      "streamed": true,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Music/music_gocart.mp3",
+      "resource": "Ricochet/Music/music_gocart"
+    },
+    {
+      "name": "music_inaheartbeat",
+      "originalPath": "sound\\music_inaheartbeat.sound.gmx",
+      "originalRecording": "sound\\audio\\music_inaheartbeat.mp3",
+      "bytes": 5231409,
+      "volume": 1,
+      "kind": 3,
+      "streamed": true,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Music/music_inaheartbeat.mp3",
+      "resource": "Ricochet/Music/music_inaheartbeat"
+    },
+    {
+      "name": "music_latinindustries",
+      "originalPath": "sound\\music_latinindustries.sound.gmx",
+      "originalRecording": "sound\\audio\\music_latinindustries.mp3",
+      "bytes": 4818865,
+      "volume": 1,
+      "kind": 3,
+      "streamed": true,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Music/music_latinindustries.mp3",
+      "resource": "Ricochet/Music/music_latinindustries"
+    },
+    {
+      "name": "music_phatsketch",
+      "originalPath": "sound\\music_phatsketch.sound.gmx",
+      "originalRecording": "sound\\audio\\music_phatsketch.mp3",
+      "bytes": 1563163,
+      "volume": 1,
+      "kind": 3,
+      "streamed": true,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Music/music_phatsketch.mp3",
+      "resource": "Ricochet/Music/music_phatsketch"
+    },
+    {
+      "name": "music_rocket",
+      "originalPath": "sound\\music_rocket.sound.gmx",
+      "originalRecording": "sound\\audio\\music_rocket.mp3",
+      "bytes": 3626112,
+      "volume": 1,
+      "kind": 3,
+      "streamed": true,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Music/music_rocket.mp3",
+      "resource": "Ricochet/Music/music_rocket"
+    },
+    {
+      "name": "music_victory",
+      "originalPath": "sound\\music_victory.sound.gmx",
+      "originalRecording": "sound\\audio\\music_victory.mp3",
+      "bytes": 292570,
+      "volume": 1,
+      "kind": 3,
+      "streamed": true,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Music/music_victory.mp3",
+      "resource": "Ricochet/Music/music_victory"
+    },
+    {
+      "name": "music_windsong",
+      "originalPath": "sound\\music_windsong.sound.gmx",
+      "originalRecording": "sound\\audio\\music_windsong.mp3",
+      "bytes": 1438958,
+      "volume": 1,
+      "kind": 3,
+      "streamed": true,
+      "asset": "Assets/Ricochet/Resources/Ricochet/Music/music_windsong.mp3",
+      "resource": "Ricochet/Music/music_windsong"
+    }
+  ],
   "skipped": [
     {
       "name": "sfx_bounce_shotgun3",
       "originalPath": "sound\\sfx_bounce_shotgun3.sound.gmx",
+      "reason": "the definition names no recording"
+    },
+    {
+      "name": "music_spacefighter",
+      "originalPath": "sound\\music_spacefighter.sound.gmx",
       "reason": "the definition names no recording"
     }
   ]

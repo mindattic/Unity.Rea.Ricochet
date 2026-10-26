@@ -124,6 +124,67 @@ namespace Ricochet.Tests
             Assert.That(File.GetLastWriteTimeUtc(settings), Is.EqualTo(written));
         }
 
+        // U.RICO-T27: nothing here is ever heard: the session is muted, or the listener and the source are held at 0.
+        [UnityTest]
+        public IEnumerator EveryMusicTrackLoads_AndIsStreamedFromTheOriginalsRecording()
+        {
+            yield return Audio();
+            foreach (MusicTrack track in MusicBook.All)
+            {
+                AudioClip clip = _audio.TrackFor(track);
+                Assert.That(clip, Is.Not.Null, MusicBook.Recording(track) + " loads from Resources/" + MusicBook.ResourceFolder);
+                Assert.That(clip.name, Is.EqualTo(MusicBook.Recording(track)));
+                Assert.That(clip.length, Is.GreaterThan(0f), clip.name);
+                Assert.That(clip.loadType, Is.EqualTo(AudioClipLoadType.Streaming), clip.name + " streams");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator UnderASessionMute_MusicIsChosenAtVolumeZero_AndNothingIsSavedToSettings()
+        {
+            string settings = Profiles.Current.SettingsPath;
+            string before = File.ReadAllText(settings);
+            yield return Audio();
+
+            MusicTrack track = _audio.PlayRandomMusic();
+            Assert.That(MusicBook.Rotation, Does.Contain(track), "one of play_random_music.gml's five");
+            Assert.That(_audio.CurrentTrack, Is.EqualTo(track));
+            Assert.That(_audio.MusicRequests.Last().Volume, Is.EqualTo(0f));
+            Assert.That(_audio.Music.volume, Is.EqualTo(0f));
+            Assert.That(_audio.Music.mute, Is.True);
+            Assert.That(AudioListener.volume, Is.EqualTo(0f));
+            Assert.That(File.ReadAllText(settings), Is.EqualTo(before), "settings.json is untouched");
+            _audio.Music.Stop();
+        }
+
+        [UnityTest]
+        public IEnumerator Music_PlaysAtTheProfilesMusicVolume_AndTheMusicMuteSilencesIt()
+        {
+            CommonSettings common = Profiles.Current.Settings.Common;
+            common.MusicVolume = 0.35f;
+            common.MuteMusic = false;
+            Profiles.Current.SaveSettings();
+            using (SessionMute.Lifted())
+            {
+                yield return Audio();
+                _audio.Music.mute = true; // the source itself, so nothing sounds even once the listener is restored
+                _audio.PlayMusic(MusicTrack.GoCart);
+                Assert.That(_audio.CurrentTrack, Is.EqualTo(MusicTrack.GoCart));
+                Assert.That(_audio.MusicRequests.Last().Volume, Is.EqualTo(0.35f).Within(1e-4));
+                Assert.That(_audio.Music.volume, Is.EqualTo(0.35f).Within(1e-4));
+                _audio.Music.mute = true;
+
+                AudioMix mix = _audio.Mix;
+                mix.MuteMusic = true;
+                _audio.Apply(mix);
+                Assert.That(_audio.Music.mute, Is.True);
+                _audio.PlayMusic(MusicTrack.Rocket);
+                Assert.That(_audio.MusicRequests.Last().Volume, Is.EqualTo(0f), "chosen, at volume 0, while muted");
+                Assert.That(_audio.Music.volume, Is.EqualTo(0f));
+                _audio.Music.Stop();
+            }
+        }
+
         [UnityTest]
         public IEnumerator EveryCuesRecording_IsTheOriginalsOwn_AndLoads()
         {

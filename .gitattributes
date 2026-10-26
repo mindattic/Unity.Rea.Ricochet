@@ -11,3 +11,6 @@ Assets/Ricochet/Resources/Ricochet/Fonts/**/*.png filter=lfs diff=lfs merge=lfs 
 Assets/Ricochet/Resources/Ricochet/Sound/*.wav filter=lfs diff=lfs merge=lfs -text
 Assets/Ricochet/Resources/Ricochet/Sound/*.mp3 filter=lfs diff=lfs merge=lfs -text
 Assets/Ricochet/Resources/Ricochet/Sound/*.ogg filter=lfs diff=lfs merge=lfs -text
+Assets/Ricochet/Resources/Ricochet/Music/*.mp3 filter=lfs diff=lfs merge=lfs -text
+Assets/Ricochet/Resources/Ricochet/Music/*.ogg filter=lfs diff=lfs merge=lfs -text
+Assets/Ricochet/Resources/Ricochet/Music/*.wav filter=lfs diff=lfs merge=lfs -text

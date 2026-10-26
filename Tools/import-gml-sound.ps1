@@ -13,7 +13,10 @@
   recording are listed under "skipped" with the reason (the original's sfx_bounce_shotgun3 names no file, so a third
   of its shotgun pellets bounced in silence; see docs/BIBLE.md).
 
-  The music_* sounds are U.RICO-T27's and the voice lines U.RICO-T51's; neither is imported here.
+  The music_* sounds (U.RICO-T27) are mirrored the same way into Resources/Ricochet/Music/<sound>.<ext> and listed
+  under "music" in the manifest (music_spacefighter names no recording and is skipped). Each gets a .meta, written only
+  when missing, that sets the audio importer to Streaming so a track plays from disk instead of decompressing on load.
+  The voice lines are U.RICO-T51's and are not imported here.
 
   The 2013 copy (the one docs/RECONSTRUCTION.md was read from, and Tools/import-gml-art.ps1's default) is the default
   source. The 2018 re-save under GameMaker\gmlricochet\Ricochet.gmx has byte-identical recordings.
@@ -34,6 +37,8 @@ $inv = [Globalization.CultureInfo]::InvariantCulture
 $root = Split-Path -Parent $PSScriptRoot
 $soundAssets = 'Assets/Ricochet/Resources/Ricochet/Sound'
 $soundDir = Join-Path $root $soundAssets
+$musicAssets = 'Assets/Ricochet/Resources/Ricochet/Music'
+$musicDir = Join-Path $root $musicAssets
 $manifestDir = Join-Path $root 'Assets/Ricochet/Audio'
 $manifestPath = Join-Path $manifestDir 'gml-sound.json'
 $voice = '^sfx_(announce|baxter|doctor|rye|scottish|sid|sly|vlad)_'
@@ -107,12 +112,92 @@ if (Test-Path $soundDir) {
     }
 }
 
+# --- the music (U.RICO-T27): streamed ----------------------------------------------------------------
+function New-StreamingMeta([string]$assetPath) {
+    $meta = "$assetPath.meta"
+    if (Test-Path $meta) { return }
+    $md5 = [Security.Cryptography.MD5]::Create()
+    $guid = ([BitConverter]::ToString($md5.ComputeHash([Text.Encoding]::UTF8.GetBytes("Ricochet/Music/" + (Split-Path -Leaf $assetPath)))) -replace '-', '').ToLowerInvariant()
+    $text = @"
+fileFormatVersion: 2
+guid: $guid
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 8
+  defaultSettings:
+    serializedVersion: 2
+    loadType: 2
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 0.7
+    conversionMode: 0
+    preloadAudioData: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  loadInBackground: 1
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+
+"@
+    [IO.File]::WriteAllText($meta, ($text -replace "`r`n", "`n"), (New-Object Text.UTF8Encoding $false))
+}
+
+$musicWritten = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+$music = @()
+foreach ($file in Get-ChildItem $sourceSound -Filter 'music_*.sound.gmx' | Sort-Object Name) {
+    $name = $file.Name -replace '\.sound\.gmx$', ''
+    $s = (Read-Xml $file.FullName).sound
+    $dataNode = $s.SelectSingleNode('data')
+    $data = if ($dataNode -ne $null) { $dataNode.InnerText } else { '' }
+    $recording = if ($data) { Join-Path (Join-Path $sourceSound 'audio') $data } else { $null }
+    $ext = if ($data) { [IO.Path]::GetExtension($data).ToLowerInvariant() } else { '' }
+    if (-not $data) { $skipped += [ordered]@{ name = $name; originalPath = "sound\$($file.Name)"; reason = 'the definition names no recording' }; continue }
+    if (-not $ext -or -not (Test-Path $recording)) { $skipped += [ordered]@{ name = $name; originalPath = "sound\$($file.Name)"; reason = "its recording sound\audio\$data is missing" }; continue }
+
+    $asset = "$musicAssets/$name$ext"
+    $to = Join-Path $root $asset
+    [void]$musicWritten.Add([IO.Path]::GetFullPath($to))
+    $same = (Test-Path $to) -and ((Get-Item $recording).Length -eq (Get-Item $to).Length) -and ((Get-FileHash $recording).Hash -eq (Get-FileHash $to).Hash)
+    if (-not $same) {
+        New-Item -ItemType Directory -Force (Split-Path -Parent $to) | Out-Null
+        Copy-Item $recording $to -Force
+        $copied++
+    }
+    New-StreamingMeta $to
+    $music += [ordered]@{
+        name = $name
+        originalPath = "sound\$($file.Name)"
+        originalRecording = "sound\audio\$data"
+        bytes = (Get-Item $recording).Length
+        volume = (Volume-Of $s)
+        kind = [int]$s.SelectSingleNode('kind').InnerText
+        streamed = ($s.SelectSingleNode('streamed') -ne $null -and $s.SelectSingleNode('streamed').InnerText -eq '-1' -or $s.SelectSingleNode('streamed') -ne $null -and $s.SelectSingleNode('streamed').InnerText -eq '1')
+        asset = $asset
+        resource = "Ricochet/Music/$name"
+    }
+}
+if (Test-Path $musicDir) {
+    foreach ($f in Get-ChildItem $musicDir -File | Where-Object { $_.Extension -ne '.meta' }) {
+        if (-not $musicWritten.Contains($f.FullName)) {
+            Remove-Item $f.FullName -Force
+            if (Test-Path "$($f.FullName).meta") { Remove-Item "$($f.FullName).meta" -Force }
+            $removed++
+        }
+    }
+}
+
 # --- the manifest ------------------------------------------------------------------------------------
 . (Join-Path $PSScriptRoot 'gml-json.ps1')
 $manifest = [ordered]@{
     source = 'gmlRicochet 09-05-13_2.20am (GameMaker 8.1 / Studio project, "Beta 18"), read by Tools/import-gml-sound.ps1; paths below are relative to it'
-    excluded = 'the announcers'' voice lines (sfx_{announce,baxter,doctor,rye,scottish,sid,sly,vlad}_*, U.RICO-T51) and the music_* tracks (U.RICO-T27)'
+    excluded = 'the announcers'' voice lines (sfx_{announce,baxter,doctor,rye,scottish,sid,sly,vlad}_*, U.RICO-T51)'
     sounds = $sounds
+    music = $music
     skipped = $skipped
 }
 New-Item -ItemType Directory -Force $manifestDir | Out-Null
@@ -120,5 +205,5 @@ $json = (To-Json $manifest '') + "`n"
 $old = if (Test-Path $manifestPath) { [IO.File]::ReadAllText($manifestPath) } else { '' }
 if ($old -ne $json) { [IO.File]::WriteAllText($manifestPath, $json, (New-Object Text.UTF8Encoding $false)) }
 
-Write-Host "[Ricochet] GML sound: $($sounds.Count) recordings, $($skipped.Count) skipped; $copied files copied, $removed removed; manifest $(if ($old -ne $json) { 'updated' } else { 'unchanged' })"
+Write-Host "[Ricochet] GML sound: $($sounds.Count) recordings, $($music.Count) music tracks, $($skipped.Count) skipped; $copied files copied, $removed removed; manifest $(if ($old -ne $json) { 'updated' } else { 'unchanged' })"
 foreach ($s in $skipped) { Write-Host "  skipped $($s.name): $($s.reason)" }
