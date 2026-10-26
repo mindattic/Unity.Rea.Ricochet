@@ -94,9 +94,9 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Settings room's match rules missing | UR-T25 (open) |
 | Fog of war missing | UR-T26 (open) |
 | No music | UR-T27 (open) |
-| One AI skill; no per-AI names | UR-T28 (open) |
+| One AI skill; no per-AI names | UR-T28 (built: `MatchSetup` keeps a skill and a name index per AI (`SkillOf`/`NameIndexOf`; `AiNames` is the list, -1 is "AI n"), with Default and Random names buttons on the Players room's opponents screen; names ride to clients on `Turns`) |
 | No mouse controls, numpad aim, ping, fullscreen | UR-T29 (open) |
-| Setup not remembered (`config.ini`, defaults button) | UR-T41 (built: `MatchSetup.ToRecord`/`FromRecord`, `SetupMemory` keeps it in the profile's game block as `matchSetup`, saved as a setup screen closes or a match starts, loaded on start; Players and Map carry Reset to defaults. Rules UR-T25 adds and names UR-T28 adds join the record when they land) |
+| Setup not remembered (`config.ini`, defaults button) | UR-T41 (built: `MatchSetup.ToRecord`/`FromRecord`, `SetupMemory` keeps it in the profile's game block as `matchSetup`, saved as a setup screen closes or a match starts, loaded on start; Players and Map carry Reset to defaults. Per-AI skills and names (UR-T28) joined the record as `skill1..15`/`name1..15`, and an older save's single `skill` still sets every AI; rules UR-T25 adds join it when they land) |
 | Ready card, turn-start ping, overlap-free placement before the clock | UR-T42 |
 | Pause menu (Resume, Randomize, Music, Quit round) | UR-T43 |
 | No art imported (315 sprites, 64 backgrounds, 9 fonts) | UR-T44 |

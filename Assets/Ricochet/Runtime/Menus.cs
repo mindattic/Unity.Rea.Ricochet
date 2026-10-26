@@ -48,12 +48,46 @@ namespace Ricochet
             }
 
             s.AddRange("AI opponents", 0, MatchRules.MaxSeats - 1, setup.AiCount, v => setup.AiCount = Mathf.RoundToInt(v), wholeNumbers: true);
-            s.AddRange("AI skill", Ai.MinSkill, Ai.MaxSkill, setup.AiSkill, v => setup.AiSkill = Mathf.RoundToInt(v), wholeNumbers: true);
+            s.AddRange("AI skill (every opponent)", Ai.MinSkill, Ai.MaxSkill, setup.AiSkill, v => setup.AiSkill = Mathf.RoundToInt(v), wholeNumbers: true);
+            s.AddButton("Each opponent's skill and name", () => s.Stack.Push(OpponentsTitle, t => BuildOpponents(t, setup)));
             s.AddRange("Aim assists each (10 = unlimited)", 0, ArsenalRules.Unlimited, setup.AimAssists, v => setup.AimAssists = Mathf.RoundToInt(v),
                 wholeNumbers: true);
             if (next != null)
             {
                 s.AddButton("Next: " + MenuFlow.Title(MenuFlow.Next(Room.Players)), () => next(s), ButtonVariant.Primary);
+            }
+        }
+
+        /// <summary>The title of the screen that sets each AI opponent apart.</summary>
+        public const string OpponentsTitle = "AI opponents";
+
+        /// <summary>
+        /// UR-T28: each AI opponent's own skill (obj_btn_skillup/skilldown_playerN) and name, with the names room's default
+        /// and random names buttons (obj_btn_default_names/obj_btn_random_names).
+        /// </summary>
+        public static void BuildOpponents(MenuScreen s, MatchSetup setup)
+        {
+            s.Subtitle = setup.AiCount == 0 ? "No AI opponents: add some on the Players screen." : "Set each opponent's skill (0 to 10) and name.";
+            s.AddButton("Default names", () =>
+            {
+                setup.UseDefaultNames();
+                s.Clear();
+                BuildOpponents(s, setup);
+            });
+            s.AddButton("Random names", () =>
+            {
+                setup.UseRandomNames(new System.Random());
+                s.Clear();
+                BuildOpponents(s, setup);
+            });
+            for (int i = 0; i < setup.AiCount; i++)
+            {
+                int ai = i;
+                var names = new List<string> { "AI " + (ai + 1) };
+                names.AddRange(AiNames.All);
+                s.AddSelect("AI " + (ai + 1) + " name", names, setup.NameIndexOf(ai) + 1, v => setup.SetNameIndex(ai, v - 1));
+                s.AddRange("AI " + (ai + 1) + " skill", Ai.MinSkill, Ai.MaxSkill, setup.SkillOf(ai), v => setup.SetSkill(ai, Mathf.RoundToInt(v)),
+                    wholeNumbers: true);
             }
         }
 

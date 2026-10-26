@@ -46,6 +46,12 @@ namespace Ricochet
         [Synced] private int _goal;
         [Synced] private int _champion = -1;
 
+        // The AI opponents' names (UR-T28): each AI's AiNames index plus one (0 for "AI n"), four to an int, AI 1 first.
+        [Synced] private int _aiNames0;
+        [Synced] private int _aiNames1;
+        [Synced] private int _aiNames2;
+        [Synced] private int _aiNames3;
+
         // Reconnects (UR-T13): the seconds the current seat's dropped player has left to come back, or -1 (not waiting).
         [Synced] private int _waitSeconds = -1;
 
@@ -89,6 +95,40 @@ namespace Ricochet
 
         /// <summary>The game's champion's seat once the goal is reached (MatchPhase.GameOver), else -1.</summary>
         public int ChampionSeat => Champion;
+
+        /// <summary>The name shown for AI number <paramref name="number"/> (1 and up): the one the setup gave it, or "AI n".</summary>
+        public string AiName(int number)
+        {
+            int slot = number - 1;
+            int word = slot < 0 || slot >= MatchRules.MaxSeats - 1 ? 0 : (PackedAiNames(slot / 4) >> (8 * (slot % 4))) & 0xFF;
+            return AiNames.NameFor(number, word - 1);
+        }
+
+        private int PackedAiNames(int word)
+        {
+            switch (word)
+            {
+                case 0: return AiNames0;
+                case 1: return AiNames1;
+                case 2: return AiNames2;
+                default: return AiNames3;
+            }
+        }
+
+        /// <summary>Server: the AI opponents' names for this match.</summary>
+        internal void MirrorAiNames(MatchSetup setup)
+        {
+            var words = new int[4];
+            for (int i = 0; i < MatchRules.MaxSeats - 1; i++)
+            {
+                words[i / 4] |= (setup.NameIndexOf(i) + 1 & 0xFF) << (8 * (i % 4));
+            }
+
+            if (AiNames0 != words[0]) AiNames0 = words[0];
+            if (AiNames1 != words[1]) AiNames1 = words[1];
+            if (AiNames2 != words[2]) AiNames2 = words[2];
+            if (AiNames3 != words[3]) AiNames3 = words[3];
+        }
 
         /// <summary>Server: the map the match is played on.</summary>
         internal void MirrorMap(int map)

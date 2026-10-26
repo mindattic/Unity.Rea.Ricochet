@@ -57,11 +57,13 @@ namespace Ricochet.Core.Tests
         public void TheRecordNamesEveryChoiceOnce()
         {
             string[] keys = new MatchSetup().ToRecord().Select(e => e.Key).ToArray();
-            Assert.That(keys, Is.EqualTo(new[]
+            Assert.That(keys.Take(7), Is.EqualTo(new[]
             {
                 MatchSetup.Keys.Ai, MatchSetup.Keys.Skill, MatchSetup.Keys.Assist, MatchSetup.Keys.Voice,
                 MatchSetup.Keys.Announce, MatchSetup.Keys.Goal, MatchSetup.Keys.Map,
             }));
+            Assert.That(keys.Skip(7), Is.EqualTo(Enumerable.Range(1, MatchRules.MaxSeats - 1).SelectMany(n => new[] { "skill" + n, "name" + n })));
+            Assert.That(keys, Is.Unique);
         }
 
         [Test]
@@ -96,6 +98,64 @@ namespace Ricochet.Core.Tests
 
             setup.CopyFrom(Chosen());
             Assert.That(held.SameAs(Chosen()), Is.True);
+        }
+
+        [Test]
+        public void EachAiKeepsItsOwnSkillAndName_ThroughTheRecordAndTheVoteText()
+        {
+            MatchSetup chosen = Chosen();
+            chosen.SetSkill(0, 1);
+            chosen.SetSkill(3, 9);
+            chosen.SetNameIndex(0, 5);
+            chosen.SetNameIndex(6, AiNames.Count - 1);
+            Assert.That(MatchSetup.FromRecord(chosen.ToRecord()).SameAs(chosen), Is.True);
+            Assert.That(chosen.NameOf(0), Is.EqualTo(AiNames.All[5]));
+            Assert.That(chosen.NameOf(1), Is.EqualTo("AI 2"));
+
+            MatchSetup voted = MatchSetup.Parse(chosen.AiCount, chosen.Format());
+            Assert.That(Enumerable.Range(0, 7).Select(voted.SkillOf), Is.EqualTo(Enumerable.Range(0, 7).Select(chosen.SkillOf)));
+            Assert.That(Enumerable.Range(0, 7).Select(voted.NameIndexOf), Is.EqualTo(Enumerable.Range(0, 7).Select(chosen.NameIndexOf)));
+            Assert.That(chosen.Describe(), Does.StartWith("AI skills 1 to 9 of 10"));
+        }
+
+        [Test]
+        public void AnOlderSaveWithOneSkill_SetsEveryAi_AndAPerAiSkillBesideItWins()
+        {
+            MatchSetup old = MatchSetup.FromRecord(new[] { new KeyValuePair<string, int>("skill", 8), new KeyValuePair<string, int>("ai", 3) });
+            Assert.That(Enumerable.Range(0, MatchRules.MaxSeats - 1).Select(old.SkillOf), Is.All.EqualTo(8));
+
+            MatchSetup mixed = MatchSetup.FromRecord(new[] { new KeyValuePair<string, int>("skill2", 2), new KeyValuePair<string, int>("skill", 8) });
+            Assert.That((mixed.SkillOf(0), mixed.SkillOf(1), mixed.SkillOf(2)), Is.EqualTo((8, 2, 8)));
+        }
+
+        [Test]
+        public void DefaultNamesAreAiN_RandomNamesAreDistinct_AndTheResetClearsBoth()
+        {
+            var setup = new MatchSetup();
+            Assert.That(setup.NameOf(2), Is.EqualTo("AI 3"));
+            setup.UseRandomNames(new System.Random(7));
+            int[] picked = Enumerable.Range(0, MatchRules.MaxSeats - 1).Select(setup.NameIndexOf).ToArray();
+            Assert.That(picked, Is.Unique);
+            Assert.That(picked, Is.All.GreaterThanOrEqualTo(0));
+            setup.UseDefaultNames();
+            Assert.That(setup.NameOf(0), Is.EqualTo("AI 1"));
+
+            setup.SetSkill(4, 0);
+            setup.UseRandomNames(new System.Random(1));
+            setup.ResetToDefaults();
+            Assert.That(setup.SameAs(new MatchSetup()), Is.True);
+            Assert.That(setup.SkillOf(4), Is.EqualTo(Ai.DefaultSkill));
+        }
+
+        [Test]
+        public void ACloneDoesNotShareItsSeatsWithTheOriginal()
+        {
+            var a = new MatchSetup();
+            MatchSetup b = a.Clone();
+            b.SetSkill(0, 1);
+            b.SetNameIndex(0, 3);
+            Assert.That(a.SkillOf(0), Is.EqualTo(Ai.DefaultSkill));
+            Assert.That(a.NameIndexOf(0), Is.EqualTo(AiNames.Default));
         }
 
         [Test]

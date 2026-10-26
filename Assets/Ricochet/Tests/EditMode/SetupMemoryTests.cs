@@ -24,6 +24,22 @@ namespace Ricochet.EditorTests
         }
 
         [Test]
+        public void EachAisSkillAndName_AreKeptInTheGameBlock_AndAnOldSingleSkillStillReads()
+        {
+            var game = new JsonObject();
+            var chosen = new MatchSetup { AiCount = 3 };
+            chosen.SetSkill(1, 9);
+            chosen.SetNameIndex(2, 4);
+            SetupMemory.Write(game, chosen);
+            MatchSetup back = SetupMemory.Read(JsonObject.Parse(game.ToJson()));
+            Assert.That(back.SameAs(chosen), Is.True);
+            Assert.That((back.SkillOf(1), back.NameIndexOf(2)), Is.EqualTo((9, 4)));
+
+            MatchSetup old = SetupMemory.Read(JsonObject.Parse("{\"matchSetup\":{\"ai\":2,\"skill\":7}}"));
+            Assert.That((old.SkillOf(0), old.SkillOf(1), old.SkillOf(14)), Is.EqualTo((7, 7, 7)));
+        }
+
+        [Test]
         public void AProfileWithNoSetup_OrAJunkOne_GivesTheDefaults()
         {
             Assert.That(SetupMemory.Read(new JsonObject()).SameAs(new MatchSetup()), Is.True);

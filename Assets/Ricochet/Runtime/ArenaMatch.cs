@@ -97,6 +97,7 @@ namespace Ricochet
             }
 
             _turns.Arena = this;
+            _turns.MirrorAiNames(_setup);
             _turns.MirrorMap(MapIndex);
             _announcer = new Announcer(_setup.AnnouncerVoice, _setup.Announcements, _announcerDice);
             _turns.MirrorVoice(_announcer.Voice);
@@ -295,7 +296,7 @@ namespace Ricochet
             switch (_aiTurn.Step(seconds, ai.Heading, _match.TimeLeft, out double next))
             {
                 case AiStep.Plan:
-                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), _setup.AiSkill, _aiDice,
+                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), _setup.SkillOf(ai.AiNumber - 1), _aiDice,
                         Rules, ArsenalRules, ai.Loadout);
                     _aiTurn.SetPlan(plan);
                     ai.ServerSelectWeapon(plan.Weapon);

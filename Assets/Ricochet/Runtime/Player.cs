@@ -116,12 +116,29 @@ namespace Ricochet
             }
         }
 
+        /// <summary>For an AI opponent, its number from 1 (the "n" of its "ai:n" key); 0 for a human.</summary>
+        public int AiNumber
+        {
+            get
+            {
+                string key = _key.Key ?? string.Empty;
+                return IsAi && key.StartsWith(Arena.AiKeyPrefix, System.StringComparison.Ordinal)
+                    && int.TryParse(key.Substring(Arena.AiKeyPrefix.Length), out int number) ? number : 0;
+            }
+        }
+
         private string RawName()
         {
             if (IsAi)
             {
                 string key = _key.Key ?? string.Empty;
-                return "AI " + (key.StartsWith(Arena.AiKeyPrefix, System.StringComparison.Ordinal) ? key.Substring(Arena.AiKeyPrefix.Length) : key);
+                if (key.StartsWith(Arena.AiKeyPrefix, System.StringComparison.Ordinal) && int.TryParse(key.Substring(Arena.AiKeyPrefix.Length), out int number))
+                {
+                    Turns turns = Turns.For(Session);
+                    return turns != null ? turns.AiName(number) : "AI " + number; // the match's names ride on Turns
+                }
+
+                return "AI " + key;
             }
 
             return Roster(out NetPlayer player) ? player.DisplayName : "Player";
