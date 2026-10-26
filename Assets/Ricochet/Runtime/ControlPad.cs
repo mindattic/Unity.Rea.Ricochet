@@ -45,7 +45,13 @@ namespace Ricochet
                 Paint();
             }
 
-            public void OnPointerUp(PointerEventData eventData) => Release();
+            public void OnPointerUp(PointerEventData eventData)
+            {
+                if (eventData.button == PointerEventData.InputButton.Left)
+                {
+                    Release(); // another button's release must not end a left-button hold
+                }
+            }
 
             public void OnPointerEnter(PointerEventData eventData)
             {
