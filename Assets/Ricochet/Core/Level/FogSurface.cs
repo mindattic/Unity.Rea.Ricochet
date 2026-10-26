@@ -32,8 +32,8 @@ namespace Ricochet.Core.Level
             _minY = minY;
             _cell = PixelsPerCell * unitsPerPixel;
             UnitsPerPixel = unitsPerPixel;
-            Width = Math.Max(1, (int)((maxX - minX) / _cell));
-            Height = Math.Max(1, (int)((maxY - minY) / _cell));
+            Width = Math.Max(1, (int)Math.Ceiling((maxX - minX) / _cell - 1e-6));
+            Height = Math.Max(1, (int)Math.Ceiling((maxY - minY) / _cell - 1e-6));
             _fog = new double[Width * Height];
             Clear();
         }

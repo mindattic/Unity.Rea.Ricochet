@@ -163,9 +163,11 @@ per-32-pixel-cell version of the same idea; reset_fogofwar only makes the fogscr
   pellet (0.5), laser (0.5), grenade (1), rail swirl (1), vortex (0.7), and each landed weapon, item and health drop (1).
   Here a room pixel is `ShapeLibrary.UnitsPerPixel`; the falloff table is read off the sprite's alpha.
 
-Deviations: (1) the original lights the surface with GameMaker's `bm_src_color` blend; this reveals by compositing each
-stamp's alpha onto the fog's opacity (overlaps add, nothing re-fogs), the evident intent, since the blend maths could not be
-run here. (2) obj_powerup crates (the random-drops option) are not lit, as the original's fogscreen does not list them.
+Deviations: (1) the original lights the surface with `draw_set_blend_mode(bm_src_color)` (factors src colour and inverse src colour)
+on a white sprite: taken literally that paints the sprite's whole square white (white src colour, factor 0 on the fog) and
+leaves the alpha at a*a + 1 - a, so fog that is almost opaque everywhere, never a reveal. That is plainly broken, so this
+fixes it to what was clearly meant: each stamp's alpha (the sprite's falloff times lightStrength) is composited onto the fog's
+opacity (overlaps add, nothing re-fogs). Only tanks still in the round light it (a knocked-out tank's obj_player is gone). (2) obj_powerup crates (the random-drops option) are not lit, as the original's fogscreen does not list them.
 (3) Networked: the original had one screen for one hot-seat viewer, so every peer keeps and draws its own surface from the
 same inputs (the synced players, shots and crates); nothing about the fog is sent. As in the original, every tank is a
 light, so tanks are never hidden, only the ground and drops not yet reached (this replaces UR-T26's invented 5-unit

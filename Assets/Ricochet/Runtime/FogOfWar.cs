@@ -49,6 +49,11 @@ namespace Ricochet
         {
             if (_renderer != null)
             {
+                if (_renderer.sprite != null)
+                {
+                    Destroy(_renderer.sprite);
+                }
+
                 Destroy(_renderer.gameObject);
             }
 
@@ -74,6 +79,11 @@ namespace Ricochet
             }
 
             Level level = Arena.Level;
+            if (level == null)
+            {
+                return;
+            }
+
             bool fresh = _surface == null || !ReferenceEquals(level, _surfaceLevel) || turns.Round != _surfaceRound;
             if (fresh)
             {
@@ -100,6 +110,11 @@ namespace Ricochet
             if (_texture != null)
             {
                 Destroy(_texture);
+            }
+
+            if (_renderer != null && _renderer.sprite != null)
+            {
+                Destroy(_renderer.sprite);
             }
 
             _texture = new Texture2D(_surface.Width, _surface.Height, TextureFormat.RGBA32, false)
@@ -130,6 +145,11 @@ namespace Ricochet
         {
             foreach (Player player in Player.In(session))
             {
+                if (!player.InRound)
+                {
+                    continue; // a knocked-out tank's obj_player is gone, so it lights nothing
+                }
+
                 _surface.Light(player.transform.position.x, player.transform.position.y, 1.0);
                 _lights.Clear();
                 player.CollectShotLights(_lights);
