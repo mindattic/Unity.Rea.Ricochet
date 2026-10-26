@@ -18,6 +18,26 @@ namespace Ricochet.Core.Tests
     // named whole numbers in the game block; these tests take it out and back, through JSON text, and reset it.
     public class SetupMemoryTests
     {
+        // U.RICO-T77: obj_fogscreen's surface starts black, a light (spr_lightsource, 100 room pixels at size 1) clears
+        // around it and the reveal stays, and a new surface (reset_fogofwar) is black again.
+        [Test]
+        public void TheFogSurfaceIsRevealedByLightsAndKeepsItUntilReset()
+        {
+            double upp = ShapeLibrary.UnitsPerPixel;
+            var fog = new FogSurface(0, 0, 1920 * upp, 1080 * upp, upp);
+            Assert.That(fog.Width, Is.EqualTo(120), "room_width / 16");
+            Assert.That(fog.OpacityAt(5, 5), Is.EqualTo(1.0));
+            fog.Light(5, 5, 1.0);
+            Assert.That(fog.OpacityAt(5, 5), Is.LessThan(0.1), "clear at the light's middle");
+            Assert.That(fog.OpacityAt(5 + 150 * upp, 5), Is.EqualTo(1.0), "beyond its 100 pixel radius it is fog");
+            double halfway = fog.OpacityAt(5 + 50 * upp, 5);
+            Assert.That(halfway, Is.InRange(0.85, 0.95));
+            fog.Light(5, 5, 0.5);
+            Assert.That(fog.OpacityAt(5 + 50 * upp, 5), Is.EqualTo(halfway).Within(0.01), "a smaller light changes nothing it covers: the reveal stays");
+            fog.Clear();
+            Assert.That(fog.OpacityAt(5, 5), Is.EqualTo(1.0));
+        }
+
         private static MatchSetup Chosen() => new MatchSetup
         {
             AiCount = 7,

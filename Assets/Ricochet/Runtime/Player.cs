@@ -208,6 +208,15 @@ namespace Ricochet
         /// <summary>The hit radius: a seat's full radius, less after a shrink ray.</summary>
         public double Radius => Seating.PlayerRadius * Mathf.Clamp(Scale, 0.05f, 1f);
 
+        /// <summary>Adds a light for each of this player's projectiles in the air (UR-T77's fog of war).</summary>
+        public void CollectShotLights(List<(Vector2 Spot, double Size)> lights)
+        {
+            if (_shotView != null)
+            {
+                _shotView.CollectLights(lights);
+            }
+        }
+
         /// <summary>Every spawned player <paramref name="session"/> has, humans and AI, in no particular order.</summary>
         public static IEnumerable<Player> In(NetSession session)
         {

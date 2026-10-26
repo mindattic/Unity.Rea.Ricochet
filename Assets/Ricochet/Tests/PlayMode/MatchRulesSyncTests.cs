@@ -57,7 +57,7 @@ namespace Ricochet.Tests
             Assert.That(Arena.ArsenalRules.InPlay(Weapon.Grenade), Is.False, "the host took the grenade out of play");
         }
 
-        // U.RICO-T26: the fog of war rule reaches the client, which draws its own fog around its own tank.
+        // U.RICO-T26: the fog of war rule reaches the client, which draws its own fog, with its own tank lit.
         [UnityTest]
         public IEnumerator AClientDrawsTheFogOfWarTheHostSet()
         {
@@ -71,7 +71,8 @@ namespace Ricochet.Tests
                 yield return WaitUntil(() => Turns.For(Client) != null && Turns.For(Client).FogOfWar, "the client never took the fog rule");
                 yield return WaitUntil(() => hud.Fog.Active, "the client never drew its fog");
                 Player mine = Player.In(Client).First(p => p.IsLocalHuman);
-                Assert.That(hud.Fog.Centre.x, Is.EqualTo(mine.transform.position.x).Within(0.01f));
+                yield return WaitUntil(() => hud.Fog.OpacityAt(mine.transform.position) < 0.01, "the client's own tank never lit its fog");
+                Assert.That(hud.Fog.OpacityAt(new UnityEngine.Vector2((float)Arena.Level.MaxX - 0.05f, (float)Arena.Level.MaxY - 0.05f)), Is.GreaterThan(0.99), "far corners stay fogged");
             }
             finally
             {

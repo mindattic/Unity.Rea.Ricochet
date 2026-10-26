@@ -146,3 +146,27 @@ copy of any of these is a bug.
   and the original's unused rooms (`room0`, the empty `intro`, and the campaign `maproom` no button reached).
 - ⬜ Anything not above is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.
+
+## Fog of war (UR-T26, ported exactly in UR-T77)
+
+Source: `obj_fogscreen`, `reset_fogofwar.gml`, `randomize_level.gml` (obj_fog and obj_fogofwar_emitter are the retired
+per-32-pixel-cell version of the same idea; reset_fogofwar only makes the fogscreen, so they are not ported).
+
+- The `fogofwar` rule is the host's setting (Settings toggle, synced through Turns' packed rules, as before).
+- `reset_fogofwar` runs at the end of `randomize_level`, so every new level or round gets a new fogscreen. Here
+  `FogOfWar` (Runtime) makes a fresh `FogSurface` (Core) whenever the level or the round changes, or the rule comes on.
+- The fogscreen's surface is `room_width/16` by `room_height/16` (surfScale 1/16), cleared black once at creation and never
+  again, so a revealed spot stays revealed for the level. It is drawn over the whole arena scaled up (point filtered, as
+  draw_surface_ext's default), above everything (depth -999).
+- Every 10 steps (alarm[0], 60 a second; the first stamp is in the first draw) it stamps `spr_lightsource` (200 px, radius
+  100 room pixels, soft falloff) at each light's place scaled by its `lightSize`, strength 1: every tank (1), bullet (1),
+  pellet (0.5), laser (0.5), grenade (1), rail swirl (1), vortex (0.7), and each landed weapon, item and health drop (1).
+  Here a room pixel is `ShapeLibrary.UnitsPerPixel`; the falloff table is read off the sprite's alpha.
+
+Deviations: (1) the original lights the surface with GameMaker's `bm_src_color` blend; this reveals by compositing each
+stamp's alpha onto the fog's opacity (overlaps add, nothing re-fogs), the evident intent, since the blend maths could not be
+run here. (2) obj_powerup crates (the random-drops option) are not lit, as the original's fogscreen does not list them.
+(3) Networked: the original had one screen for one hot-seat viewer, so every peer keeps and draws its own surface from the
+same inputs (the synced players, shots and crates); nothing about the fog is sent. As in the original, every tank is a
+light, so tanks are never hidden, only the ground and drops not yet reached (this replaces UR-T26's invented 5-unit
+circle around the local tank only).

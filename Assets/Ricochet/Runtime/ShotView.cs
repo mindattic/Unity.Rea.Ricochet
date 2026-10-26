@@ -143,6 +143,28 @@ namespace Ricochet
             }
         }
 
+        /// <summary>
+        /// Adds a light for each projectile in the air (UR-T77: obj_bullet, obj_pellet, obj_laser, obj_grenade, obj_rail_swirl and
+        /// obj_vortex all light obj_fogscreen's surface): its place and its lightSize (the pellet and the laser 0.5, the vortex 0.7).
+        /// </summary>
+        public void CollectLights(List<(Vector2 Spot, double Size)> lights)
+        {
+            if (_flight == null || _flight.Landed)
+            {
+                return;
+            }
+
+            Weapon weapon = _flight.Volley.Weapon;
+            double size = weapon == Weapon.Shotgun || weapon == Weapon.Laser ? 0.5 : weapon == Weapon.Vortex ? 0.7 : 1.0;
+            for (int i = 0; i < _parts.Count && i < _flight.Flights.Count; i++)
+            {
+                if (!_parts[i].Landed && _parts[i].Projectile.enabled)
+                {
+                    lights.Add((_parts[i].Projectile.transform.position, size));
+                }
+            }
+        }
+
         private void Update()
         {
             if (_flight != null && !_flight.Landed)
