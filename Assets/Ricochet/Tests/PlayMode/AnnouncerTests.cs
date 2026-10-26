@@ -78,6 +78,8 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => _hud.Overlay.TurnCardShowing && _hud.Overlay.TurnCardText.Contains(host.DisplayName),
                 () => "the turn card never named the host: " + _hud.Overlay.TurnCardText);
             Assert.That(_hud.Overlay.TurnCardText, Does.Contain("Weapon: Cannon"));
+            Assert.That(_hud.Overlay.TurnCardText, Does.Contain("Weapon: Cannon unlimited"), "words stay for screen readers");
+            Assert.That(_hud.Overlay.WeaponSignShowing, Is.True, "the cannon is unlimited: the turn card draws the infinity sign");
             Assert.That(_hud.Overlay.TurnCardText, Does.Contain("Item:"));
             Assert.That(_hud.Overlay.TurnCardText, Does.Contain("Score 0"));
         }

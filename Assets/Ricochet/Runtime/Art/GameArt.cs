@@ -38,6 +38,9 @@ namespace Ricochet
         public const string IconGun = "spr_icon_gun";
         public const string IconGear = "spr_icon_gear";
         public const string IconHealth = "spr_icon_health";
+
+        // An unlimited count (obj_infinity), drawn after the weapon and item names on the turn card.
+        public const string Infinity = "spr_infinity";
     }
 
     /// <summary>The GML names of the original's nine fonts and its sprite font.</summary>

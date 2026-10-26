@@ -11,6 +11,7 @@
 // colour, and a bar in each player's own colour is the point of them.
 // Both cards sit above the bottom row of seats (UR-T18): their opaque backdrop used to cover the tanks and names of the
 // seats along the bottom of the level on the left, where the announcer card is widest.
+using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity;      // MaCanvas, MaPanel, MaText, PanelStyle, TextStyle
 using Ricochet.Core.Arsenal;
@@ -54,8 +55,8 @@ namespace Ricochet
 
         private RectTransform _turnRoot;
         private MaText _turnTitle;
-        private MaText _weaponText;
-        private MaText _itemText;
+        private CountLine _weaponLine;
+        private CountLine _itemLine;
         private MaText _comboText;
         private MaText _hintText;
 
@@ -83,7 +84,10 @@ namespace Ricochet
 
         /// <summary>Everything the turn card says, one line each (for tests and logs).</summary>
         public string TurnCardText => _turnRoot == null ? string.Empty
-            : _turnTitle.Text + "\n" + _weaponText.Text + "\n" + _itemText.Text + "\n" + _comboText.Text;
+            : _turnTitle.Text + "\n" + _weaponLine.Text + "\n" + _itemLine.Text + "\n" + _comboText.Text;
+
+        /// <summary>True while the turn card draws the infinity sign after the weapon name (an unlimited count).</summary>
+        public bool WeaponSignShowing => _weaponLine != null && _weaponLine.ShowsSign;
 
         /// <summary>The canvas the cards are on (null until the first frame).</summary>
         public Canvas Canvas => _canvas;
@@ -187,8 +191,8 @@ namespace Ricochet
             _turnTitle.Text = turns == null
                 ? "Practice: " + subject.DisplayName
                 : subject.DisplayName + (subject.IsLocalHuman ? " (your turn)" : "'s turn") + "   Score " + subject.Score;
-            _weaponText.Text = WeaponLine(subject.Loadout);
-            _itemText.Text = ItemLine(subject.Loadout, subject.ExtraBounces);
+            _weaponLine.Show(WeaponLine(subject.Loadout));
+            _itemLine.Show(ItemLine(subject.Loadout, subject.ExtraBounces));
 
             // draw_potential: what the shot in the air would score if it hit now (0 before it is fired).
             int bounces = subject.BouncesInFlight;
@@ -217,6 +221,69 @@ namespace Ricochet
                 ? ArsenalRules.Name(loadout.Item) + " " + ArsenalRules.CountLabel(loadout.Count(loadout.Item))
                 : "none";
             return "Item: " + item + (extraBounces > 0 ? "   +" + extraBounces + " bounce" + (extraBounces == 1 ? string.Empty : "s") : string.Empty);
+        }
+
+        /// <summary>
+        /// One turn-card line: its text, but where the count is unlimited the original's infinity sign (spr_infinity, obj_infinity)
+        /// is drawn in place of the word, with the rest of the line after it. The words stay in <see cref="Text"/> for screen
+        /// readers and logs, and on screen when the catalogue lacks the sprite.
+        /// </summary>
+        private sealed class CountLine
+        {
+            private const float SignSize = 30f;
+            private static readonly string Word = " " + ArsenalRules.CountLabel(ArsenalRules.Unlimited);
+            private readonly MaText _before;
+            private readonly Image _sign;
+            private readonly MaText _after;
+
+            public CountLine(Transform parent)
+            {
+                var row = new GameObject("Count line", typeof(RectTransform));
+                row.layer = 5;
+                row.transform.SetParent(parent, false);
+                HorizontalLayoutGroup layout = row.AddComponent<HorizontalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleLeft;
+                layout.spacing = 6f;
+                layout.childControlWidth = layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+                _before = MaText.Create(row.transform, string.Empty, TextStyle.Body);
+                var sign = new GameObject("Infinity", typeof(RectTransform), typeof(Image));
+                sign.layer = 5;
+                sign.transform.SetParent(row.transform, false);
+                _sign = sign.GetComponent<Image>();
+                _sign.raycastTarget = false;
+                _sign.preserveAspect = true;
+                LayoutElement size = sign.AddComponent<LayoutElement>();
+                size.preferredWidth = size.preferredHeight = SignSize;
+                sign.SetActive(false);
+                _after = MaText.Create(row.transform, string.Empty, TextStyle.Body);
+            }
+
+            /// <summary>The whole line as words.</summary>
+            public string Text { get; private set; } = string.Empty;
+
+            /// <summary>True while the infinity sign is drawn.</summary>
+            public bool ShowsSign => _sign.gameObject.activeSelf;
+
+            public void Show(string line)
+            {
+                Text = line;
+                int at = line.IndexOf(Word, StringComparison.Ordinal);
+                Sprite infinity = at >= 0 ? GameArt.Frame(GmlSprites.Infinity) : null;
+                if (infinity == null)
+                {
+                    _before.Text = line;
+                    _after.Text = string.Empty;
+                    _sign.gameObject.SetActive(false);
+                    return;
+                }
+
+                _before.Text = line.Substring(0, at + 1);
+                _after.Text = line.Substring(at + Word.Length);
+                _sign.sprite = infinity;
+                _sign.gameObject.SetActive(true);
+            }
         }
 
         private string NameOf(int seat)
@@ -300,8 +367,8 @@ namespace Ricochet
             lines.childForceExpandWidth = true;
             lines.childForceExpandHeight = false;
             _turnTitle = MaText.Create(turnCard, string.Empty, TextStyle.Heading);
-            _weaponText = MaText.Create(turnCard, string.Empty, TextStyle.Body);
-            _itemText = MaText.Create(turnCard, string.Empty, TextStyle.Body);
+            _weaponLine = new CountLine(turnCard.transform);
+            _itemLine = new CountLine(turnCard.transform);
             _comboText = MaText.Create(turnCard, string.Empty, TextStyle.Muted);
             _hintText = MaText.Create(turnCard, string.Empty, TextStyle.Caption);
             _turnRoot.gameObject.SetActive(false);
