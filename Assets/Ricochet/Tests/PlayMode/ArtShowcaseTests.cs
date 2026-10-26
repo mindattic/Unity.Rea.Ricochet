@@ -9,6 +9,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
 using Ricochet.Core.Art;
 using Ricochet.Core.Level;
@@ -38,6 +39,7 @@ namespace Ricochet.Tests
             RegisterPrefab(GamePrefabs.Opponent);
             RegisterPrefab(GamePrefabs.Turns);
             RegisterPrefab(GamePrefabs.Crate);
+            RegisterPrefab(GamePrefabs.Hazard);
             Client.Identity = new PlayerIdentity("art-token", "Ann", new PlayerColor(230, 80, 60));
         }
 
@@ -221,11 +223,20 @@ namespace Ricochet.Tests
 
             host.ServerCycleWeapon(1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Vortex));
-            host.ServerFire(60f, 1f);
+            float clear = 60f; // a heading whose vortex flies a good way before anything stops it
+            while (clear < 420f && (host.SolveVolley(Weapon.Vortex, clear, 1f, 2, 0).Main.End == ShotEndKind.Absorbed
+                || host.SolveVolley(Weapon.Vortex, clear, 1f, 2, 0).Main.Length < 6))
+            {
+                clear += 5f;
+            }
+
+            host.ServerFire(clear, 1f);
             yield return new WaitForSeconds(0.25f);
             yield return Capture("vortex-flying", "U.RICO-T47");
             host.ServerDetonate();
-            yield return WaitUntil(() => view.ImplosionMode == VortexMode.Waiting, "the vortex never filled out", 10f);
+            yield return WaitUntil(() => view.ImplosionMode == VortexMode.Waiting,
+                () => "the vortex never filled out: " + view.ImplosionMode + ", imploding " + view.Imploding + ", flying " + view.Flying + ", blast "
+                    + host.LastVolley.HasBlast + ", end " + host.LastVolley.Main.End + ", weapon " + host.LastVolley.Weapon, 10f);
             yield return Capture("vortex", "U.RICO-T47");
             yield return WaitUntil(() => view.ImplosionMode == VortexMode.Waiting2, "the vortex never blew", 10f);
             yield return Capture("vortex-blown", "U.RICO-T47");

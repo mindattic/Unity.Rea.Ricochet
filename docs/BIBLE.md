@@ -236,9 +236,10 @@ draws one SDF outline, whose corners are round. (2) The shots are no longer tint
 did that with its squares; GameMaker's draw_self draws them as they are): the trail keeps the colour. (3) The grenade and
 vortex spin at 3 degrees per 60-a-second step, where the original spun 3 degrees per step at whatever `shootFPS` the
 machine reached during a shot. (4) The HUD labels keep the rebuild's layout and fit their text to its boxes in the
-original's faces, rather than drawing at the original's sizes in its places. (5) The rail's trail of swirls, the vortex's
-spread and every other sprite are still drawn as before; U.RICO-T45 (tanks, tracks: done, see Tanks), U.RICO-T46 (backgrounds, clouds,
-borders, shapes: done, see Level backdrop) and U.RICO-T78 (the rest) swap them.
+original's faces, rather than drawing at the original's sizes in its places. (5) U.RICO-T45 (tanks, tracks: done, see
+Tanks), U.RICO-T46 (backgrounds, clouds, borders, shapes: done, see Level backdrop), U.RICO-T47 (the rail's swirls, the
+laser, the vortex's implosion, the items on the level: done, see Weapon and hazard visuals) and U.RICO-T78 (the rest) swap
+the other sprites.
 
 ## Tanks (U.RICO-T45)
 
@@ -321,3 +322,74 @@ and the top frame here is `spr_top_border`.
 Not carried: `obj_ground` (placed nowhere: a surface that would subtract `spr_polygon1` at 0, 0 once for every shape, an
 unfinished idea) and `obj_hex` (a hex sprite placed only in `room0`, the startup room the rebuild does not carry). `bg_redslate` is in no group, and its
 image is missing from the original, so nothing is lost there.
+
+## Weapon and hazard visuals (U.RICO-T47)
+
+Source: `scripts/draw_beam.gml`, `draw_dottedline.gml`, `laser_create/step/draw.gml`, `new_laser.gml`, `pulse_step.gml`,
+`shoot_railgun.gml`, `railgun_step/draw.gml`, `generate_swirl.gml`, `swirl_create.gml`, `grenade_create/step.gml`,
+`grenade_countdown.gml`, `draw_weaponinfo.gml`, `draw_grenadefuse.gml`, `drawgui_fuse.gml`, `draw_fuse.gml`,
+`vortex_create/step/draw.gml`, `vortex_detonate.gml`, `draw_vortexdetonate.gml`, `draw_electricity.gml`, `draw_glow.gml`,
+`redirector_step.gml`, `redirector_detonate.gml`, `hit.gml`, and the objects `obj_laser`, `obj_laser_pulse`,
+`obj_laser_connector`, `obj_rail`, `obj_rail_swirl`, `obj_rail_ring`, `obj_grenade`, `obj_grenade_explosion`, `obj_vortex`,
+`obj_vortex_child`, `obj_boom`, `obj_boom_normal`, `obj_explosion`, `obj_shieldwall`, `obj_redirector`, `obj_aimassist`,
+`obj_lasersight`, `obj_shotgun_blast`, `obj_pellet`, `obj_tracer`, `obj_tesla`, `obj_shrinkray(_child)`, `obj_teleporter`,
+`obj_flash`, `obj_flashemitter`.
+
+- Core's `WeaponLooks` and `Vortex` hold every number and step rule (`Tests/Core.Tests/WeaponLooksTests`); the views run them
+  at the room speed (60 steps a second), as U.RICO-T44 settled for the spins.
+- **Preview and aim assist** (`DottedBeam`): draw_beam's dotted line, 6 px dashes with 6 px gaps, black and 4 px wide under
+  white and 2 px wide, along every leg of the path from the muzzle (each leg its own draw_dottedline, so the dashes start
+  afresh at a corner; the last dash is drawn whole, as the original's loop does). The preview is at full alpha; the aim
+  assist's fades out over its 5.5 s (obj_aimassist's 0.003 a step).
+- **Laser** (`LaserBeam`): no sprite at the head (obj_laser's Draw is laser_draw alone): laser_color (255, 0, 63) 4 px at 0.7
+  under white 1 px at 0.9 from the muzzle to the head through every bounce (new_laser's segments). obj_laser_pulse's
+  spr_raingun_ring is sent from the muzzle 40-60 steps in and every 25-75 after (obj_laser's alarm), riding the beam at the
+  head's speed turned to its heading. Once the last bounce is spent the beam's back end runs after the head at five times its
+  speed (laser_step's `originX += dX * 5`) until it is gone, and the pulses fade 0.02 a step. The rebuild flies the laser at
+  three times a shell's speed, so the pulses are spaced by the distance the original's head covered in those steps (3 px a
+  step), which keeps their spacing.
+- **Railgun** (`Rail`): no sprite at the slug: railgun_draw's railColor (200, 255, 200) line 9 px at 0.1 and 1 px at railAlpha,
+  and a spr_railgun_swirl every 56 px from the muzzle (generate_swirl) tinted railColor at railAlpha, each lighting the fog
+  (swirl_create's lightSize 1). railAlpha starts at 0.8 and loses 0.005 a step: the rail is gone 160 steps (2.7 s) after it
+  is fired. The original's rail was there at once; the rebuild's slug flies at eight times a shell's speed and the rail is
+  drawn as far as it has reached.
+- **Grenade**: spr_grenade spinning (U.RICO-T44); the turn card's weapon line counts the fuse down to the hundredth while it
+  flies (draw_weaponinfo's `fuseLeft / shootFPS`, grenade_countdown), and draw_grenadefuse's red hint ("You can adjust the
+  grenade fuse by pressing [1-3]", the rebuild's keys) shows while the owner holds it on their turn. obj_grenade_explosion is
+  spr_bigexplosion at three times its size at 0.7 (U.RICO-T44) under a white circle at 0.7 growing 2 px a step; both are gone
+  when the circle reaches grenadeRadius (75 steps), so the sprite is cut at its sixteenth frame, as in the original.
+- **Vortex** (`Implosion`): spr_vortex_device grows from a quarter of its size 0.01 a step in flight. Where it goes off it
+  plays obj_boom (set off, image_speed 0.1) or obj_explosion (spent, 0.5), then vortex_step's modes: spr_vortex at 0.5 growing
+  from nothing 0.002 a step to its full size while turning a degree a step backwards, obj_vortex_child at its size over it
+  turning 4 a step forwards from 90, 300 steps waiting, then shrinking 0.01 a step while vortex_draw's white circle at 0.7
+  spreads 10 px a step, and 300 more steps of circle. It lights the fog at 0.7 while it shows.
+- **Shots landing**: a shell that runs out of bounces plays obj_explosion where it stops (bullet_step); a pellet, a laser and
+  a rail play nothing there (pellet_step destroys the pellet, laser_step's explosion is commented out). Whoever a shot strikes
+  gets obj_boom_normal's spr_smallexplosion (image_speed 0.5) on them as it lands, on every peer (hit.gml; `SpriteBurst`).
+- **Shield wall**: spr_shieldwall across the aim, untinted, playing at image_speed 1 and fading in 0.01 a step to 0.9.
+  **Redirector**: spr_redirector_arrow along the way it sends a shot, from 0.3 of its size growing 0.01 a step.
+- **Electric arc**: draw_electricity's bolt, redrawn every few frames through points shaken off the line, with its glow
+  circles as soft lights through `IRenderStyle.AddGlow` (draw_glow's circles, the same code) every other vertex, shaken half
+  as far. **Laser gate**: drawn as laser_draw draws a laser.
+- `Tests/PlayMode/WeaponLookTests` plays the laser, rail, vortex, grenade circle, hit flash and preview on a client;
+  `HazardTests` checks the wall's and redirector's art; `ArtShowcaseTests.TheWeaponsAndHazards` saves `U.RICO-T47-*`
+  screenshots (preview, laser, laser running out, railgun, vortex in flight, imploding and blown, grenade circle, items,
+  hazards).
+
+Deviations: (1) The vortex's implosion runs at the shot's step rate (`WeaponLooks.ShotStepsPerSecond`: the steps a shell at
+the rebuild's speed takes to cover bulletSpeed's 3 px, about 524 a second), not at 60: the original ran it at shootFPS
+(1020 asked, whatever the machine reached) during the shot, and at 60 its 1,200 steps would last 20 s, well into the next
+turn; it lasts about 2.3 s. (2) The cannon, shotgun, grenade and vortex keep the rebuild's trail in the player's colour
+(U.RICO-T44's deviation 2); the laser and railgun draw the original's beam and rail instead. (3) The preview draws the whole
+bounce path in draw_beam's style; the original drew draw_beam only for the aim assist and the laser sight (a straight beam
+to the first wall) and had no path preview (RECONSTRUCTION's aim row). (4) draw_electricity drew additively; the rebuild's
+bolt is alpha-blended and its glow is 2D point lights (none, and a faint wide line instead, on the built-in pipeline).
+(5) The redirector keeps the rebuild's turn per turn (UR-T25), drawn at its heading, rather than spinning a degree a step.
+
+Not carried: `obj_laser_connector` and `obj_rail_ring` (created nowhere: their only creations are commented out; the
+connector would have drawn laser_draw's look, which the beam already is), `drawgui_fuse` and `draw_fuse` (called by nothing;
+draw_weaponinfo's countdown is the one the original showed), `draw_glow` as its own call (its only call, in railgun_draw, is
+commented out and malformed; railgun_draw's 9 px line is that glow), `obj_tesla` (no sprite and no events), `obj_tracer` (the
+AI's invisible probe, drawn only in debug) and `obj_shotgun_blast` (a controller with nothing to draw). The items in flight
+(obj_teleporter, obj_shrinkray and its child, a redirector before it stops), the shield wall's glass and the endgame room's
+camera flashes (obj_flash, obj_flashemitter: the endgame room's only use of them) are U.RICO-T79.
