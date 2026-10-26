@@ -238,7 +238,7 @@ vortex spin at 3 degrees per 60-a-second step, where the original spun 3 degrees
 machine reached during a shot. (4) The HUD labels keep the rebuild's layout and fit their text to its boxes in the
 original's faces, rather than drawing at the original's sizes in its places. (5) The rail's trail of swirls, the vortex's
 spread and every other sprite are still drawn as before; U.RICO-T45 (tanks, tracks: done, see Tanks), U.RICO-T46 (backgrounds, clouds,
-borders, shapes) and U.RICO-T78 (the rest) swap them.
+borders, shapes: done, see Level backdrop) and U.RICO-T78 (the rest) swap them.
 
 ## Tanks (U.RICO-T45)
 
@@ -270,3 +270,54 @@ driving tank lays tracks in the rebuild.
 Not carried: `obj_head` (spr_head) and `spr_torso` are a leftover the project file no longer lists: a person-shaped body
 from before the tanks (obj_head followed `playerX`/`playerY`/`playerPreSwagger`, which nothing sets). They stay imported
 under `Art/Sprites/Unlisted` and are drawn by nothing.
+
+## Level backdrop (U.RICO-T46)
+
+Source: `scripts/setup_backgrounds.gml` (called by `randomize_level`), `rooms/gamescreen` (its tiled `bg_dirt`, eight
+cloud instances and four border instances), `objects/obj_cloud_parent` and `obj_cloud1-4`, `obj_spotlight`, `obj_lights`
+and `scripts/draw_light.gml`, `scripts/draw_borders.gml` (obj_game's Draw) with `spr_top_border`, `spr_bottom_border`,
+`spr_left_border`, `spr_right_border`, `scripts/setup_shapes.gml` and the eighty `obj_polygon/triangle/bar/circle/square1-16`.
+
+- `Assets/StreamingAssets/Settings/backdrop.json` holds it all as data (validated by `GameData`): the three floor groups
+  (bg_group1 outdoor 16, bg_group2 tiles and patterns 16, bg_group3 skins and stucco 5; `bg_potato` is in two, as in the
+  original), the eight clouds where gamescreen put them, the cloud alpha (0.15), speed (a pixel a step) and wrap range, the
+  spotlight's place and pulse, the lights' count, radius and colour ranges, and the border sprites with draw_borders'
+  `border` (32).
+- Core's `Backdrop.Plan` rolls a round's backdrop the way the original did: one floor from each group, then one of the
+  three groups (so each group is a third of the rounds, and a bg_group3 floor is likelier than any one bg_group1 floor),
+  then obj_lights' lights: x, y, a radius of 50 to 300 and each of red, green and blue 32 to 196. Its seed is
+  `Backdrop.SeedFor(LevelSeed, LevelVersion)`, which every peer already holds (Arena, synced since UR-T23), so all peers
+  draw the same floor and lights without anything new on the wire, and the version moves every round and reroll, so a
+  hand-laid map gets a new floor each round too. `Backdrop.DriftCloud` and `SpotlightPulse` are the clouds' and the
+  spotlight's step rules (`Tests/Core.Tests/BackdropTests`).
+- `Runtime/BackdropView` (made by `Game` beside `LevelView`) draws, on every peer: the floor tiled at its own pixel size
+  under everything; the eight clouds at 0.15 drifting left a pixel a step at the room speed and, once wholly off the left,
+  back in at the right edge at a height rolled from -100 to room_height - 100, standing still while the match is paused
+  (isPaused stopped them); `spr_spotlight` at 960, 712 with its alpha swinging 0.05 to 0.15 by 0.001 a step; the ten
+  lights as 2D point lights through `IRenderStyle.AddGlow` (draw_light's circle from the colour at the centre to black at
+  the edge, brightening what is under it; none on the built-in pipeline); and the four border sprites, sorted over the fog
+  of war as draw_borders (depth -1999) was over the fogscreen (depth -999). The original room is centred on the level
+  (1920 px = 22 units); the clouds and spotlight are clipped to the framed area as the room's view clipped them.
+- `LevelView` draws each shape of a random level as its sprite (`GmlSprites.Shape`: spr_polygon1-16, spr_triangle1-16,
+  spr_bar1-16, spr_circle1-16, spr_square1-16) at the origin and turn `RoundLayout.Shapes` records, in the sprite's own
+  colours (the shapes carry their colour in their art; obj_polygon's image_blend stays white), over the clouds (depth -2)
+  and under the tanks; its walls are the outline of that sprite's collision mask (UR-T60). A shape whose sprite is missing
+  falls back to its outline, and a hand-laid map's walls stay lines. The arena's edge is draw_borders' red line.
+- `Tests/PlayMode/BackdropTests` plays it; `ArtCatalogueTests` checks every name backdrop.json and the shapes use is in the
+  art; `ArtShowcaseTests` saves `backdrop-practice` and `backdrop-random` screenshots.
+
+Deviations: (1) The rebuild's arena is the whole of what was the original's room, so the border sprites frame it from
+outside (the sides 32 px, the top and bottom 64 px, stretched a little to meet at the corners) rather than covering the
+room's edges inside it, and the floor reaches under the frame. (2) obj_spotlight stood only in the splashscreen room; the
+story puts it over the level, at the place and pulse it had there. (3) The lights are URP 2D point lights, which brighten
+what they fall on, where draw_light blended a gradient circle over the drawn room.
+
+Fixed defects: obj_lights is placed in no room and created by nothing, so the original never drew its lights; the rebuild
+does, as the object was clearly meant to. Its loop runs to `i <= lightCount`, eleven lights for a count of ten, and rolls
+each light's y over `room_width`, putting nearly half of them below the room; the rebuild lays ten, over the room's height.
+gamescreen's `obj_border_top` shows `spr_bottom_border` (a copy-paste slip; draw_borders draws `spr_top_border` there),
+and the top frame here is `spr_top_border`.
+
+Not carried: `obj_ground` (placed nowhere: a surface that would subtract `spr_polygon1` at 0, 0 once for every shape, an
+unfinished idea) and `obj_hex` (a hex sprite placed only in `room0`, the startup room the rebuild does not carry). `bg_redslate` is in no group, and its
+image is missing from the original, so nothing is lost there.

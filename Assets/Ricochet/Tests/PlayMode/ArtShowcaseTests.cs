@@ -1,7 +1,7 @@
 // U.RICO-T44: looks at the original's art in a running match and saves what the camera and the HUD show to
 // Screenshots/ (gitignored): the Ready card in fnt_impact and fnt_mono with draw_text_outline's outlines, the four
 // crates with their icons, a shell in flight, its spr_smallexplosion, a grenade's spr_bigexplosion, and the tanks with
-// one driving and leaving tracks (U.RICO-T45). Explicit: it
+// one driving and leaving tracks (U.RICO-T45), and the level backdrop with a random level's shapes (U.RICO-T46). Explicit: it
 // needs graphics (Tools/unity.ps1 -Graphics), so it runs only when asked for by name:
 //   powershell -File Tools/unity.ps1 -Graphics -Log art-showcase -Extra "-runTests -testPlatform PlayMode -testFilter Ricochet.Tests.ArtShowcaseTests -testResults Logs/TestResults-ArtShowcase.xml"
 using System.Collections;
