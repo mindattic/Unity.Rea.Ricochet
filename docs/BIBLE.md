@@ -529,7 +529,9 @@ Source: `sound/music_*.sound.gmx` and `sound/audio/music_*.mp3`, `play_random_mu
 - Deviations: the original's `audio_play_music` calls are commented out in play_random_music.gml (so the shipped game
   played no music; the port plays it, as the ticket asks); its track restarts on every turn (a new pick, as the script's
   intent), looping; music_victory is imported for the podium (U.RICO-T56) and not yet played; music_inaheartbeat and
-  music_windsong are imported but, as in the original, never picked.
+  music_windsong are imported but, as in the original, never picked. A turn is noticed by the seat or round changing, so a
+  turn passing back to the same seat (only one seat left taking turns) keeps its track; the original would have picked anew.
+  The track stops when the match ends.
 
 ## Sound effects (U.RICO-T50)
 

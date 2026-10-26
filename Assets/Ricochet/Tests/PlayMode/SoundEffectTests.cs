@@ -167,8 +167,8 @@ namespace Ricochet.Tests
             using (SessionMute.Lifted())
             {
                 yield return Audio();
-                _audio.Music.mute = true; // the source itself, so nothing sounds even once the listener is restored
-                _audio.PlayMusic(MusicTrack.GoCart);
+                _audio.PlayMusic(MusicTrack.GoCart); // the listener is held at 0 by the lifted mute, so nothing is heard
+                Assert.That(_audio.Music.loop, Is.True);
                 Assert.That(_audio.CurrentTrack, Is.EqualTo(MusicTrack.GoCart));
                 Assert.That(_audio.MusicRequests.Last().Volume, Is.EqualTo(0.35f).Within(1e-4));
                 Assert.That(_audio.Music.volume, Is.EqualTo(0.35f).Within(1e-4));

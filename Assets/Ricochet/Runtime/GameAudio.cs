@@ -17,7 +17,7 @@
 // is recorded with the volume it was given (Requests, LastCue, LastVolume), so tests see what would be heard without
 // anything being heard.
 //
-// U.RICO-T27: the music is the original's nine music_* tracks (Resources/Ricochet/Music, streamed). Each new round
+// U.RICO-T27: the music is the original's eight music_* tracks (Resources/Ricochet/Music, streamed). Each new round
 // (randomize_level.gml) and each new turn (next_player.gml) of a match picks one of play_random_music.gml's five at random
 // and plays it on the music source, which carries the mix's music volume and mute (0 under a session mute, where it still
 // plays but is never heard and nothing is saved). Tests read the choice (MusicRequests, CurrentTrack, Music.volume).
@@ -54,6 +54,7 @@ namespace Ricochet
         private readonly Dictionary<MusicTrack, AudioClip> _tracks = new Dictionary<MusicTrack, AudioClip>();
         private Turns _turns;
         private bool _musicSeen;
+        private float _nextTurnsSearch;
         private int _lastRound = -1;
         private int _lastTurn = -1;
 
@@ -300,6 +301,7 @@ namespace Ricochet
             }
 
             _music.clip = clip;
+            _music.loop = true;
             _music.Play();
         }
 
@@ -575,14 +577,26 @@ namespace Ricochet
         // starts music for the turn in progress, as a fresh round would).
         private void WatchMatch()
         {
-            if (_turns == null || !_turns.IsSpawned)
+            if ((_turns == null || !_turns.IsSpawned) && Time.unscaledTime >= _nextTurnsSearch)
             {
+                _nextTurnsSearch = Time.unscaledTime + 1f; // a scene search, so about once a second
                 _turns = FindAnyObjectByType<Turns>();
             }
 
             bool on = _turns != null && _turns.IsSpawned && _turns.MatchPhase != MatchPhase.Practice;
             if (!on)
             {
+                if (_musicSeen)
+                {
+                    // The match ended (back to practice, or the session was left): the track ends with it.
+                    if (_music != null)
+                    {
+                        _music.Stop();
+                    }
+
+                    CurrentTrack = null;
+                }
+
                 _musicSeen = false;
                 return;
             }
