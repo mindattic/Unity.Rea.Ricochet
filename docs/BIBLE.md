@@ -391,8 +391,8 @@ connector would have drawn laser_draw's look, which the beam already is), `drawg
 draw_weaponinfo's countdown is the one the original showed), `draw_glow` as its own call (its only call, in railgun_draw, is
 commented out and malformed; railgun_draw's 9 px line is that glow), `obj_tesla` (no sprite and no events), `obj_tracer` (the
 AI's invisible probe, drawn only in debug) and `obj_shotgun_blast` (a controller with nothing to draw). The items in flight
-(obj_teleporter, obj_shrinkray and its child, a redirector before it stops) and the endgame room's camera flashes (obj_flash,
-obj_flashemitter: the endgame room's only use of them) are U.RICO-T79; the shield wall's glass is U.RICO-T48's (below).
+(obj_teleporter, obj_shrinkray, a redirector before it stops) and the endgame room's camera flashes (obj_flash,
+obj_flashemitter: the endgame room's only use of them) are U.RICO-T79's (below); the shield wall's glass is U.RICO-T48's.
 
 ## Hit and knock-out effects (U.RICO-T48)
 
@@ -447,6 +447,43 @@ like one a shot struck (obj_shieldwall's vortex collision). (5) Two crates colle
 
 Fixed defects: obj_glass rolled one of five but drew spr_glass1 for two of the rolls and spr_glass5 for none, though the
 sprite shipped; each of the five is drawn. Not carried: obj_hitscore (created nowhere; obj_float_text is the same text).
+
+## Item flights and endgame flashes (U.RICO-T79)
+
+Source: `scripts/use_item.gml`, `shoot_teleporter.gml`, `teleport_player.gml`, `shoot_shrinkray.gml`, `shoot_redirector.gml`,
+`redirector_step.gml`, `redirector_detonate.gml`, `globals.gml` (bulletSpeed, lime), the objects `obj_teleporter`,
+`obj_shrinkray`, `obj_shrinkray_child`, `obj_redirector`, `obj_flash`, `obj_flashemitter`, and the `endgame` room.
+
+- Core's `ItemLooks` holds every number and step rule (`Tests/Core.Tests/ItemLooksTests`). The authority flies a teleporter,
+  a shrink ray or a redirector before it takes effect and `ItemUsed.Flight` carries that path; the server draws it and sends it
+  to every client (`Player.ItemFlown`, packed by `ShotWire.EncodeFlight`), so every peer flies the server's own path.
+  `ItemFlights` draws them at the room speed, each at its multiple of the rebuild's shot speed, and a new level sweeps them away.
+- **Teleporter** (obj_teleporter): spr_teleporter's six frames at image_speed 1, at bulletSpeed * 2, its image_angle set to the
+  aim once and never turned. teleport_player: a small white ef_ring where the shooter stood as it sets off; where the shooter
+  lands, a medium ef_ring in white and one in the shooter's colour and a small white ef_firework.
+- **Shrink ray** (obj_shrinkray): at bulletSpeed * 4, an ef_spark (small, lime: globals.gml's make_color_rgb(128, 255, 128))
+  every step where it is; striking a player, a medium lime ef_firework there. Its spr_shrinkball is never drawn: obj_shrinkray's
+  Draw event is `//draw_self();` (so its 20-degree-a-step turn shows nowhere), and shoot_shrinkray's obj_shrinkray_child (the same
+  ball turning the other way) is commented out and never created. The rebuild draws the ray as the original did, by its sparks.
+- **Redirector** (obj_redirector, "flying"): spr_redirector_arrow at bulletSpeed * 2, from 0.15 of its size growing 0.01 a step
+  to 0.30, turning 3 degrees a step and set back to its heading at every bounce. The standing redirector (`LevelHazard`) is
+  hidden until the flight lands and only then opens out from 0.3 (redirector_detonate) and plays sfx_redirector_grow.
+- **Endgame flashes** (obj_flashemitter, obj_flash): while the endgame recap is up (`EndgameRecap`), one obj_flash a step at
+  irandom_range(0, 1920), irandom_range(0, 1080) in the room; one in the lower half and the middle third across (the pedestal)
+  is destroyed at once; the rest play spr_flash's six frames once at image_speed 1 and go (`EndgameFlashes`, on a canvas of its
+  own just over the recap, taking no clicks). They stop when the recap closes.
+- `Tests/PlayMode/ItemFlightTests` flies each item on a host and a client (sprite, angle, size, sparks, rings, the waiting
+  redirector) and runs the flashes.
+
+Deviations: (1) The items take effect as they are used (the tank is already where it teleports to, the player already shrunk;
+the Sound effects' deviation 4), so the flight is drawn after the fact along the path the authority flew; the original moved
+the tank when its teleporter struck. (2) The rebuild's teleporter bounces as far as the power sends it (UR-T6's Teleport) where
+the original's teleported on its first contact; it is drawn along that path. (3) The redirector flies as far as the power sends
+it rather than until its owner presses the item key again (redirector_detonate). (4) The flashes are drawn over the rebuild's
+endgame recap (UR-T9) rather than in the original's endgame room.
+
+Not carried: shoot_*'s ef_smoke at the muzzle (the weapons' launch puffs are not carried either), obj_shrinkray_child (never
+created), and the shrink ray's own sprite (never drawn).
 
 ## HUD details (U.RICO-T49)
 
@@ -586,7 +623,8 @@ it answers the same muted as heard. (2) The engine and turn sounds are the owner
 screen was; a shot's, an item's and the round's are every peer's. (3) The menus are the kit's (U.RICO-T9), so their sounds
 come from one watcher over every Selectable instead of each obj_btn_*'s events; a slider stands for a stepper's pair of
 less / more buttons and plays sfx_select once per press. (4) The rebuild's items take effect as they are used (their flights
-are U.RICO-T79), so each item's launch sound and its effect's (sfx_teleport, sfx_shrink, sfx_redirector_grow) play together.
+are drawn after, U.RICO-T79), so a teleporter's and a shrink ray's launch sound and their effect's (sfx_teleport, sfx_shrink)
+play together; sfx_redirector_grow waits for the redirector's flight to land, as the standing redirector does.
 
 Fixed defect: pellet_step's `choose(sfx_bounce_shotgun1, sfx_bounce_shotgun2, sfx_bounce_shotgun3)` picked sfx_bounce_shotgun3
 a third of the time, and that definition names no recording, so a third of the pellet bounces were silent; the rebuild picks

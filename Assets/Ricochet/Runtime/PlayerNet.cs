@@ -85,6 +85,11 @@ namespace Ricochet
         [ToClients]
         public partial void Flourish(int kind, int id, int a, int b, float x, float y);
 
+        // server -> every client (U.RICO-T79): this player used an item that flies (a teleporter, a shrink ray, a
+        // redirector) along the path the server flew it (Core's ShotWire.EncodeFlight), so every peer draws it in flight.
+        [ToClients]
+        public partial void ItemFlown(int item, double[] numbers, string ids);
+
         // The level in play (UR-T23): the map, the seed its random round was built from, and a count that goes up by one per
         // change, so a peer adopts the newest and every one lays the identical round (Arena.AdoptLayout). Every Player
         // carries the same three, so a late joiner learns the level whichever Player it sees first, practice included.
@@ -380,6 +385,9 @@ namespace Ricochet
                 case Cmd.CrateGone crate:
                     Sender(session)?.Flourish(FlourishCrate, crate.CrateId, (int)crate.Kind, (int)crate.End, (float)crate.Spot.X, (float)crate.Spot.Y);
                     break;
+                case Cmd.ItemUsed used:
+                    ById(session, used.PlayerId)?.OnItemUsed(used); // U.RICO-T79: its flight, drawn on every peer
+                    goto default; // and its launch sound, heard on every peer
                 default:
                     // U.RICO-T50: the sounds of the events no view draws (an item used, a shrink, a teleport, a crate
                     // collected, the countdown, a turn timed out, a knock-out, the round's applause), heard on every peer.
@@ -440,6 +448,37 @@ namespace Ricochet
             }
 
             return null;
+        }
+
+        // Server: an item used. One that flies is drawn here at once and sent to every client along the server's flight.
+        private void OnItemUsed(Cmd.ItemUsed used)
+        {
+            if (used.Flight == null)
+            {
+                return;
+            }
+
+            Presentation.Raise(this, used);
+            ShotWire.EncodeFlight(used.Flight, out double[] numbers, out string ids);
+            ItemFlown((int)used.Item, numbers, ids ?? string.Empty);
+        }
+
+        // A client: an item this player used flies along the server's flight (the host's own peer drew it already).
+        private void OnItemFlown(int item, double[] numbers, string ids)
+        {
+            if (IsServer)
+            {
+                return;
+            }
+
+            ShotPath flight = ShotWire.DecodeFlight(numbers, ids);
+            if (flight == null || !System.Enum.IsDefined(typeof(Item), item))
+            {
+                Debug.LogWarning("[Ricochet] " + name + ": an item's flight came over unreadable; nothing drawn.");
+                return;
+            }
+
+            Presentation.Raise(this, new Cmd.ItemUsed(PlayerId, (Item)item, flight));
         }
 
         private void OnShotFired(Cmd.ShotFired fired)

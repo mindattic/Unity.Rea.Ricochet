@@ -474,6 +474,42 @@ namespace Ricochet.Core.Tests
             Assert.That(b.Radius, Is.LessThan(Seating.PlayerRadius));
         }
 
+        // U.RICO-T79: the items that fly carry the path the authority flew them along, for every peer to draw.
+        [Test]
+        public void UseItem_TheItemsThatFlyCarryTheirFlight_TheOthersNone()
+        {
+            GameAuthority authority = TwoSeats(out PlayerState a, out PlayerState b);
+            Vec2 from = a.Position;
+            ItemUsed bounce = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
+            Assert.That(bounce.Flight, Is.Null, "an extra bounce does not fly");
+
+            authority.Apply(new SelectItemCommand(1, Item.ShrinkRay));
+            IReadOnlyList<GameEvent> events = authority.Apply(new UseItemCommand(1, AtSeatOne, 0.5));
+            ItemUsed ray = Of<ItemUsed>(events).Single();
+            Assert.That(ray.Flight, Is.Not.Null);
+            Assert.That(ray.Flight.Origin, Is.EqualTo(from));
+            Assert.That(ray.Flight.End, Is.EqualTo(ShotEndKind.Target));
+            Assert.That(ray.Flight.TargetId, Is.EqualTo(TargetIds.Seat(1)), "it flies to the player it shrinks");
+            Assert.That(events.ToList().IndexOf(ray), Is.LessThan(events.ToList().IndexOf(Of<Shrunk>(events).Single())), "launched, then struck");
+
+            authority.Apply(new SelectItemCommand(1, Item.Teleporter));
+            events = authority.Apply(new UseItemCommand(1, 90, 0.5));
+            ItemUsed teleporter = Of<ItemUsed>(events).Single();
+            Moved moved = Of<Moved>(events).Single();
+            Assert.That(teleporter.Flight, Is.Not.Null);
+            Assert.That(teleporter.Flight.Origin, Is.EqualTo(moved.From), "it sets off from where the tank stood");
+            Assert.That(Vec2.Distance(teleporter.Flight.Impact, moved.To), Is.LessThan(1.0), "and the tank lands where it stops");
+
+            authority.Apply(new SelectItemCommand(1, Item.Redirector));
+            ItemUsed redirector = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
+            Hazard placed = authority.Hazards.Hazards.Single(h => h.Kind == HazardKind.Redirector);
+            Assert.That(redirector.Flight, Is.Not.Null);
+            Assert.That(Vec2.Distance(redirector.Flight.Impact, placed.A), Is.LessThan(1.0), "it stops where the redirector stands");
+
+            authority.Apply(new SelectItemCommand(1, Item.ShieldWall));
+            Assert.That(Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single().Flight, Is.Null, "a shield wall does not fly");
+        }
+
         [Test]
         public void UseItem_AimAssist_TurnsTheAimOntoAShotAtAnOpponent()
         {

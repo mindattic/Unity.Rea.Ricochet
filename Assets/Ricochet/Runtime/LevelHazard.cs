@@ -13,6 +13,7 @@
 //   Breach       a dark gap over the border, its ends marked.
 //   Redirector   obj_redirector's spr_redirector_arrow along the way it sends a shot, growing from 0.3 of its size 0.01 a
 //                step (U.RICO-T47); without the art a rail redirector with a tick, as LevelView draws the level's own.
+//                It stands (and plays sfx_redirector_grow) only once its flight (ItemFlights) lands (U.RICO-T79).
 using System.Collections.Generic;
 using Ricochet.Core.Aim;
 using Ricochet.Core.Art;
@@ -62,6 +63,7 @@ namespace Ricochet
         private float _beam = 1f;      // a laser's beam: the share of the way from emitter to receiver it reaches
         private bool _wasActive = true;
         private float _nextBolt;
+        private bool _growHeard;       // a redirector's sfx_redirector_grow has played (once its flight landed)
         private readonly List<Vector3> _points = new List<Vector3>();
 
         public HazardKind HazardKind => (HazardKind)Mathf.Clamp(Kind, 0, HazardRules.KindCount - 1);
@@ -140,9 +142,11 @@ namespace Ricochet
             _wasActive = Active;
             _beam = 1f;
             Build();
-            if (HazardKind == HazardKind.Redirector)
+            _growHeard = false;
+            if (HazardKind == HazardKind.Redirector && !ItemFlights.RedirectorInFlight(-1))
             {
                 GameAudio.Play(Ricochet.Core.Menu.SoundCue.RedirectorGrow); // redirector_detonate.gml: it stops and opens out
+                _growHeard = true;
             }
         }
 
@@ -341,6 +345,19 @@ namespace Ricochet
                     _endA.color = Active ? LaserColor : new Color(0.45f, 0.1f, 0.1f);
                     break;
                 case HazardKind.Redirector:
+                    // U.RICO-T79: it stands only once its flight (ItemFlights) has landed, and opens out from then.
+                    bool flying = ItemFlights.RedirectorInFlight(OwnerSeat);
+                    if (flying)
+                    {
+                        _spawnedAt = Time.time;
+                    }
+                    else if (!_growHeard)
+                    {
+                        _growHeard = true;
+                        GameAudio.Play(Ricochet.Core.Menu.SoundCue.RedirectorGrow);
+                    }
+
+                    Show(!flying);
                     if (_art != null)
                     {
                         // redirector_detonate / redirector_step: from 0.3 of its size, growing 0.01 a step, along its heading.
@@ -369,6 +386,28 @@ namespace Ricochet
                     _glow.startColor = _glow.endColor = new Color(tint.r, tint.g, tint.b, alpha * 0.25f);
                     break;
                 }
+            }
+        }
+
+        /// <summary>False while what is drawn of it is hidden (a redirector waiting for its flight to land, U.RICO-T79).</summary>
+        public bool Shown => _art != null ? _art.enabled : _line == null || _line.enabled;
+
+        // Shows or hides what is drawn of this hazard (a redirector waiting for its flight to land).
+        private void Show(bool shown)
+        {
+            if (_art != null)
+            {
+                _art.enabled = shown;
+            }
+
+            if (_line != null)
+            {
+                _line.enabled = shown;
+            }
+
+            if (_tick != null)
+            {
+                _tick.enabled = shown;
             }
         }
 

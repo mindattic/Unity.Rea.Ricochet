@@ -774,25 +774,42 @@ namespace Ricochet.Core.Commands
             }
 
             SetAim(state, use.Heading, use.Power);
-            Emit(new ItemUsed(state.Id, item));
+
+            // The items that fly are flown first, so the event carries the path every peer draws them along (U.RICO-T79).
+            ShotPath flight = null;
+            Vec2 spot = default;
+            Vec2 placed = default;
+            double redirectorHeading = 0;
+            string hit = null;
+            switch (item)
+            {
+                case Item.Teleporter:
+                    spot = Arsenal.Teleport(state.Position, state.Heading, state.Power, LevelFor(state.Seat), Rules, state.Radius, out flight);
+                    break;
+                case Item.Redirector:
+                    placed = Arsenal.PlaceRedirector(state.Position, state.Heading, state.Power, LevelFor(state.Seat), Rules, out redirectorHeading, out flight);
+                    break;
+                case Item.ShrinkRay:
+                    hit = Arsenal.ShrinkRay(state.Position, state.Heading, TargetIds.Seat(state.Seat), LevelFor(state.Seat), Targets(), Rules, out flight);
+                    break;
+            }
+
+            Emit(new ItemUsed(state.Id, item, flight));
             switch (item)
             {
                 case Item.ExtraBounce:
                     state.ExtraBounces++;
                     break;
                 case Item.Teleporter:
-                    Vec2 spot = Arsenal.Teleport(state.Position, state.Heading, state.Power, LevelFor(state.Seat), Rules, state.Radius, out _);
                     MoveTo(state, spot, MoveCause.Teleported);
                     break;
                 case Item.ShieldWall:
                     Hazards.AddShieldWall(state.Seat, state.Position, state.Heading); // spawn_shieldwall.gml
                     break;
                 case Item.Redirector:
-                    Vec2 placed = Arsenal.PlaceRedirector(state.Position, state.Heading, state.Power, LevelFor(state.Seat), Rules, out double redirectorHeading, out _);
                     Hazards.AddRedirector(state.Seat, placed, redirectorHeading);
                     break;
                 case Item.ShrinkRay:
-                    string hit = Arsenal.ShrinkRay(state.Position, state.Heading, TargetIds.Seat(state.Seat), LevelFor(state.Seat), Targets(), Rules, out _);
                     PlayerState shrunk = PlayerAtSeat(TargetIds.SeatOf(hit));
                     if (shrunk != null)
                     {

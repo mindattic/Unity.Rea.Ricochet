@@ -4,6 +4,7 @@
 // names (what a [ToClients] call can carry) and unpacks it on the other side, exactly: doubles go over as doubles, so the
 // client's points are the server's to the last bit. ShotOutcome is the other half: what the volley did once it landed,
 // the damage each seat it struck took, summed per seat (a shotgun's pellets, a blast), for every peer to show.
+// U.RICO-T79: an item's flight (EncodeFlight / DecodeFlight) goes over the same way, one path laid out as a volley's are.
 using System;
 using System.Collections.Generic;
 
@@ -53,32 +54,7 @@ namespace Ricochet.Core.Net
 
             foreach (ShotPath path in volley.Paths)
             {
-                n.Add(path.Origin.X);
-                n.Add(path.Origin.Y);
-                n.Add(path.Heading);
-                n.Add(path.Power);
-                n.Add((int)path.End);
-                n.Add(path.HazardId);
-                n.Add(IdIndex(path.TargetId, names));
-                n.Add(path.Points.Count);
-                foreach (Vec2 point in path.Points)
-                {
-                    n.Add(point.X);
-                    n.Add(point.Y);
-                }
-
-                n.Add(path.Contacts.Count);
-                foreach (Contact contact in path.Contacts)
-                {
-                    n.Add((int)contact.Kind);
-                    n.Add(contact.Point.X);
-                    n.Add(contact.Point.Y);
-                    n.Add(contact.Distance);
-                    n.Add(contact.HeadingIn);
-                    n.Add(contact.HeadingOut);
-                    n.Add(contact.Deflected ? 1 : 0);
-                    n.Add(contact.Index);
-                }
+                WritePath(path, n, names);
             }
 
             n.Add(volley.Strikes.Count);
@@ -105,12 +81,9 @@ namespace Ricochet.Core.Net
                 return null;
             }
 
-            foreach (double number in numbers)
+            if (!AllFinite(numbers))
             {
-                if (double.IsNaN(number) || double.IsInfinity(number))
-                {
-                    return null;
-                }
+                return null;
             }
 
             string[] names = string.IsNullOrEmpty(ids) ? Array.Empty<string>() : ids.Split(Separator);
@@ -134,55 +107,13 @@ namespace Ricochet.Core.Net
             var paths = new List<ShotPath>();
             for (int p = 0; p < pathCount; p++)
             {
-                if (!reader.Has(PathHeaderLength))
+                ShotPath path = ReadPath(reader, names);
+                if (path == null)
                 {
                     return null;
                 }
 
-                var origin = new Vec2(reader.Next(), reader.Next());
-                double heading = reader.Next();
-                double power = reader.Next();
-                int end = reader.Int();
-                int hazardId = reader.Int();
-                int target = reader.Int();
-                int pointCount = reader.Int();
-                if (!Enum.IsDefined(typeof(ShotEndKind), end) || !Name(target, names, out string targetId)
-                    || pointCount < 1 || pointCount > MaxPoints || !reader.Has(pointCount * 2 + 1))
-                {
-                    return null;
-                }
-
-                var points = new List<Vec2>(pointCount);
-                for (int i = 0; i < pointCount; i++)
-                {
-                    points.Add(new Vec2(reader.Next(), reader.Next()));
-                }
-
-                int contactCount = reader.Int();
-                if (contactCount < 0 || contactCount > MaxPoints || !reader.Has(contactCount * ContactLength))
-                {
-                    return null;
-                }
-
-                var contacts = new List<Contact>(contactCount);
-                for (int i = 0; i < contactCount; i++)
-                {
-                    int kind = reader.Int();
-                    var point = new Vec2(reader.Next(), reader.Next());
-                    double distance = reader.Next();
-                    double headingIn = reader.Next();
-                    double headingOut = reader.Next();
-                    bool deflected = reader.Int() != 0;
-                    int index = reader.Int();
-                    if (!Enum.IsDefined(typeof(ContactKind), kind))
-                    {
-                        return null;
-                    }
-
-                    contacts.Add(new Contact((ContactKind)kind, point, distance, headingIn, headingOut, deflected, index));
-                }
-
-                paths.Add(new ShotPath(origin, heading, power, points, contacts, (ShotEndKind)end, targetId, hazardId));
+                paths.Add(path);
             }
 
             if (!reader.Has(1))
@@ -216,6 +147,140 @@ namespace Ricochet.Core.Net
             }
 
             return new Volley((Weapon)weapon, paths, speed, strikes, blast, blastCenter, blastRadius);
+        }
+
+        /// <summary>
+        /// Packs an item's flight (U.RICO-T79: a teleporter, shrink ray or redirector, which ItemUsed carries): the
+        /// version, then the path laid out as a volley's paths are; <paramref name="ids"/> the target id it names.
+        /// </summary>
+        public static void EncodeFlight(ShotPath path, out double[] numbers, out string ids)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            var names = new List<string>();
+            var n = new List<double> { Version };
+            WritePath(path, n, names);
+            numbers = n.ToArray();
+            ids = string.Join(Separator.ToString(), names);
+        }
+
+        /// <summary>Unpacks what <see cref="EncodeFlight"/> packed; null when it is not a flight this version packed.</summary>
+        public static ShotPath DecodeFlight(double[] numbers, string ids)
+        {
+            if (numbers == null || numbers.Length < 1 + PathHeaderLength || !AllFinite(numbers))
+            {
+                return null;
+            }
+
+            string[] names = string.IsNullOrEmpty(ids) ? Array.Empty<string>() : ids.Split(Separator);
+            var reader = new Reader(numbers);
+            if (reader.Int() != Version)
+            {
+                return null;
+            }
+
+            ShotPath path = ReadPath(reader, names);
+            return path == null || reader.Has(1) ? null : path;
+        }
+
+        private static bool AllFinite(double[] numbers)
+        {
+            foreach (double number in numbers)
+            {
+                if (double.IsNaN(number) || double.IsInfinity(number))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static void WritePath(ShotPath path, List<double> n, List<string> names)
+        {
+            n.Add(path.Origin.X);
+            n.Add(path.Origin.Y);
+            n.Add(path.Heading);
+            n.Add(path.Power);
+            n.Add((int)path.End);
+            n.Add(path.HazardId);
+            n.Add(IdIndex(path.TargetId, names));
+            n.Add(path.Points.Count);
+            foreach (Vec2 point in path.Points)
+            {
+                n.Add(point.X);
+                n.Add(point.Y);
+            }
+
+            n.Add(path.Contacts.Count);
+            foreach (Contact contact in path.Contacts)
+            {
+                n.Add((int)contact.Kind);
+                n.Add(contact.Point.X);
+                n.Add(contact.Point.Y);
+                n.Add(contact.Distance);
+                n.Add(contact.HeadingIn);
+                n.Add(contact.HeadingOut);
+                n.Add(contact.Deflected ? 1 : 0);
+                n.Add(contact.Index);
+            }
+        }
+
+        // One path as WritePath laid it out; null when it is not one.
+        private static ShotPath ReadPath(Reader reader, string[] names)
+        {
+            if (!reader.Has(PathHeaderLength))
+            {
+                return null;
+            }
+
+            var origin = new Vec2(reader.Next(), reader.Next());
+            double heading = reader.Next();
+            double power = reader.Next();
+            int end = reader.Int();
+            int hazardId = reader.Int();
+            int target = reader.Int();
+            int pointCount = reader.Int();
+            if (!Enum.IsDefined(typeof(ShotEndKind), end) || !Name(target, names, out string targetId)
+                || pointCount < 1 || pointCount > MaxPoints || !reader.Has(pointCount * 2 + 1))
+            {
+                return null;
+            }
+
+            var points = new List<Vec2>(pointCount);
+            for (int i = 0; i < pointCount; i++)
+            {
+                points.Add(new Vec2(reader.Next(), reader.Next()));
+            }
+
+            int contactCount = reader.Int();
+            if (contactCount < 0 || contactCount > MaxPoints || !reader.Has(contactCount * ContactLength))
+            {
+                return null;
+            }
+
+            var contacts = new List<Contact>(contactCount);
+            for (int i = 0; i < contactCount; i++)
+            {
+                int kind = reader.Int();
+                var point = new Vec2(reader.Next(), reader.Next());
+                double distance = reader.Next();
+                double headingIn = reader.Next();
+                double headingOut = reader.Next();
+                bool deflected = reader.Int() != 0;
+                int index = reader.Int();
+                if (!Enum.IsDefined(typeof(ContactKind), kind))
+                {
+                    return null;
+                }
+
+                contacts.Add(new Contact((ContactKind)kind, point, distance, headingIn, headingOut, deflected, index));
+            }
+
+            return new ShotPath(origin, heading, power, points, contacts, (ShotEndKind)end, targetId, hazardId);
         }
 
         private static int IdIndex(string id, List<string> names)

@@ -3,7 +3,8 @@
 // "wins!" and the leaderboard, every seat ranked by score (obj_endgame's ds_grid_sort of pScore and its "1st Ann 740"
 // rows, in each player's colour on the original's pedestal; here a line each). Its buttons are the endgame room's way out
 // and then some: vote for a rematch (the restart vote: the same players, map and goal from round one), the main menu
-// (leave the game), or close it to look at the level. It comes up again for the next game that ends.
+// (leave the game), or close it to look at the level. It comes up again for the next game that ends. While it is up the
+// endgame room's camera flashes go off over it (EndgameFlashes, U.RICO-T79).
 using System.Collections.Generic;
 using MindAttic.Components.Unity;       // MenuStack, MenuScreen, MaText, TextStyle
 using MindAttic.Components.Unity.Core; // ButtonVariant
@@ -19,6 +20,7 @@ namespace Ricochet
     public sealed class EndgameRecap : MonoBehaviour
     {
         private MatchHud _hud;
+        private EndgameFlashes _flashes;
         private MenuStack _stack;
         private MenuScreen _screen;
         private MatchPhase _lastPhase = MatchPhase.Practice;
@@ -30,6 +32,7 @@ namespace Ricochet
         {
             var recap = hud.gameObject.AddComponent<EndgameRecap>();
             recap._hud = hud;
+            recap._flashes = hud.gameObject.AddComponent<EndgameFlashes>(); // U.RICO-T79: obj_flashemitter's camera flashes
             return recap;
         }
 
@@ -45,9 +48,17 @@ namespace Ricochet
         /// <summary>The recap's screen (null until a game has ended).</summary>
         public MenuScreen Screen => _screen;
 
+        /// <summary>The endgame room's camera flashes, thrown while the recap is up.</summary>
+        public EndgameFlashes Flashes => _flashes;
+
         /// <summary>Closes the recap (the game stays over until a new match starts).</summary>
         public void Close()
         {
+            if (_flashes != null)
+            {
+                _flashes.End();
+            }
+
             if (_stack != null)
             {
                 _stack.Close();
@@ -151,6 +162,10 @@ namespace Ricochet
             _screen.AddButton("Close", Close);
             _stack.Open();
             _screen.MarkNavigationDirty();
+            if (_flashes != null)
+            {
+                _flashes.Begin();
+            }
         }
     }
 }

@@ -113,6 +113,37 @@ namespace Ricochet.Core.Tests
             Assert.That(onClient.HazardsHit, Is.EqualTo(new[] { 42 }));
         }
 
+        // U.RICO-T79: an item's flight goes over as the server flew it, and anything else decodes to nothing.
+        [Test]
+        public void AnItemsFlightComesOutTheOtherSideAsTheServerFlewIt()
+        {
+            var targets = new[] { T("seat:0", 0, 0), T("seat:4", -7, 2) };
+            Arsenal.ShrinkRay(Vec2.Zero, 164, "seat:0", Room(), targets, ShotRules.Default, out ShotPath ray);
+            Arsenal.Teleport(Vec2.Zero, 20, 0.7, Room(), ShotRules.Default, 0.45, out ShotPath teleporter);
+            Arsenal.PlaceRedirector(Vec2.Zero, 200, 1, Room(), ShotRules.Default, out _, out ShotPath redirector);
+            foreach (ShotPath flight in new[] { ray, teleporter, redirector })
+            {
+                ShotWire.EncodeFlight(flight, out double[] numbers, out string ids);
+                ShotPath onClient = ShotWire.DecodeFlight(numbers, ids);
+                Assert.That(onClient, Is.Not.Null);
+                Assert.That(onClient.Origin, Is.EqualTo(flight.Origin));
+                Assert.That(onClient.Heading, Is.EqualTo(flight.Heading));
+                Assert.That(onClient.End, Is.EqualTo(flight.End));
+                Assert.That(onClient.TargetId, Is.EqualTo(flight.TargetId));
+                Assert.That(onClient.Points, Is.EqualTo(flight.Points), "the points are the server's, to the last bit");
+                Assert.That(onClient.Contacts.Select(c => (c.Kind, c.Distance, c.HeadingOut)), Is.EqualTo(flight.Contacts.Select(c => (c.Kind, c.Distance, c.HeadingOut))));
+                Assert.That(onClient.Length, Is.EqualTo(flight.Length));
+            }
+
+            ShotWire.EncodeFlight(ray, out double[] packed, out string names);
+            Assert.That(ShotWire.DecodeFlight(null, names), Is.Null);
+            Assert.That(ShotWire.DecodeFlight(packed.Take(packed.Length - 1).ToArray(), names), Is.Null, "cut short");
+            Assert.That(ShotWire.DecodeFlight(packed.Concat(new[] { 0.0 }).ToArray(), names), Is.Null, "trailing numbers");
+            double[] version = (double[])packed.Clone();
+            version[0] = ShotWire.Version + 1;
+            Assert.That(ShotWire.DecodeFlight(version, names), Is.Null, "another version");
+        }
+
         [Test]
         public void AnythingEncodeDidNotWriteDecodesToNothing()
         {

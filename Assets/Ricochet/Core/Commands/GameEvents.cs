@@ -217,18 +217,26 @@ namespace Ricochet.Core.Commands
         public int KnockedOut { get; }
     }
 
-    /// <summary>A player used an item (before the shot).</summary>
+    /// <summary>
+    /// A player used an item (before the shot). A teleporter, a shrink ray and a redirector fly (shoot_teleporter,
+    /// shoot_shrinkray, shoot_redirector): <see cref="Flight"/> is the path the authority flew it along, which every peer
+    /// draws it on (U.RICO-T79); null for an item that does not fly.
+    /// </summary>
     public sealed class ItemUsed : GameEvent
     {
-        public ItemUsed(int playerId, Item item)
+        public ItemUsed(int playerId, Item item, ShotPath flight = null)
         {
             PlayerId = playerId;
             Item = item;
+            Flight = flight;
         }
 
         public int PlayerId { get; }
 
         public Item Item { get; }
+
+        /// <summary>The item's flight, from the muzzle to where it stopped; null when it does not fly.</summary>
+        public ShotPath Flight { get; }
     }
 
     /// <summary>The aim assist turned a player's aim onto a shot (or left it, when none reaches an opponent).</summary>

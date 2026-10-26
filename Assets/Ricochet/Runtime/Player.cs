@@ -319,6 +319,7 @@ namespace Ricochet
 
             _seenShots = Shots; // a late joiner does not replay a shot fired before it arrived
             FieldEffects.Ensure(); // the level's marks listen for the server's flourishes from now on (U.RICO-T48)
+            ItemFlights.Ensure(); // and the items in flight for the server's flights (U.RICO-T79)
             _seenPickups = PickupCount;
             _seenExtraBounces = ExtraBounces;
             _seenAssists = Assists;
