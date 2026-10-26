@@ -100,6 +100,7 @@ namespace Ricochet
             _turns.Arena = this;
             _turns.MirrorAiNames(_setup);
             _turns.MirrorMap(MapIndex);
+            _turns.MirrorRules(_setup);
             _announcer = new Announcer(_setup.AnnouncerVoice, _setup.Announcements, _announcerDice);
             _turns.MirrorVoice(_announcer.Voice);
             _authority.StartMatch();

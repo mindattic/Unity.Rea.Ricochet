@@ -52,6 +52,14 @@ namespace Ricochet
         [Synced] private int _aiNames2;
         [Synced] private int _aiNames3;
 
+        // The match rules the host set (UR-T76), packed by MatchSetup.PackRules: turn time, bounces, damage, arsenal, drops,
+        // redirector pause. Every client applies them, so its bounce preview and rules agree with the host's.
+        [Synced] private int _rules0;
+        [Synced] private int _rules1;
+        [Synced] private int _rules2;
+        [Synced] private int _rules3;
+        private int[] _appliedRules;
+
         // Reconnects (UR-T13): the seconds the current seat's dropped player has left to come back, or -1 (not waiting).
         [Synced] private int _waitSeconds = -1;
 
@@ -128,6 +136,31 @@ namespace Ricochet
             if (AiNames1 != words[1]) AiNames1 = words[1];
             if (AiNames2 != words[2]) AiNames2 = words[2];
             if (AiNames3 != words[3]) AiNames3 = words[3];
+        }
+
+        /// <summary>Server: the match rules for this match, for every client to take on.</summary>
+        internal void MirrorRules(MatchSetup setup)
+        {
+            int[] packed = setup.PackRules();
+            if (Rules0 != packed[0]) Rules0 = packed[0];
+            if (Rules1 != packed[1]) Rules1 = packed[1];
+            if (Rules2 != packed[2]) Rules2 = packed[2];
+            if (Rules3 != packed[3]) Rules3 = packed[3];
+        }
+
+        // A client takes the host's rules once they arrive and again whenever they change (the server already holds them).
+        private void AdoptRules()
+        {
+            int[] packed = { Rules0, Rules1, Rules2, Rules3 };
+            if (!MatchSetup.IsPackedRules(packed) || (_appliedRules != null && System.Linq.Enumerable.SequenceEqual(_appliedRules, packed)))
+            {
+                return;
+            }
+
+            _appliedRules = packed;
+            MatchSetup rules = MatchSetup.UnpackRules(packed);
+            rules.ApplyTo(Arena.ArsenalRules);
+            rules.ApplyTo(Arena.MatchRules, Arena.Rules, Arena.DropRules, Arena.HazardRules);
         }
 
         /// <summary>Server: the map the match is played on.</summary>
@@ -228,6 +261,11 @@ namespace Ricochet
 
             // A client in a process of its own plays on the level the server chose: the map and seed ride on every Player
             // (UR-T23), which adopts them, so a random round's level is not reset to the map's here.
+
+            if (!IsServer)
+            {
+                AdoptRules();
+            }
 
             // Every peer: follow the synced clock, ticking down locally between its tenths.
             if (TimeLeft != _lastSyncedTime)

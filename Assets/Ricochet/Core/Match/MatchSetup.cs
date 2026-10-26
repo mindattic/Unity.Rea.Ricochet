@@ -670,6 +670,68 @@ namespace Ricochet.Core.Match
             hazards.RedirectorsSpin = !PauseRedirector;
         }
 
+        /// <summary>How many ints <see cref="PackRules"/> returns.</summary>
+        public const int PackedRuleWords = 4;
+
+        /// <summary>Set in the first packed word, so an all-zero (never written) pack is told from a real one.</summary>
+        private const int PackedValid = 1 << 30;
+
+        /// <summary>
+        /// The match rules (turn time, bounces, damage, redirector pause, drops, each weapon's and item's box and starting
+        /// count) packed into <see cref="PackedRuleWords"/> ints, for the wire (UR-T76): the kit syncs whole numbers, and
+        /// the host's rules must reach every client so their previews and clocks agree. <see cref="UnpackRules"/> reads it back.
+        /// </summary>
+        public int[] PackRules()
+        {
+            int turn = TurnSeconds | MaxBounces << 6 | WeaponDamage << 11 | (PauseRedirector ? 1 : 0) << 18;
+            for (int i = 0; i < DropRules.KindCount; i++)
+            {
+                turn |= (_dropOn[i] ? 1 : 0) << (19 + i);
+            }
+
+            int boxes = 0, weapons = 0, items = 0;
+            for (int i = 0; i < ArsenalRules.Kinds; i++)
+            {
+                boxes |= (WeaponOn((Weapon)i) ? 1 : 0) << i | (_itemOn[i] ? 1 : 0) << (6 + i);
+                weapons |= WeaponCount((Weapon)i) << (4 * i);
+                items |= _itemCount[i] << (4 * i);
+            }
+
+            return new[] { turn | PackedValid, boxes, weapons, items };
+        }
+
+        /// <summary>True when <paramref name="packed"/> came from <see cref="PackRules"/> (not an unwritten, all-zero pack).</summary>
+        public static bool IsPackedRules(int[] packed) => packed != null && packed.Length == PackedRuleWords && (packed[0] & PackedValid) != 0;
+
+        /// <summary>A setup holding the rules <see cref="PackRules"/> packed (everything else default); each value goes through its clamp.</summary>
+        public static MatchSetup UnpackRules(int[] packed)
+        {
+            var setup = new MatchSetup();
+            if (!IsPackedRules(packed))
+            {
+                return setup;
+            }
+
+            setup.TurnSeconds = packed[0] & 63;
+            setup.MaxBounces = packed[0] >> 6 & 31;
+            setup.WeaponDamage = packed[0] >> 11 & 127;
+            setup.PauseRedirector = (packed[0] >> 18 & 1) != 0;
+            for (int i = 0; i < DropRules.KindCount; i++)
+            {
+                setup._dropOn[i] = (packed[0] >> (19 + i) & 1) != 0;
+            }
+
+            for (int i = 0; i < ArsenalRules.Kinds; i++)
+            {
+                setup.SetWeaponOn((Weapon)i, (packed[1] >> i & 1) != 0);
+                setup._itemOn[i] = (packed[1] >> (6 + i) & 1) != 0;
+                setup.SetWeaponCount((Weapon)i, packed[2] >> (4 * i) & 15);
+                setup._itemCount[i] = ArsenalRules.ClampCount(packed[3] >> (4 * i) & 15);
+            }
+
+            return setup;
+        }
+
         /// <summary>The vote's text payload: everything but the AI count.</summary>
         public string Format()
         {

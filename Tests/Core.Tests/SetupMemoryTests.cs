@@ -29,6 +29,25 @@ namespace Ricochet.Core.Tests
             Map = Maps.Count - 1,
         };
 
+        // U.RICO-T76: the rules ride the wire as four packed ints and come back whole.
+        [Test]
+        public void TheMatchRulesPackIntoWordsAndComeBackTheSame()
+        {
+            var chosen = new MatchSetup { TurnSeconds = 35, MaxBounces = 9, WeaponDamage = 40, PauseRedirector = false };
+            chosen.SetWeaponOn(Weapon.Grenade, false);
+            chosen.SetWeaponCount(Weapon.Laser, 7);
+            chosen.SetItemOn(Item.AimAssist, false);
+            chosen.SetItemCount(Item.AimAssist, 10);
+            chosen.SetDropOn(DropKind.Weapon, false);
+            int[] packed = chosen.PackRules();
+            Assert.That(MatchSetup.IsPackedRules(packed), Is.True);
+            MatchSetup back = MatchSetup.UnpackRules(packed);
+            Assert.That(back.PackRules(), Is.EqualTo(packed));
+            Assert.That((back.TurnSeconds, back.MaxBounces, back.WeaponDamage, back.PauseRedirector, back.WeaponOn(Weapon.Grenade), back.WeaponCount(Weapon.Laser), back.ItemOn(Item.AimAssist), back.ItemCount(Item.AimAssist), back.DropOn(DropKind.Weapon)),
+                Is.EqualTo((35, 9, 40, false, false, 7, false, 10, false)));
+            Assert.That(MatchSetup.IsPackedRules(new int[MatchSetup.PackedRuleWords]), Is.False, "an unwritten pack is not rules");
+        }
+
         [Test]
         public void ASetupGoesIntoTheProfileAndComesBackTheSame()
         {
