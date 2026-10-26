@@ -604,6 +604,22 @@ namespace Ricochet.Core.Match
         }
 
         /// <summary>
+        /// The current seat's turn starts over (UR-T43: the pause menu's Randomize ends in reset_timer and a fresh obj_ready):
+        /// its Ready card and a full clock, as if the turn had just begun. False (and nothing changes) unless a turn is
+        /// open and nothing has been fired in it (Ready or Aiming).
+        /// </summary>
+        public bool RestartTurn()
+        {
+            if ((Phase != MatchPhase.Ready && Phase != MatchPhase.Aiming) || !_seats.ContainsKey(Current))
+            {
+                return false;
+            }
+
+            BeginTurn(Current);
+            return true;
+        }
+
+        /// <summary>
         /// The seats ranked for the endgame recap: the highest score first, the lower seat first on a tie (the endgame
         /// room's ds_grid_sort of pScore).
         /// </summary>

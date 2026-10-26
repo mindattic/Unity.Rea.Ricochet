@@ -41,6 +41,7 @@ namespace Ricochet.Core.Commands
         private readonly Dictionary<string, VoteTally> _votes = new Dictionary<string, VoteTally>();
         private List<GameEvent> _current;
         private int _matchMap;
+        private bool _firedThisRound;
 
         public GameAuthority(IGameWorld world = null, ShotRules rules = null, MatchRules matchRules = null, ArsenalRules arms = null,
             DropRules drops = null, HazardRules hazards = null, int seed = 0)
@@ -98,6 +99,21 @@ namespace Ricochet.Core.Commands
 
         /// <summary>True while a match is being played.</summary>
         public bool MatchRunning => Match != null && Match.IsRunning;
+
+        /// <summary>
+        /// True while the match is paused (UR-T43, isPaused): <see cref="Tick"/>, <see cref="AdvanceFlight"/> and
+        /// <see cref="AdvanceDrive"/> do nothing, and every command but a vote or a seat's arrival or departure is refused.
+        /// </summary>
+        public bool Paused { get; private set; }
+
+        /// <summary>A match may be paused while it runs, until the game is over.</summary>
+        public bool MayPause => MatchRunning && Match.Phase != MatchPhase.GameOver;
+
+        /// <summary>
+        /// The pause menu's Randomize (UR-T43, obj_btn_randomize: randomize_level only while !hasFired) may run: a match's
+        /// turn has begun (its Ready card or its clock) and nobody has fired yet this round.
+        /// </summary>
+        public bool MayRerollRound => MatchRunning && !_firedThisRound && (Match.Phase == MatchPhase.Ready || Match.Phase == MatchPhase.Aiming);
 
         /// <summary>Every player, in the order they were added.</summary>
         public IReadOnlyList<PlayerState> Players => _order;
@@ -238,6 +254,8 @@ namespace Ricochet.Core.Commands
         {
             Run(() =>
             {
+                Paused = false;
+                _firedThisRound = false;
                 _matchMap = Maps.Clamp(mapIndex);
                 UseMap(_matchMap);
                 Hazards.UseLevel(Layout.Level);
@@ -278,9 +296,9 @@ namespace Ricochet.Core.Commands
         {
             return Run(() =>
             {
-                if (Match == null)
+                if (Match == null || Paused)
                 {
-                    return;
+                    return; // paused: the clock, the Ready card's hold, the crates and the hazards all wait
                 }
 
                 Match.Tick(seconds);
@@ -363,6 +381,80 @@ namespace Ricochet.Core.Commands
             });
         }
 
+        // ------------------------------------------------------------------ the pause menu (UR-T43)
+
+        /// <summary>
+        /// Pauses or resumes the match (obj_pausemenu's isPaused). Pausing needs a running match that is not over; a tank
+        /// being driven stops. Nothing happens (and no event) when it already is so.
+        /// </summary>
+        public IReadOnlyList<GameEvent> SetPaused(bool paused, int playerId = -1)
+        {
+            return Run(() =>
+            {
+                if (paused == Paused || (paused && !MayPause))
+                {
+                    return;
+                }
+
+                Paused = paused;
+                if (paused)
+                {
+                    foreach (PlayerState state in _order)
+                    {
+                        state.DriveDirection = 0; // stop_moving.gml: a held drive key does not carry through the pause
+                    }
+                }
+
+                Emit(new PauseChanged(playerId, paused));
+            });
+        }
+
+        /// <summary>
+        /// The pause menu's Randomize (obj_btn_randomize: unpause, then randomize_level when !hasFired): the match resumes
+        /// and the round is laid again on a fresh random level (the level generator's, every seat at a fresh spot), the
+        /// crates and hazards start over, every loadout is fresh, and the current seat's turn starts over with its Ready card
+        /// and a full clock. Only before the round's first shot (<see cref="MayRerollRound"/>); empty otherwise.
+        /// </summary>
+        public IReadOnlyList<GameEvent> RerollRound(int playerId = -1)
+        {
+            return Run(() =>
+            {
+                if (!MayRerollRound)
+                {
+                    return;
+                }
+
+                SetPaused(false, playerId);
+                RollLayout(Maps.RandomIndex);
+                NewField();
+                PlaceEveryone();
+                ResetHazards();
+                ResetLoadouts();
+                Emit(new LevelRerolled(playerId, MapIndex, LayoutSeed, LayoutVersion));
+                Match.RestartTurn();
+            });
+        }
+
+        /// <summary>
+        /// The pause menu's Quit round (obj_btn_quit_round, which went back to the players room): the match stops, the pause
+        /// lifts and play goes back to practice; a new match starts from the setup. Empty when no match is running.
+        /// </summary>
+        public IReadOnlyList<GameEvent> QuitMatch(int playerId = -1)
+        {
+            return Run(() =>
+            {
+                if (!MatchRunning)
+                {
+                    return;
+                }
+
+                SetPaused(false, playerId);
+                Match.Stop();
+                Crates?.Clear();
+                Emit(new MatchQuit(playerId));
+            });
+        }
+
         // ------------------------------------------------------------------ votes
 
         /// <summary>
@@ -404,6 +496,12 @@ namespace Ricochet.Core.Commands
                     }
 
                     return;
+                }
+
+                if (Paused && !(command is VoteCommand || command is JoinSeatCommand || command is DropSeatCommand
+                    || command is RejoinSeatCommand || command is LeaveSeatCommand))
+                {
+                    return; // paused: nobody turns, fires, drives or ends a turn (the original's !isPaused checks); votes and seats go on
                 }
 
                 switch (command)
@@ -478,9 +576,9 @@ namespace Ricochet.Core.Commands
         {
             return Run(() =>
             {
-                if (!_players.TryGetValue(playerId, out PlayerState state) || state.Flight == null || state.Flight.Landed)
+                if (Paused || !_players.TryGetValue(playerId, out PlayerState state) || state.Flight == null || state.Flight.Landed)
                 {
-                    return;
+                    return; // paused: the shot hangs where it is
                 }
 
                 ProjectileFlight main = state.Flight.Flights[0];
@@ -506,7 +604,7 @@ namespace Ricochet.Core.Commands
         {
             return Run(() =>
             {
-                if (!_players.TryGetValue(playerId, out PlayerState state) || state.DriveDirection == 0)
+                if (Paused || !_players.TryGetValue(playerId, out PlayerState state) || state.DriveDirection == 0)
                 {
                     return;
                 }
@@ -604,6 +702,7 @@ namespace Ricochet.Core.Commands
             Emit(new ShotFired(state.Id, state.Seat, state.Shots, weapon, state.ShotHeading, state.ShotPower, state.ShotFuse, state.ShotExtraBounces, volley));
             if (MatchRunning)
             {
+                _firedThisRound = true; // hasFired: the pause menu's Randomize is gone for this round
                 Match.Fire(state.Seat); // the turn clock stops until it lands
             }
         }
@@ -942,10 +1041,18 @@ namespace Ricochet.Core.Commands
         // is laid afresh (randomize_level.gml) and everyone stands at a random spot of it (randomize_player_position.gml).
         private void NewRound()
         {
+            _firedThisRound = false;
             RollLayout(_matchMap);
             NewField();
             PlaceEveryone();
             ResetHazards();
+            ResetLoadouts();
+            Emit(new RoundStarted(Match.Round));
+        }
+
+        // Every player starts the round with a fresh loadout, their own size and no extra bounces.
+        private void ResetLoadouts()
+        {
             foreach (PlayerState state in _order)
             {
                 state.Loadout.Reset();
@@ -953,8 +1060,6 @@ namespace Ricochet.Core.Commands
                 state.ExtraBounces = 0;
                 Emit(new LoadoutChanged(state.Id));
             }
-
-            Emit(new RoundStarted(Match.Round));
         }
 
         private void PlaceEveryone()

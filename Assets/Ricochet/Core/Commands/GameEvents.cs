@@ -397,6 +397,35 @@ namespace Ricochet.Core.Commands
         public int Champion { get; }
     }
 
+    /// <summary>
+    /// The match was paused or resumed (UR-T43, obj_pausemenu's isPaused): while paused the turn clock, the Ready card's
+    /// hold, the AI, every shot and tank in motion, the crates and the hazards all wait, and nobody acts but to vote.
+    /// <see cref="PlayerId"/> is who asked (-1 for the host or a vote).
+    /// </summary>
+    public sealed class PauseChanged : GameEvent
+    {
+        public PauseChanged(int playerId, bool paused)
+        {
+            PlayerId = playerId;
+            Paused = paused;
+        }
+
+        public int PlayerId { get; }
+
+        public bool Paused { get; }
+    }
+
+    /// <summary>The round was quit from the pause menu (UR-T43, obj_btn_quit_round): the match is over and play goes back to practice.</summary>
+    public sealed class MatchQuit : GameEvent
+    {
+        public MatchQuit(int playerId)
+        {
+            PlayerId = playerId;
+        }
+
+        public int PlayerId { get; }
+    }
+
     /// <summary>A crate began to fall.</summary>
     public sealed class CrateDropped : GameEvent
     {
@@ -470,7 +499,10 @@ namespace Ricochet.Core.Commands
         public bool Rolled { get; }
     }
 
-    /// <summary>A player rerolled the practice level (the practice dummies stand back up on it).</summary>
+    /// <summary>
+    /// A player rerolled the level: in practice (the practice dummies stand back up on it), or in a match from the pause
+    /// menu before the round's first shot (UR-T43, randomize_level: the turn starts over on the new level).
+    /// </summary>
     public sealed class LevelRerolled : GameEvent
     {
         public LevelRerolled(int playerId, int map, int seed, int version)
