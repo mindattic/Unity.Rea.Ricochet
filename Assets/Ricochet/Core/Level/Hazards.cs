@@ -48,6 +48,13 @@ namespace Ricochet.Core.Level
 
         /// <summary>A rail redirector a player placed (the redirector item).</summary>
         Redirector = 5,
+
+        /// <summary>
+        /// A level shape a shrink ray struck (obj_polygon_parent's shrinking, U.RICO-T90): it shrinks away and is gone from the
+        /// level for every later shot. <see cref="Hazard.Owner"/> is the shape (RoundLayout.Shapes), <see cref="Hazard.A"/>
+        /// the range of the level's walls it made (start, count).
+        /// </summary>
+        Shrunk = 6,
     }
 
     /// <summary>How a hazard left the level (U.RICO-T48: a shield wall's glass flies on every peer unless it was cleared).</summary>
@@ -71,7 +78,7 @@ namespace Ricochet.Core.Level
 
     public sealed class HazardRules
     {
-        public const int KindCount = 6;
+        public const int KindCount = 7;
 
         /// <summary>How far in front of the player a shield wall stands (spawn_shieldwall's Len = 60 px).</summary>
         public double ShieldWallOffset { get; set; }
@@ -199,6 +206,12 @@ namespace Ricochet.Core.Level
 
         public Vec2 Center => (A + B) * 0.5;
 
+        /// <summary>A <see cref="HazardKind.Shrunk"/> shape's first wall in the level.</summary>
+        public int WallStart => (int)Math.Round(A.X);
+
+        /// <summary>How many walls a <see cref="HazardKind.Shrunk"/> shape made.</summary>
+        public int WallCount => (int)Math.Round(A.Y);
+
         /// <summary>True for what a shot or a vortex can destroy: a shield wall, a tuft, a placed redirector.</summary>
         public bool Destructible => Kind == HazardKind.ShieldWall || Kind == HazardKind.Foliage || Kind == HazardKind.Redirector;
 
@@ -294,6 +307,7 @@ namespace Ricochet.Core.Level
             var redirectors = new List<Redirector>();
             var barriers = new List<Barrier>();
             var breaches = new List<Breach>();
+            var gone = new HashSet<int>();
             foreach (Hazard hazard in hazards)
             {
                 if (hazard == null)
@@ -303,6 +317,13 @@ namespace Ricochet.Core.Level
 
                 switch (hazard.Kind)
                 {
+                    case HazardKind.Shrunk:
+                        for (int i = 0; i < hazard.WallCount; i++)
+                        {
+                            gone.Add(hazard.WallStart + i);
+                        }
+
+                        break;
                     case HazardKind.Breach:
                         breaches.Add(new Breach(hazard.A, hazard.B));
                         break;
@@ -332,6 +353,7 @@ namespace Ricochet.Core.Level
                 }
             }
 
+            level = level.WithoutWalls(gone);
             return redirectors.Count + barriers.Count + breaches.Count == 0 ? level : level.With(redirectors, barriers, breaches);
         }
 
@@ -360,6 +382,24 @@ namespace Ricochet.Core.Level
             Vec2 along = Vec2.FromAngle(heading);
             Vec2 across = new Vec2(-along.Y, along.X) * (Rules.RedirectorLength / 2);
             return Add(new Hazard(++_nextId, HazardKind.Redirector, spot - across, spot + across, owner: owner, heading: Angles.Normalize(heading)));
+        }
+
+        /// <summary>
+        /// obj_shrinkray striking shape <paramref name="shape"/> (U.RICO-T90), whose walls are the level's
+        /// <paramref name="wallCount"/> from <paramref name="wallStart"/>: it shrinks away and is gone from the level. Null when
+        /// it is already going.
+        /// </summary>
+        public Hazard AddShrunkShape(int shape, int wallStart, int wallCount)
+        {
+            foreach (Hazard hazard in _hazards)
+            {
+                if (hazard.Kind == HazardKind.Shrunk && hazard.Owner == shape)
+                {
+                    return null;
+                }
+            }
+
+            return Add(new Hazard(++_nextId, HazardKind.Shrunk, new Vec2(wallStart, wallCount), new Vec2(wallStart, wallCount), owner: shape));
         }
 
         /// <summary>An electric arc between pylons at <paramref name="a"/> and <paramref name="b"/>.</summary>

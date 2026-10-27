@@ -792,7 +792,7 @@ namespace Ricochet.Core.Commands
 
             // The items that fly are flown first, so the event carries the path every peer draws them along (U.RICO-T79).
             ShotPath flight = null;
-            string hit = null;
+            Wall hit = null;
             switch (item)
             {
                 case Item.Teleporter:
@@ -803,7 +803,9 @@ namespace Ricochet.Core.Commands
                     state.RedirectorFired = true; // hasFiredRedirector
                     break;
                 case Item.ShrinkRay:
-                    hit = Arsenal.ShrinkRay(state.Position, state.Heading, TargetIds.Seat(state.Seat), LevelFor(state.Seat), Targets(), Rules, out flight);
+                    Level seen = LevelFor(state.Seat);
+                    int wall = Arsenal.ShrinkRay(state.Position, state.Heading, seen, Rules, out flight);
+                    hit = wall >= 0 ? seen.Walls[wall] : null;
                     break;
             }
 
@@ -898,15 +900,55 @@ namespace Ricochet.Core.Commands
                     MoveTo(state, Arsenal.TeleportSpot(flying.Flight, LevelFor(state.Seat), Rules, state.Radius), MoveCause.Teleported);
                     break;
                 case Item.ShrinkRay:
-                    PlayerState shrunk = flying.Hit != null ? PlayerAtSeat(TargetIds.SeatOf(flying.Hit)) : null;
-                    if (shrunk != null)
-                    {
-                        shrunk.Scale = Quantize(Math.Min(shrunk.Scale, Arms.ShrinkScale));
-                        Emit(new Shrunk(shrunk.Id, state.Seat, shrunk.Scale));
-                    }
-
+                    Emit(new Shrunk(state.Seat, ShrinkShape(flying.Hit), flying.Flight.Impact));
                     break;
             }
+        }
+
+        // obj_shrinkray's collision with obj_polygon_parent: the shape that made `wall` (a wall of a level the hazards built,
+        // the same Wall objects as the laid level's) starts shrinking away and is gone from the level (U.RICO-T90). Returns
+        // the shape's index, or -1 for the border (a border piece shrinks under draw_borders' sprites: nothing changes).
+        private int ShrinkShape(Wall wall)
+        {
+            if (wall == null)
+            {
+                return -1;
+            }
+
+            IReadOnlyList<Wall> walls = Hazards.Level.Walls;
+            int index = -1;
+            for (int i = 0; i < walls.Count && index < 0; i++)
+            {
+                index = ReferenceEquals(walls[i], wall) ? i : -1;
+            }
+
+            if (index < 0)
+            {
+                return -1;
+            }
+
+            // A random level's walls are its shapes' outlines in laying order; a hand-laid map's wall is a shape of its own.
+            int start = index, count = 1, shape = index;
+            if (Layout != null && ReferenceEquals(Layout.Level, Hazards.Level) && Layout.Shapes.Count > 0)
+            {
+                int first = 0;
+                for (int s = 0; s < Layout.Shapes.Count; s++)
+                {
+                    int n = Layout.Shapes[s].Corners.Length;
+                    if (index < first + n)
+                    {
+                        start = first;
+                        count = n;
+                        shape = s;
+                        break;
+                    }
+
+                    first += n;
+                }
+            }
+
+            Hazards.AddShrunkShape(shape, start, count);
+            return shape;
         }
 
         // redirector_detonate: the player's redirector in the air stops where it is and becomes a standing redirector there.
@@ -949,7 +991,7 @@ namespace Ricochet.Core.Commands
 
         private sealed class ItemInFlight
         {
-            public ItemInFlight(PlayerState owner, Item item, ShotPath flight, string hit)
+            public ItemInFlight(PlayerState owner, Item item, ShotPath flight, Wall hit)
             {
                 Owner = owner;
                 Item = item;
@@ -963,8 +1005,8 @@ namespace Ricochet.Core.Commands
 
             public ShotPath Flight { get; }
 
-            /// <summary>Whom a shrink ray strikes when it arrives (null for nobody).</summary>
-            public string Hit { get; }
+            /// <summary>The shape's wall a shrink ray strikes when it arrives (null for the border).</summary>
+            public Wall Hit { get; }
 
             public double Travelled { get; set; }
         }

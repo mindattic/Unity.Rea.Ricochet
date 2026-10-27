@@ -421,25 +421,28 @@ namespace Ricochet.Core.Arsenal
         }
 
         /// <summary>
-        /// shoot_shrinkray.gml: a ray along the aim at full range; returns the player it reaches first (never the shooter,
-        /// <paramref name="selfId"/>), or null. <paramref name="path"/> is its flight.
+        /// shoot_shrinkray.gml + obj_shrinkray (U.RICO-T90): a ray along the aim at bulletSpeed * 4, through tanks and hazards,
+        /// that stops on the first shape or the border it touches (its only collision is obj_polygon_parent, the shapes and
+        /// the border pieces). Returns the index in <paramref name="level"/>'s walls of the shape's wall it struck, or -1 for
+        /// the border. <paramref name="path"/> is its flight, ending there.
         /// </summary>
-        public static string ShrinkRay(Vec2 origin, double heading, string selfId, Level level, IReadOnlyList<Target> targets, ShotRules rules, out ShotPath path)
+        public static int ShrinkRay(Vec2 origin, double heading, Level level, ShotRules rules, out ShotPath path)
         {
-            var others = new List<Target>();
-            if (targets != null)
+            if (level == null)
             {
-                foreach (Target target in targets)
-                {
-                    if (target.Id != selfId)
-                    {
-                        others.Add(target);
-                    }
-                }
+                throw new ArgumentNullException(nameof(level));
             }
 
-            path = BounceSolver.Solve(origin, heading, 1, level, others, rules);
-            return path.End == ShotEndKind.Target ? path.TargetId : null;
+            rules = rules ?? ShotRules.Default;
+            path = FlyItem(origin, heading, Bare(level, false), rules, ItemLooks.SpeedFactor(Item.ShrinkRay) * ItemLooks.RedirectorMaxSeconds);
+            if (path.Contacts.Count == 0)
+            {
+                return -1;
+            }
+
+            Contact first = path.Contacts[0];
+            path = path.Truncate(first.Distance);
+            return first.Kind == ContactKind.Wall ? first.Index : -1;
         }
 
         // A vortex's end: lost without going off when a barrier stopped it, else an implosion that strikes everyone in reach.

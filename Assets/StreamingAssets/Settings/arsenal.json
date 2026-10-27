@@ -11,7 +11,6 @@
   "pelletDamage": 0.35,
   "laserSpeed": 3,
   "railgunSpeed": 8,
-  "shrinkScale": 0.6,
   "weapons": [
     { "id": "Cannon", "name": "Cannon", "start": 10, "inPlay": true, "about": "Fires a shell that ricochets off the walls and shapes until its bounces run out." },
     { "id": "Laser", "name": "Laser", "start": 3, "inPlay": true, "about": "A fast beam that ricochets like a shell and hits whoever it reaches." },

@@ -5,8 +5,8 @@
 //   obj_teleporter     shoot_teleporter: spr_teleporter (six frames at image_speed 1) at bulletSpeed * 2, image_angle set
 //                      to the aim once; teleport_player: ef_ring (small, white) where the shooter stood, then ef_ring (medium) in
 //                      white and in the shooter's colour and ef_firework (small, white) where the shooter lands.
-//   obj_shrinkray      shoot_shrinkray: at bulletSpeed * 4, an ef_spark (small, lime) every step; striking a player,
-//                      ef_firework (medium, lime). Its spr_shrinkball (turning 20 degrees a step) is never drawn: its Draw
+//   obj_shrinkray      shoot_shrinkray: at bulletSpeed * 4, an ef_spark (small, lime) every step; striking a shape or
+//                      the border, ef_firework (medium, lime), and the shape shrinks away (obj_polygon_parent). Its spr_shrinkball (turning 20 degrees a step) is never drawn: its Draw
 //                      event is "//draw_self();", and obj_shrinkray_child is never created (commented out of shoot_shrinkray).
 //   obj_redirector     shoot_redirector / redirector_step's "flying" mode: spr_redirector_arrow at bulletSpeed * 2 from
 //                      0.15 of its size growing 0.01 a step to 0.30, turning 3 degrees a step, turned back to its heading
@@ -48,8 +48,23 @@ namespace Ricochet.Core.Art
         /// <summary>obj_shrinkray's Step: action_effect(ef_spark, x, y, small, lime) every step.</summary>
         public const int ShrinkSparkSize = 0;
 
-        /// <summary>obj_shrinkray striking a player: effect_create_above(ef_firework, x, y, 1, lime).</summary>
+        /// <summary>obj_shrinkray striking a shape: effect_create_above(ef_firework, x, y, 1, lime).</summary>
         public const int ShrinkHitFireworkSize = 1;
+
+        /// <summary>obj_polygon_parent shrinking (U.RICO-T90): image_xscale -= 0.01 a step, the shape gone at 0.</summary>
+        public const double ShapeShrinkPerStep = 0.01;
+
+        /// <summary>
+        /// obj_polygon_parent shrinking: image_blend = choose(c_blue, c_red, c_orange, c_yellow) every step (GameMaker's
+        /// c_orange is 255, 160, 64).
+        /// </summary>
+        public static readonly GmlColor[] ShapeShrinkBlends =
+        {
+            new GmlColor(0, 0, 255), new GmlColor(255, 0, 0), new GmlColor(255, 160, 64), new GmlColor(255, 255, 0),
+        };
+
+        /// <summary>A struck shape's scale <paramref name="steps"/> room steps after the shrink ray reached it (0 once gone).</summary>
+        public static double ShapeScaleAt(double steps) => Math.Max(0, 1 - ShapeShrinkPerStep * Math.Floor(Math.Max(0, steps)));
 
         /// <summary>obj_redirector's Create: image_xscale = 0.15.</summary>
         public const double RedirectorFlightStartScale = 0.15;

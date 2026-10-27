@@ -84,9 +84,6 @@ namespace Ricochet.Core.Arsenal
         /// <summary>The railgun's slug flies this many times a shell's speed (near enough instant).</summary>
         public double RailgunSpeed { get; set; }
 
-        /// <summary>What a shrink ray leaves of the player it hits (their hit radius and size), for the rest of the round.</summary>
-        public double ShrinkScale { get; set; }
-
         /// <summary>The stock rules, from arsenal.json (UR-T35): a new set starts as a copy of them.</summary>
         public ArsenalRules()
         {
@@ -112,7 +109,6 @@ namespace Ricochet.Core.Arsenal
             PelletDamage = other.PelletDamage;
             LaserSpeed = other.LaserSpeed;
             RailgunSpeed = other.RailgunSpeed;
-            ShrinkScale = other.ShrinkScale;
             Array.Copy(other._startWeapons, _startWeapons, Kinds);
             Array.Copy(other._startItems, _startItems, Kinds);
             Array.Copy(other._weaponsInPlay, _weaponsInPlay, Kinds);

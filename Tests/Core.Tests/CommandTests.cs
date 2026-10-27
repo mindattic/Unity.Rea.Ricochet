@@ -511,21 +511,33 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void UseItem_ShrinkRay_ShrinksTheFirstPlayerItReaches()
+        public void UseItem_ShrinkRay_ShrinksAwayTheFirstShapeItStrikes_NeverATank()
         {
             GameAuthority authority = TwoSeats(out PlayerState a, out PlayerState b);
             authority.Apply(new CycleItemCommand(1, 1));
             authority.Apply(new CycleItemCommand(1, 1)); // shrink ray
             Assert.That(a.Loadout.Item, Is.EqualTo(Item.ShrinkRay));
 
+            // U.RICO-T90: aimed at seat 1, it passes through that tank on to the first shape (or the border) beyond.
+            int walls = authority.LevelFor(0).Walls.Count;
             ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, AtSeatOne, 0.5))).Single();
-            Assert.That(b.Scale, Is.EqualTo(1), "U.RICO-T80: nothing shrinks until the ray arrives");
+            Assert.That(used.Flight.End, Is.Not.EqualTo(ShotEndKind.Target));
+            Assert.That(Of<Shrunk>(authority.AdvanceItems(1, 0.001)), Is.Empty, "U.RICO-T80: nothing shrinks until the ray arrives");
             IReadOnlyList<GameEvent> events = authority.AdvanceItems(1, used.Flight.Length / (ItemLooks.SpeedFactor(Item.ShrinkRay) * authority.Rules.Speed) + 0.01);
             Shrunk shrunk = Of<Shrunk>(events).Single();
-            Assert.That(shrunk.PlayerId, Is.EqualTo(2));
             Assert.That(shrunk.BySeat, Is.EqualTo(0));
-            Assert.That(b.Scale, Is.EqualTo((float)authority.Arms.ShrinkScale));
-            Assert.That(b.Radius, Is.LessThan(Seating.PlayerRadius));
+            Assert.That(shrunk.At, Is.EqualTo(used.Flight.Impact));
+            Assert.That(b.Scale, Is.EqualTo(1), "a tank is never shrunk");
+            if (shrunk.Shape >= 0)
+            {
+                Hazard gone = authority.Hazards.Hazards.Single(h => h.Kind == HazardKind.Shrunk);
+                Assert.That(gone.Owner, Is.EqualTo(shrunk.Shape));
+                Assert.That(authority.LevelFor(0).Walls.Count, Is.EqualTo(walls - gone.WallCount), "the shape is gone from the level");
+            }
+            else
+            {
+                Assert.That(authority.LevelFor(0).Walls.Count, Is.EqualTo(walls), "the border: nothing changes");
+            }
         }
 
         // U.RICO-T79: the items that fly carry the path the authority flew them along, for every peer to draw.
@@ -542,8 +554,7 @@ namespace Ricochet.Core.Tests
             ItemUsed ray = Of<ItemUsed>(events).Single();
             Assert.That(ray.Flight, Is.Not.Null);
             Assert.That(ray.Flight.Origin, Is.EqualTo(from));
-            Assert.That(ray.Flight.End, Is.EqualTo(ShotEndKind.Target));
-            Assert.That(ray.Flight.TargetId, Is.EqualTo(TargetIds.Seat(1)), "it flies to the player it shrinks");
+            Assert.That(ray.Flight.End, Is.Not.EqualTo(ShotEndKind.Target), "it flies through the tank to a shape (U.RICO-T90)");
             Assert.That(Of<Shrunk>(events), Is.Empty, "launched now, struck when it arrives");
             authority.AdvanceItems(1, 60);
 

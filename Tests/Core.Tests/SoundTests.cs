@@ -196,7 +196,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void TheEventsNoViewPlays_SoundAsTheOriginalsScriptsDid()
         {
-            Assert.That(SoundBook.ForEvent(new Shrunk(2, 0, 0.5)), Is.EqualTo(SoundCue.Shrink));
+            Assert.That(SoundBook.ForEvent(new Shrunk(0, 2, Vec2.Zero)), Is.EqualTo(SoundCue.Shrink));
             Assert.That(SoundBook.ForEvent(new Moved(1, Vec2.Zero, new Vec2(1, 1), MoveCause.Teleported)), Is.EqualTo(SoundCue.Teleport));
             Assert.That(SoundBook.ForEvent(new Moved(1, Vec2.Zero, new Vec2(1, 1), MoveCause.Drove)), Is.Null);
             Assert.That(SoundBook.ForEvent(new CratePickedUp(1, DropKind.Health, 20)), Is.EqualTo(SoundCue.Powerup));

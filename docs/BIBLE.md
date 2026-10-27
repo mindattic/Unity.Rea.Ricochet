@@ -250,7 +250,7 @@ depth 1), `objects/obj_tracks` and `sprites/spr_tracks` (depth 2), `scripts/setu
 `spawn_tracks.gml`, `move_forward.gml` / `move_backward.gml`.
 
 - `Runtime/TankView` draws each player as the original did: spr_tank_bottom under spr_tank_top at the original's pixel
-  size (a shrink ray still shrinks it), both tinted the seat's colour (setup_players' `image_blend = pColor[i]`), faint
+  size, both tinted the seat's colour (setup_players' `image_blend = pColor[i]`), faint
   out of the round as the squares were. The turret is on the aim (the owner's own responsive aim, everyone else's synced
   one). The hull starts on the turret's angle (`bottom[i].image_angle = player[i].image_angle`) and, while the tank
   drives, turns a degree a step the short way toward the turret (align_bottom_to_top, from move_forward / move_backward).
@@ -477,7 +477,14 @@ Source: `scripts/use_item.gml`, `shoot_teleporter.gml`, `teleport_player.gml`, `
   aim once and never turned. teleport_player: a small white ef_ring where the shooter stood as it sets off; where the shooter
   lands, a medium ef_ring in white and one in the shooter's colour and a small white ef_firework.
 - **Shrink ray** (obj_shrinkray): at bulletSpeed * 4, an ef_spark (small, lime: globals.gml's make_color_rgb(128, 255, 128))
-  every step where it is; striking a player, a medium lime ef_firework there. Its spr_shrinkball is never drawn: obj_shrinkray's
+  every step where it is; it passes through tanks and hazards and stops on the first shape or border piece it touches (its
+  only collision is obj_polygon_parent), a medium lime ef_firework and sfx_shrink there. The shape it struck shrinks away
+  (U.RICO-T90: obj_polygon_parent's shrinking, image_xscale 0.01 smaller a step, image_blend a random one of c_blue, c_red,
+  c_orange and c_yellow each step, destroyed at 0; Core's `ItemLooks.ShapeScaleAt`, `LevelView.ShrinkShape`) and is gone from
+  the level: a `Shrunk` hazard (`HazardKind.Shrunk`, the shape and its range of walls) that every peer builds the level
+  without (`HazardField.Build`, `Level.WithoutWalls`), until the next round. A border piece it strikes shrinks under
+  draw_borders' sprites (drawn over it at depth -1999) and the border still bounces by position, so nothing changes. It
+  never shrinks a tank: the rebuild's earlier shrunken tank (`ArsenalRules.ShrinkScale`) is gone. Its spr_shrinkball is never drawn: obj_shrinkray's
   Draw event is `//draw_self();` (so its 20-degree-a-step turn shows nowhere), and shoot_shrinkray's obj_shrinkray_child (the same
   ball turning the other way) is commented out and never created. The rebuild draws the ray as the original did, by its sparks.
 - **Redirector** (obj_redirector, "flying"): spr_redirector_arrow at bulletSpeed * 2, from 0.15 of its size growing 0.01 a step
@@ -490,7 +497,9 @@ Source: `scripts/use_item.gml`, `shoot_teleporter.gml`, `teleport_player.gml`, `
 - `Tests/PlayMode/ItemFlightTests` flies each item on a host and a client (sprite, angle, size, sparks, rings, the waiting
   redirector) and runs the flashes.
 
-Deviations: (1) A flight is a path the authority solves when the item is used, so it can cross the wire whole: an item's path
+Deviations: (0) The struck shape leaves the level for shots at once, while the original's shrinking shape still stood in the
+way, smaller each step, for the 100 steps it took to go: a shot is solved whole when fired, against the level as it stands.
+(1) A flight is a path the authority solves when the item is used, so it can cross the wire whole: an item's path
 is solved for 60 seconds of flight (`ItemLooks.RedirectorMaxSeconds`, the longest turn), and a redirector that flies all of it
 unstopped is gone with nothing placed, as the original's was when its turn ended. (2) The flashes are drawn over the rebuild's
 endgame recap (UR-T9) rather than in the original's endgame room.
@@ -673,7 +682,7 @@ lines are U.RICO-T51's, the music_* tracks U.RICO-T27's, below), and every `audi
   sounds while it pulls in and stops when sfx_vortex_blow starts as it blows out (vortex_step's modes).
 - **Items and the round** (the server's flourish, every peer): the item's own sound as it is used (use_item: sfx_powerup_activate
   for an extra bounce, sfx_hologram for a shield wall going up, sfx_shrinkray_shoot, sfx_teleporter_shoot, sfx_zoom for an aim
-  assist, sfx_redirector_shoot), sfx_shrink as a shrink ray reaches a tank, sfx_teleport as a teleporter puts its tank down,
+  assist, sfx_redirector_shoot), sfx_shrink as a shrink ray strikes a shape or the border, sfx_teleport as a teleporter puts its tank down,
   sfx_powerup for a crate collected, sfx_beep on each of the turn clock's last four seconds, sfx_sigh for a turn that ran out
   and a knock-out mid-round, sfx_applause for the knock-out that ends the round (in place of its sigh, as hit.gml did). A
   redirector placed plays sfx_redirector_grow as it opens out (redirector_detonate).

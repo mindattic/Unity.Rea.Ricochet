@@ -179,13 +179,41 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void TheShrinkRayFindsTheFirstOtherPlayerOnTheAim()
+        public void TheShrinkRayStrikesTheFirstShapeOnTheAim_ThroughTanksAndHazards()
         {
-            string hit = Arsenal.ShrinkRay(Vec2.Zero, 0, "me", Open(), new[] { T("me", 0, 0), T("ann", 5, 0) }, null, out ShotPath path);
-            Assert.That(hit, Is.EqualTo("ann"));
-            Assert.That(path.End, Is.EqualTo(ShotEndKind.Target));
-            Assert.That(Arsenal.ShrinkRay(Vec2.Zero, 90, "me", Open(), new[] { T("me", 0, 0), T("ann", 5, 0) }, null, out _), Is.Null,
-                "straight up and down never meets Ann, and never its own shooter");
+            // U.RICO-T90: obj_shrinkray's only collision is obj_polygon_parent (the shapes and the border pieces).
+            var level = new Level(-10, -5, 10, 5, new[] { new Wall(new Vec2(-1, 2), new Vec2(1, 2)), new Wall(new Vec2(6, -2), new Vec2(6, 2)) })
+                .With(null, new[] { new Barrier(1, HazardKind.ShieldWall, new Vec2(3, -2), new Vec2(3, 2)) }, null);
+            int hit = Arsenal.ShrinkRay(Vec2.Zero, 0, level, null, out ShotPath path);
+            Assert.That(hit, Is.EqualTo(1), "the wall at x 6, through the shield wall at x 3");
+            Assert.That(path.Impact.X, Is.EqualTo(6).Within(1e-9));
+            Assert.That(path.Contacts, Is.Empty, "it stops there, it never bounces");
+
+            Assert.That(Arsenal.ShrinkRay(Vec2.Zero, 90, level, null, out ShotPath up), Is.EqualTo(0));
+            Assert.That(up.Impact.Y, Is.EqualTo(2).Within(1e-9));
+            Assert.That(Arsenal.ShrinkRay(Vec2.Zero, 180, level, null, out ShotPath left), Is.EqualTo(-1), "the border");
+            Assert.That(left.Impact.X, Is.EqualTo(-10).Within(1e-9));
+        }
+
+        [Test]
+        public void AShrunkShapeIsGoneFromTheLevelEveryShotSees()
+        {
+            var level = new Level(-10, -5, 10, 5, new[]
+            {
+                new Wall(new Vec2(4, -1), new Vec2(4, 1)), new Wall(new Vec2(4, 1), new Vec2(5, 0)), new Wall(new Vec2(5, 0), new Vec2(4, -1)),
+                new Wall(new Vec2(-4, -1), new Vec2(-4, 1)),
+            });
+            var field = new HazardField(level);
+            Assert.That(field.AddShrunkShape(0, 0, 3), Is.Not.Null);
+            Assert.That(field.AddShrunkShape(0, 0, 3), Is.Null, "a shape shrinks once");
+            Level seen = field.LevelFor(0);
+            Assert.That(seen.Walls, Has.Count.EqualTo(1));
+            Assert.That(seen.Walls[0], Is.SameAs(level.Walls[3]), "the other shapes stay");
+            Assert.That(BounceSolver.Solve(Vec2.Zero, 0, 1, seen).Contacts[0].Kind, Is.EqualTo(ContactKind.Border), "a shot flies through where it stood");
+
+            Hazard wire = field.Hazards[0];
+            var onClient = new Hazard(wire.Id, wire.Kind, wire.A, wire.B, wire.Radius, wire.Owner, wire.Heading, wire.Active);
+            Assert.That(HazardField.Build(level, new[] { onClient }, 0).Walls, Has.Count.EqualTo(1), "every peer builds the same level from it");
         }
     }
 }

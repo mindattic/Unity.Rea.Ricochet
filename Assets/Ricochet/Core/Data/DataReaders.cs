@@ -103,7 +103,6 @@ namespace Ricochet.Core.Data
                 PelletDamage = r.Number("pelletDamage", 0.01, 10),
                 LaserSpeed = r.Number("laserSpeed", 0.1, 100),
                 RailgunSpeed = r.Number("railgunSpeed", 0.1, 100),
-                ShrinkScale = r.Number("shrinkScale", 0.05, 1),
             };
             r.Check(rules.MinFuse <= rules.DefaultFuse && rules.DefaultFuse <= rules.MaxFuse, "defaultFuse", "must lie between minFuse and maxFuse");
 

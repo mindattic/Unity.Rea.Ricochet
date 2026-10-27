@@ -4,6 +4,7 @@
 // (UR-T9) or a new round is laid, the drawing is rebuilt from the new level. The floor, clouds, lights and border
 // sprites under and around it are BackdropView's.
 using Ricochet.Core.Aim;
+using Ricochet.Core.Art;
 using Ricochet.Core.Level;
 using UnityEngine;
 
@@ -20,6 +21,8 @@ namespace Ricochet
         private static readonly Color WallColor = new Color(0.85f, 0.9f, 1f);
         private static readonly Color RedirectorColor = new Color(1f, 0.55f, 0.15f);
 
+        private static LevelView s_current;
+
         /// <summary>Builds the drawing for <paramref name="level"/> under a new GameObject.</summary>
         public static LevelView Create(Level level)
         {
@@ -27,7 +30,37 @@ namespace Ricochet
             var view = go.AddComponent<LevelView>();
             view.Draw(level);
             Arena.LevelChanged += view.Redraw;
+            s_current = view;
             return view;
+        }
+
+        /// <summary>
+        /// obj_polygon_parent shrinking (U.RICO-T90): draws shape <paramref name="shape"/> of the laid level
+        /// <paramref name="steps"/> room steps after a shrink ray struck it, scaled down 0.01 a step in a colour drawn from
+        /// blue, red, orange and yellow each step, and gone at nothing. False when there is no such shape drawn.
+        /// </summary>
+        public static bool ShrinkShape(int shape, float steps)
+        {
+            if (s_current == null || shape < 0)
+            {
+                return false;
+            }
+
+            Transform drawn = s_current.transform.Find("Shape " + shape);
+            if (drawn == null)
+            {
+                return false;
+            }
+
+            float scale = (float)ItemLooks.ShapeScaleAt(steps);
+            drawn.gameObject.SetActive(scale > 0f);
+            drawn.localScale = new Vector3(scale, scale, 1f);
+            if (drawn.TryGetComponent(out SpriteRenderer renderer) && Mathf.FloorToInt(steps) != Mathf.FloorToInt(steps - Time.deltaTime * Steps.PerSecond))
+            {
+                renderer.color = Steps.Of(ItemLooks.ShapeShrinkBlends[Random.Range(0, ItemLooks.ShapeShrinkBlends.Length)], 1f);
+            }
+
+            return true;
         }
 
         /// <summary>The level drawn now.</summary>
@@ -39,6 +72,10 @@ namespace Ricochet
         private void OnDestroy()
         {
             Arena.LevelChanged -= Redraw;
+            if (s_current == this)
+            {
+                s_current = null;
+            }
         }
 
         private void Redraw(Level level)

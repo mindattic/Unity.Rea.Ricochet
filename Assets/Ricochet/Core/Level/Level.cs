@@ -201,6 +201,29 @@ namespace Ricochet.Core.Level
         }
 
         /// <summary>
+        /// This level less the walls at <paramref name="gone"/> (indices into <see cref="Walls"/>): a shape a shrink ray took
+        /// away (U.RICO-T90). The rest are the same Wall objects.
+        /// </summary>
+        public Level WithoutWalls(ICollection<int> gone)
+        {
+            if (gone == null || gone.Count == 0)
+            {
+                return this;
+            }
+
+            var kept = new List<Wall>(Walls.Count);
+            for (int i = 0; i < Walls.Count; i++)
+            {
+                if (!gone.Contains(i))
+                {
+                    kept.Add(Walls[i]);
+                }
+            }
+
+            return new Level(MinX, MinY, MaxX, MaxY, kept, Redirectors, Barriers, Breaches);
+        }
+
+        /// <summary>
         /// True when <paramref name="point"/>, on the border, lies in a breach: on the left or right side
         /// (<paramref name="vertical"/>) or the bottom or top.
         /// </summary>

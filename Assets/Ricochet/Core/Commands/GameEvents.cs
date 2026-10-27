@@ -284,21 +284,25 @@ namespace Ricochet.Core.Commands
         public bool Found { get; }
     }
 
-    /// <summary>A shrink ray struck a player: they are this size (1 = full) for the rest of the round.</summary>
+    /// <summary>
+    /// A shrink ray struck a level shape (U.RICO-T90: obj_shrinkray's collision): it shrinks away and is gone from the level.
+    /// <see cref="Shape"/> is its index in RoundLayout.Shapes (-1 for the border, which nothing changes), <see cref="At"/>
+    /// where the ray struck.
+    /// </summary>
     public sealed class Shrunk : GameEvent
     {
-        public Shrunk(int playerId, int bySeat, double scale)
+        public Shrunk(int bySeat, int shape, Vec2 at)
         {
-            PlayerId = playerId;
             BySeat = bySeat;
-            Scale = scale;
+            Shape = shape;
+            At = at;
         }
-
-        public int PlayerId { get; }
 
         public int BySeat { get; }
 
-        public double Scale { get; }
+        public int Shape { get; }
+
+        public Vec2 At { get; }
     }
 
     /// <summary>Why a player's tank is somewhere new.</summary>

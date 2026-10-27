@@ -5,7 +5,7 @@
 //                white ring where the shooter stood as it sets off, and where the shooter lands a medium ring in white and
 //                one in the shooter's colour and a small white firework.
 //   Shrink ray   an ef_spark in lime every step where it is (obj_shrinkray's spr_shrinkball is never drawn: its Draw is
-//                commented out, as is its obj_shrinkray_child); striking a player, a medium lime firework.
+//                commented out, as is its obj_shrinkray_child); striking a shape or the border, a medium lime firework.
 //   Redirector   obj_redirector flying: spr_redirector_arrow from 0.15 of its size growing to 0.30, turning 3 degrees a step
 //                and set back to its heading at every bounce, until its owner presses the item key again
 //                (RedirectorStopped); the standing redirector (LevelHazard) waits for it to stop.
@@ -332,8 +332,8 @@ namespace Ricochet
                 case Item.Redirector:
                     break; // flew its whole path unstopped: gone with nothing placed, as when its turn ends
 
-                case Item.ShrinkRay when flight.Path.End == ShotEndKind.Target:
-                    // obj_shrinkray's collision: effect_create_above(ef_firework, x, y, 1, lime).
+                case Item.ShrinkRay:
+                    // obj_shrinkray's collision with a shape or the border: effect_create_above(ef_firework, x, y, 1, lime).
                     GmlParticles.Play(GmEffect.Firework, end, ItemLooks.ShrinkHitFireworkSize, Steps.Of(ItemLooks.Lime, 1f));
                     break;
             }

@@ -11,6 +11,7 @@
 //                until it is there, drawn as laser_draw.gml draws a laser (U.RICO-T47); while off, only a faint guide line.
 //   Foliage      a tuft (two crossed squares) of grass.
 //   Breach       a dark gap over the border, its ends marked.
+//   Shrunk       nothing of its own: the level shape a shrink ray struck (LevelView's) shrinks away (U.RICO-T90).
 //   Redirector   obj_redirector's spr_redirector_arrow along the way it sends a shot, growing from 0.3 of its size 0.01 a
 //                step (U.RICO-T47); without the art a rail redirector with a tick, as LevelView draws the level's own.
 //                It stands (and plays sfx_redirector_grow) only once its flight (ItemFlights) lands (U.RICO-T79).
@@ -366,6 +367,10 @@ namespace Ricochet
                         _art.transform.rotation = Quaternion.Euler(0f, 0f, Heading);
                     }
 
+                    break;
+                case HazardKind.Shrunk:
+                    // U.RICO-T90: the shape the shrink ray struck shrinks away (it is gone from the level already).
+                    LevelView.ShrinkShape(OwnerSeat, (Time.time - _spawnedAt) * Steps.PerSecond);
                     break;
                 case HazardKind.ShieldWall when _art != null:
                 {

@@ -71,14 +71,12 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => ItemFlights.Count(Item.ShrinkRay) == 0, "the shrink ray never landed", 5f);
             Assert.That(GmlParticles.Thrown(GmEffect.Spark), Is.GreaterThan(sparks), "an ef_spark every step");
 
-            // One that strikes a player bursts there in a lime firework (on an open level, so nothing stands in its way).
-            Arsenal.ShrinkRay(Ricochet.Core.Aim.Vec2.Zero, 0, "seat:0", new Level(-10, -5, 10, 5),
-                new[] { new Target("seat:1", new Ricochet.Core.Aim.Vec2(4, 0), 0.45) }, Arena.Rules, out Ricochet.Core.Aim.ShotPath struck);
-            Assume.That(struck.End, Is.EqualTo(Ricochet.Core.Aim.ShotEndKind.Target));
+            // Wherever it strikes (a shape, or here the border of an open level) it bursts in a lime firework (U.RICO-T90).
+            Arsenal.ShrinkRay(Ricochet.Core.Aim.Vec2.Zero, 0, new Level(-10, -5, 10, 5), Arena.Rules, out Ricochet.Core.Aim.ShotPath struck);
             fireworks = GmlParticles.Thrown(GmEffect.Firework);
             ItemFlights.Launch(null, Item.ShrinkRay, struck);
             yield return WaitUntil(() => ItemFlights.Count(Item.ShrinkRay) == 0, "that shrink ray never landed", 5f);
-            Assert.That(GmlParticles.Thrown(GmEffect.Firework), Is.EqualTo(fireworks + 1), "its firework on the player it struck");
+            Assert.That(GmlParticles.Thrown(GmEffect.Firework), Is.EqualTo(fireworks + 1), "its firework where it struck");
 
             // The redirector: growing from 0.15 in flight until she presses again (U.RICO-T80); the standing one shows only
             // once it stops.
