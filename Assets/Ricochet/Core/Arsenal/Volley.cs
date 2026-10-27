@@ -19,6 +19,7 @@ using System.Collections.Generic;
 namespace Ricochet.Core.Arsenal
 {
     using Ricochet.Core.Aim;
+    using Ricochet.Core.Art;
     using Ricochet.Core.Level;
     /// <summary>One player struck by a volley.</summary>
     public readonly struct Strike
@@ -301,34 +302,80 @@ namespace Ricochet.Core.Arsenal
         }
 
         /// <summary>
-        /// shoot_redirector.gml: a redirector flies along the aim like a shell (through players, as far as the power sends
-        /// it) and becomes a rail redirector where it stops, sending shots on along the heading it was last flying in.
-        /// Returns that spot; <paramref name="heading"/> is the redirector's, <paramref name="path"/> its flight.
+        /// shoot_redirector.gml (U.RICO-T80): a redirector flies along the aim like a shell (through players, bouncing off
+        /// the walls and the border) until its owner presses the item key again (redirector_detonate), not as far as the power
+        /// sends it. The path is solved out to <see cref="ItemLooks.RedirectorMaxSeconds"/> of flight, where the authority
+        /// stops it if its owner never has; <see cref="PlaceRedirector"/> says where it stops.
         /// </summary>
-        public static Vec2 PlaceRedirector(Vec2 origin, double aim, double power, Level level, ShotRules rules, out double heading, out ShotPath path)
+        public static ShotPath FlyRedirector(Vec2 origin, double aim, Level level, ShotRules rules)
         {
             if (level == null)
             {
                 throw new ArgumentNullException(nameof(level));
             }
 
+            // redirector_step bounces off the border and the shapes (obj_polygon_parent) only: hazards, standing redirectors
+            // and breaches in the border are nothing to it.
+            return FlyItem(origin, aim, Bare(level, false), rules, ItemLooks.SpeedFactor(Item.Redirector) * ItemLooks.RedirectorMaxSeconds);
+        }
+
+        /// <summary>The most contacts an item's flight is solved through.</summary>
+        public const int RedirectorMaxBounces = 1000;
+
+        // An item flying `seconds` of shot-speed time (seconds already scaled by its speed factor), bouncing as it goes.
+        private static ShotPath FlyItem(Vec2 origin, double aim, Level level, ShotRules rules, double seconds)
+        {
+            ShotRules flying = (rules ?? ShotRules.Default).Clone();
+            double range = flying.Speed * seconds;
+            flying.MaxBounces = RedirectorMaxBounces;
+            flying.MinRange = range;
+            flying.MaxRange = range;
+            return BounceSolver.Solve(origin, aim, 1, level, null, flying);
+        }
+
+        // The level as a flying item sees it: the border and the walls (the shapes), and the standing redirectors only when
+        // `redirectors` (obj_redirector turns a teleporter); no hazards, no breaches (the items test the border by position).
+        private static Level Bare(Level level, bool redirectors)
+        {
+            return new Level(level.MinX, level.MinY, level.MaxX, level.MaxY, level.Walls, redirectors ? level.Redirectors : null);
+        }
+
+        /// <summary>
+        /// redirector_detonate.gml: the redirector <paramref name="flight"/> (see <see cref="FlyRedirector"/>) stops
+        /// <paramref name="distance"/> along its path and becomes a rail redirector there, sending shots on along the heading
+        /// it was last flying in. Returns that spot; <paramref name="heading"/> is the redirector's.
+        /// </summary>
+        public static Vec2 PlaceRedirector(ShotPath flight, double distance, Level level, ShotRules rules, out double heading)
+        {
+            if (flight == null)
+            {
+                throw new ArgumentNullException(nameof(flight));
+            }
+
+            if (level == null)
+            {
+                throw new ArgumentNullException(nameof(level));
+            }
+
             rules = rules ?? ShotRules.Default;
-            path = BounceSolver.Solve(origin, aim, power, level, null, rules);
-            path.PositionAt(path.Length, out heading);
+            ShotPath stopped = flight.Truncate(distance);
+            stopped.PositionAt(stopped.Length, out heading);
 
             // Stopped on a surface: set it down a little short, so it does not sit on what it hit.
-            Vec2 spot = path.End == ShotEndKind.Spent ? path.Impact : path.Impact - Vec2.FromAngle(heading) * rules.MuzzleOffset;
+            bool inTheAir = stopped.End == ShotEndKind.Spent || stopped.End == ShotEndKind.Detonated;
+            Vec2 spot = inTheAir ? stopped.Impact : stopped.Impact - Vec2.FromAngle(heading) * rules.MuzzleOffset;
             double x = Math.Max(level.MinX + rules.MuzzleOffset, Math.Min(level.MaxX - rules.MuzzleOffset, spot.X));
             double y = Math.Max(level.MinY + rules.MuzzleOffset, Math.Min(level.MaxY - rules.MuzzleOffset, spot.Y));
             return new Vec2(x, y);
         }
 
         /// <summary>
-        /// shoot_teleporter.gml + teleport_player.gml: a teleporter flies along the aim (through players, bouncing like a
-        /// shell, as far as the power sends it) and the shooter lands where it stops, stepped back along its last heading
-        /// (the original's Len = 40 px) and kept inside the border. Returns that spot; <paramref name="path"/> is its flight.
+        /// shoot_teleporter.gml + obj_teleporter (U.RICO-T80): a teleporter flies along the aim (through players and hazards,
+        /// turned by a standing redirector) and teleports its shooter the moment it first strikes a shape or the border
+        /// (teleport_player), instead of bouncing on. Returns where the shooter lands (<see cref="TeleportSpot"/>);
+        /// <paramref name="path"/> is its flight, ending there.
         /// </summary>
-        public static Vec2 Teleport(Vec2 origin, double heading, double power, Level level, ShotRules rules, double clearance, out ShotPath path)
+        public static Vec2 Teleport(Vec2 origin, double heading, Level level, ShotRules rules, double clearance, out ShotPath path)
         {
             if (level == null)
             {
@@ -336,9 +383,38 @@ namespace Ricochet.Core.Arsenal
             }
 
             rules = rules ?? ShotRules.Default;
-            path = BounceSolver.Solve(origin, heading, power, level, null, rules);
-            path.PositionAt(path.Length, out double lastHeading);
-            Vec2 spot = path.Impact - Vec2.FromAngle(lastHeading) * rules.MuzzleOffset;
+            path = FlyItem(origin, heading, Bare(level, true), rules, ItemLooks.SpeedFactor(Item.Teleporter) * ItemLooks.RedirectorMaxSeconds);
+            foreach (Contact contact in path.Contacts)
+            {
+                if (contact.Kind != ContactKind.Redirector)
+                {
+                    path = path.Truncate(contact.Distance); // the first shape or border: it teleports there
+                    break;
+                }
+            }
+
+            return TeleportSpot(path, level, rules, clearance);
+        }
+
+        /// <summary>
+        /// teleport_player.gml: the shooter lands Len = 40 px (the muzzle offset) back along the teleporter's last heading from
+        /// where its <paramref name="flight"/> stopped, kept inside the border by <paramref name="clearance"/>.
+        /// </summary>
+        public static Vec2 TeleportSpot(ShotPath flight, Level level, ShotRules rules, double clearance)
+        {
+            if (flight == null)
+            {
+                throw new ArgumentNullException(nameof(flight));
+            }
+
+            if (level == null)
+            {
+                throw new ArgumentNullException(nameof(level));
+            }
+
+            rules = rules ?? ShotRules.Default;
+            flight.PositionAt(flight.Length, out double lastHeading);
+            Vec2 spot = flight.Impact - Vec2.FromAngle(lastHeading) * rules.MuzzleOffset;
             double x = Math.Max(level.MinX + clearance, Math.Min(level.MaxX - clearance, spot.X));
             double y = Math.Max(level.MinY + clearance, Math.Min(level.MaxY - clearance, spot.Y));
             return new Vec2(x, y);

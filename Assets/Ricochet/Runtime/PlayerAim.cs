@@ -140,10 +140,17 @@ namespace Ricochet
             SyncFromAuthority();
         }
 
-        // Server: moves this player's shot a frame; the frame it lands the authority strikes, scores and collects.
+        // Server: moves this player's shot a frame; the frame it lands the authority strikes, scores and collects. The items
+        // this player has in the air move too, and the frame one arrives it takes effect (U.RICO-T80).
         private void FlightStep()
         {
             Cmd.PlayerState state = State;
+            if (Authority.ItemsInFlight(state.Id) && Authority.AdvanceItems(state.Id, Time.deltaTime).Count > 0)
+            {
+                SyncFromAuthority(); // a teleporter put its tank down, a shrink ray struck
+                Arena.Current?.Mirror();
+            }
+
             if (!state.InFlight)
             {
                 return;

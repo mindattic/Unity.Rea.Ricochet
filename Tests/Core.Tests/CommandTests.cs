@@ -7,6 +7,7 @@ namespace Ricochet.Core.Tests
 {
     using Ricochet.Core.Aim;
     using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Art;
     using Ricochet.Core.Commands;
     using Ricochet.Core.Level;
     using Ricochet.Core.Match;
@@ -422,7 +423,7 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void UseItem_Teleporter_MovesTheTank()
+        public void UseItem_Teleporter_MovesTheTankWhenItsFlightArrives()
         {
             GameAuthority authority = Practice(out PlayerState ann, out _);
             authority.Apply(new CycleItemCommand(1, 1));
@@ -431,7 +432,13 @@ namespace Ricochet.Core.Tests
             Assert.That(ann.Loadout.Item, Is.EqualTo(Item.Teleporter));
             Vec2 before = ann.Position;
 
-            IReadOnlyList<GameEvent> events = authority.Apply(new UseItemCommand(1, 180, 0.5));
+            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 180, 0.5))).Single();
+            Assert.That(ann.Position, Is.EqualTo(before), "U.RICO-T80: nothing moves until the teleporter arrives");
+            Assert.That(authority.ItemsInFlight(1), Is.True);
+            double seconds = used.Flight.Length / (ItemLooks.SpeedFactor(Item.Teleporter) * authority.Rules.Speed);
+            Assert.That(authority.AdvanceItems(1, seconds * 0.5), Is.Empty, "half way there");
+            IReadOnlyList<GameEvent> events = authority.AdvanceItems(1, seconds);
+            Assert.That(authority.ItemsInFlight(1), Is.False);
             Moved moved = Of<Moved>(events).Single();
             Assert.That(moved.Cause, Is.EqualTo(MoveCause.Teleported));
             Assert.That(moved.From, Is.EqualTo(before));
@@ -455,7 +462,52 @@ namespace Ricochet.Core.Tests
 
             Assert.That(ann.Loadout.Item, Is.EqualTo(Item.Redirector));
             authority.Apply(new UseItemCommand(1, 90, 0.5));
+            Assert.That(authority.Hazards.Hazards.Count(h => h.Kind == HazardKind.Redirector), Is.Zero, "U.RICO-T80: it flies until stopped");
+            authority.AdvanceItems(1, 0.1);
+            authority.Apply(new UseItemCommand(1, 90, 0.5)); // redirector_detonate
             Assert.That(authority.Hazards.Hazards.Count(h => h.Kind == HazardKind.Redirector), Is.EqualTo(1));
+        }
+
+        // U.RICO-T80: shoot_redirector. The item key fires a redirector, the next press stops it where it is (for free, even
+        // with none left: the original's charge and refusal there were a defect), and one turn fires one redirector.
+        [Test]
+        public void UseItem_Redirector_FliesUntilItsOwnerPressesAgain_ThenStandsWhereItStopped()
+        {
+            GameAuthority authority = TwoSeats(out PlayerState a, out _);
+            authority.Apply(new SelectItemCommand(1, Item.Redirector));
+            int carried = a.Loadout.Count(Item.Redirector);
+            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
+            Assert.That(a.Loadout.Count(Item.Redirector), Is.EqualTo(carried - 1), "paid for once, as it sets off");
+            double speed = ItemLooks.SpeedFactor(Item.Redirector) * authority.Rules.Speed;
+            Assert.That(authority.AdvanceItems(1, 0.05), Is.Empty);
+            Assert.That(authority.Hazards.Hazards.Count(h => h.Kind == HazardKind.Redirector), Is.Zero);
+
+            IReadOnlyList<GameEvent> stop = authority.Apply(new UseItemCommand(1, 90, 0.5));
+            RedirectorStopped stopped = Of<RedirectorStopped>(stop).Single();
+            Assert.That(stopped.Distance, Is.EqualTo(speed * 0.05).Within(1e-4));
+            Assert.That(Of<ItemUsed>(stop), Is.Empty, "the second press launches nothing");
+            Assert.That(a.Loadout.Count(Item.Redirector), Is.EqualTo(carried - 1), "and costs nothing");
+            Hazard placed = authority.Hazards.Hazards.Single(h => h.Kind == HazardKind.Redirector);
+            Vec2 at = used.Flight.PositionAt(stopped.Distance, out _);
+            Assert.That(Vec2.Distance((placed.A + placed.B) * 0.5, at), Is.LessThan(1e-3), "it stands where it stopped");
+            Assert.That(authority.ItemsInFlight(1), Is.False);
+
+            Assert.That(Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))), Is.Empty, "one redirector a turn");
+        }
+
+        [Test]
+        public void UseItem_ItemsStillInTheAirAreGoneWhenTheTurnPasses()
+        {
+            GameAuthority authority = TwoSeats(out PlayerState a, out _);
+            Vec2 before = a.Position;
+            authority.Apply(new SelectItemCommand(1, Item.Teleporter));
+            authority.Apply(new UseItemCommand(1, 180, 0.5));
+            var passed = new List<GameEvent>(authority.Apply(new EndTurnCommand(1)));
+            passed.AddRange(authority.Tick(authority.MatchRules.EndTurnSeconds + 0.1));
+            Assert.That(Of<ItemFlightsCleared>(passed), Has.Count.EqualTo(1), "next_player destroys every obj_teleporter");
+            Assert.That(authority.ItemsInFlight(1), Is.False);
+            authority.AdvanceItems(1, 60);
+            Assert.That(a.Position, Is.EqualTo(before), "so it never teleports");
         }
 
         [Test]
@@ -466,7 +518,9 @@ namespace Ricochet.Core.Tests
             authority.Apply(new CycleItemCommand(1, 1)); // shrink ray
             Assert.That(a.Loadout.Item, Is.EqualTo(Item.ShrinkRay));
 
-            IReadOnlyList<GameEvent> events = authority.Apply(new UseItemCommand(1, AtSeatOne, 0.5));
+            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, AtSeatOne, 0.5))).Single();
+            Assert.That(b.Scale, Is.EqualTo(1), "U.RICO-T80: nothing shrinks until the ray arrives");
+            IReadOnlyList<GameEvent> events = authority.AdvanceItems(1, used.Flight.Length / (ItemLooks.SpeedFactor(Item.ShrinkRay) * authority.Rules.Speed) + 0.01);
             Shrunk shrunk = Of<Shrunk>(events).Single();
             Assert.That(shrunk.PlayerId, Is.EqualTo(2));
             Assert.That(shrunk.BySeat, Is.EqualTo(0));
@@ -490,21 +544,24 @@ namespace Ricochet.Core.Tests
             Assert.That(ray.Flight.Origin, Is.EqualTo(from));
             Assert.That(ray.Flight.End, Is.EqualTo(ShotEndKind.Target));
             Assert.That(ray.Flight.TargetId, Is.EqualTo(TargetIds.Seat(1)), "it flies to the player it shrinks");
-            Assert.That(events.ToList().IndexOf(ray), Is.LessThan(events.ToList().IndexOf(Of<Shrunk>(events).Single())), "launched, then struck");
+            Assert.That(Of<Shrunk>(events), Is.Empty, "launched now, struck when it arrives");
+            authority.AdvanceItems(1, 60);
 
             authority.Apply(new SelectItemCommand(1, Item.Teleporter));
             events = authority.Apply(new UseItemCommand(1, 90, 0.5));
             ItemUsed teleporter = Of<ItemUsed>(events).Single();
-            Moved moved = Of<Moved>(events).Single();
+            Moved moved = Of<Moved>(authority.AdvanceItems(1, 60)).Single();
             Assert.That(teleporter.Flight, Is.Not.Null);
             Assert.That(teleporter.Flight.Origin, Is.EqualTo(moved.From), "it sets off from where the tank stood");
             Assert.That(Vec2.Distance(teleporter.Flight.Impact, moved.To), Is.LessThan(1.0), "and the tank lands where it stops");
 
             authority.Apply(new SelectItemCommand(1, Item.Redirector));
             ItemUsed redirector = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
-            Hazard placed = authority.Hazards.Hazards.Single(h => h.Kind == HazardKind.Redirector);
             Assert.That(redirector.Flight, Is.Not.Null);
-            Assert.That(Vec2.Distance(redirector.Flight.Impact, placed.A), Is.LessThan(1.0), "it stops where the redirector stands");
+            authority.AdvanceItems(1, 0.1);
+            RedirectorStopped stopped = Of<RedirectorStopped>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
+            Hazard placed = authority.Hazards.Hazards.Single(h => h.Kind == HazardKind.Redirector);
+            Assert.That(Vec2.Distance(redirector.Flight.PositionAt(stopped.Distance, out _), (placed.A + placed.B) * 0.5), Is.LessThan(1e-3), "it stands where it stopped");
 
             authority.Apply(new SelectItemCommand(1, Item.ShieldWall));
             Assert.That(Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single().Flight, Is.Null, "a shield wall does not fly");

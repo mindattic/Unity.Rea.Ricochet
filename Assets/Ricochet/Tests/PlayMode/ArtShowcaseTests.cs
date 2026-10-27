@@ -264,6 +264,8 @@ namespace Ricochet.Tests
             annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.Redirector, "the redirector was never selected");
             ann.ServerUseItem(90f, 0.2f);
+            yield return new WaitForSeconds(0.1f);
+            ann.ServerUseItem(90f, 0.2f); // U.RICO-T80: the second press stops it where it is
             yield return WaitUntil(() => LevelHazard.In(Client).Count(h => h.Ready && h.Art != null) == 2, "the items never stood", 5f);
             yield return new WaitForSeconds(1.6f);
             yield return Capture("items", "U.RICO-T47");

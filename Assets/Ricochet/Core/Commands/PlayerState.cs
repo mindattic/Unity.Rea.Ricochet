@@ -71,6 +71,9 @@ namespace Ricochet.Core.Commands
         /// <summary>True while a volley of this player's is in the air.</summary>
         public bool InFlight => Flight != null && !Flight.Landed;
 
+        /// <summary>A redirector fired this turn (hasFiredRedirector): the item key stops it rather than firing another (U.RICO-T80).</summary>
+        public bool RedirectorFired { get; internal set; }
+
         /// <summary>Aim assists used so far, and the aim the last one turned this player onto.</summary>
         public int Assists { get; internal set; }
 

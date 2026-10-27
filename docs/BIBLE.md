@@ -450,7 +450,7 @@ like one a shot struck (obj_shieldwall's vortex collision). (5) Two crates colle
 Fixed defects: obj_glass rolled one of five but drew spr_glass1 for two of the rolls and spr_glass5 for none, though the
 sprite shipped; each of the five is drawn. Not carried: obj_hitscore (created nowhere; obj_float_text is the same text).
 
-## Item flights and endgame flashes (U.RICO-T79)
+## Item flights and endgame flashes (U.RICO-T79, the items' play matched in U.RICO-T80)
 
 Source: `scripts/use_item.gml`, `shoot_teleporter.gml`, `teleport_player.gml`, `shoot_shrinkray.gml`, `shoot_redirector.gml`,
 `redirector_step.gml`, `redirector_detonate.gml`, `globals.gml` (bulletSpeed, lime), the objects `obj_teleporter`,
@@ -460,6 +460,19 @@ Source: `scripts/use_item.gml`, `shoot_teleporter.gml`, `teleport_player.gml`, `
   a shrink ray or a redirector before it takes effect and `ItemUsed.Flight` carries that path; the server draws it and sends it
   to every client (`Player.ItemFlown`, packed by `ShotWire.EncodeFlight`), so every peer flies the server's own path.
   `ItemFlights` draws them at the room speed, each at its multiple of the rebuild's shot speed, and a new level sweeps them away.
+- **The items' play** (U.RICO-T80): each item that flies takes effect when its flight arrives, as the original's did. The
+  authority keeps every item in the air and moves it on each frame at the same speed the peers draw it
+  (`GameAuthority.AdvanceItems`, called by the shooter's `Player` beside its shot's flight): a teleporter puts its shooter down
+  the frame it arrives (teleport_player), a shrink ray strikes then. The turn's end and a new level destroy every item still in
+  the air without effect (next_player, randomize_level: `ItemFlightsCleared`, sent to every peer). The teleporter flies on
+  through tanks and hazards, turned by a standing redirector, until it first touches a shape or the border, and teleports its
+  shooter there, Len = 40 px back along its heading (obj_teleporter's Step and collision; `Arsenal.Teleport`). The redirector
+  flies on at bulletSpeed * 2, bouncing off the border and the shapes only (redirector_step), until its owner presses the item
+  key again: that press stops it where it is and it opens out there (redirector_detonate; `RedirectorStopped`, sent to every
+  peer, ends its drawn flight). One redirector a turn (hasFiredRedirector). Fixed defect: the original's use_item charged that
+  second press as well as the launch (and shoot_redirector charged the launch twice, even an unlimited count), and refused the
+  press once the count was spent, so the last redirector could never be stopped; the rebuild charges one redirector once, as it
+  sets off, and always obeys the press that stops it.
 - **Teleporter** (obj_teleporter): spr_teleporter's six frames at image_speed 1, at bulletSpeed * 2, its image_angle set to the
   aim once and never turned. teleport_player: a small white ef_ring where the shooter stood as it sets off; where the shooter
   lands, a medium ef_ring in white and one in the shooter's colour and a small white ef_firework.
@@ -477,11 +490,9 @@ Source: `scripts/use_item.gml`, `shoot_teleporter.gml`, `teleport_player.gml`, `
 - `Tests/PlayMode/ItemFlightTests` flies each item on a host and a client (sprite, angle, size, sparks, rings, the waiting
   redirector) and runs the flashes.
 
-Deviations: (1) The items take effect as they are used (the tank is already where it teleports to, the player already shrunk;
-the Sound effects' deviation 4), so the flight is drawn after the fact along the path the authority flew; the original moved
-the tank when its teleporter struck. (2) The rebuild's teleporter bounces as far as the power sends it (UR-T6's Teleport) where
-the original's teleported on its first contact; it is drawn along that path. (3) The redirector flies as far as the power sends
-it rather than until its owner presses the item key again (redirector_detonate). (4) The flashes are drawn over the rebuild's
+Deviations: (1) A flight is a path the authority solves when the item is used, so it can cross the wire whole: an item's path
+is solved for 60 seconds of flight (`ItemLooks.RedirectorMaxSeconds`, the longest turn), and a redirector that flies all of it
+unstopped is gone with nothing placed, as the original's was when its turn ended. (2) The flashes are drawn over the rebuild's
 endgame recap (UR-T9) rather than in the original's endgame room.
 
 Not carried: shoot_*'s ef_smoke at the muzzle (the weapons' launch puffs are not carried either), obj_shrinkray_child (never
@@ -689,9 +700,9 @@ the turn, the laser's loop, the grenade's beep, the vortex) plays on a voice of 
 it answers the same muted as heard. (2) The engine and turn sounds are the owner's own peer's, as the original's single
 screen was; a shot's, an item's and the round's are every peer's. (3) The menus are the kit's (U.RICO-T9), so their sounds
 come from one watcher over every Selectable instead of each obj_btn_*'s events; a slider stands for a stepper's pair of
-less / more buttons and plays sfx_select once per press. (4) The rebuild's items take effect as they are used (their flights
-are drawn after, U.RICO-T79), so a teleporter's and a shrink ray's launch sound and their effect's (sfx_teleport, sfx_shrink)
-play together; sfx_redirector_grow waits for the redirector's flight to land, as the standing redirector does.
+less / more buttons and plays sfx_select once per press. A teleporter's and a shrink ray's effect sounds (sfx_teleport,
+sfx_shrink) play when their flights arrive, as the original's did (U.RICO-T80); sfx_redirector_grow when its owner stops the
+redirector and the standing one opens out.
 
 Fixed defect: pellet_step's `choose(sfx_bounce_shotgun1, sfx_bounce_shotgun2, sfx_bounce_shotgun3)` picked sfx_bounce_shotgun3
 a third of the time, and that definition names no recording, so a third of the pellet bounces were silent; the rebuild picks

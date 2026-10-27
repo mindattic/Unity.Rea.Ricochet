@@ -100,9 +100,9 @@ namespace Ricochet.Tests
             annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.Teleporter, "the teleporter was never selected");
             Vector2 from = ann.Position;
-            Vec2 expected = Arsenal.Teleport(Arena.ToCore(from), 0, 0, Arena.Level, Arena.Rules, ann.Radius, out _);
+            Vec2 expected = Arsenal.Teleport(Arena.ToCore(from), 0, Arena.Level, Arena.Rules, ann.Radius, out _);
             annOnHerClient.UseItem(0f, 0f);
-            yield return WaitUntil(() => annOnHerClient.Position != from, "she never moved");
+            yield return WaitUntil(() => annOnHerClient.Position != from, "she never moved"); // when the teleporter arrives (U.RICO-T80)
             Assert.That(annOnHerClient.Position.x, Is.EqualTo((float)expected.X).Within(1e-4f));
             Assert.That(annOnHerClient.Position.y, Is.EqualTo((float)expected.Y).Within(1e-4f));
 

@@ -31,6 +31,14 @@ namespace Ricochet.Core.Art
         /// <summary>shoot_redirector: speed = bulletSpeed * 2.</summary>
         public const double RedirectorSpeedFactor = 2;
 
+        /// <summary>
+        /// How much flight an item's path is solved for (U.RICO-T80). The original's redirector flew on until its owner pressed
+        /// the item key again or the turn ended (next_player destroys it); a flight has to be a path of some length to cross
+        /// the wire, so it is solved for the longest turn there is (MatchSetup.MaxTurnSeconds), and one that runs out unstopped
+        /// is gone with nothing placed, as when its turn ends.
+        /// </summary>
+        public const double RedirectorMaxSeconds = 60;
+
         /// <summary>obj_teleporter shows spr_teleporter at GameMaker's default image_speed.</summary>
         public const double TeleporterImageSpeed = 1;
 

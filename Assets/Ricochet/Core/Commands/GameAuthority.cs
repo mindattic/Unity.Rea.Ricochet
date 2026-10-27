@@ -16,6 +16,7 @@ namespace Ricochet.Core.Commands
     using Ricochet.Core.Ai;
     using Ricochet.Core.Aim;
     using Ricochet.Core.Arsenal;
+    using Ricochet.Core.Art;
     using Ricochet.Core.Level;
     using Ricochet.Core.Match;
     using Ricochet.Core.Net;
@@ -39,6 +40,7 @@ namespace Ricochet.Core.Commands
         private readonly Random _layoutDice;
         private readonly Random _matchDice;
         private readonly Dictionary<string, VoteTally> _votes = new Dictionary<string, VoteTally>();
+        private readonly List<ItemInFlight> _itemsInFlight = new List<ItemInFlight>();
         private List<GameEvent> _current;
         private int _matchMap;
         private bool _firedThisRound;
@@ -280,6 +282,7 @@ namespace Ricochet.Core.Commands
             match.TurnStarted += seat =>
             {
                 ClearExtraBounces();
+                ClearItemFlights(); // next_player
                 Hazards.NextTurn(); // the laser gates switch
                 Emit(new TurnStarted(seat));
             };
@@ -344,6 +347,7 @@ namespace Ricochet.Core.Commands
         /// <summary>Every hazard goes, and the level is laid again when <see cref="LaysHazards"/> (arcs, gates and foliage kept clear of every seat, player and dummy).</summary>
         public void ResetHazards()
         {
+            ClearItemFlights(); // randomize_level: clear_objects
             Hazards.Clear();
             if (!LaysHazards)
             {
@@ -753,7 +757,8 @@ namespace Ricochet.Core.Commands
             Emit(new LoadoutChanged(state.Id));
         }
 
-        // use_item.gml: the selected item, if carried and in play, before this turn's shot.
+        // use_item.gml: the selected item, if carried and in play, before this turn's shot. A teleporter, a shrink ray and a
+        // redirector fly (U.RICO-T80): each takes effect when its flight arrives (AdvanceItems), not as it is used.
         private void DoUseItem(PlayerState state, UseItemCommand use)
         {
             if (!MayAct(state))
@@ -763,6 +768,16 @@ namespace Ricochet.Core.Commands
 
             Loadout loadout = state.Loadout;
             Item item = loadout.Item;
+
+            // shoot_redirector: with a redirector already fired this turn, the item key stops it where it is
+            // (redirector_detonate) and launches no other. The original also charged that press and refused it once the count
+            // was spent, so the last redirector could never be stopped: a fixed defect, the press is free and always obeyed.
+            if (item == Item.Redirector && state.RedirectorFired)
+            {
+                StopRedirector(state);
+                return;
+            }
+
             if (!Arms.InPlay(item) || !loadout.Has(item))
             {
                 return;
@@ -777,17 +792,15 @@ namespace Ricochet.Core.Commands
 
             // The items that fly are flown first, so the event carries the path every peer draws them along (U.RICO-T79).
             ShotPath flight = null;
-            Vec2 spot = default;
-            Vec2 placed = default;
-            double redirectorHeading = 0;
             string hit = null;
             switch (item)
             {
                 case Item.Teleporter:
-                    spot = Arsenal.Teleport(state.Position, state.Heading, state.Power, LevelFor(state.Seat), Rules, state.Radius, out flight);
+                    Arsenal.Teleport(state.Position, state.Heading, LevelFor(state.Seat), Rules, state.Radius, out flight);
                     break;
                 case Item.Redirector:
-                    placed = Arsenal.PlaceRedirector(state.Position, state.Heading, state.Power, LevelFor(state.Seat), Rules, out redirectorHeading, out flight);
+                    flight = Arsenal.FlyRedirector(state.Position, state.Heading, LevelFor(state.Seat), Rules);
+                    state.RedirectorFired = true; // hasFiredRedirector
                     break;
                 case Item.ShrinkRay:
                     hit = Arsenal.ShrinkRay(state.Position, state.Heading, TargetIds.Seat(state.Seat), LevelFor(state.Seat), Targets(), Rules, out flight);
@@ -795,28 +808,18 @@ namespace Ricochet.Core.Commands
             }
 
             Emit(new ItemUsed(state.Id, item, flight));
+            if (flight != null)
+            {
+                _itemsInFlight.Add(new ItemInFlight(state, item, flight, hit));
+            }
+
             switch (item)
             {
                 case Item.ExtraBounce:
                     state.ExtraBounces++;
                     break;
-                case Item.Teleporter:
-                    MoveTo(state, spot, MoveCause.Teleported);
-                    break;
                 case Item.ShieldWall:
                     Hazards.AddShieldWall(state.Seat, state.Position, state.Heading); // spawn_shieldwall.gml
-                    break;
-                case Item.Redirector:
-                    Hazards.AddRedirector(state.Seat, placed, redirectorHeading);
-                    break;
-                case Item.ShrinkRay:
-                    PlayerState shrunk = PlayerAtSeat(TargetIds.SeatOf(hit));
-                    if (shrunk != null)
-                    {
-                        shrunk.Scale = Quantize(Math.Min(shrunk.Scale, Arms.ShrinkScale));
-                        Emit(new Shrunk(shrunk.Id, state.Seat, shrunk.Scale));
-                    }
-
                     break;
                 case Item.AimAssist:
                     // obj_aimassist, with the AI's targeting: onto the shot that reaches an opponent, if any does.
@@ -834,6 +837,136 @@ namespace Ricochet.Core.Commands
             }
 
             Emit(new LoadoutChanged(state.Id));
+        }
+
+        /// <summary>True while an item <paramref name="playerId"/> used is still in the air (a teleporter, a shrink ray, a redirector).</summary>
+        public bool ItemsInFlight(int playerId)
+        {
+            foreach (ItemInFlight flying in _itemsInFlight)
+            {
+                if (flying.Owner.Id == playerId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Moves the items <paramref name="playerId"/> has in the air on by <paramref name="seconds"/>, at their multiple of the
+        /// shot speed (ItemLooks): the frame one arrives it takes effect (U.RICO-T80). A teleporter puts its shooter down
+        /// (teleport_player), a shrink ray shrinks what it struck; a redirector that flies its whole path unstopped is gone,
+        /// as when its turn ends.
+        /// </summary>
+        public IReadOnlyList<GameEvent> AdvanceItems(int playerId, double seconds)
+        {
+            return Run(() =>
+            {
+                if (Paused)
+                {
+                    return; // paused: the items hang where they are
+                }
+
+                for (int i = 0; i < _itemsInFlight.Count; i++)
+                {
+                    ItemInFlight flying = _itemsInFlight[i];
+                    if (flying.Owner.Id != playerId)
+                    {
+                        continue;
+                    }
+
+                    flying.Travelled += ItemLooks.SpeedFactor(flying.Item) * Rules.Speed * seconds;
+                    if (flying.Travelled < flying.Flight.Length)
+                    {
+                        continue;
+                    }
+
+                    _itemsInFlight.RemoveAt(i--);
+                    Arrive(flying);
+                }
+            });
+        }
+
+        // An item's flight has arrived: its effect lands now.
+        private void Arrive(ItemInFlight flying)
+        {
+            PlayerState state = flying.Owner;
+            switch (flying.Item)
+            {
+                case Item.Teleporter:
+                    MoveTo(state, Arsenal.TeleportSpot(flying.Flight, LevelFor(state.Seat), Rules, state.Radius), MoveCause.Teleported);
+                    break;
+                case Item.ShrinkRay:
+                    PlayerState shrunk = flying.Hit != null ? PlayerAtSeat(TargetIds.SeatOf(flying.Hit)) : null;
+                    if (shrunk != null)
+                    {
+                        shrunk.Scale = Quantize(Math.Min(shrunk.Scale, Arms.ShrinkScale));
+                        Emit(new Shrunk(shrunk.Id, state.Seat, shrunk.Scale));
+                    }
+
+                    break;
+            }
+        }
+
+        // redirector_detonate: the player's redirector in the air stops where it is and becomes a standing redirector there.
+        private void StopRedirector(PlayerState state)
+        {
+            for (int i = 0; i < _itemsInFlight.Count; i++)
+            {
+                ItemInFlight flying = _itemsInFlight[i];
+                if (flying.Owner != state || flying.Item != Item.Redirector)
+                {
+                    continue;
+                }
+
+                _itemsInFlight.RemoveAt(i);
+                double distance = Quantize(Math.Max(0, Math.Min(flying.Flight.Length, flying.Travelled)));
+                Vec2 placed = Arsenal.PlaceRedirector(flying.Flight, distance, LevelFor(state.Seat), Rules, out double heading);
+                Emit(new RedirectorStopped(state.Id, distance));
+                Hazards.AddRedirector(state.Seat, placed, heading);
+                return;
+            }
+        }
+
+        // next_player and randomize_level: every item still in the air is destroyed, its effect never landing, and a new
+        // turn may fire a redirector again (hasFiredRedirector = false).
+        private void ClearItemFlights()
+        {
+            foreach (PlayerState state in _order)
+            {
+                state.RedirectorFired = false;
+            }
+
+            if (_itemsInFlight.Count == 0)
+            {
+                return;
+            }
+
+            _itemsInFlight.Clear();
+            Emit(new ItemFlightsCleared());
+        }
+
+        private sealed class ItemInFlight
+        {
+            public ItemInFlight(PlayerState owner, Item item, ShotPath flight, string hit)
+            {
+                Owner = owner;
+                Item = item;
+                Flight = flight;
+                Hit = hit;
+            }
+
+            public PlayerState Owner { get; }
+
+            public Item Item { get; }
+
+            public ShotPath Flight { get; }
+
+            /// <summary>Whom a shrink ray strikes when it arrives (null for nobody).</summary>
+            public string Hit { get; }
+
+            public double Travelled { get; set; }
         }
 
         // vortex_detonate.gml. Only this player's own vortex, only while it is still in the air, and only once: the volley is

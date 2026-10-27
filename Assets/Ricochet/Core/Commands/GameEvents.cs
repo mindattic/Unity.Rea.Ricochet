@@ -239,6 +239,31 @@ namespace Ricochet.Core.Commands
         public ShotPath Flight { get; }
     }
 
+    /// <summary>
+    /// A redirector in flight stopped (redirector_detonate, U.RICO-T80): its owner pressed the item key again. It stood
+    /// <see cref="Distance"/> along the <see cref="ItemUsed.Flight"/> it set off on; a standing redirector opens out there.
+    /// </summary>
+    public sealed class RedirectorStopped : GameEvent
+    {
+        public RedirectorStopped(int playerId, double distance)
+        {
+            PlayerId = playerId;
+            Distance = distance;
+        }
+
+        public int PlayerId { get; }
+
+        public double Distance { get; }
+    }
+
+    /// <summary>
+    /// Every item still in the air is gone without taking effect (U.RICO-T80): a new turn (next_player destroys every
+    /// obj_teleporter, obj_shrinkray and obj_redirector) or a new level.
+    /// </summary>
+    public sealed class ItemFlightsCleared : GameEvent
+    {
+    }
+
     /// <summary>The aim assist turned a player's aim onto a shot (or left it, when none reaches an opponent).</summary>
     public sealed class AssistApplied : GameEvent
     {

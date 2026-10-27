@@ -148,19 +148,31 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void TheTeleporterLandsYouJustShortOfWhereItStops()
+        public void TheTeleporterLandsYouJustShortOfTheFirstThingItStrikes()
         {
-            Vec2 spot = Arsenal.Teleport(Vec2.Zero, 0, 0, Open(), null, 0.45, out ShotPath path);
-            Assert.That(path.Impact.X, Is.EqualTo(6.6).Within(1e-9));
-            Assert.That(spot.X, Is.EqualTo(6).Within(1e-9));
+            // U.RICO-T80: obj_teleporter teleports at its first touch of the border or a shape; it never bounces.
+            Vec2 spot = Arsenal.Teleport(Vec2.Zero, 0, Open(), null, 0.45, out ShotPath path);
+            Assert.That(path.Impact.X, Is.EqualTo(10).Within(1e-9), "it flies to the border, however far");
+            Assert.That(path.Contacts, Is.Empty, "and stops there");
+            Assert.That(spot.X, Is.EqualTo(10 - ShotRules.Default.MuzzleOffset).Within(1e-9));
             Assert.That(spot.Y, Is.EqualTo(0).Within(1e-9));
 
-            Vec2 back = Arsenal.Teleport(Vec2.Zero, 0, 0, new Level(-3, -3, 3, 3), null, 0.45, out _);
-            Assert.That(back.X, Is.EqualTo(0).Within(1e-9), "stepped back along its last heading, after the bounce");
+            var walled = new Level(-10, -5, 10, 5, new[] { new Wall(new Vec2(4, -2), new Vec2(4, 2)) });
+            Vec2 wall = Arsenal.Teleport(Vec2.Zero, 0, walled, null, 0.45, out ShotPath toWall);
+            Assert.That(toWall.Impact.X, Is.EqualTo(4).Within(1e-9), "a shape stops it too");
+            Assert.That(wall.X, Is.EqualTo(4 - ShotRules.Default.MuzzleOffset).Within(1e-9), "stepped back along its heading");
+
+            var turned = new Level(-10, -5, 10, 5, null, new[] { new Redirector(new Vec2(4, -1), new Vec2(4, 1), 90) });
+            Arsenal.Teleport(Vec2.Zero, 0, turned, null, 0.45, out ShotPath redirected);
+            Assert.That(redirected.Impact.Y, Is.EqualTo(5).Within(1e-9), "a standing redirector turns it on, it does not stop it");
+
+            var hazards = new Level(-10, -5, 10, 5).With(null, new[] { new Barrier(1, HazardKind.ShieldWall, new Vec2(3, -2), new Vec2(3, 2)) }, null);
+            Arsenal.Teleport(Vec2.Zero, 0, hazards, null, 0.45, out ShotPath through);
+            Assert.That(through.Impact.X, Is.EqualTo(10).Within(1e-9), "it passes through hazards");
 
             for (double heading = 0; heading < 360; heading += 15)
             {
-                Vec2 anywhere = Arsenal.Teleport(new Vec2(2.8, 2.8), heading, 1, new Level(-3, -3, 3, 3), null, 0.45, out _);
+                Vec2 anywhere = Arsenal.Teleport(new Vec2(2.8, 2.8), heading, new Level(-3, -3, 3, 3), null, 0.45, out _);
                 Assert.That(anywhere.X, Is.InRange(-2.55, 2.55));
                 Assert.That(anywhere.Y, Is.InRange(-2.55, 2.55));
             }

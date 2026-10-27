@@ -80,7 +80,8 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => ItemFlights.Count(Item.ShrinkRay) == 0, "that shrink ray never landed", 5f);
             Assert.That(GmlParticles.Thrown(GmEffect.Firework), Is.EqualTo(fireworks + 1), "its firework on the player it struck");
 
-            // The redirector: growing from 0.15 in flight; the standing one shows only once it lands.
+            // The redirector: growing from 0.15 in flight until she presses again (U.RICO-T80); the standing one shows only
+            // once it stops.
             yield return Select(annOnHerClient, ann, Item.Redirector);
             annOnHerClient.UseItem(0f, 1f);
             yield return WaitUntil(() => ItemFlights.Count(Item.Redirector) > 0, "the redirector never flew", 5f);
@@ -93,7 +94,10 @@ namespace Ricochet.Tests
                 Assert.That(standing.Shown, Is.False, "it stands only where its flight stops");
             }
 
-            yield return WaitUntil(() => ItemFlights.Count(Item.Redirector) == 0, "the redirector never landed", 5f);
+            Assert.That(LevelHazard.In(Server).Any(h => h.HazardKind == HazardKind.Redirector), Is.False, "nothing stands while it flies");
+            annOnHerClient.UseItem(0f, 1f); // redirector_detonate
+            yield return WaitUntil(() => ItemFlights.Count(Item.Redirector) == 0, "the redirector never stopped", 5f);
+            yield return WaitUntil(() => LevelHazard.In(Server).Any(h => h.HazardKind == HazardKind.Redirector), "it never stood where it stopped", 5f);
             yield return null;
             Assert.That(LevelHazard.In(Server).Single(h => h.HazardKind == HazardKind.Redirector).Shown, Is.True);
         }

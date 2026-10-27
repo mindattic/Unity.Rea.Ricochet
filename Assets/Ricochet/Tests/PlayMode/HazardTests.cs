@@ -104,21 +104,37 @@ namespace Ricochet.Tests
 
             annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.Redirector, "the redirector was never selected");
-            annOnHerClient.UseItem(0f, 0f); // flies right, as short as it goes: down at x -4 + 0.6 + 6
+            annOnHerClient.UseItem(0f, 0f); // flies right until she presses again (U.RICO-T80)
+            yield return new WaitForSeconds(0.05f);
+            annOnHerClient.UseItem(0f, 0f);
             LevelHazard placed = null;
             yield return WaitUntil(() => (placed = LevelHazard.In(Client).FirstOrDefault(h => h.Ready && h.HazardKind == HazardKind.Redirector)) != null,
                 "her client never saw the redirector");
             Assert.That(placed.Heading, Is.EqualTo(0f).Within(1e-3f));
-            Assert.That((placed.A.x + placed.B.x) / 2f, Is.EqualTo(2.6f).Within(1e-3f));
+            Vector2 centre = (placed.A + placed.B) / 2f;
+            Assert.That(centre.y, Is.EqualTo(ann.Position.y).Within(1e-3f), "it stopped on the line it flew");
+            Assert.That(centre.x, Is.GreaterThan(ann.Position.x), "somewhere along it");
             // U.RICO-T47: obj_redirector's arrow along its heading, growing from 0.3 of its size.
             Assert.That(placed.Art, Is.Not.Null, "the redirector fell back to lines");
             Assert.That(placed.Art.transform.right.x, Is.EqualTo(1f).Within(1e-3f));
             yield return WaitUntil(() => placed.Art.transform.localScale.x > 0.5f, "the redirector never grew");
 
-            // The host, below and left of it, fires up and right into it: it leaves heading right.
-            Vec2 from = Arena.ToCore(host.Position);
-            double heading = System.Math.Atan2(-4.5 - from.Y + 0.3, 2.6 - from.X) * 180 / System.Math.PI;
-            host.ServerFire((float)heading, 1f);
+            // The host fires into it, on the first heading whose shot reaches it (not one of the level's own redirectors): it
+            // leaves heading right.
+            Vec2 standing = Arena.ToCore(centre);
+            float heading = -1f;
+            for (float h = 0f; h < 360f && heading < 0f; h += 0.25f)
+            {
+                ShotPath path = host.Solve(h, 1f);
+                if (path.Contacts.Count > 0 && path.Contacts[0].Kind == ContactKind.Redirector
+                    && System.Math.Abs(path.Contacts[0].Point.X - standing.X) < 1e-3)
+                {
+                    heading = h;
+                }
+            }
+
+            Assert.That(heading, Is.GreaterThanOrEqualTo(0f), "no heading of the host's reaches the redirector");
+            host.ServerFire(heading, 1f);
             Assert.That(host.LastVolley.Main.Contacts.Count, Is.GreaterThan(0));
             Assert.That(host.LastVolley.Main.Contacts[0].Kind, Is.EqualTo(ContactKind.Redirector));
             Assert.That(host.LastVolley.Main.Contacts[0].HeadingOut, Is.EqualTo(0).Within(1e-6));
@@ -252,6 +268,8 @@ namespace Ricochet.Tests
                 host.CycleItem(-1);
                 yield return WaitUntil(() => host.Loadout.Item == Item.Redirector, "the redirector was never selected");
                 host.ServerUseItem(0f, 0f);
+                yield return null;
+                host.ServerUseItem(0f, 0f); // U.RICO-T80: the second press stops it
                 Hazard placed = null;
                 yield return WaitUntil(() => (placed = arena.HazardsOnField.FirstOrDefault(h => h.Kind == HazardKind.Redirector)) != null, "no redirector was set down");
                 double before = placed.Heading;

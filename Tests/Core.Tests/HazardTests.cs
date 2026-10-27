@@ -231,9 +231,11 @@ namespace Ricochet.Core.Tests
         public void APlacedRedirectorSendsShotsAlongItsHeading()
         {
             HazardField field = Field();
-            Vec2 spot = Arsenal.PlaceRedirector(Vec2.Zero, 0, 0, field.Level, ShotRules.Default, out double heading, out ShotPath flight);
-            Assert.That(flight.End, Is.EqualTo(ShotEndKind.Spent));
-            Assert.That(spot.X, Is.EqualTo(ShotRules.Default.MuzzleOffset + ShotRules.Default.MinRange).Within(1e-9));
+            ShotPath flight = Arsenal.FlyRedirector(Vec2.Zero, 0, field.Level, ShotRules.Default);
+            Assert.That(flight.Contacts.Count, Is.GreaterThan(5), "it flies on, bouncing, until its owner stops it");
+            double stopAt = 6;
+            Vec2 spot = Arsenal.PlaceRedirector(flight, stopAt, field.Level, ShotRules.Default, out double heading);
+            Assert.That(spot.X, Is.EqualTo(ShotRules.Default.MuzzleOffset + stopAt).Within(1e-9), "it stops where it is");
             Assert.That(heading, Is.EqualTo(0).Within(1e-9));
 
             field.AddRedirector(0, spot, heading);

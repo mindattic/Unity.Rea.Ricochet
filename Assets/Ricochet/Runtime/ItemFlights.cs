@@ -7,9 +7,10 @@
 //   Shrink ray   an ef_spark in lime every step where it is (obj_shrinkray's spr_shrinkball is never drawn: its Draw is
 //                commented out, as is its obj_shrinkray_child); striking a player, a medium lime firework.
 //   Redirector   obj_redirector flying: spr_redirector_arrow from 0.15 of its size growing to 0.30, turning 3 degrees a step
-//                and set back to its heading at every bounce. The standing redirector (LevelHazard) waits for it to land.
-// The items take effect as the server uses them (the tank is already where it teleports to, the player already shrunk);
-// what is drawn here is presentation only. A new level sweeps every flight away.
+//                and set back to its heading at every bounce, until its owner presses the item key again
+//                (RedirectorStopped); the standing redirector (LevelHazard) waits for it to stop.
+// The items take effect when they arrive, on the server at the same speed (GameAuthority.AdvanceItems, U.RICO-T80); what is
+// drawn here is presentation only. A new turn (ItemFlightsCleared: next_player) or a new level sweeps every flight away.
 using System.Collections.Generic;
 using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
@@ -138,9 +139,31 @@ namespace Ricochet
 
         private void OnEvent(Player who, Cmd.GameEvent e)
         {
-            if (e is Cmd.ItemUsed used && used.Flight != null)
+            switch (e)
             {
-                Add(who, used.Item, used.Flight);
+                case Cmd.ItemUsed used when used.Flight != null:
+                    Add(who, used.Item, used.Flight);
+                    break;
+                case Cmd.RedirectorStopped _ when who != null:
+                    Stop(who.Seat);
+                    break;
+                case Cmd.ItemFlightsCleared _:
+                    ClearAll();
+                    break;
+            }
+        }
+
+        // redirector_detonate: the seat's redirector stops in the air, and the standing one it became takes over.
+        private void Stop(int seat)
+        {
+            for (int i = _flights.Count - 1; i >= 0; i--)
+            {
+                Flight flight = _flights[i];
+                if (flight.Item == Item.Redirector && flight.Seat == seat)
+                {
+                    Remove(flight);
+                    _flights.RemoveAt(i);
+                }
             }
         }
 
@@ -297,13 +320,17 @@ namespace Ricochet
                 case Item.Teleporter:
                 {
                     // teleport_player: the shooter is moved Len = 40 px back along the flight; the rings and the firework
-                    // go off where they land.
-                    Vector2 landed = flight.Who != null ? flight.Who.Position : end;
+                    // go off where they land (the server's AdvanceItems puts the tank there at the same moment).
+                    double clearance = flight.Who != null ? flight.Who.Radius : Ricochet.Core.Match.Seating.PlayerRadius;
+                    Vector2 landed = Arena.ToUnity(Arsenal.TeleportSpot(flight.Path, Arena.Level, Arena.Rules, clearance));
                     GmlParticles.Play(GmEffect.Ring, landed, ItemLooks.TeleportArriveRingSize, Color.white);
                     GmlParticles.Play(GmEffect.Ring, landed, ItemLooks.TeleportArriveRingSize, flight.Color);
                     GmlParticles.Play(GmEffect.Firework, landed, ItemLooks.TeleportArriveFireworkSize, Color.white);
                     break;
                 }
+
+                case Item.Redirector:
+                    break; // flew its whole path unstopped: gone with nothing placed, as when its turn ends
 
                 case Item.ShrinkRay when flight.Path.End == ShotEndKind.Target:
                     // obj_shrinkray's collision: effect_create_above(ef_firework, x, y, 1, lime).

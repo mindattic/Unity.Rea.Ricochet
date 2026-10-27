@@ -388,6 +388,18 @@ namespace Ricochet
                 case Cmd.ItemUsed used:
                     ById(session, used.PlayerId)?.OnItemUsed(used); // U.RICO-T79: its flight, drawn on every peer
                     goto default; // and its launch sound, heard on every peer
+                case Cmd.RedirectorStopped stopped:
+                    // U.RICO-T80: every peer stops drawing it in flight; the standing redirector it became is a hazard.
+                    Player stopper = ById(session, stopped.PlayerId);
+                    if (stopper != null)
+                    {
+                        Sender(session)?.Flourish(FlourishRedirectorStopped, stopper.Seat, 0, 0, (float)stopped.Distance, 0f);
+                    }
+
+                    break; // its sound is the standing redirector's (LevelHazard)
+                case Cmd.ItemFlightsCleared _:
+                    Sender(session)?.Flourish(FlourishItemsCleared, 0, 0, 0, 0f, 0f); // next_player: every item in the air is gone
+                    break;
                 default:
                     // U.RICO-T50: the sounds of the events no view draws (an item used, a shrink, a teleport, a crate
                     // collected, the countdown, a turn timed out, a knock-out, the round's applause), heard on every peer.
@@ -404,6 +416,8 @@ namespace Ricochet
         private const int FlourishWall = 0;
         private const int FlourishCrate = 1;
         private const int FlourishSound = 2;
+        private const int FlourishRedirectorStopped = 3;
+        private const int FlourishItemsCleared = 4;
 
         // The one player object a session-wide flourish goes out on (any will do; every peer has them all).
         private static Player Sender(NetSession session)
@@ -433,6 +447,21 @@ namespace Ricochet
                     break;
                 case FlourishSound when id >= 0 && id < SoundBook.Count:
                     GameAudio.PlaySettled((SoundCue)id);
+                    break;
+                case FlourishRedirectorStopped:
+                    // By seat: a client's players know their seats, not the server's player ids.
+                    foreach (Player seated in In(Session))
+                    {
+                        if (seated.Seat == id)
+                        {
+                            Presentation.Raise(seated, new Cmd.RedirectorStopped(seated.PlayerId, x));
+                            break;
+                        }
+                    }
+
+                    break;
+                case FlourishItemsCleared:
+                    Presentation.Raise(this, new Cmd.ItemFlightsCleared());
                     break;
             }
         }

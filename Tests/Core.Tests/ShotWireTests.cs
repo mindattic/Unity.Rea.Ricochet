@@ -119,8 +119,8 @@ namespace Ricochet.Core.Tests
         {
             var targets = new[] { T("seat:0", 0, 0), T("seat:4", -7, 2) };
             Arsenal.ShrinkRay(Vec2.Zero, 164, "seat:0", Room(), targets, ShotRules.Default, out ShotPath ray);
-            Arsenal.Teleport(Vec2.Zero, 20, 0.7, Room(), ShotRules.Default, 0.45, out ShotPath teleporter);
-            Arsenal.PlaceRedirector(Vec2.Zero, 200, 1, Room(), ShotRules.Default, out _, out ShotPath redirector);
+            Arsenal.Teleport(Vec2.Zero, 20, Room(), ShotRules.Default, 0.45, out ShotPath teleporter);
+            ShotPath redirector = Arsenal.FlyRedirector(Vec2.Zero, 200, Room(), ShotRules.Default);
             foreach (ShotPath flight in new[] { ray, teleporter, redirector })
             {
                 ShotWire.EncodeFlight(flight, out double[] numbers, out string ids);
