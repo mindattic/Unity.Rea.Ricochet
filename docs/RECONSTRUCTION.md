@@ -36,8 +36,8 @@ Source read: `R:\Projects\_PRE_2022\_PRE_2021\_PRE_2020\_PRE_2017\gmlRicochet\09
   the setup's polygon count (20), shape kind (abstract, triangles, bars, circles, squares), rotation (none, 45, 90, 360,
   random) and overlap (no or yes); every player at a random spot; a random background; weapons and items dealt from the
   settings; the turn clock and fuse reset; a random track starts; fog of war reset; then a Ready card.
-- **A turn** (`obj_game`, `next_player`, `turn_countdown`): the seat whose turn it is turns the aim (A/D or arrows), drives
-  the tank (W/S, which forfeits the shot), sets a grenade fuse (1/2/3), cycles weapon (Q/E) and item (Z/C), uses an item (F),
+- **A turn** (`obj_game`, `next_player`, `turn_countdown`): the seat whose turn it is turns the aim (A/D or arrows; rotSpeed, a degree a step: 60 a second), drives
+  the tank (W/S, moveSpeed, a pixel a step: about 0.69 units a second; it forfeits the shot), sets a grenade fuse (1/2/3), cycles weapon (Q/E) and item (Z/C), uses an item (F),
   fires (Space) or ends the turn; numpad keys snap the aim to the eight directions; Alt pings everyone; PageUp and PageDown
   resize the border and reroll; there is no power meter (bullet speed is a constant).
 - **Weapons** (6): cannon, laser, shotgun, grenade, railgun, vortex. **Items** (6): extra bounce, shield wall, shrink ray,

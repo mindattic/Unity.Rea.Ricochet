@@ -60,7 +60,7 @@ namespace Ricochet.Core.Tests
 
             var shot = ShotRules.Default;
             Assert.That(new double[] { shot.MaxBounces, shot.MuzzleOffset, shot.Speed, shot.DegreesPerSecond, shot.DriveSpeed },
-                Is.EqualTo(new double[] { 5, 0.6, 18, 90, 3 }));
+                Is.EqualTo(new double[] { 5, 0.6, 18, 60, 0.6875 }), "rotSpeed and moveSpeed: 1 degree and 1 px a step at 60 steps a second");
 
             var hazards = HazardRules.Default;
             Assert.That(new double[] { hazards.ShieldWallOffset, hazards.ShieldWallLength, hazards.ShieldWallMinLife, hazards.ShieldWallMaxLife, hazards.RedirectorLength, hazards.FoliageCount, hazards.FoliageRadius, hazards.FoliageClearance },

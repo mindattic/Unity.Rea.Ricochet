@@ -38,12 +38,12 @@ namespace Ricochet.Core.Tests
             Vec2 edge = Driving.Step(new Vec2(9.4, 0), 0, 1, 1, Open, 0.45);
             Assert.That(edge, Is.EqualTo(new Vec2(9.4, 0)), "straight into the border: stays");
 
-            Vec2 slid = Driving.Step(new Vec2(9.4, 0), 45, 1, 0.1, Open, 0.45);
-            Assert.That(slid.X, Is.EqualTo(9.4).Within(1e-9));
+            Vec2 slid = Driving.Step(new Vec2(9.53, 0), 45, 1, 0.1, Open, 0.45);
+            Assert.That(slid.X, Is.EqualTo(9.53).Within(1e-9));
             Assert.That(slid.Y, Is.GreaterThan(0));
 
             var walled = new Level(-10, -5, 10, 5, new[] { new Wall(new Vec2(2, -3), new Vec2(2, 3)) });
-            Assert.That(Driving.Step(new Vec2(1.0, 0), 0, 1, 0.2, walled, 0.45).X, Is.EqualTo(1.0).Within(1e-9), "a wall in the way");
+            Assert.That(Driving.Step(new Vec2(1.5, 0), 0, 1, 0.2, walled, 0.45).X, Is.EqualTo(1.5).Within(1e-9), "a wall in the way");
         }
 
         [Test]

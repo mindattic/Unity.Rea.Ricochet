@@ -3,6 +3,6 @@
   "maxBounces": 5,
   "muzzleOffset": 0.6,
   "speed": 18,
-  "degreesPerSecond": 90,
-  "driveSpeed": 3
+  "degreesPerSecond": 60,
+  "driveSpeed": 0.6875
 }
