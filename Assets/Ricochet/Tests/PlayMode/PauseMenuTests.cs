@@ -21,7 +21,6 @@ namespace Ricochet.Tests
     public class PauseMenuTests : NetSessionTest
     {
         private double _endTurnSeconds;
-        private double _aiThinkSeconds;
         private MatchHud _hud;
 
         public PauseMenuTests() : base(Topology.Host, clients: 1) { }
@@ -45,7 +44,6 @@ namespace Ricochet.Tests
         public void KeepTheRules()
         {
             _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
-            _aiThinkSeconds = Arena.MatchRules.AiThinkSeconds;
             TestMatches.WithoutReadyCard();
         }
 
@@ -59,7 +57,6 @@ namespace Ricochet.Tests
             }
 
             Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
-            Arena.MatchRules.AiThinkSeconds = _aiThinkSeconds;
             TestMatches.StockReadyCard();
         }
 
@@ -105,7 +102,7 @@ namespace Ricochet.Tests
         public IEnumerator TheAiWaitsOutAPause()
         {
             Arena.MatchRules.EndTurnSeconds = 0.2;
-            Arena.MatchRules.AiThinkSeconds = 1.0;
+            TestMatches.StockReadyCard(); // the AI decides the moment its turn starts (U.RICO-T98): pause it under its Ready card
             Arena arena = null;
             Player host = null, ann = null;
             yield return Begin((a, _) => arena = a, (h, c) => { host = h; ann = c; });
@@ -113,11 +110,12 @@ namespace Ricochet.Tests
             Player ai = arena.PlayerAt(2);
             Assert.That(ai.IsAi, Is.True);
 
-            host.ServerFire(0f);                              // a short shot at nobody
-            yield return WaitUntil(() => arena.Match.Current == ann.Seat && arena.Match.Phase == MatchPhase.Aiming, "the turn never passed to Ann", 10f);
+            yield return WaitUntil(() => arena.Match.Current == host.Seat && arena.Match.Phase == MatchPhase.Aiming, "the host's turn never came", 10f);
+            host.ServerFire(0f);
+            yield return WaitUntil(() => arena.Match.Current == ann.Seat && arena.Match.Phase == MatchPhase.Aiming, "the turn never passed to Ann", 20f);
             ann.ServerFire(0f);
-            yield return WaitUntil(() => arena.Match.Current == ai.Seat && arena.Match.Phase == MatchPhase.Aiming, "the turn never passed to the AI", 10f);
-            Assert.That(arena.SetPaused(true), Is.True);          // before it has finished thinking
+            yield return WaitUntil(() => arena.Match.Current == ai.Seat && arena.Match.Phase == MatchPhase.Ready, "the turn never passed to the AI", 20f);
+            Assert.That(arena.SetPaused(true), Is.True);          // before it may act
 
             yield return new WaitForSeconds(2.5f);
             Assert.That(ai.Shots, Is.EqualTo(0), "the AI fired through the pause");

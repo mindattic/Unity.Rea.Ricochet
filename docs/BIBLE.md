@@ -92,9 +92,12 @@ copy of any of these is a bug.
   `Drops.cs` tested by `dotnet test Core.slnx`, the wire by `Tests/PlayMode/WeaponTests.cs`).
 - ✅ AI opponents and aim assist: the start-match vote carries the AI count, one AI skill (0–10) and the aim assists
   each player starts with (0 = none, 10 = unlimited; obj_btn_ai_*/obj_btn_aimassist_*); on its turn an AI shows one
-  of check_ai's thirty "is thinking..." lines to every peer, looks for a straight shot, then a bank shot, then a
-  railgun shot through the walls (find_target_angle(_from_bounce), on the preview's own solver), nudges its aim by up
-  to 10 − skill degrees, turns its barrel onto it and fires; the aim-assist item turns a human's aim onto the shot a
+  of check_ai's thirty "is thinking..." lines to every peer and decides at once, as the original did (U.RICO-T98):
+  the first whole degree from 0 whose straight line reaches a living opponent before the first shape
+  (find_target_angle), else the whole degree whose tracer (shoot_tracer: a shell off the shapes and the border only)
+  reaches one soonest, else a random whole degree; it nudges that by up to 10 − skill whole degrees (default skill 10,
+  config.ini), turns its barrel onto it at a player's turn rate and fires a cannon shell that spends nothing
+  (obj_check_ai calls shoot_bullet); the aim-assist item turns a human's aim onto the shot a
   fully skilled AI would take and draws it as a fading beam (UR-T7; `Core/Ai.cs`, `MatchSetup.cs` tested by
   `dotnet test Core.slnx`, the wire by `Tests/PlayMode/AiOpponentTests.cs`).
 - ✅ Level hazards: an electric arc and a laser gate (on every other turn) that stop a shot, foliage a shot cuts down,

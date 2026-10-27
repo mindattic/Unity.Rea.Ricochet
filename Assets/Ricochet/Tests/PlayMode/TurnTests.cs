@@ -22,7 +22,6 @@ namespace Ricochet.Tests
     {
         private double _turnSeconds;
         private double _endTurnSeconds;
-        private double _aiThinkSeconds;
 
         public TurnTests() : base(Topology.Host, clients: 1) { }
 
@@ -41,7 +40,6 @@ namespace Ricochet.Tests
         {
             _turnSeconds = Arena.MatchRules.TurnSeconds;
             _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
-            _aiThinkSeconds = Arena.MatchRules.AiThinkSeconds;
             TestMatches.WithoutReadyCard();
         }
 
@@ -50,7 +48,6 @@ namespace Ricochet.Tests
         {
             Arena.MatchRules.TurnSeconds = _turnSeconds;
             Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
-            Arena.MatchRules.AiThinkSeconds = _aiThinkSeconds;
             TestMatches.StockReadyCard();
         }
 
@@ -187,7 +184,6 @@ namespace Ricochet.Tests
         [UnityTest]
         public IEnumerator AnAiSeatTakesItsTurnOnItsOwn()
         {
-            Arena.MatchRules.AiThinkSeconds = 0.2;                 // and the AI fires well inside its own
             Arena.MatchRules.EndTurnSeconds = 0.2;
             Arena arena = null;
             Player host = null, ann = null;

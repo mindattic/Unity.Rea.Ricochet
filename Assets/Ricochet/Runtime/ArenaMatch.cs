@@ -273,11 +273,11 @@ namespace Ricochet
             Mirror();
         }
 
-        // obj_CheckAI: a new turn; an AI seat starts thinking, with one of check_ai's thirty lines.
+        // obj_check_ai: a new turn; an AI seat decides as its turn starts, with one of check_ai's thirty lines.
         private void BeginAiTurn(int seat)
         {
             _aiTurn = _match.TryGetSeat(seat, out MatchSeat sitting) && sitting.Kind == SeatKind.Ai
-                ? new AiTurn(seat, _aiDice.Next(Ai.ThinkingLineCount), MatchRules.AiThinkSeconds, MatchRules.AiDegreesPerSecond)
+                ? new AiTurn(seat, _aiDice.Next(Ai.ThinkingLineCount), Rules.DegreesPerSecond)
                 : null;
         }
 
@@ -288,7 +288,7 @@ namespace Ricochet
             return n >= 1 && n <= MatchRules.MaxSeats - 1 ? _setup.SkillOf(n - 1) : _setup.AiSkill;
         }
 
-        // An AI seat's turn, a frame at a time: think, plan (and pick the weapon), turn the barrel, fire.
+        // An AI seat's turn, a frame at a time: plan, turn the barrel, fire a cannon shell (shoot_bullet).
         private void PlayAi(float seconds)
         {
             if (_aiTurn == null || _authority.Paused || _match.Phase != MatchPhase.Aiming || _match.Current != _aiTurn.Seat)
@@ -302,13 +302,11 @@ namespace Ricochet
                 return;
             }
 
-            switch (_aiTurn.Step(seconds, ai.Heading, _match.TimeLeft, out double next))
+            switch (_aiTurn.Step(seconds, ai.Heading, out double next))
             {
                 case AiStep.Plan:
-                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), SkillOfAi(ai), _aiDice,
-                        Rules, ArsenalRules, ai.Loadout);
+                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), SkillOfAi(ai), _aiDice, Rules);
                     _aiTurn.SetPlan(plan);
-                    ai.ServerSelectWeapon(plan.Weapon);
                     break;
                 case AiStep.Turn:
                     ai.ServerAim((float)next);

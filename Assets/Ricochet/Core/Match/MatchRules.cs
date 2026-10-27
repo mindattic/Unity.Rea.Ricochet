@@ -45,12 +45,6 @@ namespace Ricochet.Core.Match
         /// <summary>The whole hold before a turn's clock starts: the Ready card's hold and its fade.</summary>
         public double ReadySeconds => Math.Max(0, ReadyHoldSeconds) + Math.Max(0, ReadyFadeSeconds);
 
-        /// <summary>Seconds an AI seat "thinks" before it fires (the original's "is thinking..." pause).</summary>
-        public double AiThinkSeconds { get; set; }
-
-        /// <summary>Degrees a second an AI seat turns its barrel towards its aim (rotate_left/right); faster when the clock is short.</summary>
-        public double AiDegreesPerSecond { get; set; }
-
         /// <summary>Points for landing a hit on an opponent (points_kill; hit.gml paid it on every hit, not only a kill).</summary>
         public int PointsHit { get; set; }
 
@@ -88,8 +82,6 @@ namespace Ricochet.Core.Match
             RoundOverSeconds = other.RoundOverSeconds;
             ReadyHoldSeconds = other.ReadyHoldSeconds;
             ReadyFadeSeconds = other.ReadyFadeSeconds;
-            AiThinkSeconds = other.AiThinkSeconds;
-            AiDegreesPerSecond = other.AiDegreesPerSecond;
             PointsHit = other.PointsHit;
             PointsBounce = other.PointsBounce;
             PointsFlightTime = other.PointsFlightTime;

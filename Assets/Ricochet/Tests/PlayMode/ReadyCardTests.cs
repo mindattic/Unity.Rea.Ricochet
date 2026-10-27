@@ -17,7 +17,6 @@ namespace Ricochet.Tests
 {
     public class ReadyCardTests : NetSessionTest
     {
-        private double _aiThinkSeconds;
         private double _endTurnSeconds;
         private MatchHud _hud;
 
@@ -37,7 +36,6 @@ namespace Ricochet.Tests
         [SetUp]
         public void KeepTheRules()
         {
-            _aiThinkSeconds = Arena.MatchRules.AiThinkSeconds;
             _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
             TestMatches.StockReadyCard(); // the stock hold, whatever an earlier fixture left
         }
@@ -45,7 +43,6 @@ namespace Ricochet.Tests
         [TearDown]
         public void PutTheRulesBack()
         {
-            Arena.MatchRules.AiThinkSeconds = _aiThinkSeconds;
             Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
             TestMatches.StockReadyCard();
             if (_hud != null)
@@ -103,7 +100,6 @@ namespace Ricochet.Tests
         [UnityTest]
         public IEnumerator AnAiSeatWaitsForItsReadyCard_BeforeItThinksOrFires()
         {
-            Arena.MatchRules.AiThinkSeconds = 0.2;
             Arena.MatchRules.EndTurnSeconds = 0.2;
             Arena arena = null;
             Player host = null, ann = null;

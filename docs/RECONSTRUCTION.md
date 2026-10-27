@@ -47,8 +47,8 @@ Source read: `R:\Projects\_PRE_2022\_PRE_2021\_PRE_2020\_PRE_2017\gmlRicochet\09
   wins the round; `check_endgame` ends the game at the goal (500 default).
 - **Drops**: weapon, item and health crates and a random-weapon powerup fall on emitter timers and go to whoever's shot passes
   over them.
-- **AI** (`check_ai`, `find_target_angle(_from_bounce)`, `predict_target_angle`): per-player skill, a thinking line, straight, bank
-  and railgun shots, aim assist.
+- **AI** (`check_ai`, `find_target_angle(_from_bounce)`, `predict_target_angle`): per-player skill (default 10), a thinking line, the
+  first straight degree, else the soonest tracer, else a random degree; always a cannon shell; aim assist.
 - **Announcer**: seven personalities, welcome, win and lose recordings, played with a portrait and name box.
 - **Flow**: titlescreen (also the setup panel) -> mainmenu -> players (up to 8 seats, human or AI, per-seat skill, names) ->
   maproom -> gamescreen -> endgame, with settings, controls, howtoplay, credits off the main menu.
@@ -69,7 +69,7 @@ a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `
 | Seats, health, turn order, clock, scoring, round and goal | built | `Core/Match/` (`Match`, `MatchRules`, `Seating`) |
 | Six weapons, six items, counts, crates | built | `Core/Arsenal/` (`Loadout`, `Volley`, `Arsenal`, `Drops`) |
 | Hazards: electricity, laser gate, foliage, shield wall, redirector, vortex, breaches | built | `Core/Level/` (`Hazards`, `Level`) |
-| AI and aim assist | built (one skill for all AI, UR-T28) | `Core/Ai/` |
+| AI and aim assist | built (per-AI skill, UR-T28; the original's targeting, turning and cannon-only shot, U.RICO-T98) | `Core/Ai/` |
 | Announcer (recordings, written lines as captions, the original's portraits) | built (U.RICO-T51) | `Core/Match/Announcer`, `Runtime/HudOverlay`, `Runtime/GameAudio` |
 | Room graph, how to play, controls, credits | built as MindAttic Components screens | `Core/Menu/MenuFlow`, `Runtime/Menus` |
 | Four hand-laid maps | built (deviation: the original randomised the level, UR-T23) | `Core/Level/Maps` |

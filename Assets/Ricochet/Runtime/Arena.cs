@@ -7,9 +7,9 @@
 // (UR-T5): a landed volley strikes everyone it reached (Core's Arsenal), every player's loadout is reset at the start of
 // each round, and during a round Core's DropField drops crates (spawned as keyed Crate objects) that a shot passing
 // over collects for its shooter: a random weapon, a random item or some health. AI opponents (UR-T7): the match vote
-// carries a MatchSetup (AI count, AI skill, aim assists each); on an AI seat's turn Core's AiTurn thinks (its "is
-// thinking..." line mirrored through Turns), plans the shot with Ai.Plan (a straight shot, a bank shot or a railgun
-// shot, nudged by its skill), turns the barrel onto it and fires through the same checks as a human. Level hazards
+// carries a MatchSetup (AI count, AI skill, aim assists each); on an AI seat's turn Core's AiTurn decides at once (its "is
+// thinking..." line mirrored through Turns), plans the shot with Ai.Plan (check_ai: a straight shot, else the tracers'
+// bank shot, nudged by its skill), turns the barrel onto it at a player's rate and fires a cannon shell (U.RICO-T98). Level hazards
 // (UR-T6): Core's HazardField holds the electric arcs, laser gates and foliage each round is laid with (when the scene
 // asks for them), the shield walls and redirectors players place, and the breaches a vortex tears in the border; each is
 // mirrored as a keyed LevelHazard object, and every peer builds the level a shot sees from them (LevelFor). A landed

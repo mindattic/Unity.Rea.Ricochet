@@ -26,22 +26,23 @@ namespace Ricochet.Core.Tests
         };
 
         [Test]
-        public void WithALineOfSightTheAiTakesTheStraightShot_AtTheNearestOpponent_NeverItself()
+        public void WithALineOfSightTheAiTakesTheFirstWholeDegreeFromZeroThatReachesAnOpponent_NeverItself()
         {
-            var targets = new List<Target> { Me, new Target("seat:1", new Vec2(6, 0), 0.45), new Target("seat:2", new Vec2(0, 3), 0.45) };
+            // find_target_angle, swept from 0 by check_ai: the first degree whose line touches a living opponent.
+            var targets = new List<Target> { Me, new Target("seat:1", new Vec2(0, 3), 0.45), new Target("seat:2", new Vec2(-6, 0), 0.45) };
             AiPlan plan = Ai.Plan(Vec2.Zero, "seat:0", Box(), targets, Ai.MaxSkill, new Random(1));
 
             Assert.That(plan.Kind, Is.EqualTo(AiShotKind.Direct));
-            Assert.That(plan.TargetId, Is.EqualTo("seat:2"), "3 away beats 6 away");
+            Assert.That(plan.TargetId, Is.EqualTo("seat:1"), "90 comes before 180, near or far");
             Assert.That(plan.Weapon, Is.EqualTo(Weapon.Cannon));
-            Assert.That(plan.Heading, Is.EqualTo(90).Within(0.5), "the middle of the headings that reach it");
+            Assert.That(plan.Heading, Is.EqualTo(82), "the first whole degree that touches it, not the middle");
             ShotPath path = BounceSolver.Solve(Vec2.Zero, plan.Heading, Box(), targets);
-            Assert.That(path.TargetId, Is.EqualTo("seat:2"));
+            Assert.That(path.TargetId, Is.EqualTo("seat:1"));
             Assert.That(path.Bounces, Is.EqualTo(0));
         }
 
         [Test]
-        public void WithAWallInTheWayTheAiBanksItsShotOntoTheOpponent()
+        public void WithAShapeInTheWayTheAiTakesTheTracerThatReachesTheOpponentSoonest()
         {
             Level level = Box(new Wall(new Vec2(3, -2), new Vec2(3, 2)));
             var targets = new List<Target> { Me, new Target("seat:1", new Vec2(6, 0), 0.45) };
@@ -49,30 +50,40 @@ namespace Ricochet.Core.Tests
 
             Assert.That(plan.Kind, Is.EqualTo(AiShotKind.Bank));
             Assert.That(plan.TargetId, Is.EqualTo("seat:1"));
+            Assert.That(plan.Heading, Is.EqualTo(Math.Round(plan.Heading)), "a whole degree");
             ShotPath path = BounceSolver.Solve(Vec2.Zero, plan.Heading, level, targets);
             Assert.That(path.TargetId, Is.EqualTo("seat:1"), plan.ToString());
             Assert.That(path.Bounces, Is.GreaterThan(0));
+            for (int d = 0; d < 360; d++)
+            {
+                ShotPath other = BounceSolver.Solve(Vec2.Zero, d, level, targets);
+                if (other.End == ShotEndKind.Target && other.TargetId == "seat:1")
+                {
+                    Assert.That(other.Length, Is.GreaterThanOrEqualTo(path.Length - 1e-9), "degree " + d + " would get there sooner");
+                }
+            }
         }
 
         [Test]
-        public void WhenNoShellCanReachAnyoneTheAiUsesItsRailgun_OrElseFiresBlind()
+        public void HazardsAndRedirectorsTakeNoPartInTheAisAim()
+        {
+            // The tracers only knew the shapes and the border: a shield wall in the way does not stop it aiming straight.
+            var level = Box().With(null, new[] { new Barrier(1, HazardKind.ShieldWall, new Vec2(3, -2), new Vec2(3, 2)) }, null);
+            var targets = new List<Target> { Me, new Target("seat:1", new Vec2(6, 0), 0.45) };
+            Assert.That(Ai.Aim(Vec2.Zero, "seat:0", level, targets).Kind, Is.EqualTo(AiShotKind.Direct));
+        }
+
+        [Test]
+        public void WhenNoShellCanReachAnyoneTheAiFiresAtARandomWholeDegree()
         {
             Level level = Box(Cage(6, 0));
             var targets = new List<Target> { Me, new Target("seat:1", new Vec2(6, 0), 0.45) };
-
-            AiPlan railgun = Ai.Plan(Vec2.Zero, "seat:0", level, targets, Ai.MaxSkill, new Random(1), loadout: new Loadout());
-            Assert.That(railgun.Kind, Is.EqualTo(AiShotKind.Railgun));
-            Assert.That(railgun.Weapon, Is.EqualTo(Weapon.Railgun));
-            Volley volley = Arsenal.Fire(Weapon.Railgun, Vec2.Zero, railgun.Heading, 0, 0, level, targets);
-            Assert.That(volley.Strikes.Select(s => s.TargetId), Does.Contain("seat:1"));
-
-            var empty = new ArsenalRules();
-            empty.SetStartCount(Weapon.Railgun, 0);
-            AiPlan blind = Ai.Plan(Vec2.Zero, "seat:0", level, targets, Ai.MaxSkill, new Random(1), loadout: new Loadout(empty));
+            AiPlan blind = Ai.Plan(Vec2.Zero, "seat:0", level, targets, Ai.MaxSkill, new Random(1));
             Assert.That(blind.Kind, Is.EqualTo(AiShotKind.Blind));
             Assert.That(blind.Found, Is.False);
             Assert.That(blind.Weapon, Is.EqualTo(Weapon.Cannon));
-            Assert.That(blind.Heading, Is.InRange(0, 360));
+            Assert.That(blind.Heading, Is.InRange(0, 359));
+            Assert.That(blind.Heading, Is.EqualTo(Math.Round(blind.Heading)));
         }
 
         [Test]
@@ -95,14 +106,6 @@ namespace Ricochet.Core.Tests
             Assert.That(exact.Heading, Is.EqualTo(exact.Aim), "skill 10 fires exactly where it aimed");
             Assert.That(Ai.Spread(-4), Is.EqualTo(10), "skill clamps to 0..10");
             Assert.That(Ai.Spread(99), Is.EqualTo(0));
-        }
-
-        [Test]
-        public void ARunOfHittingHeadingsAcrossZeroDegreesIsAimedAtItsMiddle()
-        {
-            var targets = new List<Target> { Me, new Target("seat:1", new Vec2(6, 0), 0.45) };
-            AiPlan plan = Ai.Aim(Vec2.Zero, "seat:0", Box(), targets);
-            Assert.That(Math.Abs(Ai.Difference(0, plan.Aim)), Is.LessThan(0.5), "not 0 + half the run, and not 360 - half of it: " + plan.Aim);
         }
 
         [Test]
@@ -135,32 +138,17 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void AnAiTurnThinks_Plans_TurnsItsBarrel_ThenFires()
+        public void AnAiTurnPlansAtOnce_TurnsItsBarrelAtThePlayersRate_ThenFires()
         {
-            var turn = new AiTurn(2, 7, 1.0, 90);
-            Assert.That(turn.Step(0.5, 0, 10, out _), Is.EqualTo(AiStep.Think));
-            Assert.That(turn.Step(0.5, 0, 9.5, out _), Is.EqualTo(AiStep.Plan));
+            var turn = new AiTurn(2, 7, 60);
+            Assert.That(turn.Step(0.5, 0, out _), Is.EqualTo(AiStep.Plan), "check_ai runs as the turn starts");
             turn.SetPlan(new AiPlan(AiShotKind.Direct, Weapon.Cannon, 90, 90, "seat:0"));
 
             double heading = 0;
-            Assert.That(turn.Step(0.5, heading, 9, out heading), Is.EqualTo(AiStep.Turn));
-            Assert.That(heading, Is.EqualTo(45).Within(1e-9), "90 degrees a second");
-            Assert.That(turn.Step(0.5, heading, 8.5, out heading), Is.EqualTo(AiStep.Fire));
+            Assert.That(turn.Step(0.5, heading, out heading), Is.EqualTo(AiStep.Turn));
+            Assert.That(heading, Is.EqualTo(30).Within(1e-9), "60 degrees a second, as rotate_left/right turn a player");
+            Assert.That(turn.Step(1, heading, out heading), Is.EqualTo(AiStep.Fire));
             Assert.That(heading, Is.EqualTo(90).Within(1e-9));
-        }
-
-        [Test]
-        public void AnAiTurnsFasterWhenItsClockIsShort_AndFiresAtOnceWhenItHasRunOut()
-        {
-            var turn = new AiTurn(0, 0, 0, 10);
-            turn.Step(0, 0, 1, out _);
-            turn.SetPlan(new AiPlan(AiShotKind.Direct, Weapon.Cannon, 180, 180, "seat:1"));
-
-            // 180 degrees with 1 second left: arrive in half of it (360 a second), not in 18 seconds at 10.
-            Assert.That(turn.Step(0.25, 0, 1, out double heading), Is.EqualTo(AiStep.Turn));
-            Assert.That(Math.Abs(Ai.Difference(0, heading)), Is.EqualTo(90).Within(1e-9));
-            Assert.That(turn.Step(0.01, heading, 0, out heading), Is.EqualTo(AiStep.Fire));
-            Assert.That(heading, Is.EqualTo(180));
         }
 
         [Test]

@@ -53,8 +53,6 @@ namespace Ricochet.Core.Tests
             Assert.That(match.WeaponDamage, Is.EqualTo(10));
             Assert.That(match.EndTurnSeconds, Is.EqualTo(1.25));
             Assert.That(match.RoundOverSeconds, Is.EqualTo(4));
-            Assert.That(match.AiThinkSeconds, Is.EqualTo(1.5));
-            Assert.That(match.AiDegreesPerSecond, Is.EqualTo(180));
             Assert.That(match.PointsHit, Is.EqualTo(100));
             Assert.That(match.PointsBounce, Is.EqualTo(25));
             Assert.That(match.PointsFlightTime, Is.EqualTo(5));

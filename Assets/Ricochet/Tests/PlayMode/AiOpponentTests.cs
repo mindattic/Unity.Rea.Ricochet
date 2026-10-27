@@ -22,7 +22,6 @@ namespace Ricochet.Tests
     {
         private double _turnSeconds;
         private double _endTurnSeconds;
-        private double _aiThinkSeconds;
 
         public AiOpponentTests() : base(Topology.Host, clients: 1) { }
 
@@ -41,7 +40,6 @@ namespace Ricochet.Tests
         {
             _turnSeconds = Arena.MatchRules.TurnSeconds;
             _endTurnSeconds = Arena.MatchRules.EndTurnSeconds;
-            _aiThinkSeconds = Arena.MatchRules.AiThinkSeconds;
             TestMatches.WithoutReadyCard();
         }
 
@@ -50,7 +48,6 @@ namespace Ricochet.Tests
         {
             Arena.MatchRules.TurnSeconds = _turnSeconds;
             Arena.MatchRules.EndTurnSeconds = _endTurnSeconds;
-            Arena.MatchRules.AiThinkSeconds = _aiThinkSeconds;
             TestMatches.StockReadyCard();
             new MatchSetup().ApplyTo(Arena.ArsenalRules);
         }
@@ -58,7 +55,6 @@ namespace Ricochet.Tests
         [UnityTest]
         public IEnumerator AFullySkilledAiThinksOutLoud_TurnsOntoAnOpponent_AndHitsThem()
         {
-            Arena.MatchRules.AiThinkSeconds = 0.5;
             Arena.MatchRules.EndTurnSeconds = 0.2;
             Arena arena = null;
             Player host = null, ann = null;

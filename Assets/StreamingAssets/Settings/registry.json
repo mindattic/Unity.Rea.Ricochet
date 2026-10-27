@@ -7,7 +7,6 @@
     {"id": "match.weaponDamage", "label": "Weapon damage", "group": "Match", "file": "match.json", "key": "weaponDamage", "kind": "Integer", "min": 1, "max": 100, "step": 1},
     {"id": "match.endTurnSeconds", "label": "Pause after a shot (seconds)", "group": "Match", "file": "match.json", "key": "endTurnSeconds", "kind": "Number", "min": 0, "max": 30, "step": 0.25},
     {"id": "match.roundOverSeconds", "label": "Round result stays up (seconds)", "group": "Match", "file": "match.json", "key": "roundOverSeconds", "kind": "Number", "min": 0, "max": 60, "step": 0.5},
-    {"id": "match.aiThinkSeconds", "label": "AI thinking time (seconds)", "group": "Match", "file": "match.json", "key": "aiThinkSeconds", "kind": "Number", "min": 0, "max": 30, "step": 0.25},
     {"id": "match.pointsHit", "label": "Points for a hit", "group": "Scoring", "file": "match.json", "key": "pointsHit", "kind": "Integer", "min": 0, "max": 10000, "step": 5},
     {"id": "match.pointsBounce", "label": "Points a bounce", "group": "Scoring", "file": "match.json", "key": "pointsBounce", "kind": "Integer", "min": 0, "max": 10000, "step": 5},
     {"id": "match.pointsFlightTime", "label": "Points a tenth-second in the air", "group": "Scoring", "file": "match.json", "key": "pointsFlightTime", "kind": "Integer", "min": 0, "max": 10000, "step": 1},

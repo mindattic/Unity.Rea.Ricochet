@@ -28,8 +28,6 @@ namespace Ricochet.Core.Data
                 RoundOverSeconds = r.Number("roundOverSeconds", 0, 600),
                 ReadyHoldSeconds = r.Number("readyHoldSeconds", 0, 60),
                 ReadyFadeSeconds = r.Number("readyFadeSeconds", 0, 60),
-                AiThinkSeconds = r.Number("aiThinkSeconds", 0, 60),
-                AiDegreesPerSecond = r.Number("aiDegreesPerSecond", 1, 3600),
                 PointsHit = r.Integer("pointsHit", 0, 1000000),
                 PointsBounce = r.Integer("pointsBounce", 0, 1000000),
                 PointsFlightTime = r.Integer("pointsFlightTime", 0, 1000000),

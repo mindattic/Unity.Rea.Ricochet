@@ -125,16 +125,14 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
 5. **UR-T7** (done): AI — depends on UR-T3's bounce solver (reused for targeting) and UR-T4's turn loop.
    As built: Core `MatchSetup` (AI count, one AI skill 0–10 for every AI seat where the original had a pSkill per
    player, and the aim assists each player starts with, 0–10 with 0 taking the item out of play and 10 unlimited;
-   the vote's number and text), `Ai` (one half-degree sweep of the preview's solver finds every heading that reaches
-   an opponent: a straight shot beats a bank shot, which beats a railgun shot through the walls when the AI carries
-   one, then the nearest opponent and the middle of the widest run of headings; skill nudges it by up to 10 − skill
-   whole degrees; nothing in reach fires blind) and `AiTurn` (think, plan once, turn the barrel at 180°/s or faster
-   when the clock is short, fire). Arena plays an AI seat's turn through the same server calls a human's goes
+   the vote's number and text), `Ai` (check_ai on the preview's solver, U.RICO-T98: the first whole degree whose
+   straight line reaches an opponent, else the soonest tracer off the shapes and the border, else a random degree;
+   skill nudges it by up to 10 − skill whole degrees) and `AiTurn` (plan at once, turn the barrel at the players' turn
+   rate, fire a cannon shell). Arena plays an AI seat's turn through the same server calls a human's goes
    through; `Turns` carries the "is thinking..." line every HUD pulses along the bottom (obj_ai_gui). Aim assist,
    whose original was only a fading straight beam along the aim (the preview already shows more), is the AI's
    targeting at full skill offered to a human: it turns their aim onto a shot that reaches an opponent  and every peer draws that path as a beam that fades over 5.5 s or goes with the
-   shot. Departures: the railgun choice is new (the original AI only fired bullets); the original took the first
-   degree that touched a target, often a graze.
+   shot.
 6. **UR-T8** (done): announcer/HUD — presentation on top of whatever state exists by then.
    As built: the announcer was voice-only in the original: seven personalities (obl_lbl_announcer's names, two with drawn
    profiles), ten recordings a moment, played on a welcome (obj_game's create), a win (hit.gml, when a shot puts an
