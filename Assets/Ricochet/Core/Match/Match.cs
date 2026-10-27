@@ -102,6 +102,8 @@ namespace Ricochet.Core.Match
         private readonly SortedDictionary<int, MatchSeat> _seats = new SortedDictionary<int, MatchSeat>();
         private readonly Random _dice;
         private double _phaseTime;
+        private double _announcement;   // seconds of the announcement said as this turn's shot landed (obj_endturn waits it out)
+        private double _turnOverWait;   // the TurnOver phase's whole wait, as it was set
 
         public Match(MatchRules rules = null, int seed = 0)
         {
@@ -483,7 +485,8 @@ namespace Ricochet.Core.Match
             if (Phase == MatchPhase.ShotInFlight && shooter == Current && !CheckRoundOver())
             {
                 Phase = MatchPhase.TurnOver;
-                _phaseTime = Rules.EndTurnSeconds;
+                _turnOverWait = EndTurnWait(_announcement);
+                _phaseTime = _turnOverWait;
             }
             else
             {
@@ -665,10 +668,44 @@ namespace Ricochet.Core.Match
             BeginTurn(first);
         }
 
+        /// <summary>
+        /// obj_endturn (U.RICO-T107): the next turn waits out an announcement of <paramref name="seconds"/> said as this
+        /// turn's shot landed. Its alarm of 50 steps (<see cref="MatchRules.EndTurnSeconds"/>) re-arms for another 50 while
+        /// the announcement is still playing, so the wait is the fewest whole alarms that outlast it.
+        /// </summary>
+        public void HoldTurnEnd(double seconds)
+        {
+            if (double.IsNaN(seconds) || seconds <= 0)
+            {
+                return;
+            }
+
+            _announcement = Math.Max(_announcement, seconds);
+            if (Phase == MatchPhase.TurnOver)
+            {
+                double elapsed = _turnOverWait - _phaseTime;
+                _turnOverWait = Math.Max(_turnOverWait, EndTurnWait(_announcement));
+                _phaseTime = _turnOverWait - elapsed;
+            }
+        }
+
+        /// <summary>The wait obj_endturn makes before the next turn, given an announcement of <paramref name="announcement"/> seconds.</summary>
+        public double EndTurnWait(double announcement)
+        {
+            double alarm = Math.Max(0, Rules.EndTurnSeconds);
+            if (alarm <= 0 || double.IsNaN(announcement) || announcement <= alarm)
+            {
+                return alarm;
+            }
+
+            return alarm * Math.Ceiling(announcement / alarm - 1e-9);
+        }
+
         // next_player.gml / randomize_level.gml: the turn is the seat's, its clock full (reset_timer), and obj_ready's card
         // goes up; the clock starts once the card has held and faded (a hold of 0 starts it at once).
         private void BeginTurn(int seat)
         {
+            _announcement = 0;
             Current = seat;
             HasMoved = false;
             TimeLeft = Rules.TurnSeconds;

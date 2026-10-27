@@ -4,7 +4,7 @@
   "turnSeconds": 20,
   "countdownBeeps": 4,
   "weaponDamage": 10,
-  "endTurnSeconds": 1.25,
+  "endTurnSeconds": 0.8333333333333334,
   "roundOverSeconds": 4,
   "readyHoldSeconds": 1.3333333333333333,
   "readyFadeSeconds": 0.8333333333333334,

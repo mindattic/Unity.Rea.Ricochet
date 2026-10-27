@@ -503,6 +503,13 @@ namespace Ricochet
             if (announcement != null && _turns != null && _turns.IsSpawned)
             {
                 _turns.Announce(announcement.Value);
+
+                // obj_endturn waits while the line is still playing (U.RICO-T107): the recording's length, heard or not.
+                AudioClip line = GameAudio.Instance != null ? GameAudio.Instance.VoiceClip(Announcer.VoiceAt(_setup.AnnouncerVoice), announcement.Value) : null;
+                if (line != null)
+                {
+                    _match?.HoldTurnEnd(line.length);
+                }
             }
         }
 

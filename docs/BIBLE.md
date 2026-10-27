@@ -733,6 +733,9 @@ Source: the original's `sound/sfx_{sly,rye,sid,vlad,baxter,doctor,scottish}_{wel
 play_random_announcement, random_announcement_{welcome,win,lose}, random_<key>_<kind>, random_{welcome,win,lose}_number,
 obj_announcer, obj_announcer_portrait, obj_speaker and the spr_profile_* sprites.
 
+- After a shot lands the next turn waits obj_endturn's 50 steps (`MatchRules.EndTurnSeconds`), re-armed for another 50
+  while the announcement said as it landed is still playing: the server holds the turn for the fewest whole alarms that
+  outlast the recording (`Match.HoldTurnEnd`, the clip's length whether or not anyone hears it; U.RICO-T107).
 - The match starts with Matt Baxter on the air, as the shipped config.ini and the Default button set it (globals.gml's
   "sly" never survived read_config; U.RICO-T108).
 - The 210 voice lines (seven personalities x three kinds x ten) are imported by `Tools/import-gml-sound.ps1` into

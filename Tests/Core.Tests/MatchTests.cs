@@ -23,6 +23,33 @@ namespace Ricochet.Core.Tests
             return match;
         }
 
+        // U.RICO-T107: obj_endturn's alarm of 50 steps, re-armed for another 50 while the announcement still plays.
+        [Test]
+        public void TheNextTurnWaitsFiftyStepsAndOutWaitsTheAnnouncementInWholeAlarms()
+        {
+            Match match = Table(2);
+            match.Start();
+            double alarm = match.Rules.EndTurnSeconds;
+            Assert.That(alarm, Is.EqualTo(50.0 / 60).Within(1e-9), "50 steps at 60 a second");
+            Assert.That(match.EndTurnWait(0), Is.EqualTo(alarm));
+            Assert.That(match.EndTurnWait(alarm * 2.2), Is.EqualTo(alarm * 3).Within(1e-9));
+
+            Assert.That(match.Fire(match.Current), Is.True);
+            int shooter = match.Current;
+            match.HoldTurnEnd(alarm * 1.5); // said as the shot landed
+            match.ShotLanded(shooter, -1, 0);
+            match.Tick(alarm + 0.01);
+            Assert.That(match.Current, Is.EqualTo(shooter), "still speaking: the alarm re-arms");
+            match.Tick(alarm);
+            Assert.That(match.Current, Is.Not.EqualTo(shooter));
+
+            Assert.That(match.Fire(match.Current), Is.True);
+            match.ShotLanded(match.Current, -1, 0);
+            int second = match.Current;
+            match.Tick(alarm + 0.01);
+            Assert.That(match.Current, Is.Not.EqualTo(second), "a new turn forgets the last announcement");
+        }
+
         [Test]
         public void SixteenSeatsHumanAndAiMixed_NoSeventeenth()
         {

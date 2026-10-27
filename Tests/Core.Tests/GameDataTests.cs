@@ -51,7 +51,7 @@ namespace Ricochet.Core.Tests
             Assert.That(match.TurnSeconds, Is.EqualTo(20));
             Assert.That(match.CountdownBeeps, Is.EqualTo(4));
             Assert.That(match.WeaponDamage, Is.EqualTo(10));
-            Assert.That(match.EndTurnSeconds, Is.EqualTo(1.25));
+            Assert.That(match.EndTurnSeconds, Is.EqualTo(50.0 / 60));
             Assert.That(match.RoundOverSeconds, Is.EqualTo(4));
             Assert.That(match.PointsHit, Is.EqualTo(100));
             Assert.That(match.PointsBounce, Is.EqualTo(25));
