@@ -2,7 +2,8 @@
 // (spr_button over spr_button_back, spr_button_over under the pointer, the label in fnt_mono outlined 2 px), a switch as
 // obj_checkbox_* (ticked as it is set), a text field as obj_inputbox, a slider row with the less / more arrows that step it
 // and wrap, and the titles in fnt_impact; the title room is bg_titlescreen with RICOCHET's letters; the controls, how-to-play
-// and credits rooms show their pictures.
+// and credits rooms show their pictures. U.RICO-T84: the screens stand on the rooms' background with their controls at the
+// rooms' places.
 using System.Collections;
 using System.Linq;
 using MindAttic.Components.Unity;
@@ -128,6 +129,83 @@ namespace Ricochet.Tests
             Assert.That(Picture(how), Is.EqualTo(MenuLooks.HowToPlaySlide));
             Assert.That(Picture(credits), Is.EqualTo(MenuLooks.CreditsImage));
         }
+
+        // U.RICO-T84: every menu room was 1920 x 1080 on bg_titlescreen, its controls at the room's own places (rooms/*.gmx):
+        // the main menu's buttons down x 960 from y 352, 96 apart; Back at (128, 1024), the way on at (1792, 1024), Default at
+        // (1792, 928); the keyboard layout at (960, 512) over the controls room's lines; the slide at (896, 576) with Last / Next
+        // as spr_arrowleft / right at x 512 and 1280.
+        [UnityTest]
+        public IEnumerator TheMenuScreensStandOnTheRoomsBackground_WithTheirControlsWhereTheRoomsPutThem()
+        {
+            Assume.That(GameArt.Background(MenuLooks.RoomBackground), Is.Not.Null, "the art is not built");
+            Assume.That(GameArt.Frame(MenuLooks.KeyboardLayout), Is.Not.Null, "the art is not built");
+            _stack = MenuStack.Create();
+            string[] labels = { "Settings", "How to play", "Controls", "Credits", "Quit" };
+            MenuScreen main = _stack.Push("Main menu", s =>
+            {
+                foreach (string label in labels)
+                {
+                    s.AddButton(label, () => { });
+                }
+            });
+            yield return Laid();
+            GmlRoomLayout room = main.GetComponent<GmlRoomLayout>();
+            Assert.That(room, Is.Not.Null, "the main menu has no room");
+            Assert.That(room.Taken, Is.True, "the main menu kept the kit's card");
+            Assert.That(room.Background.sprite, Is.SameAs(GameArt.Background(MenuLooks.RoomBackground)));
+            for (int i = 0; i < labels.Length; i++)
+            {
+                Assert.That(Rect(main, labels[i]).anchoredPosition, Is.EqualTo(new Vector2(960f, -(352f + 96f * i))), labels[i]);
+            }
+
+            MenuScreen setup = _stack.Push("Setup", s =>
+            {
+                s.AddToggle("Laser", true, _ => { });
+                s.AddButton(Menus.ResetSetupLabel, () => { });
+                s.AddButton("Start", () => { }, MindAttic.Components.Unity.Core.ButtonVariant.Primary);
+            });
+            yield return Laid();
+            Assert.That(setup.GetComponent<GmlRoomLayout>().Taken, Is.True);
+            Assert.That(setup.ShowBackButton, Is.False, "the kit's back icon is hidden: the room's Back stands in the corner");
+            Assert.That(((RectTransform)setup.Items.Find(GmlRoomLayout.BackName)).anchoredPosition, Is.EqualTo(new Vector2(128f, -1024f)));
+            Assert.That(Rect(setup, "Start").anchoredPosition, Is.EqualTo(new Vector2(1792f, -1024f)));
+            Assert.That(Rect(setup, Menus.ResetSetupLabel).anchoredPosition, Is.EqualTo(new Vector2(1792f, -928f)));
+
+            MenuScreen controls = _stack.Push(MenuFlow.Title(Room.Controls), Menus.BuildControls);
+            yield return Laid();
+            RectTransform keyboard = PictureRect(controls);
+            Assert.That(keyboard.anchoredPosition, Is.EqualTo(new Vector2(960f, -512f)));
+            Assert.That(keyboard.sizeDelta, Is.EqualTo(new Vector2(1814f, 972f)));
+            MaText line = controls.Items.Cast<Transform>().Select(t => t.GetComponent<MaText>()).First(t => t != null);
+            Assert.That(line.GetComponent<CanvasGroup>().alpha, Is.EqualTo(0f), "the binding lines are under the keyboard picture");
+
+            MenuScreen how = _stack.Push(MenuFlow.Title(Room.HowToPlay), s => Menus.BuildHowToPlay(s));
+            yield return Laid();
+            Assert.That(PictureRect(how).anchoredPosition, Is.EqualTo(new Vector2(896f, -576f)));
+            foreach ((string label, float x, string face) in new[] { ("Last", 512f, "spr_arrowleft"), ("Next", 1280f, "spr_arrowright") })
+            {
+                RectTransform arrow = Rect(how, label);
+                Assert.That(arrow.GetComponent<GmlSlideArrow>(), Is.Not.Null, label + " is not an arrow");
+                Assert.That(arrow.GetComponent<GmlControlSkin>().Plate.FaceName, Is.EqualTo(face));
+                Assert.That(arrow.anchoredPosition, Is.EqualTo(new Vector2(x, -576f)), label);
+            }
+        }
+
+        // The skin's sweep, then a frame for the rooms to lay their screens out.
+        private static IEnumerator Laid()
+        {
+            yield return null;
+            GmlMenuSkin.Sweep();
+            yield return null;
+            GmlMenuSkin.Sweep();
+            yield return null;
+        }
+
+        private static RectTransform Rect(MenuScreen s, string label) =>
+            s.GetComponentsInChildren<MaButton>().First(b => b.Label == label).RectTransform;
+
+        private static RectTransform PictureRect(MenuScreen s) =>
+            (RectTransform)s.Items.GetComponentsInChildren<Image>(true).First(i => i.name.StartsWith(Menus.PictureName)).transform;
 
         private static string Picture(MenuScreen s)
         {

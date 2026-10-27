@@ -10,6 +10,7 @@ using MindAttic.Components.Unity;
 using NUnit.Framework;
 using Ricochet.Core.Aim;
 using Ricochet.Core.Arsenal;
+using Ricochet.Core.Art;
 using Ricochet.Core.Level;
 using Ricochet.Core.Match;
 using Ricochet.Core.Menu;
@@ -296,6 +297,21 @@ namespace Ricochet.Tests
             Button(slides, "Last").Click();
             Button(slides, "Last").Click();
             Assert.That(Texts(slides), Has.Some.EqualTo(count + "/" + count), "Last from the first wraps to the last");
+
+            // U.RICO-T84: in the room's art, Last / Next are obj_btn_lastslide / _nextslide's arrows, and still turn the slides.
+            if (GameArt.Frame(MenuLooks.HowToPlaySlide) == null)
+            {
+                yield break;
+            }
+
+            GmlMenuSkin.Sweep();
+            yield return null;
+            GmlMenuSkin.Sweep();
+            yield return null;
+            Assert.That(Button(slides, "Last").GetComponent<GmlSlideArrow>(), Is.Not.Null, "Last is not an arrow");
+            Assert.That(Button(slides, "Next").GetComponent<GmlSlideArrow>(), Is.Not.Null, "Next is not an arrow");
+            Button(slides, "Next").Click();
+            Assert.That(Texts(slides), Has.Some.EqualTo("1/" + count), "Next from the last wraps to the first");
         }
 
         private static MaButton Button(MenuScreen screen, string label)

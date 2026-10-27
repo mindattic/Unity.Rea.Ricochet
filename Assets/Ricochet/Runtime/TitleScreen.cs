@@ -40,6 +40,7 @@ namespace Ricochet
 
             title._stack = MenuStack.Create(null, backdrop: true, sortingOrder: TitleSortingOrder);
             title._stack.EscapeEnabled = false;
+            title._stack.gameObject.AddComponent<GmlNoRoom>(); // it draws its own room (AddRoom)
             MenuScreen s = title._stack.CreateScreen(MenuFlow.Title(Room.Title).ToUpperInvariant(), MenuFlow.Tagline);
             s.ShowBackButton = false;
             s.AddButton("Play", title.Dismiss, ButtonVariant.Primary, MaIcon.Play);

@@ -556,7 +556,8 @@ shapes (`GmlSprites.Shape`, U.RICO-T46), not HUD markers.
 Source: every `obj_btn_*`, `obj_btn_*_less/_more/_last/_next`, `obj_checkbox_*`, `obj_inputbox*`, `obj_lbl_*`, `obj_pausemenu`,
 `obj_btn_fire/useitem/endturn`, `obj_btn_degreeleft/degreeright`, `obj_btn_moveforward/movebackward`,
 `obj_keyboardlayout`, `obj_slide`, `obj_creditsimage`, `obj_letter_*`, and the
-rooms `titlescreen`, `controls`, `howtoplay`, `credits` and `gamescreen`.
+rooms `titlescreen`, `controls`, `howtoplay`, `credits` and `gamescreen` (U.RICO-T84: and `mainmenu`, `settings`,
+`players`, `names`, `maproom` and `multiplayer_*` for the rooms' places and background).
 
 - Core's `MenuLooks` names every sprite and font and holds the rules (`Tests/Core.Tests/MenuLooksTests`). Every one of these
   controls drew itself the same way: at alpha 0.5 its `_over` sprite while the mouse was on it or its `_back` sprite
@@ -575,16 +576,36 @@ rooms `titlescreen`, `controls`, `howtoplay`, `credits` and `gamescreen`.
   proportions inside the pad's button.
 - **Pictures**: the title is on bg_titlescreen with obj_letter_R ... obj_letter_T where the titlescreen room placed them;
   the controls room shows spr_keyboardlayout, the how-to-play room obj_slide's spr_howtoplay1 between its counter and its
-  text, and the credits room spr_creditsimage, each at the top of its screen.
-- `Tests/PlayMode/MenuArtTests` checks the dressing, the arrows' wrap, the title room and the pictures; `ControlPadTests` the
-  pad's sprites; `ArtCatalogueTests` that every name resolves;
+  text, and the credits room spr_creditsimage.
+- **Rooms** (U.RICO-T84, `GmlRoomLayout`, attached by the same sweep): every menu room (mainmenu, settings, players, names,
+  controls, howtoplay, credits, maproom, the multiplayer rooms) was 1920 x 1080 on bg_titlescreen with each object's sprite
+  centred on its place, so every menu screen now stands on bg_titlescreen (not over the live arena) with its card dissolved
+  and its controls at the rooms' places and sprite sizes (Core's `RoomLayout`, `Tests/Core.Tests/RoomLayoutTests`): the
+  title at (border, border) = (32, 32); obj_btn_back_* at (128, 1024); the way on (obj_btn_start / _setup / _players, the
+  screen's Primary button) at (1792, 1024); obj_btn_default (Reset to defaults) at (1792, 928); a screen of buttons only
+  (the main menu) as mainmenu's column at x 960, 96 apart, centred on y 544 (five at 352 ... 736); a slider or dropdown row
+  with its arrows at spr_arrowleft / right's own 89 x 64; a switch with its 64 px checkbox before its text (obj_checkbox_*);
+  obj_keyboardlayout at (960, 512), obj_creditsimage at (960, 576), obj_slide at (896, 576) with its counter above and its
+  text below at the slide's left edge, and obj_btn_lastslide / _nextslide drawn as spr_arrowleft / right at (512, 576) and
+  (1280, 576) (`GmlMenuSkin.MakeArrow`). The title screen (it draws its own room), the vote's pause menu and the kit's
+  in-game and endgame menus (over the game, as obj_pausemenu and the endgame's bg_stadium room were) keep their look
+  (`GmlNoRoom`, or a stack's closable root).
+- `Tests/PlayMode/MenuArtTests` checks the dressing, the arrows' wrap, the title room, the pictures and the rooms' places
+  and background; `MenuScreenTests` that the slide's arrows still turn it; `ControlPadTests` the pad's sprites;
+  `ArtCatalogueTests` that every name resolves;
   `ArtShowcaseTests.TheMenusAndPictures` saves `U.RICO-T78-*` screenshots (title, settings, controls, how to play, credits,
   a match, paused).
 
-Deviations: (1) The rebuild's menus are the kit's screens, so the controls keep the kit's layout and sizes (a full-width
-button nine-slices spr_button; a switch's checkbox is 48 px on the right of its row; the arrows are at half size beside the
-kit's slider or dropdown, which stay; the room's own placements are not carried). (2) Only the title shows bg_titlescreen:
-the kit's front end and the other rooms are screens over the live arena. (3) The title's letters stand where the room placed
+Deviations: (1) The rebuild's screens hold controls the original's rooms had no object for (the kit's name and colour, the
+lobby's code, the opponents' list, the settings' extra rules), so those flow down the room as the players room's rows did
+(from y 272, 16 px apart, a new column where the room runs out, up to four columns, left of a picture that leaves room);
+a button keeps the kit's width when its label is wider than spr_button's 226 px (nine-sliced, at most 420); the kit's
+slider or dropdown stays between the arrows. A screen too long even for four columns (the settings, which the original
+spread over its own hand-placed grid) keeps the kit's card, on bg_titlescreen. The controls room's binding lines (the
+rebuild's, for its remappable bindings) are kept but not drawn, under the keyboard picture as the room had only the picture;
+the credits room's lines stand left of spr_creditsimage. (2) The kit's own back icon is hidden on a taken screen in favour
+of the room's Back button at (128, 1024); the title, the vote's pause menu and the kit's in-game and endgame menus are not
+re-laid (they draw over the game, or their own room). (3) The title's letters stand where the room placed
 them; their drift (obj_letter_parent) and the main menu's letters are U.RICO-T52's. The announcer's portrait and speaker are
 U.RICO-T51's (Announcer voices and portraits).
 

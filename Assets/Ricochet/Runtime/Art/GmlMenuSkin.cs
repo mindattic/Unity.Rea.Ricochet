@@ -84,6 +84,7 @@ namespace Ricochet
             foreach (MenuScreen screen in FindObjectsByType<MenuScreen>(FindObjectsSortMode.None))
             {
                 DressText(screen);
+                GmlRoomLayout.Attach(screen); // the room's background and the controls at the room's places (U.RICO-T84)
             }
 
             return dressed;
@@ -109,6 +110,46 @@ namespace Ricochet
             if (button.LabelText != null)
             {
                 GmlFontLabel.Attach(button.LabelText, MenuLooks.ButtonFont, MenuLooks.ButtonOutline);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// A how-to-play slide's Last / Next (obj_btn_lastslide / _nextslide): spr_arrowleft or spr_arrowright over its back in
+        /// place of the button's face, its label kept but not drawn. Replaces any button dressing it already has.
+        /// </summary>
+        public static bool MakeArrow(MaButton button, bool last)
+        {
+            if (button == null)
+            {
+                return false;
+            }
+
+            GmlControlSkin old = button.GetComponent<GmlControlSkin>();
+            if (old != null)
+            {
+                if (old.Plate != null)
+                {
+                    DestroyImmediate(old.Plate.gameObject);
+                }
+
+                DestroyImmediate(old);
+            }
+
+            GmlPlate plate = GmlPlate.Add(button.RectTransform, last ? Plate.ArrowLeft : Plate.ArrowRight, stretch: false);
+            if (plate == null)
+            {
+                return false;
+            }
+
+            button.gameObject.AddComponent<GmlSlideArrow>().Last = last;
+            GmlControlSkin skin = button.gameObject.AddComponent<GmlControlSkin>();
+            skin.Init(plate, button.GetComponent<MaStateRelay>(), null, button.Surface.Fill, button.Surface.Border);
+            skin.Selected = () => button.Selected;
+            if (button.LabelText != null)
+            {
+                button.LabelText.alpha = 0f;
             }
 
             return true;

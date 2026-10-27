@@ -186,6 +186,7 @@ namespace Ricochet
                 _stack.name = "Pause menu";
                 _stack.EscapeEnabled = false; // Esc stays the kit's in-game menu; only Resume (or a vote) closes this one
                 _stack.AllowCloseRoot = false;
+                _stack.gameObject.AddComponent<GmlNoRoom>(); // the vote's pause is over the game, as obj_pausemenu was (U.RICO-T84)
                 _screen = _stack.CreateScreen(VoteMenu.PausedTitle);
                 _stack.Push(_screen);
                 // obj_pausemenu drew "Paused" in fnt_mono outlined 2 px (its spr_pausemenu and spr_pausemenu_back draws are
