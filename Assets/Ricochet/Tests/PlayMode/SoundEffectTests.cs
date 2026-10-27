@@ -228,17 +228,17 @@ namespace Ricochet.Tests
             var room = new Level(-3, -3, 3, 3);
 
             // A shell: its own fire sound, sfx_bounce_cannon off each wall, sfx_explode where it is spent.
-            Volley shell = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 1, 2, 0, room, null);
+            Volley shell = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 2, 0, room, null);
             int from = _audio.Requests.Count;
-            Presentation.Raise(null, new Cmd.ShotFired(1, 0, 1, Weapon.Cannon, 10, 1, 2, 0, shell));
+            Presentation.Raise(null, new Cmd.ShotFired(1, 0, 1, Weapon.Cannon, 10, 2, 0, shell));
             Presentation.Raise(null, new Cmd.Bounced(1, 1, 1, shell.Main.Contacts[0].Point));
             Presentation.Raise(null, new Cmd.ShotLanded(1, 0, 1, shell, null, false, -1));
             Assert.That(Cues(from), Is.EqualTo(new[] { SoundCue.FireCannon, SoundCue.BounceCannon, SoundCue.Explode }));
 
             // The shotgun: its pellets' bounces alternate between the two recordings that exist.
-            Volley pellets = Arsenal.Fire(Weapon.Shotgun, Vec2.Zero, 10, 1, 2, 0, room, null);
+            Volley pellets = Arsenal.Fire(Weapon.Shotgun, Vec2.Zero, 10, 2, 0, room, null);
             from = _audio.Requests.Count;
-            Presentation.Raise(null, new Cmd.ShotFired(1, 0, 2, Weapon.Shotgun, 10, 1, 2, 0, pellets));
+            Presentation.Raise(null, new Cmd.ShotFired(1, 0, 2, Weapon.Shotgun, 10, 2, 0, pellets));
             for (int i = 0; i < 4; i++)
             {
                 Presentation.Raise(null, new Cmd.Bounced(1, 2, 1, pellets.Paths[i].Contacts[0].Point));
@@ -249,8 +249,8 @@ namespace Ricochet.Tests
             Assert.That(heard.Skip(1).Distinct(), Is.EquivalentTo(new[] { SoundCue.BounceShotgun1, SoundCue.BounceShotgun2 }));
 
             // The laser: sfx_fire_laser, then sfx_loop_laser held until it lands.
-            Volley laser = Arsenal.Fire(Weapon.Laser, Vec2.Zero, 10, 1, 2, 0, room, null);
-            Presentation.Raise(null, new Cmd.ShotFired(1, 0, 3, Weapon.Laser, 10, 1, 2, 0, laser));
+            Volley laser = Arsenal.Fire(Weapon.Laser, Vec2.Zero, 10, 2, 0, room, null);
+            Presentation.Raise(null, new Cmd.ShotFired(1, 0, 3, Weapon.Laser, 10, 2, 0, laser));
             Assert.That(_audio.LastCue, Is.EqualTo(SoundCue.FireLaser));
             Assert.That(GameAudio.Held(SoundCue.LoopLaser), Is.True);
             Assert.That(GameAudio.IsPlaying(SoundCue.FireLaser), Is.True, "playing, muted or not");
@@ -263,9 +263,9 @@ namespace Ricochet.Tests
             Assert.That(GameAudio.IsPlaying(SoundCue.LoopLaser), Is.False, "stopped as it lands");
 
             // A grenade beeps while it flies, and goes off.
-            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 90, 0.3, 2, 0, room, null);
+            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 90, 2, 0, room, null);
             from = _audio.Requests.Count;
-            Presentation.Raise(null, new Cmd.ShotFired(1, 0, 4, Weapon.Grenade, 90, 0.3, 2, 0, grenade));
+            Presentation.Raise(null, new Cmd.ShotFired(1, 0, 4, Weapon.Grenade, 90, 2, 0, grenade));
             Assert.That(Cues(from), Is.EqualTo(new[] { SoundCue.FireGrenade, SoundCue.GrenadeBeep }));
             Assert.That(GameAudio.Held(SoundCue.GrenadeBeep), Is.True);
             Presentation.Raise(null, new Cmd.ShotLanded(1, 0, 4, grenade, null, false, -1));

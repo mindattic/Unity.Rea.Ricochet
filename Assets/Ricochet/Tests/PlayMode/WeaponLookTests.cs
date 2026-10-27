@@ -57,7 +57,7 @@ namespace Ricochet.Tests
             host.ServerCycleWeapon(1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Laser));
             host.MirrorLoadout();
-            host.ServerFire(80f, 1f);
+            host.ServerFire(80f);
             ShotView laser = null;
             yield return WaitUntil(() => (laser = HostViewOnClient(host)) != null && laser.Flying && laser.LaserShowing, "her client never drew the beam");
             Assert.That(laser.ProjectileScale, Is.GreaterThan(0f));
@@ -70,7 +70,7 @@ namespace Ricochet.Tests
             host.ServerCycleWeapon(-1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Railgun));
             host.MirrorLoadout();
-            host.ServerFire(80f, 1f);
+            host.ServerFire(80f);
             yield return WaitUntil(() => laser.RailShowing && laser.RailSwirls > 2, "her client never drew the rail and its swirls", 5f);
             float alpha = laser.RailAlpha;
             Assert.That(alpha, Is.LessThanOrEqualTo((float)WeaponLooks.RailStartAlpha));
@@ -87,7 +87,7 @@ namespace Ricochet.Tests
             host.ServerCycleWeapon(-1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Vortex));
             host.MirrorLoadout();
-            host.ServerFire(80f, 1f);
+            host.ServerFire(80f);
             ShotView view = null;
             yield return WaitUntil(() => (view = HostViewOnClient(host)) != null && view.Flying, "her client never drew the vortex");
             yield return new WaitForSeconds(0.2f);
@@ -114,7 +114,7 @@ namespace Ricochet.Tests
             host.ServerCycleWeapon(-1);
             host.Loadout.SetFuse(0.5);
             host.MirrorLoadout();
-            host.ServerFire(180f, 1f);
+            host.ServerFire(180f);
             ShotView view = null;
             yield return WaitUntil(() => (view = HostViewOnClient(host)) != null && view.Flight != null && view.Flight.Volley.Weapon == Weapon.Grenade, "her client never threw it");
             Player hostOnClient = Player.In(Client).First(p => p.Seat == host.Seat);

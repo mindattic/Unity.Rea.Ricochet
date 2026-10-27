@@ -86,7 +86,7 @@ namespace Ricochet.Tests
 
             double serverClock = arena.Match.TimeLeft;
             float shownClock = turns.ShownTimeLeft;
-            host.ServerFire(0f, 0f);                              // refused while paused
+            host.ServerFire(0f);                              // refused while paused
             yield return new WaitForSeconds(1f);
             Assert.That(arena.Match.TimeLeft, Is.EqualTo(serverClock).Within(1e-6), "the server's clock waits");
             Assert.That(turns.ShownTimeLeft, Is.EqualTo(shownClock).Within(0.01f), "the client's clock waits");
@@ -97,7 +97,7 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => !turns.IsPaused, "the client never saw the game resume");
             yield return WaitUntil(() => !_hud.Pause.Showing, "the pause menu stayed up");
             yield return WaitUntil(() => arena.Match.TimeLeft < serverClock - 0.3, "the clock never ran again");
-            host.ServerFire(0f, 0f);
+            host.ServerFire(0f);
             yield return WaitUntil(() => host.Shots == 1, "the host could not fire after the pause");
         }
 
@@ -113,9 +113,9 @@ namespace Ricochet.Tests
             Player ai = arena.PlayerAt(2);
             Assert.That(ai.IsAi, Is.True);
 
-            host.ServerFire(0f, 0f);                              // a short shot at nobody
+            host.ServerFire(0f);                              // a short shot at nobody
             yield return WaitUntil(() => arena.Match.Current == ann.Seat && arena.Match.Phase == MatchPhase.Aiming, "the turn never passed to Ann", 10f);
-            ann.ServerFire(0f, 0f);
+            ann.ServerFire(0f);
             yield return WaitUntil(() => arena.Match.Current == ai.Seat && arena.Match.Phase == MatchPhase.Aiming, "the turn never passed to the AI", 10f);
             Assert.That(arena.SetPaused(true), Is.True);          // before it has finished thinking
 
@@ -177,7 +177,7 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => !turns.IsPaused, "the client stayed paused");
 
             yield return WaitUntil(() => arena.Match.Phase == MatchPhase.Aiming, "the turn never started over");
-            host.ServerFire(0f, 0f);
+            host.ServerFire(0f);
             yield return WaitUntil(() => host.Shots == 1, "the host never fired");
             Assert.That(arena.MayRerollRound, Is.False, "not once anyone has fired");
             version = Arena.LevelVersion;

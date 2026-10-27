@@ -65,7 +65,7 @@ a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `
 
 | Original system | Rebuild | Where |
 |---|---|---|
-| Aim, bounce preview, shot flight (`aim`, `draw_potential`, `check_rail_intersection`, `lines_intersect`) | built, adds a power meter (deviation: the original had none) | `Core/Aim/` (`BounceSolver`, `ShotPath`, `AimState`, `ShotRules`) |
+| Aim, bounce preview, shot flight (`aim`, `draw_potential`, `check_rail_intersection`, `lines_intersect`) | built; no power meter, as the original (U.RICO-T88 took out the one the rebuild had added): a shot flies until its bounces run out | `Core/Aim/` (`BounceSolver`, `ShotPath`, `AimState`, `ShotRules`) |
 | Seats, health, turn order, clock, scoring, round and goal | built | `Core/Match/` (`Match`, `MatchRules`, `Seating`) |
 | Six weapons, six items, counts, crates | built | `Core/Arsenal/` (`Loadout`, `Volley`, `Arsenal`, `Drops`) |
 | Hazards: electricity, laser gate, foliage, shield wall, redirector, vortex, breaches | built | `Core/Level/` (`Hazards`, `Level`) |
@@ -122,7 +122,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 |---|---|---|
 | Engine-free Core, `noEngineReferences`, tested outside Unity | met: `Ricochet.Core` asmdef, `dotnet test Core.slnx`, 18 test files | kept |
 | Assembly names and one-way boundaries, an Editor assembly | met: `Ricochet.Runtime`, `Ricochet.Editor` (menus and validators), `Ricochet.Tests`, `Ricochet.EditorTests`; Core grouped by domain (Aim, Arsenal, Match, Level, Ai, Menu, Net) with `Ricochet.Core.*` sub-namespaces; `CoreBoundaryTests` fails if Core references anything beyond the BCL | kept |
-| State changes only through commands that produce events | met: `Core/Commands/` (`GameAuthority` applies `AimCommand`, `SetPowerCommand`, `FireCommand`, `CycleWeaponCommand`, `CycleItemCommand`, `FuseCommand`, `UseItemCommand`, `DetonateCommand`, `DriveCommand`, `EndTurnCommand`, `RerollCommand`, `VoteCommand`, and the seat lifecycle `JoinSeatCommand`, `DropSeatCommand`, `RejoinSeatCommand`, `LeaveSeatCommand`, each carrying a player id, and returns ordered events); `Player`'s `[ToServer]` calls are those commands and `Arena` plays the events and joins, drops, rejoins and removes seats only by command; the kit counts the restart, match and kick ballots (its overlay is the kit's, UM-T78) and `Arena` replays them as `VoteCommand`s so Core's `VotePassed` carries the effect out; `ShotView` and `GameAudio` subscribe to the `Presentation` feed of those events, and `MatchHud` draws only the synced `Turns` and `Player` copies, so presentation never reads or changes Core state | UR-T34, UR-T65 |
+| State changes only through commands that produce events | met: `Core/Commands/` (`GameAuthority` applies `AimCommand`, `FireCommand`, `CycleWeaponCommand`, `CycleItemCommand`, `FuseCommand`, `UseItemCommand`, `DetonateCommand`, `DriveCommand`, `EndTurnCommand`, `RerollCommand`, `VoteCommand`, and the seat lifecycle `JoinSeatCommand`, `DropSeatCommand`, `RejoinSeatCommand`, `LeaveSeatCommand`, each carrying a player id, and returns ordered events); `Player`'s `[ToServer]` calls are those commands and `Arena` plays the events and joins, drops, rejoins and removes seats only by command; the kit counts the restart, match and kick ballots (its overlay is the kit's, UM-T78) and `Arena` replays them as `VoteCommand`s so Core's `VotePassed` carries the effect out; `ShotView` and `GameAudio` subscribe to the `Presentation` feed of those events, and `MatchHud` draws only the synced `Turns` and `Player` copies, so presentation never reads or changes Core state | UR-T34, UR-T65 |
 | Content and tuning as validated data | met: `Assets/StreamingAssets/Settings/*.json` (match, shot, hazards, arsenal, level, shapes, maps, announcer, menu, registry) loaded by `Core/Data/GameData` through an engine-free JSON parser and `ISettingsSource`, every problem reported with file, key and line; `Tests/Core.Tests/GameDataTests.cs` loads every shipped file | UR-T35 |
 | Input System | gap: Active Input Handling is the legacy manager, no actions asset, no rebinding | UR-T36 |
 | URP behind a pipeline-agnostic layer | gap: no pipeline asset assigned in Graphics or Quality | UR-T37 |
@@ -184,6 +184,6 @@ UR-T22 (Relay) depends on the owner's Unity Cloud account and sits outside the o
 
 ## 6. Deviations that stay
 
-The power meter (the original fixed the speed), a networked turn with server authority, real multiplayer in place of the
+A networked turn with server authority, real multiplayer in place of the
 hotseat rooms, up to 16 seats (the original had 8 in its setup rooms and 16 bars), votes and reconnect, the kit's menus under
 the original's screens, and pause as a host or vote action. Each is recorded in the BIBLE.

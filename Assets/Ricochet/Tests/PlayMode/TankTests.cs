@@ -47,7 +47,7 @@ namespace Ricochet.Tests
 
             // The turret follows her aim on another peer; the hull stays where it was until she drives.
             float hullBefore = tank.HullAngle;
-            ann.Aim(30f, 0.5f);
+            ann.Aim(30f);
             yield return WaitUntil(() => Mathf.Abs(Mathf.DeltaAngle(tank.TurretAngle, 30f)) < 0.01f, () => "her turret is at " + tank.TurretAngle);
             Assert.That(tank.HullAngle, Is.EqualTo(hullBefore), "the hull only turns while the tank drives");
 

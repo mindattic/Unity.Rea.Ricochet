@@ -9,8 +9,8 @@ namespace Ricochet.Core.Tests
         private static ShotPath BorderToBorder()
         {
             // From the centre of a 20 x 10 box straight right: 9.5 to the wall, then 20 per crossing.
-            var rules = new ShotRules { MaxRange = 1000, MuzzleOffset = 0.5, MaxBounces = 3 };
-            return BounceSolver.Solve(Vec2.Zero, 0, 1, new Level(-10, -5, 10, 5), null, rules);
+            var rules = new ShotRules { MuzzleOffset = 0.5, MaxBounces = 3 };
+            return BounceSolver.Solve(Vec2.Zero, 0, new Level(-10, -5, 10, 5), null, rules);
         }
 
         [Test]
@@ -39,7 +39,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void SmallStepsAndOneBigStepLandInTheSamePlace()
         {
-            ShotPath path = BounceSolver.Solve(new Vec2(0, -4), 71, 0.9, Level.Default());
+            ShotPath path = BounceSolver.Solve(new Vec2(0, -4), 71, Level.Default());
             var stepped = new ProjectileFlight(path, ShotRules.Default);
             int contacts = 0;
             while (!stepped.Landed)
@@ -52,20 +52,18 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void AimTurnsAndCharges_WrappingTheAngleAndClampingThePower()
+        public void AimTurns_WrappingTheAngle()
         {
-            var rules = new ShotRules { DegreesPerSecond = 90, PowerPerSecond = 0.5 };
-            var aim = new AimState(heading: 350, power: 0.9);
+            var rules = new ShotRules { DegreesPerSecond = 90 };
+            var aim = new AimState(heading: 350);
 
-            Assert.That(aim.Step(turn: 1, charge: 1, seconds: 0.5, rules), Is.True);
+            Assert.That(aim.Step(turn: 1, seconds: 0.5, rules), Is.True);
             Assert.That(aim.Heading, Is.EqualTo(35).Within(1e-9), "350 + 45 wraps to 35");
-            Assert.That(aim.Power, Is.EqualTo(1));
 
-            aim.Step(turn: -1, charge: -1, seconds: 1, rules);
+            aim.Step(turn: -1, seconds: 1, rules);
             Assert.That(aim.Heading, Is.EqualTo(305).Within(1e-9));
-            Assert.That(aim.Power, Is.EqualTo(0.5).Within(1e-9));
 
-            Assert.That(aim.Step(0, 0, 1, rules), Is.False, "no keys, no change");
+            Assert.That(aim.Step(0, 1, rules), Is.False, "no keys, no change");
         }
 
         [Test]
@@ -73,9 +71,10 @@ namespace Ricochet.Core.Tests
         {
             var rules = new ShotRules { DegreesPerSecond = 90 };
             var aim = new AimState(heading: 0);
-            aim.Step(turn: 50, charge: double.NaN, seconds: 1, rules);
+            aim.Step(turn: 50, seconds: 1, rules);
             Assert.That(aim.Heading, Is.EqualTo(90).Within(1e-9), "a turn input above 1 counts as 1");
-            Assert.That(aim.Power, Is.EqualTo(0.5));
+            aim.Step(turn: double.NaN, seconds: 1, rules);
+            Assert.That(aim.Heading, Is.EqualTo(90).Within(1e-9), "NaN counts as none");
         }
     }
 }

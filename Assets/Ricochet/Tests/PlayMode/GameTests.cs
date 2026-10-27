@@ -59,9 +59,8 @@ namespace Ricochet.Tests
             yield return annOnHost;
             yield return WaitUntil(() => annOnHerClient.Result.Position != Vector2.zero, "Ann was never given her seat's spot");
 
-            annOnHerClient.Result.Aim(30f, 0.8f);
+            annOnHerClient.Result.Aim(30f);
             yield return WaitUntil(() => Mathf.Approximately(annOnHost.Result.Heading, 30f), () => "the host has her aim at " + annOnHost.Result.Heading);
-            yield return WaitUntil(() => Mathf.Approximately(annOnHerClient.Result.Power, 0.8f), () => "her own client has her power at " + annOnHerClient.Result.Power);
 
             yield return WaitUntil(() => annOnHost.Result.DisplayName == "Ann", () => "the host sees her as " + annOnHost.Result.DisplayName);
             Assert.That(annOnHost.Result.Color, Is.EqualTo(new Color32(200, 60, 220, 255)));
@@ -74,12 +73,11 @@ namespace Ricochet.Tests
             var ann = WaitForSpawn<Player>(Client, owner: Client.LocalClientId);
             yield return ann;
 
-            ann.Result.Aim(-90f, 5f);                             // a cheating client
-            yield return WaitUntil(() => Mathf.Approximately(ann.Result.Heading, 270f) && Mathf.Approximately(ann.Result.Power, 1f),
-                () => "the aim came back as " + ann.Result.Heading + " / " + ann.Result.Power);
+            ann.Result.Aim(-90f);                             // a cheating client
+            yield return WaitUntil(() => Mathf.Approximately(ann.Result.Heading, 270f), () => "the aim came back as " + ann.Result.Heading);
 
-            ann.Result.Aim(float.NaN, -3f);
-            yield return WaitUntil(() => Mathf.Approximately(ann.Result.Power, 0f), () => "the power came back as " + ann.Result.Power);
+            ann.Result.Aim(float.NaN);
+            yield return new WaitForSeconds(0.5f);
             Assert.That(ann.Result.Heading, Is.EqualTo(270f), "a NaN heading keeps the last good one");
         }
 
@@ -98,10 +96,10 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Client.Objects.TryGet(key, out dummy) && dummy.Position == Arena.DummyStart(2), "the client never got " + key);
             yield return WaitUntil(() => ann.Result.Position != Vector2.zero, "Ann was never given her seat's spot");
 
-            double? heading = BounceSolver.FindHeading(Arena.ToCore(ann.Result.Position), 1, key, Arena.Level, Arena.Targets(Client), Arena.Rules);
+            double? heading = BounceSolver.FindHeading(Arena.ToCore(ann.Result.Position), key, Arena.Level, Arena.Targets(Client), Arena.Rules);
             Assert.That(heading, Is.Not.Null, "no aim from " + ann.Result.Position + " reaches " + key);
 
-            ann.Result.Fire((float)heading.Value, 1f);
+            ann.Result.Fire((float)heading.Value);
             yield return WaitUntil(() => annOnHost.Result.Shots == 1 && annOnHost.Result.ShotInFlight, "the host never took the shot");
             yield return WaitUntil(() => ann.Result.LastShot != null, "her client never drew the shot");
 
@@ -122,8 +120,8 @@ namespace Ricochet.Tests
             var annOnHost = WaitForSpawn<Player>(Server, owner: Client.LocalClientId);
             yield return annOnHost;
 
-            ann.Result.Fire(270f, 1f);                            // straight down: it bounces floor to ceiling for seconds
-            ann.Result.Fire(0f, 1f);
+            ann.Result.Fire(270f);                            // straight down: it bounces floor to ceiling for seconds
+            ann.Result.Fire(0f);
             yield return WaitUntil(() => annOnHost.Result.Shots == 1, "the host never took the first shot");
             yield return new WaitForSeconds(0.3f);
             Assert.That(annOnHost.Result.Shots, Is.EqualTo(1), "the second Fire came while the first was in the air");

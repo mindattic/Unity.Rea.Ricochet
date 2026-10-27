@@ -94,16 +94,16 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Turns.For(Client) != null && annOnHerClient.Seat == ann.Seat, "her client never got the match");
             Assert.That(Turns.For(Server).Current, Is.EqualTo(host.Seat), "the host's seat opens");
 
-            annOnHerClient.Fire(0f, 0f);                           // not her turn
+            annOnHerClient.Fire(0f);                           // not her turn
             yield return new WaitForSeconds(0.3f);
             Assert.That(ann.Shots, Is.EqualTo(0), "the server took a shot out of turn");
 
-            host.ServerFire(0f, 0f);                               // the host's turn: a short shot to the right, at nobody
+            host.ServerFire(0f);                               // the host's turn: a short shot to the right, at nobody
             Assert.That(host.Shots, Is.EqualTo(1));
             yield return WaitUntil(() => Turns.For(Client).Current == ann.Seat && Turns.For(Client).MatchPhase == MatchPhase.Aiming,
                 () => "the turn never passed to Ann: " + Turns.For(Client).MatchPhase + " seat " + Turns.For(Client).Current);
 
-            annOnHerClient.Fire(0f, 0f);
+            annOnHerClient.Fire(0f);
             yield return WaitUntil(() => ann.Shots == 1, "her shot on her own turn was refused");
         }
 
@@ -117,9 +117,9 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Turns.For(Client) != null, "the client never got the match");
 
             string target = Arena.SeatTarget(ann.Seat);
-            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), 1, target, Arena.Level, Arena.Targets(Server), Arena.Rules);
+            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), target, Arena.Level, Arena.Targets(Server), Arena.Rules);
             Assert.That(heading, Is.Not.Null, "no aim from " + host.Position + " reaches Ann at " + ann.Position);
-            host.ServerFire((float)heading.Value, 1f);
+            host.ServerFire((float)heading.Value);
             Assert.That(host.LastShot.TargetId, Is.EqualTo(target));
             int bounces = host.LastShot.Bounces;
 
@@ -141,9 +141,9 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Turns.For(Client) != null, "the client never got the match");
 
             string target = Arena.SeatTarget(ann.Seat);
-            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), 1, target, Arena.Level, Arena.Targets(Server), Arena.Rules);
+            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), target, Arena.Level, Arena.Targets(Server), Arena.Rules);
             Assert.That(heading, Is.Not.Null, "no aim from " + host.Position + " reaches Ann at " + ann.Position);
-            host.ServerFire((float)heading.Value, 1f);
+            host.ServerFire((float)heading.Value);
             Assert.That(host.LastVolleyShot, Is.EqualTo(1));
 
             Player hostOnClient = Player.In(Client).First(p => p.OwnerClientId == Server.LocalClientId);

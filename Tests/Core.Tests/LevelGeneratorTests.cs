@@ -53,8 +53,8 @@ namespace Ricochet.Core.Tests
                 for (int seat = 1; seat < 4; seat++)
                 {
                     var targets = new[] { new Target("a", round.SpawnPoint(0), Seating.PlayerRadius), new Target("b", round.SpawnPoint(seat), Seating.PlayerRadius) };
-                    Assert.That(BounceSolver.FindHeading(round.SpawnPoint(0), 1, "b", round.Level, targets), Is.Not.Null, "seed " + seed + " 0 to " + seat);
-                    Assert.That(BounceSolver.FindHeading(round.SpawnPoint(seat), 1, "a", round.Level, targets), Is.Not.Null, "seed " + seed + " " + seat + " to 0");
+                    Assert.That(BounceSolver.FindHeading(round.SpawnPoint(0), "b", round.Level, targets), Is.Not.Null, "seed " + seed + " 0 to " + seat);
+                    Assert.That(BounceSolver.FindHeading(round.SpawnPoint(seat), "a", round.Level, targets), Is.Not.Null, "seed " + seed + " " + seat + " to 0");
                 }
             }
         }

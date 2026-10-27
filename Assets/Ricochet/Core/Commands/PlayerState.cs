@@ -32,8 +32,6 @@ namespace Ricochet.Core.Commands
         /// <summary>The barrel's heading in degrees, [0, 360).</summary>
         public double Heading { get; internal set; } = 90;
 
-        /// <summary>The shot's power, 0..1.</summary>
-        public double Power { get; internal set; } = 0.5;
 
         public Loadout Loadout { get; }
 
@@ -51,7 +49,6 @@ namespace Ricochet.Core.Commands
 
         public double ShotHeading { get; internal set; }
 
-        public double ShotPower { get; internal set; }
 
         public Weapon ShotWeapon { get; internal set; }
 
@@ -79,7 +76,6 @@ namespace Ricochet.Core.Commands
 
         public double AssistHeading { get; internal set; }
 
-        public double AssistPower { get; internal set; }
 
         /// <summary>Crates collected so far, and the last one (kind * 1000 + what it gave).</summary>
         public int Pickups { get; internal set; }
@@ -97,7 +93,6 @@ namespace Ricochet.Core.Commands
             Seat = from.Seat;
             Position = from.Position;
             Heading = from.Heading;
-            Power = from.Power;
             if (from.Weapons != 0)
             {
                 Loadout.UnpackFrom(from.Weapons, from.Items);
@@ -107,14 +102,12 @@ namespace Ricochet.Core.Commands
             Scale = from.Scale;
             Shots = from.Shots;
             ShotHeading = from.ShotHeading;
-            ShotPower = from.ShotPower;
             ShotWeapon = (Weapon)Math.Max(0, Math.Min(ArsenalRules.Kinds - 1, from.ShotWeapon));
             ShotFuse = from.ShotFuse;
             ShotExtraBounces = from.ShotExtraBounces;
             ShotDetonation = from.ShotDetonation;
             Assists = from.Assists;
             AssistHeading = from.AssistHeading;
-            AssistPower = from.AssistPower;
             Pickups = from.Pickups;
             LastPickup = from.LastPickup;
         }
@@ -132,7 +125,6 @@ namespace Ricochet.Core.Commands
         public int Seat = -1;
         public Vec2 Position;
         public double Heading = 90;
-        public double Power = 0.5;
 
         /// <summary>The loadout packed by <see cref="Loadout.PackWeapons"/> and <see cref="Loadout.PackItems"/>; 0 weapons is a fresh one.</summary>
         public int Weapons;
@@ -141,14 +133,12 @@ namespace Ricochet.Core.Commands
         public double Scale = 1;
         public int Shots;
         public double ShotHeading;
-        public double ShotPower;
         public int ShotWeapon;
         public double ShotFuse = 2;
         public int ShotExtraBounces;
         public double ShotDetonation;
         public int Assists;
         public double AssistHeading;
-        public double AssistPower;
         public int Pickups;
         public int LastPickup;
 
@@ -159,21 +149,18 @@ namespace Ricochet.Core.Commands
                 Seat = state.Seat,
                 Position = state.Position,
                 Heading = state.Heading,
-                Power = state.Power,
                 Weapons = state.Loadout.PackWeapons(),
                 Items = state.Loadout.PackItems(),
                 ExtraBounces = state.ExtraBounces,
                 Scale = state.Scale,
                 Shots = state.Shots,
                 ShotHeading = state.ShotHeading,
-                ShotPower = state.ShotPower,
                 ShotWeapon = (int)state.ShotWeapon,
                 ShotFuse = state.ShotFuse,
                 ShotExtraBounces = state.ShotExtraBounces,
                 ShotDetonation = state.ShotDetonation,
                 Assists = state.Assists,
                 AssistHeading = state.AssistHeading,
-                AssistPower = state.AssistPower,
                 Pickups = state.Pickups,
                 LastPickup = state.LastPickup,
             };

@@ -39,8 +39,8 @@ namespace Ricochet.Core.Tests
         public void ASliceOfThePathRunsFromEndToEndThroughEveryCornerBetween()
         {
             // From the centre of a 20 x 10 box straight right: the muzzle at 0.5, the wall 9.5 on, then 20 per crossing.
-            var rules = new Ricochet.Core.Aim.ShotRules { MaxRange = 1000, MuzzleOffset = 0.5, MaxBounces = 3 };
-            var path = Ricochet.Core.Aim.BounceSolver.Solve(Ricochet.Core.Aim.Vec2.Zero, 0, 1, new Ricochet.Core.Level.Level(-10, -5, 10, 5), null, rules);
+            var rules = new Ricochet.Core.Aim.ShotRules { MuzzleOffset = 0.5, MaxBounces = 3 };
+            var path = Ricochet.Core.Aim.BounceSolver.Solve(Ricochet.Core.Aim.Vec2.Zero, 0, new Ricochet.Core.Level.Level(-10, -5, 10, 5), null, rules);
             var slice = new System.Collections.Generic.List<Ricochet.Core.Aim.Vec2>();
 
             path.Slice(5, 15, slice);

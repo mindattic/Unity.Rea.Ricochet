@@ -335,7 +335,7 @@ namespace Ricochet.Core.Level
         private static bool CanTradeShots(Level level, Vec2 a, Vec2 b)
         {
             var targets = new[] { new Target("a", a, Seating.PlayerRadius), new Target("b", b, Seating.PlayerRadius) };
-            return BounceSolver.FindHeading(a, 1, "b", level, targets) != null && BounceSolver.FindHeading(b, 1, "a", level, targets) != null;
+            return BounceSolver.CanHit(a, "b", level, targets) && BounceSolver.CanHit(b, "a", level, targets);
         }
 
         private static bool ClearOfAll(Vec2 point, double distance, List<Vec2> others)

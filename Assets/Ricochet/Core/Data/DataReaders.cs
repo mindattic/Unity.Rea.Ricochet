@@ -45,14 +45,10 @@ namespace Ricochet.Core.Data
             {
                 MaxBounces = r.Integer("maxBounces", 1, 100),
                 MuzzleOffset = r.Number("muzzleOffset", 0, 10),
-                MinRange = r.Number("minRange", 0, 1000),
-                MaxRange = r.Number("maxRange", 0.1, 1000),
                 Speed = r.Number("speed", 0.1, 1000),
-                PowerPerSecond = r.Number("powerPerSecond", 0.01, 100),
                 DegreesPerSecond = r.Number("degreesPerSecond", 1, 3600),
                 DriveSpeed = r.Number("driveSpeed", 0, 100),
             };
-            r.Check(rules.MinRange <= rules.MaxRange, "maxRange", "must not be less than minRange (" + rules.MinRange.ToString("G6", CultureInfo.InvariantCulture) + ")");
             r.Done();
             return rules;
         }

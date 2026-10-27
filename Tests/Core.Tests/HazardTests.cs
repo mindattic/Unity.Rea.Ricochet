@@ -23,7 +23,7 @@ namespace Ricochet.Core.Tests
         {
             HazardField field = Field();
             Hazard arc = field.AddArc(new Vec2(4, -2), new Vec2(4, 2));
-            ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, 1, field.LevelFor(0), new[] { T("ann", 6, 0) });
+            ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, field.LevelFor(0), new[] { T("ann", 6, 0) });
 
             Assert.That(path.End, Is.EqualTo(ShotEndKind.Absorbed));
             Assert.That(path.HazardId, Is.EqualTo(arc.Id));
@@ -37,7 +37,7 @@ namespace Ricochet.Core.Tests
         {
             HazardField field = Field();
             field.AddArc(new Vec2(4, -2), new Vec2(4, 2));
-            ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, 1, field.LevelFor(0), new[] { T("ann", 2.5, 0) });
+            ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, field.LevelFor(0), new[] { T("ann", 2.5, 0) });
             Assert.That(path.End, Is.EqualTo(ShotEndKind.Target));
             Assert.That(path.TargetId, Is.EqualTo("ann"));
         }
@@ -55,10 +55,10 @@ namespace Ricochet.Core.Tests
             Assert.That(wall.A.X, Is.EqualTo(1).Within(1e-9), "across the aim");
             Assert.That(wall.LifeLeft, Is.InRange(20, 120));
 
-            ShotPath own = BounceSolver.Solve(new Vec2(-3, 0), 0, 1, field.LevelFor(2), new[] { T("ann", 6, 0) });
+            ShotPath own = BounceSolver.Solve(new Vec2(-3, 0), 0, field.LevelFor(2), new[] { T("ann", 6, 0) });
             Assert.That(own.End, Is.EqualTo(ShotEndKind.Target), "the owner's shot passes through");
 
-            ShotPath theirs = BounceSolver.Solve(new Vec2(-3, 0), 0, 1, field.LevelFor(5), new[] { T("ann", 6, 0) });
+            ShotPath theirs = BounceSolver.Solve(new Vec2(-3, 0), 0, field.LevelFor(5), new[] { T("ann", 6, 0) });
             Assert.That(theirs.End, Is.EqualTo(ShotEndKind.Absorbed));
             Assert.That(theirs.HazardId, Is.EqualTo(wall.Id));
         }
@@ -113,12 +113,12 @@ namespace Ricochet.Core.Tests
             var changed = new List<Hazard>();
             field.Changed += changed.Add;
             Assert.That(gate.Active, Is.True);
-            Assert.That(BounceSolver.Solve(Vec2.Zero, 0, 1, field.LevelFor(0), new[] { T("ann", 6, 0) }).End, Is.EqualTo(ShotEndKind.Absorbed));
+            Assert.That(BounceSolver.Solve(Vec2.Zero, 0, field.LevelFor(0), new[] { T("ann", 6, 0) }).End, Is.EqualTo(ShotEndKind.Absorbed));
 
             field.NextTurn();
             Assert.That(gate.Active, Is.False);
             Assert.That(changed, Is.EqualTo(new[] { gate }));
-            Assert.That(BounceSolver.Solve(Vec2.Zero, 0, 1, field.LevelFor(0), new[] { T("ann", 6, 0) }).End, Is.EqualTo(ShotEndKind.Target));
+            Assert.That(BounceSolver.Solve(Vec2.Zero, 0, field.LevelFor(0), new[] { T("ann", 6, 0) }).End, Is.EqualTo(ShotEndKind.Target));
 
             field.NextTurn();
             Assert.That(gate.Active, Is.True);
@@ -134,12 +134,12 @@ namespace Ricochet.Core.Tests
         {
             HazardField field = Field();
             Hazard tuft = field.AddFoliage(new Vec2(5, 0.1));
-            ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, 1, field.LevelFor(0));
+            ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, field.LevelFor(0));
             Assert.That(path.End, Is.EqualTo(ShotEndKind.Absorbed));
             Assert.That(path.HazardId, Is.EqualTo(tuft.Id));
             Assert.That(Vec2.Distance(path.Impact, tuft.A), Is.EqualTo(tuft.Radius).Within(1e-9));
 
-            ShotPath past = BounceSolver.Solve(new Vec2(0, 2), 0, 1, field.LevelFor(0), new[] { T("ann", 8, 2) });
+            ShotPath past = BounceSolver.Solve(new Vec2(0, 2), 0, field.LevelFor(0), new[] { T("ann", 8, 2) });
             Assert.That(past.End, Is.EqualTo(ShotEndKind.Target), "a shot clear of the tuft flies on");
         }
 
@@ -148,16 +148,16 @@ namespace Ricochet.Core.Tests
         {
             HazardField field = Field();
             field.AddBreach(new Vec2(10, -1), new Vec2(10, 1));
-            ShotPath out_ = BounceSolver.Solve(Vec2.Zero, 0, 1, field.LevelFor(0));
+            ShotPath out_ = BounceSolver.Solve(Vec2.Zero, 0, field.LevelFor(0));
             Assert.That(out_.End, Is.EqualTo(ShotEndKind.Escaped));
             Assert.That(out_.Impact.X, Is.EqualTo(10).Within(1e-9));
             Assert.That(out_.Contacts, Is.Empty);
 
-            ShotPath bounced = BounceSolver.Solve(new Vec2(0, 3), 0, 1, field.LevelFor(0));
+            ShotPath bounced = BounceSolver.Solve(new Vec2(0, 3), 0, field.LevelFor(0));
             Assert.That(bounced.Contacts[0].Kind, Is.EqualTo(ContactKind.Border));
             Assert.That(bounced.End, Is.Not.EqualTo(ShotEndKind.Escaped));
 
-            ShotPath top = BounceSolver.Solve(Vec2.Zero, 90, 1, field.LevelFor(0));
+            ShotPath top = BounceSolver.Solve(Vec2.Zero, 90, field.LevelFor(0));
             Assert.That(top.Contacts[0].Point.Y, Is.EqualTo(5).Within(1e-9), "the top is untouched");
         }
 
@@ -191,7 +191,7 @@ namespace Ricochet.Core.Tests
             Hazard[] breaches = field.Hazards.Where(h => h.Kind == HazardKind.Breach).ToArray();
             Assert.That(breaches.Length, Is.EqualTo(2));
             Assert.That(breaches.All(b => b.A.Y <= 5 + 1e-9 && b.B.Y <= 5 + 1e-9 && b.A.X <= 10 + 1e-9 && b.B.X <= 10 + 1e-9), Is.True);
-            ShotPath escaped = BounceSolver.Solve(new Vec2(9, 0), 90, 1, field.LevelFor(0));
+            ShotPath escaped = BounceSolver.Solve(new Vec2(9, 0), 90, field.LevelFor(0));
             Assert.That(escaped.End, Is.EqualTo(ShotEndKind.Escaped));
         }
 
@@ -239,7 +239,7 @@ namespace Ricochet.Core.Tests
             Assert.That(heading, Is.EqualTo(0).Within(1e-9));
 
             field.AddRedirector(0, spot, heading);
-            ShotPath shot = BounceSolver.Solve(new Vec2(4, -1), 20, 1, field.LevelFor(3));
+            ShotPath shot = BounceSolver.Solve(new Vec2(4, -1), 20, field.LevelFor(3));
             Assert.That(shot.Contacts[0].Kind, Is.EqualTo(ContactKind.Redirector));
             Assert.That(shot.Contacts[0].Point.X, Is.EqualTo(spot.X).Within(1e-9), "it stands across the way it flew");
             Assert.That(shot.Contacts[0].HeadingOut, Is.EqualTo(0).Within(1e-9), "and sends shots on the way it flew");
@@ -253,7 +253,7 @@ namespace Ricochet.Core.Tests
         public void AVortexSetOffInMidFlightImplodesThere_StrikingWhoeverIsInReachThen()
         {
             Target[] targets = { T("me", 0, 0), T("near", 4, 2), T("atTheEnd", 9.4, 0) };
-            Volley whole = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 1, 2, 0, Open(), targets);
+            Volley whole = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 2, 0, Open(), targets);
             Assert.That(whole.HasBlast, Is.True);
             Assert.That(whole.Main.End, Is.EqualTo(ShotEndKind.Target));
             Assert.That(whole.Strikes.Select(s => s.TargetId), Is.EquivalentTo(new[] { "atTheEnd" }));
@@ -266,14 +266,14 @@ namespace Ricochet.Core.Tests
             Assert.That(early.Speed, Is.EqualTo(whole.Speed));
 
             Assert.That(Arsenal.Detonate(whole, 100, targets), Is.SameAs(whole), "too late: it lands where it was going");
-            Volley cannon = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 1, 2, 0, Open(), targets);
+            Volley cannon = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 2, 0, Open(), targets);
             Assert.That(Arsenal.Detonate(cannon, 2, targets), Is.SameAs(cannon), "only a vortex can be set off");
         }
 
         [Test]
         public void ATruncatedPathKeepsTheContactsBeforeTheCut()
         {
-            ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, 1, new Level(-3, -3, 3, 3));
+            ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, new Level(-3, -3, 3, 3));
             double cut = path.Contacts[1].Distance + 0.5;
             ShotPath shorter = path.Truncate(cut);
             Assert.That(shorter.Contacts.Count, Is.EqualTo(2));
@@ -288,8 +288,8 @@ namespace Ricochet.Core.Tests
             HazardField field = Field();
             field.AddArc(new Vec2(3, -2), new Vec2(3, 2));
             Target[] targets = { T("near", 4, 1) };
-            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 1, 2, 0, field.LevelFor(0), targets);
-            Volley vortex = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 1, 2, 0, field.LevelFor(0), targets);
+            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 2, 0, field.LevelFor(0), targets);
+            Volley vortex = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 2, 0, field.LevelFor(0), targets);
             foreach (Volley volley in new[] { grenade, vortex })
             {
                 Assert.That(volley.Main.End, Is.EqualTo(ShotEndKind.Absorbed));
@@ -304,7 +304,7 @@ namespace Ricochet.Core.Tests
         {
             HazardField field = Field();
             field.AddArc(new Vec2(3, -2), new Vec2(3, 2));
-            Volley rail = Arsenal.Fire(Weapon.Railgun, Vec2.Zero, 0, 1, 2, 0, field.LevelFor(0), new[] { T("behind", 6, 0) });
+            Volley rail = Arsenal.Fire(Weapon.Railgun, Vec2.Zero, 0, 2, 0, field.LevelFor(0), new[] { T("behind", 6, 0) });
             Assert.That(rail.Strikes.Select(s => s.TargetId), Is.EqualTo(new[] { "behind" }));
             Assert.That(rail.HazardsHit, Is.Empty);
         }

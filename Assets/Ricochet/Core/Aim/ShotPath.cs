@@ -26,7 +26,7 @@ namespace Ricochet.Core.Aim
         /// <summary>The shot detonated on the contact that reached its bounce limit.</summary>
         BounceLimit,
 
-        /// <summary>The shot ran out of range (power) in mid-air.</summary>
+        /// <summary>The flight ran out of range in mid-air (an item's flight solved for a time).</summary>
         Spent,
 
         /// <summary>The shot ran into a barrier (a hazard, UR-T6) and stopped there; see <see cref="ShotPath.HazardId"/>.</summary>
@@ -78,13 +78,12 @@ namespace Ricochet.Core.Aim
         private readonly List<Contact> _contacts;
         private readonly double[] _cumulative;
 
-        internal ShotPath(Vec2 origin, double heading, double power, List<Vec2> points, List<Contact> contacts, ShotEndKind end, string targetId,
+        internal ShotPath(Vec2 origin, double heading, List<Vec2> points, List<Contact> contacts, ShotEndKind end, string targetId,
             int hazardId = -1)
         {
             HazardId = hazardId;
             Origin = origin;
             Heading = heading;
-            Power = power;
             _points = points;
             _contacts = contacts;
             End = end;
@@ -101,8 +100,6 @@ namespace Ricochet.Core.Aim
 
         /// <summary>The aim, in degrees.</summary>
         public double Heading { get; }
-
-        public double Power { get; }
 
         /// <summary>The muzzle, every contact point, and the end point, in order.</summary>
         public IReadOnlyList<Vec2> Points => _points;
@@ -211,7 +208,7 @@ namespace Ricochet.Core.Aim
                 }
             }
 
-            return new ShotPath(Origin, Heading, Power, points, contacts, ShotEndKind.Detonated, null);
+            return new ShotPath(Origin, Heading, points, contacts, ShotEndKind.Detonated, null);
         }
 
         /// <summary>

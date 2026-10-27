@@ -15,8 +15,6 @@ namespace Ricochet
     [NetBotDriver, Preserve]
     public sealed class GameBot : IBotDriver
     {
-        public const float Power = 1f;
-
         public static string DummyFor(string role)
         {
             return Arena.DummyKey(role == "A" ? 0 : role == "B" ? 1 : 2);
@@ -31,7 +29,7 @@ namespace Ricochet
                 "the dummy " + key + " to arrive");
             await bot.Until(() => me.Position != UnityEngine.Vector2.zero, "my seat's position");
 
-            double? heading = BounceSolver.FindHeading(Arena.ToCore(me.Position), Power, key, Arena.Level,
+            double? heading = BounceSolver.FindHeading(Arena.ToCore(me.Position), key, Arena.Level,
                 Arena.Targets(bot.Session), Arena.Rules);
             if (heading == null)
             {
@@ -39,7 +37,7 @@ namespace Ricochet
                 return;
             }
 
-            me.Fire((float)heading.Value, Power);
+            me.Fire((float)heading.Value);
             await bot.Until(() => dummy != null && dummy.Down, "the server to knock down " + key, 20f);
             bot.Pass("knocked down " + key + " firing at " + heading.Value.ToString("0.0") + " degrees from " + me.Position
                 + " as " + me.DisplayName);

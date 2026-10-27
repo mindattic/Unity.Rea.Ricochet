@@ -21,7 +21,7 @@ namespace Ricochet.EditorTests
 
         private static readonly string[] ExpectedActions =
         {
-            "Aim", "Power", "Fire", "CycleWeapon", "CycleItem", "UseItem",
+            "Aim", "Fire", "CycleWeapon", "CycleItem", "UseItem",
             "Fuse1", "Fuse2", "Fuse3", "EndTurn", "Drive", "Ping", "Pause", "Fullscreen", "Reroll",
         };
 
@@ -175,17 +175,6 @@ namespace Ricochet.EditorTests
 
             Press(Key.D);
             Assert.That(GameInput.Turn(), Is.EqualTo(-1f), "D turns right (-1)");
-        }
-
-        [Test]
-        public void UpAndDown_RaiseAndLowerThePower()
-        {
-            Press(Key.UpArrow);
-            Assert.That(GameInput.Charge(), Is.EqualTo(1f));
-            ReleaseKeys();
-
-            Press(Key.DownArrow);
-            Assert.That(GameInput.Charge(), Is.EqualTo(-1f));
         }
 
         [Test]

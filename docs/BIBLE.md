@@ -19,8 +19,8 @@ up to 16 players, human or AI — with real server-authoritative network multipl
 single-machine hotseat.
 
 ## 2. The product promise {#UR-§2}
-- The bounce-aiming mechanic (angle, power, a preview of the shot's ricochet off borders and redirectors before
-  you commit) is the one thing this project preserves faithfully from the GML original.
+- The bounce-aiming mechanic (an angle, the original's constant bullet speed with no power, a shot that flies until
+  its bounces run out, and a preview of its ricochet off borders and redirectors before you commit, U.RICO-T88) is the one thing this project preserves faithfully from the GML original.
 - Everything else the original did on one PC with one keyboard — turn order, AI opponents, weapons, items,
   hazards, the announcer, menus — is rebuilt as a real Unity game, not ported script-for-script.
 - Multiplayer is real: host or join by IP or a short code, play from separate machines, reconnect to your seat
@@ -57,7 +57,7 @@ Project-specific laws:
 ### UR-LAW-1 — The server owns the shot {#UR-LAW-1}
 Turn order, aim/fire intent, bounce-path resolution and damage are decided once, on the server (the host in a
 listen-server match), per [UM-LAW-1](https://github.com/mindattic/Unity.Multiplayer). A client sends its aim
-angle, power and fire intent as a `[ToServer]` call; it never computes or asserts the resolved path or the
+angle and fire intent as a `[ToServer]` call; it never computes or asserts the resolved path or the
 damage itself. A single-player match against AI runs the same server-authoritative loop locally (the host is
 also the only player), so there is one code path, not two.
 

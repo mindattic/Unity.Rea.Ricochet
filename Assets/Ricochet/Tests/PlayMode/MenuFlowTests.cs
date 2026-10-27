@@ -76,9 +76,9 @@ namespace Ricochet.Tests
             Assert.That(turns.GoalPoints, Is.EqualTo(MatchSetup.OneRound));
 
             string target = Arena.SeatTarget(ann.Seat);
-            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), 1, target, Arena.Level, Arena.Targets(Server), Arena.Rules);
+            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), target, Arena.Level, Arena.Targets(Server), Arena.Rules);
             Assert.That(heading, Is.Not.Null, "no aim from " + host.Position + " reaches Ann at " + ann.Position);
-            host.ServerFire((float)heading.Value, 1f);
+            host.ServerFire((float)heading.Value);
 
             yield return WaitUntil(() => turns.MatchPhase == MatchPhase.GameOver, () => "the game never ended for the client: " + turns.MatchPhase, 20f);
             Assert.That(turns.ChampionSeat, Is.EqualTo(host.Seat));

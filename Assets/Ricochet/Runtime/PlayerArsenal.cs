@@ -133,11 +133,11 @@ namespace Ricochet
         }
 
         /// <summary>Server: uses the selected item for an AI seat (or a test), through the same checks as a client's.</summary>
-        public void ServerUseItem(float heading, float power)
+        public void ServerUseItem(float heading)
         {
             if (IsServer)
             {
-                OnUseItem(heading, power);
+                OnUseItem(heading);
             }
         }
 
@@ -152,6 +152,6 @@ namespace Ricochet
         private void OnFuse(int change) => Run(new Cmd.FuseCommand(State.Id, change), mirror: false);
 
         // Server: use_item.gml. The selected item, if carried and in play, before this turn's shot.
-        private void OnUseItem(float heading, float power) => Run(new Cmd.UseItemCommand(State.Id, heading, power), mirror: false);
+        private void OnUseItem(float heading) => Run(new Cmd.UseItemCommand(State.Id, heading), mirror: false);
     }
 }

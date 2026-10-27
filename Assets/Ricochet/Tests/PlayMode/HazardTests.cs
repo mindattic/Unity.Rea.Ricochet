@@ -60,7 +60,7 @@ namespace Ricochet.Tests
             // Ann (seat 1, at x -4) faces the host (seat 0, at x 0) and stands her wall up: a unit in front, across her aim.
             annOnHerClient.CycleItem(1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.ShieldWall, "the shield wall was never selected");
-            annOnHerClient.UseItem(0f, 0.5f);
+            annOnHerClient.UseItem(0f);
             LevelHazard wallOnClient = null;
             yield return WaitUntil(() => (wallOnClient = LevelHazard.In(Client).FirstOrDefault(h => h.Ready && h.HazardKind == HazardKind.ShieldWall)) != null,
                 "her client never saw her wall");
@@ -73,13 +73,13 @@ namespace Ricochet.Tests
             Assert.That(ann.Loadout.Count(Item.ShieldWall), Is.EqualTo(3), "practice is free: nothing spent");
 
             // Her own shot passes through it.
-            annOnHerClient.Fire(0f, 1f);
+            annOnHerClient.Fire(0f);
             yield return WaitUntil(() => ann.LastVolley != null, "the server never took her shot");
             Assert.That(ann.LastVolley.Main.End, Is.Not.EqualTo(ShotEndKind.Absorbed));
             yield return WaitUntil(() => !ann.ShotInFlight, "her shot never landed", 10f);
 
             // The host's shot back at her stops in it, and the wall shatters everywhere.
-            host.ServerFire(180f, 1f);
+            host.ServerFire(180f);
             Assert.That(host.LastVolley.Main.End, Is.EqualTo(ShotEndKind.Absorbed));
             Assert.That(host.LastVolley.Main.Impact.X, Is.EqualTo(-3).Within(1e-6));
             Player hostOnClient = Player.In(Client).First(p => p.Seat == host.Seat);
@@ -90,7 +90,7 @@ namespace Ricochet.Tests
 
             // With it gone the same shot flies on.
             yield return WaitUntil(() => !host.ShotInFlight, "the host's shot never landed");
-            host.ServerFire(180f, 1f);
+            host.ServerFire(180f);
             Assert.That(host.LastVolley.Main.End, Is.Not.EqualTo(ShotEndKind.Absorbed));
         }
 
@@ -104,9 +104,9 @@ namespace Ricochet.Tests
 
             annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.Redirector, "the redirector was never selected");
-            annOnHerClient.UseItem(0f, 0f); // flies right until she presses again (U.RICO-T80)
+            annOnHerClient.UseItem(0f); // flies right until she presses again (U.RICO-T80)
             yield return new WaitForSeconds(0.05f);
-            annOnHerClient.UseItem(0f, 0f);
+            annOnHerClient.UseItem(0f);
             LevelHazard placed = null;
             yield return WaitUntil(() => (placed = LevelHazard.In(Client).FirstOrDefault(h => h.Ready && h.HazardKind == HazardKind.Redirector)) != null,
                 "her client never saw the redirector");
@@ -125,7 +125,7 @@ namespace Ricochet.Tests
             float heading = -1f;
             for (float h = 0f; h < 360f && heading < 0f; h += 0.25f)
             {
-                ShotPath path = host.Solve(h, 1f);
+                ShotPath path = host.Solve(h);
                 if (path.Contacts.Count > 0 && path.Contacts[0].Kind == ContactKind.Redirector
                     && System.Math.Abs(path.Contacts[0].Point.X - standing.X) < 1e-3)
                 {
@@ -134,7 +134,7 @@ namespace Ricochet.Tests
             }
 
             Assert.That(heading, Is.GreaterThanOrEqualTo(0f), "no heading of the host's reaches the redirector");
-            host.ServerFire(heading, 1f);
+            host.ServerFire(heading);
             Assert.That(host.LastVolley.Main.Contacts.Count, Is.GreaterThan(0));
             Assert.That(host.LastVolley.Main.Contacts[0].Kind, Is.EqualTo(ContactKind.Redirector));
             Assert.That(host.LastVolley.Main.Contacts[0].HeadingOut, Is.EqualTo(0).Within(1e-6));
@@ -151,13 +151,13 @@ namespace Ricochet.Tests
             // Ann's wall, a unit above her (x -4): within the vortex's reach when it goes off to her left.
             annOnHerClient.CycleItem(1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.ShieldWall, "the shield wall was never selected");
-            annOnHerClient.UseItem(90f, 0.5f);
+            annOnHerClient.UseItem(90f);
             yield return WaitUntil(() => LevelHazard.In(Client).Any(h => h.Ready && h.HazardKind == HazardKind.ShieldWall), "her client never saw her wall");
 
             // The host fires the vortex left along the bottom and sets it off on its way.
             host.ServerCycleWeapon(-1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Vortex));
-            host.ServerFire(180f, 1f);
+            host.ServerFire(180f);
             Assert.That(host.LastVolley.Weapon, Is.EqualTo(Weapon.Vortex));
             Player hostOnClient = Player.In(Client).First(p => p.Seat == host.Seat);
             yield return WaitUntil(() => hostOnClient.LastVolley != null && hostOnClient.ShotInFlight, "her client never drew the vortex");
@@ -185,7 +185,7 @@ namespace Ricochet.Tests
 
             // Ann, standing over the breach, fires straight down: her shot flies out of the level.
             Assert.That(ann.Position.x, Is.InRange((float)System.Math.Min(breach.A.X, breach.B.X), (float)System.Math.Max(breach.A.X, breach.B.X)));
-            annOnHerClient.Fire(270f, 1f);
+            annOnHerClient.Fire(270f);
             yield return WaitUntil(() => ann.LastVolley != null, "the server never took her shot");
             Assert.That(ann.LastVolley.Main.End, Is.EqualTo(ShotEndKind.Escaped));
             yield return WaitUntil(() => annOnHerClient.LastVolley != null, "her client never drew her shot");
@@ -217,7 +217,7 @@ namespace Ricochet.Tests
             float? atArc = null;
             for (float heading = 0f; heading < 360f && atArc == null; heading += 0.5f)
             {
-                ShotPath path = host.SolveVolley(Weapon.Cannon, heading, 1f, 2, 0).Main;
+                ShotPath path = host.SolveVolley(Weapon.Cannon, heading, 2, 0).Main;
                 if (path.End == ShotEndKind.Absorbed && path.HazardId == arc.Id)
                 {
                     atArc = heading;
@@ -225,7 +225,7 @@ namespace Ricochet.Tests
             }
 
             Assert.That(atArc, Is.Not.Null, "no shot from the host's seat reaches the arc");
-            host.ServerFire(atArc.Value, 1f);
+            host.ServerFire(atArc.Value);
             Assert.That(host.LastVolley.Main.End, Is.EqualTo(ShotEndKind.Absorbed));
             Assert.That(host.LastVolley.HazardsHit, Is.EqualTo(new[] { arc.Id }));
 
@@ -267,14 +267,14 @@ namespace Ricochet.Tests
 
                 host.CycleItem(-1);
                 yield return WaitUntil(() => host.Loadout.Item == Item.Redirector, "the redirector was never selected");
-                host.ServerUseItem(0f, 0f);
+                host.ServerUseItem(0f);
                 yield return null;
-                host.ServerUseItem(0f, 0f); // U.RICO-T80: the second press stops it
+                host.ServerUseItem(0f); // U.RICO-T80: the second press stops it
                 Hazard placed = null;
                 yield return WaitUntil(() => (placed = arena.HazardsOnField.FirstOrDefault(h => h.Kind == HazardKind.Redirector)) != null, "no redirector was set down");
                 double before = placed.Heading;
 
-                host.ServerFire(90f, 1f); // anywhere: the turn only has to pass
+                host.ServerFire(90f); // anywhere: the turn only has to pass
                 yield return WaitUntil(() => Turns.For(Server).Current == ann.Seat, "the turn never passed", 15f);
                 Assert.That(Angles.Normalize(placed.Heading - before), Is.EqualTo(Angles.Normalize(expectedTurn)).Within(1e-6));
             }

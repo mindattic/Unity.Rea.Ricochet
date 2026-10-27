@@ -74,23 +74,8 @@ namespace Ricochet.Core.Tests
             authority.Apply(new AimCommand(1, double.NaN));
             Assert.That(ann.Heading, Is.EqualTo(270), "a NaN heading keeps the last good one");
             authority.Apply(new AimCommand(1, double.PositiveInfinity));
-            authority.Apply(new FireCommand(1, double.NegativeInfinity, 1));
+            authority.Apply(new FireCommand(1, double.NegativeInfinity));
             Assert.That(ann.Heading, Is.EqualTo(270), "an infinite heading is garbage too");
-        }
-
-        [Test]
-        public void SetPower_ClampsToZeroToOne_AndNaNIsZero()
-        {
-            GameAuthority authority = Practice(out PlayerState ann, out _);
-
-            authority.Apply(new SetPowerCommand(1, 5));
-            Assert.That(ann.Power, Is.EqualTo(1));
-            IReadOnlyList<GameEvent> events = authority.Apply(new SetPowerCommand(1, -3));
-            Assert.That(ann.Power, Is.EqualTo(0));
-            Assert.That(Of<Aimed>(events).Single().Power, Is.EqualTo(0));
-            authority.Apply(new SetPowerCommand(1, 0.8));
-            authority.Apply(new SetPowerCommand(1, double.NaN));
-            Assert.That(ann.Power, Is.EqualTo(0));
         }
 
         [Test]
@@ -98,7 +83,7 @@ namespace Ricochet.Core.Tests
         {
             GameAuthority authority = Practice(out PlayerState ann, out _);
             Assert.That(authority.Apply(new AimCommand(99, 10)), Is.Empty);
-            Assert.That(authority.Apply(new FireCommand(99, 10, 1)), Is.Empty);
+            Assert.That(authority.Apply(new FireCommand(99, 10)), Is.Empty);
             Assert.That(authority.Apply(new EndTurnCommand(99)), Is.Empty);
             Assert.That(ann.Heading, Is.EqualTo(90));
             Assert.Throws<ArgumentNullException>(() => authority.Apply(null));
@@ -111,7 +96,7 @@ namespace Ricochet.Core.Tests
         {
             GameAuthority authority = Practice(out PlayerState ann, out _);
 
-            IReadOnlyList<GameEvent> events = authority.Apply(new FireCommand(1, 45, 1));
+            IReadOnlyList<GameEvent> events = authority.Apply(new FireCommand(1, 45));
             ShotFired fired = Of<ShotFired>(events).Single();
             Assert.That(fired.PlayerId, Is.EqualTo(1));
             Assert.That(fired.Shot, Is.EqualTo(1));
@@ -122,7 +107,7 @@ namespace Ricochet.Core.Tests
             Assert.That(ann.InFlight, Is.True);
             Assert.That(ann.Shots, Is.EqualTo(1));
 
-            Assert.That(authority.Apply(new FireCommand(1, 90, 1)), Is.Empty, "a second shot while one is in the air is ignored");
+            Assert.That(authority.Apply(new FireCommand(1, 90)), Is.Empty, "a second shot while one is in the air is ignored");
             Assert.That(ann.Shots, Is.EqualTo(1));
         }
 
@@ -132,7 +117,7 @@ namespace Ricochet.Core.Tests
             GameAuthority authority = Practice(out PlayerState ann, out _);
             authority.Apply(new CycleWeaponCommand(1, 1)); // the laser
             Assert.That(ann.Loadout.Weapon, Is.EqualTo(Weapon.Laser));
-            authority.Apply(new FireCommand(1, 45, 1));
+            authority.Apply(new FireCommand(1, 45));
             Assert.That(ann.Loadout.Count(Weapon.Laser), Is.EqualTo(3), "practice is free fire");
         }
 
@@ -142,11 +127,11 @@ namespace Ricochet.Core.Tests
             GameAuthority authority = TwoSeats(out PlayerState a, out PlayerState b);
             Assert.That(authority.Match.Current, Is.EqualTo(0));
 
-            Assert.That(authority.Apply(new FireCommand(2, 0, 1)), Is.Empty, "not B's turn");
+            Assert.That(authority.Apply(new FireCommand(2, 0)), Is.Empty, "not B's turn");
             Assert.That(b.Shots, Is.EqualTo(0));
 
             authority.Apply(new CycleWeaponCommand(1, 1));
-            IReadOnlyList<GameEvent> events = authority.Apply(new FireCommand(1, 90, 1));
+            IReadOnlyList<GameEvent> events = authority.Apply(new FireCommand(1, 90));
             Assert.That(Of<ShotFired>(events).Single().Weapon, Is.EqualTo(Weapon.Laser));
             Assert.That(a.Loadout.Count(Weapon.Laser), Is.EqualTo(2));
             Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.ShotInFlight), "the turn clock stops while it flies");
@@ -158,7 +143,7 @@ namespace Ricochet.Core.Tests
             // UR-T42: obj_ready's hold; turnStarted is false, so fire_weapon, move_forward and next_player all refuse.
             GameAuthority authority = TwoSeats(out PlayerState a, out _, readyCard: true);
             Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.Ready));
-            Assert.That(authority.Apply(new FireCommand(1, 90, 1)), Is.Empty);
+            Assert.That(authority.Apply(new FireCommand(1, 90)), Is.Empty);
             authority.Apply(new DriveCommand(1, 1));
             authority.AdvanceDrive(1, 0.1);
             Assert.That(authority.Match.HasMoved, Is.False, "no driving before the clock");
@@ -169,7 +154,7 @@ namespace Ricochet.Core.Tests
             authority.Tick(MatchRules.Default.ReadySeconds + 0.01);
             Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.Aiming));
             Assert.That(authority.Match.TimeLeft, Is.EqualTo(MatchRules.Default.TurnSeconds), "the clock starts full");
-            Assert.That(Of<ShotFired>(authority.Apply(new FireCommand(1, 90, 1))), Has.Count.EqualTo(1));
+            Assert.That(Of<ShotFired>(authority.Apply(new FireCommand(1, 90))), Has.Count.EqualTo(1));
         }
 
         [Test]
@@ -210,7 +195,7 @@ namespace Ricochet.Core.Tests
             authority.Apply(new DriveCommand(1, 1));
             authority.AdvanceDrive(1, 0.1);
             Assert.That(authority.Match.HasMoved, Is.True);
-            Assert.That(authority.Apply(new FireCommand(1, 90, 1)), Is.Empty, "you cannot move and shoot within the same turn");
+            Assert.That(authority.Apply(new FireCommand(1, 90)), Is.Empty, "you cannot move and shoot within the same turn");
             Assert.That(a.Shots, Is.EqualTo(0));
         }
 
@@ -218,7 +203,7 @@ namespace Ricochet.Core.Tests
         public void AFlyingShot_PassesBouncesInOrder_ThenLands()
         {
             GameAuthority authority = Practice(out PlayerState ann, out _);
-            authority.Apply(new FireCommand(1, 20, 1)); // up and to the right: it banks off the walls
+            authority.Apply(new FireCommand(1, 20)); // up and to the right: it banks off the walls
             Volley volley = ann.LastVolley;
             int contacts = volley.Main.Contacts.Count;
             Assert.That(contacts, Is.GreaterThan(0));
@@ -243,7 +228,7 @@ namespace Ricochet.Core.Tests
             GameAuthority authority = Practice(out PlayerState ann, out World world);
             world.Dummies.Add(new Target("dummy:0", new Vec2(-4, -4.5), 0.45));
 
-            authority.Apply(new FireCommand(1, AtSeatOne, 1));
+            authority.Apply(new FireCommand(1, AtSeatOne));
             var all = new List<GameEvent>();
             for (int i = 0; i < 400 && ann.InFlight; i++)
             {
@@ -262,7 +247,7 @@ namespace Ricochet.Core.Tests
             GameAuthority authority = TwoSeats(out PlayerState a, out PlayerState b, health: 1);
             Assert.That(authority.Targets().Select(t => t.Id), Does.Contain("seat:1"), "a player in the round is a target");
 
-            authority.Apply(new FireCommand(1, AtSeatOne, 1));
+            authority.Apply(new FireCommand(1, AtSeatOne));
             var all = new List<GameEvent>();
             for (int i = 0; i < 400 && a.InFlight; i++)
             {
@@ -296,7 +281,13 @@ namespace Ricochet.Core.Tests
         public void ALandedShot_PassesTheTurn_AndTheNextTurnStartsAfterThePause()
         {
             GameAuthority authority = TwoSeats(out PlayerState a, out _);
-            authority.Apply(new FireCommand(1, 90, 0));
+            double miss = 0; // a shot flies all its bounces (U.RICO-T88): one that strikes nobody
+            while (authority.Solve(a, Weapon.Cannon, miss, 2, 0).Strikes.Count > 0)
+            {
+                miss += 1;
+            }
+
+            authority.Apply(new FireCommand(1, miss));
             var landing = new List<GameEvent>();
             for (int i = 0; i < 400 && a.InFlight; i++)
             {
@@ -350,7 +341,7 @@ namespace Ricochet.Core.Tests
             Assert.That(Of<LoadoutChanged>(authority.Apply(new CycleItemCommand(1, 1))), Has.Count.EqualTo(1));
             Assert.That(ann.Loadout.Item, Is.EqualTo(Item.ShieldWall));
 
-            authority.Apply(new FireCommand(1, 90, 1));
+            authority.Apply(new FireCommand(1, 90));
             Assert.That(authority.Apply(new CycleItemCommand(1, 1)), Is.Empty, "nothing of yours may change while it flies");
             Assert.That(ann.Loadout.Item, Is.EqualTo(Item.ShieldWall));
         }
@@ -369,7 +360,7 @@ namespace Ricochet.Core.Tests
             Assert.That(Of<LoadoutChanged>(authority.Apply(new SelectItemCommand(1, Item.Teleporter))), Has.Count.EqualTo(1));
             Assert.That(ann.Loadout.Item, Is.EqualTo(Item.Teleporter));
 
-            authority.Apply(new FireCommand(1, 90, 1));
+            authority.Apply(new FireCommand(1, 90));
             Assert.That(authority.Apply(new SelectItemCommand(1, Item.ShieldWall)), Is.Empty, "nothing of yours may change while it flies");
             Assert.That(ann.Loadout.Item, Is.EqualTo(Item.Teleporter));
         }
@@ -394,12 +385,12 @@ namespace Ricochet.Core.Tests
         public void UseItem_ExtraBounce_IsCarriedByTheNextShotThenSpent_AndClearsWhenTheTurnPasses()
         {
             GameAuthority authority = TwoSeats(out PlayerState a, out _);
-            IReadOnlyList<GameEvent> used = authority.Apply(new UseItemCommand(1, 90, 0.5));
+            IReadOnlyList<GameEvent> used = authority.Apply(new UseItemCommand(1, 90));
             Assert.That(Of<ItemUsed>(used).Single().Item, Is.EqualTo(Item.ExtraBounce));
             Assert.That(a.ExtraBounces, Is.EqualTo(1));
             Assert.That(a.Loadout.Count(Item.ExtraBounce), Is.EqualTo(2), "a match spends it");
 
-            ShotFired fired = Of<ShotFired>(authority.Apply(new FireCommand(1, 90, 0.5))).Single();
+            ShotFired fired = Of<ShotFired>(authority.Apply(new FireCommand(1, 90))).Single();
             Assert.That(fired.ExtraBounces, Is.EqualTo(1), "the shot carries the extra bounce");
             Assert.That(a.ExtraBounces, Is.EqualTo(0));
         }
@@ -408,7 +399,7 @@ namespace Ricochet.Core.Tests
         public void UseItem_InPractice_SpendsNothing_AndExtraBouncesCarryOverToTheShot()
         {
             GameAuthority authority = Practice(out PlayerState ann, out _);
-            authority.Apply(new UseItemCommand(1, 90, 0.5));
+            authority.Apply(new UseItemCommand(1, 90));
             Assert.That(ann.Loadout.Count(Item.ExtraBounce), Is.EqualTo(3));
             Assert.That(ann.ExtraBounces, Is.EqualTo(1));
         }
@@ -417,7 +408,7 @@ namespace Ricochet.Core.Tests
         public void UseItem_ExtraBounceUnusedIsDroppedWhenTheTurnPasses()
         {
             GameAuthority authority = TwoSeats(out PlayerState a, out _);
-            authority.Apply(new UseItemCommand(1, 90, 0.5));
+            authority.Apply(new UseItemCommand(1, 90));
             authority.Apply(new EndTurnCommand(1));
             Assert.That(a.ExtraBounces, Is.EqualTo(0));
         }
@@ -432,7 +423,7 @@ namespace Ricochet.Core.Tests
             Assert.That(ann.Loadout.Item, Is.EqualTo(Item.Teleporter));
             Vec2 before = ann.Position;
 
-            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 180, 0.5))).Single();
+            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 180))).Single();
             Assert.That(ann.Position, Is.EqualTo(before), "U.RICO-T80: nothing moves until the teleporter arrives");
             Assert.That(authority.ItemsInFlight(1), Is.True);
             double seconds = used.Flight.Length / (ItemLooks.SpeedFactor(Item.Teleporter) * authority.Rules.Speed);
@@ -451,7 +442,7 @@ namespace Ricochet.Core.Tests
         {
             GameAuthority authority = Practice(out PlayerState ann, out _);
             authority.Apply(new CycleItemCommand(1, 1)); // shield wall
-            authority.Apply(new UseItemCommand(1, 90, 0.5));
+            authority.Apply(new UseItemCommand(1, 90));
             Assert.That(authority.Hazards.Hazards.Count(h => h.Kind == HazardKind.ShieldWall), Is.EqualTo(1));
             Assert.That(authority.Hazards.Hazards.Single(h => h.Kind == HazardKind.ShieldWall).Owner, Is.EqualTo(0));
 
@@ -461,10 +452,10 @@ namespace Ricochet.Core.Tests
             }
 
             Assert.That(ann.Loadout.Item, Is.EqualTo(Item.Redirector));
-            authority.Apply(new UseItemCommand(1, 90, 0.5));
+            authority.Apply(new UseItemCommand(1, 90));
             Assert.That(authority.Hazards.Hazards.Count(h => h.Kind == HazardKind.Redirector), Is.Zero, "U.RICO-T80: it flies until stopped");
             authority.AdvanceItems(1, 0.1);
-            authority.Apply(new UseItemCommand(1, 90, 0.5)); // redirector_detonate
+            authority.Apply(new UseItemCommand(1, 90)); // redirector_detonate
             Assert.That(authority.Hazards.Hazards.Count(h => h.Kind == HazardKind.Redirector), Is.EqualTo(1));
         }
 
@@ -476,13 +467,13 @@ namespace Ricochet.Core.Tests
             GameAuthority authority = TwoSeats(out PlayerState a, out _);
             authority.Apply(new SelectItemCommand(1, Item.Redirector));
             int carried = a.Loadout.Count(Item.Redirector);
-            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
+            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90))).Single();
             Assert.That(a.Loadout.Count(Item.Redirector), Is.EqualTo(carried - 1), "paid for once, as it sets off");
             double speed = ItemLooks.SpeedFactor(Item.Redirector) * authority.Rules.Speed;
             Assert.That(authority.AdvanceItems(1, 0.05), Is.Empty);
             Assert.That(authority.Hazards.Hazards.Count(h => h.Kind == HazardKind.Redirector), Is.Zero);
 
-            IReadOnlyList<GameEvent> stop = authority.Apply(new UseItemCommand(1, 90, 0.5));
+            IReadOnlyList<GameEvent> stop = authority.Apply(new UseItemCommand(1, 90));
             RedirectorStopped stopped = Of<RedirectorStopped>(stop).Single();
             Assert.That(stopped.Distance, Is.EqualTo(speed * 0.05).Within(1e-4));
             Assert.That(Of<ItemUsed>(stop), Is.Empty, "the second press launches nothing");
@@ -492,7 +483,7 @@ namespace Ricochet.Core.Tests
             Assert.That(Vec2.Distance((placed.A + placed.B) * 0.5, at), Is.LessThan(1e-3), "it stands where it stopped");
             Assert.That(authority.ItemsInFlight(1), Is.False);
 
-            Assert.That(Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))), Is.Empty, "one redirector a turn");
+            Assert.That(Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90))), Is.Empty, "one redirector a turn");
         }
 
         [Test]
@@ -501,7 +492,7 @@ namespace Ricochet.Core.Tests
             GameAuthority authority = TwoSeats(out PlayerState a, out _);
             Vec2 before = a.Position;
             authority.Apply(new SelectItemCommand(1, Item.Teleporter));
-            authority.Apply(new UseItemCommand(1, 180, 0.5));
+            authority.Apply(new UseItemCommand(1, 180));
             var passed = new List<GameEvent>(authority.Apply(new EndTurnCommand(1)));
             passed.AddRange(authority.Tick(authority.MatchRules.EndTurnSeconds + 0.1));
             Assert.That(Of<ItemFlightsCleared>(passed), Has.Count.EqualTo(1), "next_player destroys every obj_teleporter");
@@ -520,7 +511,7 @@ namespace Ricochet.Core.Tests
 
             // U.RICO-T90: aimed at seat 1, it passes through that tank on to the first shape (or the border) beyond.
             int walls = authority.LevelFor(0).Walls.Count;
-            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, AtSeatOne, 0.5))).Single();
+            ItemUsed used = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, AtSeatOne))).Single();
             Assert.That(used.Flight.End, Is.Not.EqualTo(ShotEndKind.Target));
             Assert.That(Of<Shrunk>(authority.AdvanceItems(1, 0.001)), Is.Empty, "U.RICO-T80: nothing shrinks until the ray arrives");
             IReadOnlyList<GameEvent> events = authority.AdvanceItems(1, used.Flight.Length / (ItemLooks.SpeedFactor(Item.ShrinkRay) * authority.Rules.Speed) + 0.01);
@@ -546,11 +537,11 @@ namespace Ricochet.Core.Tests
         {
             GameAuthority authority = TwoSeats(out PlayerState a, out PlayerState b);
             Vec2 from = a.Position;
-            ItemUsed bounce = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
+            ItemUsed bounce = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90))).Single();
             Assert.That(bounce.Flight, Is.Null, "an extra bounce does not fly");
 
             authority.Apply(new SelectItemCommand(1, Item.ShrinkRay));
-            IReadOnlyList<GameEvent> events = authority.Apply(new UseItemCommand(1, AtSeatOne, 0.5));
+            IReadOnlyList<GameEvent> events = authority.Apply(new UseItemCommand(1, AtSeatOne));
             ItemUsed ray = Of<ItemUsed>(events).Single();
             Assert.That(ray.Flight, Is.Not.Null);
             Assert.That(ray.Flight.Origin, Is.EqualTo(from));
@@ -559,7 +550,7 @@ namespace Ricochet.Core.Tests
             authority.AdvanceItems(1, 60);
 
             authority.Apply(new SelectItemCommand(1, Item.Teleporter));
-            events = authority.Apply(new UseItemCommand(1, 90, 0.5));
+            events = authority.Apply(new UseItemCommand(1, 90));
             ItemUsed teleporter = Of<ItemUsed>(events).Single();
             Moved moved = Of<Moved>(authority.AdvanceItems(1, 60)).Single();
             Assert.That(teleporter.Flight, Is.Not.Null);
@@ -567,15 +558,15 @@ namespace Ricochet.Core.Tests
             Assert.That(Vec2.Distance(teleporter.Flight.Impact, moved.To), Is.LessThan(1.0), "and the tank lands where it stops");
 
             authority.Apply(new SelectItemCommand(1, Item.Redirector));
-            ItemUsed redirector = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
+            ItemUsed redirector = Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90))).Single();
             Assert.That(redirector.Flight, Is.Not.Null);
             authority.AdvanceItems(1, 0.1);
-            RedirectorStopped stopped = Of<RedirectorStopped>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single();
+            RedirectorStopped stopped = Of<RedirectorStopped>(authority.Apply(new UseItemCommand(1, 90))).Single();
             Hazard placed = authority.Hazards.Hazards.Single(h => h.Kind == HazardKind.Redirector);
             Assert.That(Vec2.Distance(redirector.Flight.PositionAt(stopped.Distance, out _), (placed.A + placed.B) * 0.5), Is.LessThan(1e-3), "it stands where it stopped");
 
             authority.Apply(new SelectItemCommand(1, Item.ShieldWall));
-            Assert.That(Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90, 0.5))).Single().Flight, Is.Null, "a shield wall does not fly");
+            Assert.That(Of<ItemUsed>(authority.Apply(new UseItemCommand(1, 90))).Single().Flight, Is.Null, "a shield wall does not fly");
         }
 
         [Test]
@@ -588,12 +579,11 @@ namespace Ricochet.Core.Tests
             }
 
             Assert.That(a.Loadout.Item, Is.EqualTo(Item.AimAssist));
-            IReadOnlyList<GameEvent> events = authority.Apply(new UseItemCommand(1, 90, 0.5));
+            IReadOnlyList<GameEvent> events = authority.Apply(new UseItemCommand(1, 90));
             AssistApplied assist = Of<AssistApplied>(events).Single();
             Assert.That(assist.Found, Is.True);
             Assert.That(a.Assists, Is.EqualTo(1));
             Assert.That(a.AssistHeading, Is.EqualTo(a.Heading));
-            Assert.That(a.AssistPower, Is.EqualTo(a.Power));
             Assert.That(a.Heading, Is.Not.EqualTo(90), "the aim moved onto a shot");
         }
 
@@ -601,7 +591,7 @@ namespace Ricochet.Core.Tests
         public void UseItem_OutOfTurnOrWithoutTheItem_ChangesNothing()
         {
             GameAuthority authority = TwoSeats(out _, out PlayerState b, arms: rules => rules.SetStartCount(Item.ExtraBounce, 0));
-            Assert.That(authority.Apply(new UseItemCommand(2, 90, 0.5)), Is.Empty);
+            Assert.That(authority.Apply(new UseItemCommand(2, 90)), Is.Empty);
             Assert.That(b.ExtraBounces, Is.EqualTo(0));
 
             GameAuthority practice = Practice(out PlayerState ann, out _, rules =>
@@ -611,7 +601,7 @@ namespace Ricochet.Core.Tests
                     rules.SetStartCount((Item)i, 0);
                 }
             });
-            Assert.That(practice.Apply(new UseItemCommand(1, 90, 0.5)), Is.Empty, "nothing carried, nothing to use");
+            Assert.That(practice.Apply(new UseItemCommand(1, 90)), Is.Empty, "nothing carried, nothing to use");
         }
 
         // ---- Detonate
@@ -629,7 +619,7 @@ namespace Ricochet.Core.Tests
             });
             Assert.That(ann.Loadout.Weapon, Is.EqualTo(Weapon.Vortex));
 
-            authority.Apply(new FireCommand(1, 180, 1)); // along the floor, a long way
+            authority.Apply(new FireCommand(1, 180)); // along the floor, a long way
             authority.AdvanceFlight(1, 0.05);
             Assert.That(ann.InFlight, Is.True);
 
@@ -652,7 +642,7 @@ namespace Ricochet.Core.Tests
         {
             GameAuthority authority = Practice(out PlayerState ann, out _);
             Assert.That(authority.Apply(new DetonateCommand(1)), Is.Empty);
-            authority.Apply(new FireCommand(1, 45, 1));
+            authority.Apply(new FireCommand(1, 45));
             Assert.That(authority.Apply(new DetonateCommand(1)), Is.Empty, "a cannon shell cannot be set off");
         }
 
@@ -751,7 +741,7 @@ namespace Ricochet.Core.Tests
             Assert.That(authority.Apply(new EndTurnCommand(2)), Is.Empty, "not B's turn");
             Assert.That(authority.Match.Current, Is.EqualTo(0));
 
-            authority.Apply(new FireCommand(1, 90, 1));
+            authority.Apply(new FireCommand(1, 90));
             Assert.That(authority.Apply(new EndTurnCommand(1)), Is.Empty, "too late: it is in the air");
 
             GameAuthority practice = Practice(out _, out _);
@@ -904,7 +894,7 @@ namespace Ricochet.Core.Tests
             Assert.That(Of<CrateLanded>(landing).Single().Crate, Is.SameAs(crate));
 
             int items = Enumerable.Range(0, ArsenalRules.Kinds).Sum(i => a.Loadout.Count((Item)i));
-            authority.Apply(new FireCommand(1, 90, 1));
+            authority.Apply(new FireCommand(1, 90));
             var all = new List<GameEvent>();
             for (int i = 0; i < 400 && a.InFlight; i++)
             {
@@ -950,7 +940,7 @@ namespace Ricochet.Core.Tests
 
         private static void KnockOutSeatOne(GameAuthority authority, PlayerState shooter)
         {
-            authority.Apply(new FireCommand(shooter.Id, AtSeatOne, 1));
+            authority.Apply(new FireCommand(shooter.Id, AtSeatOne));
             for (int i = 0; i < 400 && shooter.InFlight; i++)
             {
                 authority.AdvanceFlight(shooter.Id, 0.05);
@@ -968,7 +958,7 @@ namespace Ricochet.Core.Tests
             var published = new List<GameEvent>();
             authority.Published += published.Add;
 
-            IReadOnlyList<GameEvent> answer = authority.Apply(new FireCommand(1, 45, 1));
+            IReadOnlyList<GameEvent> answer = authority.Apply(new FireCommand(1, 45));
             Assert.That(published, Is.EqualTo(answer));
             Assert.That(published, Is.Not.Empty);
 
@@ -987,7 +977,7 @@ namespace Ricochet.Core.Tests
             two.Apply(new AimCommand(1, 200));
             Assert.That(oneAnn.Heading, Is.EqualTo(10));
             Assert.That(twoAnn.Heading, Is.EqualTo(200));
-            one.Apply(new FireCommand(1, 10, 1));
+            one.Apply(new FireCommand(1, 10));
             Assert.That(oneAnn.InFlight, Is.True);
             Assert.That(twoAnn.InFlight, Is.False);
         }

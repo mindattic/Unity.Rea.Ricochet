@@ -249,9 +249,9 @@ namespace Ricochet.Core.Commands
         public Level LevelFor(int seat) => Hazards.LevelFor(seat);
 
         /// <summary>Solves what <paramref name="weapon"/> would do from the player's spot, as things stand (a preview; nothing changes).</summary>
-        public Volley Solve(PlayerState state, Weapon weapon, double heading, double power, double fuse, int extraBounces)
+        public Volley Solve(PlayerState state, Weapon weapon, double heading, double fuse, int extraBounces)
         {
-            return Arsenal.Fire(weapon, state.Position, heading, power, fuse, extraBounces, LevelFor(state.Seat), Targets(), Rules, Arms);
+            return Arsenal.Fire(weapon, state.Position, heading, fuse, extraBounces, LevelFor(state.Seat), Targets(), Rules, Arms);
         }
 
         // ------------------------------------------------------------------ the match
@@ -520,11 +520,7 @@ namespace Ricochet.Core.Commands
                 {
                     case AimCommand aim:
                         state.Heading = Quantize(Angles.Normalize(Finite(aim.Heading) ? aim.Heading : state.Heading));
-                        Emit(new Aimed(state.Id, state.Heading, state.Power));
-                        break;
-                    case SetPowerCommand power:
-                        state.Power = Quantize(ShotRules.ClampPower(power.Power));
-                        Emit(new Aimed(state.Id, state.Heading, state.Power));
+                        Emit(new Aimed(state.Id, state.Heading));
                         break;
                     case FireCommand fire:
                         DoFire(state, fire);
@@ -712,20 +708,19 @@ namespace Ricochet.Core.Commands
                 weapon = fired.Value;
             }
 
-            SetAim(state, fire.Heading, fire.Power);
+            SetAim(state, fire.Heading);
             state.ShotHeading = state.Heading;
-            state.ShotPower = state.Power;
             state.ShotWeapon = weapon;
             state.ShotFuse = Quantize(loadout.Fuse);
             state.ShotExtraBounces = state.ExtraBounces;
             state.ShotDetonation = 0;
             state.ExtraBounces = 0;
             state.Shots++;
-            Volley volley = Solve(state, weapon, state.ShotHeading, state.ShotPower, state.ShotFuse, state.ShotExtraBounces);
+            Volley volley = Solve(state, weapon, state.ShotHeading, state.ShotFuse, state.ShotExtraBounces);
             state.Flight = new VolleyFlight(volley);
             state.LastVolley = volley;
             Emit(new LoadoutChanged(state.Id));
-            Emit(new ShotFired(state.Id, state.Seat, state.Shots, weapon, state.ShotHeading, state.ShotPower, state.ShotFuse, state.ShotExtraBounces, volley));
+            Emit(new ShotFired(state.Id, state.Seat, state.Shots, weapon, state.ShotHeading, state.ShotFuse, state.ShotExtraBounces, volley));
             if (MatchRunning)
             {
                 _firedThisRound = true; // hasFired: the pause menu's Randomize is gone for this round
@@ -788,7 +783,7 @@ namespace Ricochet.Core.Commands
                 loadout.Use();
             }
 
-            SetAim(state, use.Heading, use.Power);
+            SetAim(state, use.Heading);
 
             // The items that fly are flown first, so the event carries the path every peer draws them along (U.RICO-T79).
             ShotPath flight = null;
@@ -825,16 +820,15 @@ namespace Ricochet.Core.Commands
                     break;
                 case Item.AimAssist:
                     // obj_aimassist, with the AI's targeting: onto the shot that reaches an opponent, if any does.
-                    AiPlan assist = Ai.Assist(state.Position, TargetIds.Seat(state.Seat), LevelFor(state.Seat), Targets(), state.Power, Rules);
+                    AiPlan assist = Ai.Assist(state.Position, TargetIds.Seat(state.Seat), LevelFor(state.Seat), Targets(), Rules);
                     if (assist != null)
                     {
-                        SetAim(state, assist.Heading, assist.Power);
+                        SetAim(state, assist.Heading);
                     }
 
                     state.AssistHeading = state.Heading;
-                    state.AssistPower = state.Power;
                     state.Assists++;
-                    Emit(new AssistApplied(state.Id, state.Heading, state.Power, assist != null));
+                    Emit(new AssistApplied(state.Id, state.Heading, assist != null));
                     break;
             }
 
@@ -1375,11 +1369,10 @@ namespace Ricochet.Core.Commands
         // fire_weapon.gml's "!hasMoved": in a match, not after driving this turn.
         private bool MayShoot(PlayerState state) => !(MatchRunning && Match.HasMoved);
 
-        // Never trusted as-is: NaN or an out-of-range power would be garbage on every peer.
-        private static void SetAim(PlayerState state, double heading, double power)
+        // Never trusted as-is: a NaN heading would be garbage on every peer.
+        private static void SetAim(PlayerState state, double heading)
         {
             state.Heading = Quantize(Angles.Normalize(Finite(heading) ? heading : state.Heading));
-            state.Power = Quantize(ShotRules.ClampPower(power));
         }
 
         // NaN and infinity are garbage a client could send: the last good value stays.

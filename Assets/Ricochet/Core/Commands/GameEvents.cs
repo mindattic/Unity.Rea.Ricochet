@@ -13,21 +13,18 @@ namespace Ricochet.Core.Commands
     {
     }
 
-    /// <summary>A player's barrel now points this way, at this power.</summary>
+    /// <summary>A player's barrel now points this way.</summary>
     public sealed class Aimed : GameEvent
     {
-        public Aimed(int playerId, double heading, double power)
+        public Aimed(int playerId, double heading)
         {
             PlayerId = playerId;
             Heading = heading;
-            Power = power;
         }
 
         public int PlayerId { get; }
 
         public double Heading { get; }
-
-        public double Power { get; }
     }
 
     /// <summary>A player's weapon, item, fuse or counts changed (a cycle, a shot or item spent, a crate, a new round).</summary>
@@ -44,14 +41,13 @@ namespace Ricochet.Core.Commands
     /// <summary>A player fired: the volley the authority solved (every peer draws this one) and the aim it was fired at.</summary>
     public sealed class ShotFired : GameEvent
     {
-        public ShotFired(int playerId, int seat, int shot, Weapon weapon, double heading, double power, double fuse, int extraBounces, Volley volley)
+        public ShotFired(int playerId, int seat, int shot, Weapon weapon, double heading, double fuse, int extraBounces, Volley volley)
         {
             PlayerId = playerId;
             Seat = seat;
             Shot = shot;
             Weapon = weapon;
             Heading = heading;
-            Power = power;
             Fuse = fuse;
             ExtraBounces = extraBounces;
             Volley = volley;
@@ -68,8 +64,6 @@ namespace Ricochet.Core.Commands
         public Weapon Weapon { get; }
 
         public double Heading { get; }
-
-        public double Power { get; }
 
         public double Fuse { get; }
 
@@ -267,19 +261,16 @@ namespace Ricochet.Core.Commands
     /// <summary>The aim assist turned a player's aim onto a shot (or left it, when none reaches an opponent).</summary>
     public sealed class AssistApplied : GameEvent
     {
-        public AssistApplied(int playerId, double heading, double power, bool found)
+        public AssistApplied(int playerId, double heading, bool found)
         {
             PlayerId = playerId;
             Heading = heading;
-            Power = power;
             Found = found;
         }
 
         public int PlayerId { get; }
 
         public double Heading { get; }
-
-        public double Power { get; }
 
         public bool Found { get; }
     }

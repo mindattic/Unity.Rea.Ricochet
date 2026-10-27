@@ -38,13 +38,12 @@ namespace Ricochet.Core.Ai
     /// <summary>The shot an AI (or an aim assist) decided on.</summary>
     public sealed class AiPlan
     {
-        public AiPlan(AiShotKind kind, Weapon weapon, double aim, double heading, double power, string targetId)
+        public AiPlan(AiShotKind kind, Weapon weapon, double aim, double heading, string targetId)
         {
             Kind = kind;
             Weapon = weapon;
             Aim = Angles.Normalize(aim);
             Heading = Angles.Normalize(heading);
-            Power = ShotRules.ClampPower(power);
             TargetId = targetId;
         }
 
@@ -58,8 +57,6 @@ namespace Ricochet.Core.Ai
 
         /// <summary>The heading it fires at: <see cref="Aim"/> nudged by up to 10 - skill degrees.</summary>
         public double Heading { get; }
-
-        public double Power { get; }
 
         /// <summary>The opponent it means to hit, or null for a blind shot.</summary>
         public string TargetId { get; }
@@ -79,9 +76,6 @@ namespace Ricochet.Core.Ai
 
         /// <summary>The skill a match's AI seats play at unless set (the original's players defaulted to 0-2).</summary>
         public const int DefaultSkill = 5;
-
-        /// <summary>An AI always fires at full power: the longest range, the most bounces it can reach.</summary>
-        public const double Power = 1;
 
         /// <summary>Degrees between the headings the sweep tries.</summary>
         public const double Step = 0.5;
@@ -144,7 +138,7 @@ namespace Ricochet.Core.Ai
         }
 
         /// <summary>
-        /// An AI's whole decision for one turn: the shot that reaches an opponent (<see cref="Aim"/>, at full power, with
+        /// An AI's whole decision for one turn: the shot that reaches an opponent (<see cref="Aim"/>, with
         /// the railgun considered when <paramref name="loadout"/> carries one), nudged by <paramref name="skill"/>; or a
         /// random heading when no shot reaches anyone. <paramref name="targets"/> may include the AI itself
         /// (<paramref name="selfId"/>), which it never aims at.
@@ -154,30 +148,22 @@ namespace Ricochet.Core.Ai
         {
             dice = dice ?? new Random();
             bool railgun = loadout != null && loadout.Has(Weapon.Railgun);
-            AiPlan aimed = Aim(origin, selfId, level, targets, Power, rules, arsenal, railgun);
+            AiPlan aimed = Aim(origin, selfId, level, targets, rules, arsenal, railgun);
             if (aimed == null)
             {
                 double random = dice.NextDouble() * 360;
-                return new AiPlan(AiShotKind.Blind, Weapon.Cannon, random, random, Power, null);
+                return new AiPlan(AiShotKind.Blind, Weapon.Cannon, random, random, null);
             }
 
-            return new AiPlan(aimed.Kind, aimed.Weapon, aimed.Aim, aimed.Aim + Jitter(skill, dice), aimed.Power, aimed.TargetId);
+            return new AiPlan(aimed.Kind, aimed.Weapon, aimed.Aim, aimed.Aim + Jitter(skill, dice), aimed.TargetId);
         }
 
         /// <summary>
-        /// The aim-assist item: the shot an AI at full skill would take with the cannon at the player's own
-        /// <paramref name="power"/>, or at full power when nothing is in reach at theirs. Null when no aim reaches anyone.
+        /// The aim-assist item: the shot an AI at full skill would take with the cannon. Null when no aim reaches anyone.
         /// </summary>
-        public static AiPlan Assist(Vec2 origin, string selfId, Level level, IReadOnlyList<Target> targets, double power, ShotRules rules = null)
+        public static AiPlan Assist(Vec2 origin, string selfId, Level level, IReadOnlyList<Target> targets, ShotRules rules = null)
         {
-            power = ShotRules.ClampPower(power);
-            AiPlan plan = Aim(origin, selfId, level, targets, power, rules, null, false);
-            if (plan == null && power < Power)
-            {
-                plan = Aim(origin, selfId, level, targets, Power, rules, null, false);
-            }
-
-            return plan;
+            return Aim(origin, selfId, level, targets, rules, null, false);
         }
 
         /// <summary>
@@ -186,7 +172,7 @@ namespace Ricochet.Core.Ai
         /// a railgun shot (tried only when <paramref name="railgun"/>); among those, the nearest opponent, then the widest
         /// run of headings that reach them, aimed at its middle. Null when no heading reaches anyone.
         /// </summary>
-        public static AiPlan Aim(Vec2 origin, string selfId, Level level, IReadOnlyList<Target> targets, double power, ShotRules rules = null,
+        public static AiPlan Aim(Vec2 origin, string selfId, Level level, IReadOnlyList<Target> targets, ShotRules rules = null,
             ArsenalRules arsenal = null, bool railgun = false)
         {
             if (level == null)
@@ -200,7 +186,7 @@ namespace Ricochet.Core.Ai
             bool any = false;
             for (int i = 0; i < steps; i++)
             {
-                ShotPath path = BounceSolver.Solve(origin, i * Step, power, level, targets, rules);
+                ShotPath path = BounceSolver.Solve(origin, i * Step, level, targets, rules);
                 if (path.End == ShotEndKind.Target && path.TargetId != null && path.TargetId != selfId)
                 {
                     hits[i] = new Hit(path.TargetId, path.Contacts.Count == 0 ? AiShotKind.Direct : AiShotKind.Bank);
@@ -208,7 +194,7 @@ namespace Ricochet.Core.Ai
                 }
             }
 
-            AiPlan best = any ? Best(hits, origin, targets, Weapon.Cannon, power) : null;
+            AiPlan best = any ? Best(hits, origin, targets, Weapon.Cannon) : null;
             if (best != null || !railgun)
             {
                 return best;
@@ -216,7 +202,7 @@ namespace Ricochet.Core.Ai
 
             for (int i = 0; i < steps; i++)
             {
-                Volley volley = Arsenal.Fire(Weapon.Railgun, origin, i * Step, Power, 0, 0, level, targets, rules, arsenal);
+                Volley volley = Arsenal.Fire(Weapon.Railgun, origin, i * Step, 0, 0, level, targets, rules, arsenal);
                 string nearest = null;
                 double nearestDistance = double.MaxValue;
                 foreach (Strike strike in volley.Strikes)
@@ -233,7 +219,7 @@ namespace Ricochet.Core.Ai
                 any |= nearest != null;
             }
 
-            return any ? Best(hits, origin, targets, Weapon.Railgun, Power) : null;
+            return any ? Best(hits, origin, targets, Weapon.Railgun) : null;
         }
 
         /// <summary>
@@ -259,7 +245,7 @@ namespace Ricochet.Core.Ai
         }
 
         // The best run of headings: by kind (straight, bank, railgun), then the nearest target, then the widest run.
-        private static AiPlan Best(Hit[] hits, Vec2 origin, IReadOnlyList<Target> targets, Weapon weapon, double power)
+        private static AiPlan Best(Hit[] hits, Vec2 origin, IReadOnlyList<Target> targets, Weapon weapon)
         {
             List<Run> runs = Runs(hits);
             Run best = null;
@@ -284,7 +270,7 @@ namespace Ricochet.Core.Ai
             }
 
             double aim = (best.Start + (best.Length - 1) / 2.0) * Step;
-            return new AiPlan(best.Hit.Kind, weapon, aim, aim, power, best.Hit.TargetId);
+            return new AiPlan(best.Hit.Kind, weapon, aim, aim, best.Hit.TargetId);
         }
 
         // Unbroken runs of headings that reach the same target the same way; a run across 0 degrees is one run.

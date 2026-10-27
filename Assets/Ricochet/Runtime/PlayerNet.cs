@@ -19,12 +19,12 @@ namespace Ricochet
     {
         // client -> server: the owner's aim, so everyone sees which way the barrel points (at most 20 a second).
         [ToServer(RateLimit = 20)]
-        public partial void Aim(float heading, float power);
+        public partial void Aim(float heading);
 
         // client -> server: fire the selected weapon at this aim. The shot carries its own aim, so a dropped Aim never
         // changes what flies.
         [ToServer(RateLimit = 4)]
-        public partial void Fire(float heading, float power);
+        public partial void Fire(float heading);
 
         // client -> server: select the next weapon (+1, cycle_weapon_right) or the one before (-1, cycle_weapon_left).
         [ToServer(RateLimit = 10)]
@@ -48,7 +48,7 @@ namespace Ricochet
 
         // client -> server: use the selected item at this aim (a teleporter and a shrink ray fly along it).
         [ToServer(RateLimit = 4)]
-        public partial void UseItem(float heading, float power);
+        public partial void UseItem(float heading);
 
         // client -> server: set off this player's vortex where it is now (vortex_detonate.gml: fire again after firing it).
         [ToServer(RateLimit = 4)]
@@ -100,7 +100,6 @@ namespace Ricochet
         // Only the server writes these; every peer, late joiners included, reads the same values.
         [Synced] private Vector2 _position;
         [Synced] private float _heading = StartHeading;
-        [Synced] private float _power = StartPower;
 
         // Whether the authority is driving this tank (a drive key held: the original's isMoving), so every peer turns the
         // hull after the turret and lays tracks only while it drives (U.RICO-T45).
@@ -110,7 +109,6 @@ namespace Ricochet
         // knows a new one was fired.
         [Synced] private int _shots;
         [Synced] private float _shotHeading;
-        [Synced] private float _shotPower;
         [Synced] private int _shotWeapon;
         [Synced] private float _shotFuse = 2f;
         [Synced] private int _shotExtraBounces;
@@ -147,7 +145,6 @@ namespace Ricochet
         // owner's aim follows it and every peer draws its beam.
         [Synced] private int _assists;
         [Synced] private float _assistHeading;
-        [Synced] private float _assistPower;
 
         private int _seenShots;             // every peer: the last shot it has drawn
 
@@ -232,21 +229,18 @@ namespace Ricochet
                 Seat = Seat,
                 Position = Arena.ToCore(Position),
                 Heading = Heading,
-                Power = Power,
                 Weapons = Weapons,
                 Items = Items,
                 ExtraBounces = ExtraBounces,
                 Scale = Scale,
                 Shots = Shots,
                 ShotHeading = ShotHeading,
-                ShotPower = ShotPower,
                 ShotWeapon = ShotWeapon,
                 ShotFuse = ShotFuse,
                 ShotExtraBounces = ShotExtraBounces,
                 ShotDetonation = ShotDetonation,
                 Assists = Assists,
                 AssistHeading = AssistHeading,
-                AssistPower = AssistPower,
                 Pickups = PickupCount,
                 LastPickup = LastPickup,
             };
@@ -272,11 +266,6 @@ namespace Ricochet
                 Heading = (float)state.Heading;
             }
 
-            if (Power != (float)state.Power)
-            {
-                Power = (float)state.Power;
-            }
-
             if (ExtraBounces != state.ExtraBounces)
             {
                 ExtraBounces = state.ExtraBounces;
@@ -290,7 +279,6 @@ namespace Ricochet
             if (Shots != state.Shots)
             {
                 ShotHeading = (float)state.ShotHeading;
-                ShotPower = (float)state.ShotPower;
                 ShotWeapon = (int)state.ShotWeapon;
                 ShotFuse = (float)state.ShotFuse;
                 ShotExtraBounces = state.ShotExtraBounces;
@@ -305,7 +293,6 @@ namespace Ricochet
             if (Assists != state.Assists)
             {
                 AssistHeading = (float)state.AssistHeading;
-                AssistPower = (float)state.AssistPower;
                 Assists = state.Assists;
             }
 

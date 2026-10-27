@@ -50,7 +50,7 @@ namespace Ricochet.Tests
             yield return Select(annOnHerClient, ann, Item.Teleporter);
             int rings = GmlParticles.Thrown(GmEffect.Ring);
             int fireworks = GmlParticles.Thrown(GmEffect.Firework);
-            annOnHerClient.UseItem(90f, 0.5f);
+            annOnHerClient.UseItem(90f);
             yield return WaitUntil(() => ItemFlights.Count(Item.Teleporter) >= 2, "the teleporter never flew on both peers", 5f);
             SpriteRenderer teleporter = ItemFlights.RendererOf(Item.Teleporter);
             Assert.That(teleporter, Is.Not.Null);
@@ -65,7 +65,7 @@ namespace Ricochet.Tests
             yield return Select(annOnHerClient, ann, Item.ShrinkRay);
             Vector2 toHost = host.Position - ann.Position;
             int sparks = GmlParticles.Thrown(GmEffect.Spark);
-            annOnHerClient.UseItem(Mathf.Atan2(toHost.y, toHost.x) * Mathf.Rad2Deg, 1f);
+            annOnHerClient.UseItem(Mathf.Atan2(toHost.y, toHost.x) * Mathf.Rad2Deg);
             yield return WaitUntil(() => ItemFlights.Count(Item.ShrinkRay) > 0, "the shrink ray never flew", 5f);
             Assert.That(ItemFlights.RendererOf(Item.ShrinkRay), Is.Null, "obj_shrinkray's Draw is commented out");
             yield return WaitUntil(() => ItemFlights.Count(Item.ShrinkRay) == 0, "the shrink ray never landed", 5f);
@@ -81,7 +81,7 @@ namespace Ricochet.Tests
             // The redirector: growing from 0.15 in flight until she presses again (U.RICO-T80); the standing one shows only
             // once it stops.
             yield return Select(annOnHerClient, ann, Item.Redirector);
-            annOnHerClient.UseItem(0f, 1f);
+            annOnHerClient.UseItem(0f);
             yield return WaitUntil(() => ItemFlights.Count(Item.Redirector) > 0, "the redirector never flew", 5f);
             SpriteRenderer arrow = ItemFlights.RendererOf(Item.Redirector);
             Assert.That(arrow, Is.Not.Null);
@@ -93,7 +93,7 @@ namespace Ricochet.Tests
             }
 
             Assert.That(LevelHazard.In(Server).Any(h => h.HazardKind == HazardKind.Redirector), Is.False, "nothing stands while it flies");
-            annOnHerClient.UseItem(0f, 1f); // redirector_detonate
+            annOnHerClient.UseItem(0f); // redirector_detonate
             yield return WaitUntil(() => ItemFlights.Count(Item.Redirector) == 0, "the redirector never stopped", 5f);
             yield return WaitUntil(() => LevelHazard.In(Server).Any(h => h.HazardKind == HazardKind.Redirector), "it never stood where it stopped", 5f);
             yield return null;

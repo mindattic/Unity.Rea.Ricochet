@@ -61,8 +61,8 @@ namespace Ricochet.Core.Tests
             Assert.That(match.FlightBonusSeconds, Is.EqualTo(100.0 / 1020.0));
 
             var shot = ShotRules.Default;
-            Assert.That(new double[] { shot.MaxBounces, shot.MuzzleOffset, shot.MinRange, shot.MaxRange, shot.Speed, shot.PowerPerSecond, shot.DegreesPerSecond, shot.DriveSpeed },
-                Is.EqualTo(new double[] { 5, 0.6, 6, 70, 18, 0.5, 90, 3 }));
+            Assert.That(new double[] { shot.MaxBounces, shot.MuzzleOffset, shot.Speed, shot.DegreesPerSecond, shot.DriveSpeed },
+                Is.EqualTo(new double[] { 5, 0.6, 18, 90, 3 }));
 
             var hazards = HazardRules.Default;
             Assert.That(new double[] { hazards.ShieldWallOffset, hazards.ShieldWallLength, hazards.ShieldWallMinLife, hazards.ShieldWallMaxLife, hazards.RedirectorLength, hazards.FoliageCount, hazards.FoliageRadius, hazards.FoliageClearance },
@@ -139,7 +139,7 @@ namespace Ricochet.Core.Tests
             Assert.That(MenuFlow.Slides.Count, Is.EqualTo(11));
             Assert.That(MenuFlow.Slides[0].Title, Is.EqualTo("Introduction"));
             Assert.That(MenuFlow.Slides[5].Lines.Count, Is.EqualTo(4));
-            Assert.That(MenuFlow.Controls.Count, Is.EqualTo(11));
+            Assert.That(MenuFlow.Controls.Count, Is.EqualTo(10));
             Assert.That(MenuFlow.Controls[0].ToString(), Is.EqualTo("Left / Right (A / D): Turn your tank and its aim"));
             Assert.That(MenuFlow.Credits.Count, Is.EqualTo(7));
             Assert.That(MenuFlow.Title(Room.Settings), Is.EqualTo("Game settings"));

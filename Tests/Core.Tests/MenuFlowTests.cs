@@ -77,7 +77,7 @@ namespace Ricochet.Core.Tests
             }
 
             string keys = string.Join("\n", MenuFlow.Controls.Select(c => c.Keys));
-            foreach (string key in new[] { "Left", "Up", "Space", "Q", "Z", "F", "1", "P", "Esc" })
+            foreach (string key in new[] { "Left", "Space", "Q", "Z", "F", "1", "P", "Esc" })
             {
                 Assert.That(keys, Does.Contain(key));
             }
@@ -146,7 +146,7 @@ namespace Ricochet.Core.Tests
                 for (int seat = 0; seat < 4; seat++)
                 {
                     bool reaches = targets.Where(t => t.Id != "seat:" + seat)
-                        .Any(t => BounceSolver.FindHeading(Seating.SpawnPoint(seat), 1, t.Id, level, targets) != null);
+                        .Any(t => BounceSolver.FindHeading(Seating.SpawnPoint(seat), t.Id, level, targets) != null);
                     Assert.That(reaches, Is.True, map.Name + ": seat " + seat + " reaches nobody");
                 }
             }

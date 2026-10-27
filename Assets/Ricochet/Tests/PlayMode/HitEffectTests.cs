@@ -66,7 +66,7 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Turns.For(Client) != null && annOnHerClient.Seat == ann.Seat, "her client never got the match");
             int scorches = FieldEffects.Scorches;
 
-            host.ServerFire(180f, 1f); // along the floor from seat 0 at x 0 to Ann's seat at x -4
+            host.ServerFire(180f); // along the floor from seat 0 at x 0 to Ann's seat at x -4
             yield return WaitUntil(() => FieldEffects.KnockOuts > 0, "her tank never blew up on any peer", 10f);
             Assert.That(FloatText.Live.Any(f => f.Text.StartsWith("+") && f.Text.EndsWith(" pts") && f.Flashing), Is.True,
                 "hit.gml's \"+N pts\" over the shooter: " + string.Join(", ", FloatText.Live.Select(f => f.Text)));
@@ -100,16 +100,16 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => annOnHerClient.Position != Vector2.zero && annOnHerClient.Weapons != 0, "her client never got her seat");
 
             // Her extra bounce: "Bounce +1", flashing, over her on every peer.
-            annOnHerClient.UseItem(90f, 0.5f);
+            annOnHerClient.UseItem(90f);
             yield return WaitUntil(() => FloatText.Live.Any(f => f.Text == HitLooks.ExtraBounceText && f.Flashing), "\"Bounce +1\" never floated", 5f);
 
             // Her shield wall between her and the host; the host's shell shatters it.
             annOnHerClient.CycleItem(1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.ShieldWall, "the shield wall was never selected");
-            ann.ServerUseItem(0f, 0.5f);
+            ann.ServerUseItem(0f);
             yield return WaitUntil(() => LevelHazard.In(Client).Any(h => h.Ready && h.HazardKind == Ricochet.Core.Level.HazardKind.ShieldWall), "the wall never stood", 5f);
             int rings = GmlParticles.Thrown(GmEffect.Ring);
-            host.ServerFire(180f, 1f);
+            host.ServerFire(180f);
             yield return WaitUntil(() => FieldEffects.Shards > 0, "the wall's glass never flew", 10f);
             Assert.That(FieldEffects.Shards, Is.InRange(HitLooks.GlassMin, HitLooks.GlassMax * 2), "spawn_glass's 20-30 shards (on each peer of this process)");
             Assert.That(GmlParticles.Thrown(GmEffect.Ring), Is.GreaterThan(rings), "its ef_ring");
@@ -119,7 +119,7 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => !host.ShotInFlight, "the host's shot never landed", 10f);
             int before = FieldEffects.Scorches;
             Vector2 toDummy = Arena.DummyStart(0) - host.Position;
-            host.ServerFire(Mathf.Atan2(toDummy.y, toDummy.x) * Mathf.Rad2Deg, 1f);
+            host.ServerFire(Mathf.Atan2(toDummy.y, toDummy.x) * Mathf.Rad2Deg);
             yield return WaitUntil(() => FieldEffects.Scorches > before, () => "no scorch mark was left: the shot ended " + host.LastVolley?.Main.End, 30f);
             yield return new WaitForSeconds(0.5f);
             Assert.That(FieldEffects.Scorches, Is.GreaterThan(before), "a scorch mark stays for the round");
@@ -146,7 +146,7 @@ namespace Ricochet.Tests
             Assert.That(GmlParticles.Thrown(GmEffect.Firework), Is.GreaterThan(fireworks), "its landing firework");
 
             int rings = GmlParticles.Thrown(GmEffect.Ring);
-            host.ServerFire(90f, 0f);
+            host.ServerFire(90f);
             yield return WaitUntil(() => GmlParticles.Thrown(GmEffect.Ring) > rings, "taking it never rang", 10f);
             yield return WaitUntil(() => FloatText.Live.Any(f => f.Text.EndsWith(" x 1 collected")), "what it gave never floated", 10f);
 

@@ -94,7 +94,7 @@ namespace Ricochet.Core.Tests
             field.Tick(2);
             Drop falling = field.Spawn(DropKind.Powerup, new Vec2(5, 0));
 
-            Volley shot = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 1, 2, 0, Open(), null);
+            Volley shot = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 2, 0, Open(), null);
             List<Drop> collected = field.Collect(shot);
 
             Assert.That(collected, Is.EqualTo(new[] { near, far }));

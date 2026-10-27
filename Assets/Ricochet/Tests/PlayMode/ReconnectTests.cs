@@ -59,9 +59,9 @@ namespace Ricochet.Tests
 
             // The host hits Ann, and the turn passes to her.
             string target = Arena.SeatTarget(annSeat);
-            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), 1, target, Arena.Level, Arena.Targets(Server), Arena.Rules);
+            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), target, Arena.Level, Arena.Targets(Server), Arena.Rules);
             Assert.That(heading, Is.Not.Null, "no aim from " + host.Position + " reaches Ann at " + ann.Position);
-            host.ServerFire((float)heading.Value, 1f);
+            host.ServerFire((float)heading.Value);
             yield return WaitUntil(() => arena.Match.Current == annSeat && arena.Match.Phase == MatchPhase.Aiming, "the turn never passed to Ann", 20f);
             int health = ann.Health;
             int score = host.Score;
@@ -104,7 +104,7 @@ namespace Ricochet.Tests
             Assert.That(Turns.MayFire(Client, annSeat), Is.True);
 
             int shots = ann.Shots;
-            annOnHerClient.Fire(0f, 0f);
+            annOnHerClient.Fire(0f);
             yield return WaitUntil(() => ann.Shots == shots + 1, "her shot on her resumed turn was refused");
         }
 

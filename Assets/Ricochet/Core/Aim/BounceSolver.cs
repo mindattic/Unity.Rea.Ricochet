@@ -1,5 +1,5 @@
-// The bounce prediction: from a shooter's centre, an aim and a power, trace the shot off the level's borders, walls
-// and redirectors until it hits a target, reaches its bounce limit or runs out of range. The 2013 original stepped a
+// The bounce prediction: from a shooter's centre and an aim, trace the shot off the level's borders, walls and
+// redirectors until it hits a target or reaches its bounce limit (bullet_step.gml: there is no range, U.RICO-T88). The 2013 original stepped a
 // point one pixel at a time (find_target_angle_from_bounce.gml) and asked collision_point/collision_line what it was
 // touching; this casts exact rays instead, with the original's intersection math (Geometry), so the preview and the
 // flight are the same path to the last decimal and the server and every client agree on it. A level's hazards (UR-T6)
@@ -21,11 +21,12 @@ namespace Ricochet.Core.Aim
         /// <summary>Solves the shot. <paramref name="targets"/> must not include the shooter.</summary>
         /// <param name="origin">The shooter's centre.</param>
         /// <param name="heading">The aim in degrees (0 = right, 90 = up).</param>
-        /// <param name="power">0..1 (clamped): the shot's range, see <see cref="ShotRules.RangeFor"/>.</param>
         /// <param name="level">What it bounces off.</param>
         /// <param name="targets">What it can hit; may be null.</param>
         /// <param name="rules">Null for the defaults.</param>
-        public static ShotPath Solve(Vec2 origin, double heading, double power, Level level, IReadOnlyList<Target> targets = null, ShotRules rules = null)
+        /// <param name="range">How far it may fly: a shot has no limit; an item's flight is solved for a time (Arsenal).</param>
+        public static ShotPath Solve(Vec2 origin, double heading, Level level, IReadOnlyList<Target> targets = null, ShotRules rules = null,
+            double range = double.PositiveInfinity)
         {
             if (level == null)
             {
@@ -34,10 +35,9 @@ namespace Ricochet.Core.Aim
 
             rules = rules ?? ShotRules.Default;
             heading = Angles.Normalize(double.IsNaN(heading) ? 0 : heading);
-            power = ShotRules.ClampPower(power);
             Vec2 direction = Vec2.FromAngle(heading);
             Vec2 position = origin + direction * rules.MuzzleOffset;
-            double remaining = rules.RangeFor(power);
+            double remaining = double.IsNaN(range) || range < 0 ? 0 : range;
             double travelled = 0;
             int maxContacts = Math.Max(1, rules.MaxBounces);
 
@@ -49,7 +49,7 @@ namespace Ricochet.Core.Aim
             if (pointBlank != null)
             {
                 points.Add(position);
-                return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.Target, pointBlank);
+                return new ShotPath(origin, heading, points, contacts, ShotEndKind.Target, pointBlank);
             }
 
             for (int guard = 0; guard < maxContacts + 1; guard++)
@@ -61,27 +61,27 @@ namespace Ricochet.Core.Aim
                 if (target.Found && target.Distance <= remaining && (!surface.Found || target.Distance <= surface.Distance))
                 {
                     points.Add(position + direction * target.Distance);
-                    return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.Target, target.TargetId);
+                    return new ShotPath(origin, heading, points, contacts, ShotEndKind.Target, target.TargetId);
                 }
 
                 // Nothing to hit before the range runs out: the shot dies in mid-air.
                 if (!surface.Found || surface.Distance > remaining)
                 {
-                    points.Add(position + direction * remaining);
-                    return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.Spent, null);
+                    points.Add(double.IsInfinity(remaining) ? position : position + direction * remaining);
+                    return new ShotPath(origin, heading, points, contacts, ShotEndKind.Spent, null);
                 }
 
                 Vec2 point = position + direction * surface.Distance;
                 if (surface.Barrier)
                 {
                     points.Add(point);
-                    return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.Absorbed, null, surface.Index);
+                    return new ShotPath(origin, heading, points, contacts, ShotEndKind.Absorbed, null, surface.Index);
                 }
 
                 if (surface.Escape)
                 {
                     points.Add(point);
-                    return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.Escaped, null);
+                    return new ShotPath(origin, heading, points, contacts, ShotEndKind.Escaped, null);
                 }
 
                 travelled += surface.Distance;
@@ -92,7 +92,7 @@ namespace Ricochet.Core.Aim
                 {
                     contacts.Add(new Contact(surface.Kind, point, travelled, headingIn, headingIn, false, surface.Index));
                     points.Add(point);
-                    return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.BounceLimit, null);
+                    return new ShotPath(origin, heading, points, contacts, ShotEndKind.BounceLimit, null);
                 }
 
                 direction = Deflect(direction, surface, level);
@@ -102,16 +102,17 @@ namespace Ricochet.Core.Aim
             }
 
             // Unreachable: every pass either ends the shot or adds a contact, and the last contact ends it.
-            return new ShotPath(origin, heading, power, points, contacts, ShotEndKind.BounceLimit, null);
+            return new ShotPath(origin, heading, points, contacts, ShotEndKind.BounceLimit, null);
         }
 
         /// <summary>
         /// find_target_angle(_from_bounce).gml: sweeps the aim from 0 degrees in <paramref name="step"/>-degree steps for
-        /// headings whose shot hits <paramref name="targetId"/>, or null when none does. The original took the first such
-        /// degree, which is often a graze that a hair of rounding turns into a miss; this returns the middle of the first
-        /// unbroken run of hitting headings instead. The AI and bots aim with it; it is the same solver the preview uses.
+        /// headings whose shot hits <paramref name="targetId"/>, or null when none does. The first such degree is often a
+        /// graze that a hair of rounding turns into a miss (more so now a shot flies all its bounces, U.RICO-T88), so this
+        /// returns the middle of the widest unbroken run of hitting headings. Bots and the level generator's reach check aim
+        /// with it; it is the same solver the preview uses.
         /// </summary>
-        public static double? FindHeading(Vec2 origin, double power, string targetId, Level level, IReadOnlyList<Target> targets,
+        public static double? FindHeading(Vec2 origin, string targetId, Level level, IReadOnlyList<Target> targets,
             ShotRules rules = null, double step = 0.5)
         {
             if (step <= 0)
@@ -119,12 +120,19 @@ namespace Ricochet.Core.Aim
                 throw new ArgumentOutOfRangeException(nameof(step));
             }
 
+            double? best = null;
+            double bestWidth = -1;
             double? first = null;
             double last = 0;
-            for (double heading = 0; heading < 360; heading += step)
+            for (double heading = 0; heading < 360 + step; heading += step)
             {
-                ShotPath path = Solve(origin, heading, power, level, targets, rules);
-                bool hits = path.End == ShotEndKind.Target && path.TargetId == targetId;
+                bool hits = false;
+                if (heading < 360)
+                {
+                    ShotPath path = Solve(origin, heading, level, targets, rules);
+                    hits = path.End == ShotEndKind.Target && path.TargetId == targetId;
+                }
+
                 if (hits)
                 {
                     first = first ?? heading;
@@ -132,11 +140,37 @@ namespace Ricochet.Core.Aim
                 }
                 else if (first != null)
                 {
-                    break;
+                    if (last - first.Value > bestWidth)
+                    {
+                        bestWidth = last - first.Value;
+                        best = (first.Value + last) / 2;
+                    }
+
+                    first = null;
                 }
             }
 
-            return first == null ? (double?)null : (first.Value + last) / 2;
+            return best;
+        }
+
+        /// <summary>True when some heading, swept as <see cref="FindHeading"/> does, hits <paramref name="targetId"/>; stops at the first.</summary>
+        public static bool CanHit(Vec2 origin, string targetId, Level level, IReadOnlyList<Target> targets, ShotRules rules = null, double step = 0.5)
+        {
+            if (step <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(step));
+            }
+
+            for (double heading = 0; heading < 360; heading += step)
+            {
+                ShotPath path = Solve(origin, heading, level, targets, rules);
+                if (path.End == ShotEndKind.Target && path.TargetId == targetId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static Vec2 Deflect(Vec2 direction, Hit surface, Level level)

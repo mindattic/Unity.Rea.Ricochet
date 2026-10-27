@@ -161,7 +161,7 @@ namespace Ricochet.Core.Tests
         public void ABouncesContactKind_IsFoundOnTheVolleysPaths()
         {
             var level = new Level(-3, -3, 3, 3);
-            Volley volley = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 1, 2, 0, level, null);
+            Volley volley = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 2, 0, level, null);
             Contact first = volley.Main.Contacts[0];
             Assert.That(SoundBook.ContactAt(volley, 1, first.Point), Is.EqualTo(first.Kind));
             Assert.That(SoundBook.ContactAt(volley, 1, new Vec2(99, 99)), Is.EqualTo(ContactKind.Wall), "not found: a wall");
@@ -174,13 +174,13 @@ namespace Ricochet.Core.Tests
             var open = new Level(-10, -5, 10, 5);
             var me = new Target("me", Vec2.Zero, 0.45);
             var ann = new Target("ann", new Vec2(5, 0), 0.45);
-            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 1, 2, 0, open, new[] { me, ann }.ToList())),
+            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 2, 0, open, new[] { me, ann }.ToList())),
                 Is.EqualTo(SoundCue.Explode), "obj_boom_normal on whoever it struck");
-            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 90, 0, 2, 0, open, null)),
+            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 90, 2, 0, open, null)),
                 Is.EqualTo(SoundCue.Explode), "a shell spent: obj_explosion");
-            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 90, 0.3, 2, 0, open, null)),
+            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 90, 2, 0, open, null)),
                 Is.EqualTo(SoundCue.Explode), "obj_grenade_explosion");
-            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Laser, Vec2.Zero, 90, 1, 2, 0, open, null)), Is.Null, "the laser's end makes none");
+            Assert.That(SoundBook.Landing(Arsenal.Fire(Weapon.Laser, Vec2.Zero, 90, 2, 0, open, null)), Is.Null, "the laser's end makes none");
             Assert.That(SoundBook.Landing(null), Is.Null);
         }
 

@@ -3,8 +3,7 @@
 // Unity.Shared profile instead of the legacy Input Manager). The bindings still land on the original's obj_game keys
 // by default: A/D or Left/Right turn the tank and its aim, W/S drive it forward and back, F ends the turn, Ctrl uses
 // the item, Space fires; Q/E cycle the weapon, Z/C the item, and 1/2/3 set a grenade's fuse (shorter, longer,
-// longest). The original had no power meter, so the rebuild's power stays on Up/Down alone (W/S were the drive
-// keys). Ping, Pause and Fullscreen are read here too, for UR-T29/UR-T43 to wire up; nothing here is about networking.
+// longest). There is no power (U.RICO-T88): the original's Up/Down did nothing. Ping, Pause and Fullscreen are read here too, for UR-T29/UR-T43 to wire up; nothing here is about networking.
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,9 +19,6 @@ namespace Ricochet
 
         /// <summary>+1 turns the aim counterclockwise (left), -1 clockwise (right), 0 holds it.</summary>
         public static float Turn() => Mathf.Clamp(Act("Aim").ReadValue<float>() + OnScreenControls.Turn, -1f, 1f);
-
-        /// <summary>+1 raises the power, -1 lowers it, 0 holds it.</summary>
-        public static float Charge() => Act("Power").ReadValue<float>();
 
         /// <summary>+1 while driving forward (move_forward), -1 while driving backward (move_backward), 0 otherwise.</summary>
         public static int Drive() => Round(Act("Drive").ReadValue<float>() + OnScreenControls.Drive);

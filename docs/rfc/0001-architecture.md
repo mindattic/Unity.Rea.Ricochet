@@ -78,8 +78,8 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    of it, single-player-against-nothing first (no AI, no turns yet) so the physics is provably right
    (unit tests on BounceSolver) before anything else depends on it.
    As built: Core lives in `Assets/Ricochet/Core` (`Ricochet.Core`, tested by `dotnet test Core.slnx`); the
-   template's crates became keyed practice dummies to shoot at; power is the shot's range (the original had a
-   fixed bullet speed and no power meter); a shot detonates on its fifth contact, as `bullet_step.gml` did.
+   template's crates became keyed practice dummies to shoot at; there is no power, as the original had a fixed
+   bullet speed and no power meter (U.RICO-T88 took out the range-by-power the rebuild once added); a shot detonates on its fifth contact, as `bullet_step.gml` did.
    The server solves and flies every shot and lands the impact; clients replay the same path from the synced aim.
 3. **UR-T4** (done): turn order and the 16-seat roster with health bars — the loop that calls into UR-T3's shots.
    As built: the name guess above was half wrong. `obj_bar1`..`obj_bar16` are level obstacles (children of
@@ -132,8 +132,7 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    when the clock is short, fire). Arena plays an AI seat's turn through the same server calls a human's goes
    through; `Turns` carries the "is thinking..." line every HUD pulses along the bottom (obj_ai_gui). Aim assist,
    whose original was only a fading straight beam along the aim (the preview already shows more), is the AI's
-   targeting at full skill offered to a human: it turns their aim onto a shot that reaches an opponent (at their
-   power if it can, else at full) and every peer draws that path as a beam that fades over 5.5 s or goes with the
+   targeting at full skill offered to a human: it turns their aim onto a shot that reaches an opponent  and every peer draws that path as a beam that fades over 5.5 s or goes with the
    shot. Departures: the railgun choice is new (the original AI only fired bullets); the original took the first
    degree that touched a target, often a graze.
 6. **UR-T8** (done): announcer/HUD — presentation on top of whatever state exists by then.

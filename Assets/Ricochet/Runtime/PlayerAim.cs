@@ -17,10 +17,9 @@ namespace Ricochet
 {
     public partial class Player : NetEntity
     {
-        private readonly AimState _aim = new AimState(StartHeading, StartPower); // owner only: the local, responsive aim
+        private readonly AimState _aim = new AimState(StartHeading); // owner only: the local, responsive aim
         private float _aimSentAt = -1f;
         private float _sentHeading = float.NaN;
-        private float _sentPower = float.NaN;
         private readonly EngineSound _engineSound = new EngineSound(); // owner only: the engine's sounds (U.RICO-T50)
         private double? _snapBackHeading;   // owner only: the heading before the last numpad snap (obj_game's previousAngle)
 
@@ -66,52 +65,47 @@ namespace Ricochet
         /// <summary>The owner's current preview: what would fly if they fired now (null on other peers).</summary>
         public Volley Preview => _preview;
 
-        /// <summary>Solves a cannon shot from this player's spot at <paramref name="heading"/> and <paramref name="power"/>, as things stand.</summary>
-        public ShotPath Solve(float heading, float power)
+        /// <summary>Solves a cannon shot from this player's spot at <paramref name="heading"/>, as things stand.</summary>
+        public ShotPath Solve(float heading)
         {
-            return SolveVolley(Weapon.Cannon, heading, power, Arena.ArsenalRules.DefaultFuse, 0).Main;
+            return SolveVolley(Weapon.Cannon, heading, Arena.ArsenalRules.DefaultFuse, 0).Main;
         }
 
         /// <summary>Solves what <paramref name="weapon"/> would do from this player's spot, as things stand.</summary>
-        public Volley SolveVolley(Weapon weapon, float heading, float power, double fuse, int extraBounces)
+        public Volley SolveVolley(Weapon weapon, float heading, double fuse, int extraBounces)
         {
-            return Arsenal.Fire(weapon, Arena.ToCore(Position), heading, power, fuse, extraBounces, ShotLevel, Arena.Targets(Session),
+            return Arsenal.Fire(weapon, Arena.ToCore(Position), heading, fuse, extraBounces, ShotLevel, Arena.Targets(Session),
                 Arena.Rules, Arena.ArsenalRules);
         }
 
         /// <summary>The level this player's shots fly in now: the hazards on it, less their own shield walls (UR-T6).</summary>
         public Level ShotLevel => Arena.LevelFor(Session, Seat);
 
-        // Server: a new barrel direction. Never trusted as-is: NaN or an out-of-range power would be garbage on every peer.
-        private void OnAim(float heading, float power)
-        {
-            int id = State.Id;
-            Run(new Cmd.AimCommand(id, heading), mirror: false);
-            Run(new Cmd.SetPowerCommand(id, power), mirror: false);
-        }
+        // Server: a new barrel direction. Never trusted as-is: a NaN heading would be garbage on every peer.
+        private void OnAim(float heading) => Run(new Cmd.AimCommand(State.Id, heading), mirror: false);
 
         /// <summary>Server: turns the barrel for an AI seat (or a test), clamped like a client's Aim.</summary>
-        public void ServerAim(float heading, float power)
+        public void ServerAim(float heading)
         {
             if (IsServer)
             {
-                OnAim(heading, power);
+                OnAim(heading);
             }
         }
 
         /// <summary>Server: fires for an AI seat (or a test), through the same checks as a client's Fire.</summary>
-        public void ServerFire(float heading, float power)
+        public void ServerFire(float heading)
         {
             if (IsServer)
             {
-                OnFire(heading, power);
+                OnFire(heading);
             }
         }
 
         // Server: fire. One volley in the air per player, and in a match only on your turn and only with a weapon you have
         // (fire_weapon.gml); the aim is clamped like Aim's, then the authority solves the volley and the shot is drawn
         // and sent from its ShotFired event (Present).
-        private void OnFire(float heading, float power) => Run(new Cmd.FireCommand(State.Id, heading, power));
+        private void OnFire(float heading) => Run(new Cmd.FireCommand(State.Id, heading));
 
         // Server: R / PageUp / PageDown in practice: a new random level, everyone to fresh spots. Ignored in a match.
         private void OnReroll() => Run(new Cmd.RerollCommand(State.Id));
@@ -181,7 +175,7 @@ namespace Ricochet
             if (assisted)
             {
                 _adoptedAssists = Assists;
-                _aim.Set(AssistHeading, AssistPower);
+                _aim.Set(AssistHeading);
             }
 
             // The numpad snaps the aim to an eight-way heading, and 5 puts it back (obj_game's numpad keys, UR-T29).
@@ -190,12 +184,12 @@ namespace Ricochet
             if (snap.HasValue && Turns.MayFire(Session, Seat))
             {
                 _snapBackHeading = _aim.Heading;
-                _aim.Set(snap.Value, _aim.Power);
+                _aim.Set(snap.Value);
                 snapped = true;
             }
             else if (GameInput.AimSnapBack() && _snapBackHeading.HasValue && Turns.MayFire(Session, Seat))
             {
-                _aim.Set(_snapBackHeading.Value, _aim.Power);
+                _aim.Set(_snapBackHeading.Value);
                 snapped = true;
             }
 
@@ -204,15 +198,13 @@ namespace Ricochet
                 GameAudio.Play(SoundCue.Type); // obj_game's numpad keys
             }
 
-            bool changed = snapped || _aim.Step(GameInput.Turn(), GameInput.Charge(), Time.deltaTime, Arena.Rules) || assisted;
+            bool changed = snapped || _aim.Step(GameInput.Turn(), Time.deltaTime, Arena.Rules) || assisted;
             float heading = (float)_aim.Heading;
-            float power = (float)_aim.Power;
-            if ((heading != _sentHeading || power != _sentPower) && Time.unscaledTime - _aimSentAt >= 0.05f)
+            if (heading != _sentHeading && Time.unscaledTime - _aimSentAt >= 0.05f)
             {
                 _sentHeading = heading;
-                _sentPower = power;
                 _aimSentAt = Time.unscaledTime;
-                Aim(heading, power);
+                Aim(heading);
             }
 
             bool mayFire = Turns.MayFire(Session, Seat);
@@ -268,7 +260,7 @@ namespace Ricochet
                     GameAudio.Play(SoundCue.Disabled);
                 }
 
-                UseItem(heading, power);
+                UseItem(heading);
             }
             else if (useItem && mayFire)
             {
@@ -283,7 +275,7 @@ namespace Ricochet
                     GameAudio.Play(SoundCue.Disabled); // fire_weapon.gml with none of the weapon left
                 }
 
-                Fire(heading, power);
+                Fire(heading);
             }
             else if (fire && VortexInFlight)
             {
@@ -294,7 +286,7 @@ namespace Ricochet
             Loadout loadout = Loadout;
             if (changed || _preview == null || Time.frameCount % 10 == 0 || _preview.Weapon != loadout.Weapon)
             {
-                _preview = SolveVolley(loadout.Weapon, heading, power, loadout.Fuse, ExtraBounces);
+                _preview = SolveVolley(loadout.Weapon, heading, loadout.Fuse, ExtraBounces);
             }
 
             if (_previewBeam != null)

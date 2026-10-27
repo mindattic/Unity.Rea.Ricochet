@@ -106,7 +106,7 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Turns.For(Client) != null && annOnHerClient.Seat == ann.Seat, "her client never got the match");
             yield return WaitUntil(() => annOnHerClient.Loadout.Count(Item.AimAssist) == 2, () => "she starts with " + annOnHerClient.Loadout.Count(Item.AimAssist));
 
-            host.ServerFire(0f, 0f);                               // the host's turn: a short shot at nobody
+            host.ServerFire(0f);                               // the host's turn: a short shot at nobody
             yield return WaitUntil(() => Turns.For(Client).Current == ann.Seat && Turns.For(Client).MatchPhase == MatchPhase.Aiming,
                 "the turn never passed to Ann");
 
@@ -114,17 +114,17 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => ann.Loadout.Item == Item.Redirector, () => "her item is " + ann.Loadout.Item);
             annOnHerClient.CycleItem(-1);                          // then aim assist
             yield return WaitUntil(() => ann.Loadout.Item == Item.AimAssist, () => "her item is " + ann.Loadout.Item);
-            annOnHerClient.UseItem(270f, 0.2f);                    // aimed at the floor, nearly no power
+            annOnHerClient.UseItem(270f);                    // aimed at the floor, nearly no power
             yield return WaitUntil(() => annOnHerClient.Assists == 1, "the assist never came back to her client");
             Assert.That(ann.Loadout.Count(Item.AimAssist), Is.EqualTo(1), "one spent");
             Assert.That(annOnHerClient.AssistShown, Is.True, "her client draws the beam");
 
             string target = Arena.SeatTarget(host.Seat);
-            Assert.That(ann.Solve(ann.Heading, ann.Power).TargetId, Is.EqualTo(target), "the server turned her aim onto the host");
+            Assert.That(ann.Solve(ann.Heading).TargetId, Is.EqualTo(target), "the server turned her aim onto the host");
             yield return WaitUntil(() => annOnHerClient.Preview != null && annOnHerClient.Preview.Main.TargetId == target,
                 "her own aim never followed the assist");
 
-            annOnHerClient.Fire(annOnHerClient.AssistHeading, annOnHerClient.AssistPower);
+            annOnHerClient.Fire(annOnHerClient.AssistHeading);
             Player hostOnClient = Player.In(Client).First(p => p.Seat == host.Seat);
             yield return WaitUntil(() => hostOnClient.Health < Arena.MatchRules.MaxHealth, "her assisted shot never hurt the host", 10f);
             // The client draws her shot (and drops the beam) when the server's ShotResolved reaches it, which can land after the

@@ -31,10 +31,6 @@
       "action": "Drive your tank forward / backward (driving forfeits that turn's shot)"
     },
     {
-      "keys": "Up / Down",
-      "action": "Set the power"
-    },
-    {
       "keys": "Space",
       "action": "Fire (again, while your vortex device flies: set it off)"
     },

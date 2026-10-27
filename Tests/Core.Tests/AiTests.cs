@@ -35,8 +35,7 @@ namespace Ricochet.Core.Tests
             Assert.That(plan.TargetId, Is.EqualTo("seat:2"), "3 away beats 6 away");
             Assert.That(plan.Weapon, Is.EqualTo(Weapon.Cannon));
             Assert.That(plan.Heading, Is.EqualTo(90).Within(0.5), "the middle of the headings that reach it");
-            Assert.That(plan.Power, Is.EqualTo(Ai.Power));
-            ShotPath path = BounceSolver.Solve(Vec2.Zero, plan.Heading, plan.Power, Box(), targets);
+            ShotPath path = BounceSolver.Solve(Vec2.Zero, plan.Heading, Box(), targets);
             Assert.That(path.TargetId, Is.EqualTo("seat:2"));
             Assert.That(path.Bounces, Is.EqualTo(0));
         }
@@ -50,7 +49,7 @@ namespace Ricochet.Core.Tests
 
             Assert.That(plan.Kind, Is.EqualTo(AiShotKind.Bank));
             Assert.That(plan.TargetId, Is.EqualTo("seat:1"));
-            ShotPath path = BounceSolver.Solve(Vec2.Zero, plan.Heading, plan.Power, level, targets);
+            ShotPath path = BounceSolver.Solve(Vec2.Zero, plan.Heading, level, targets);
             Assert.That(path.TargetId, Is.EqualTo("seat:1"), plan.ToString());
             Assert.That(path.Bounces, Is.GreaterThan(0));
         }
@@ -64,7 +63,7 @@ namespace Ricochet.Core.Tests
             AiPlan railgun = Ai.Plan(Vec2.Zero, "seat:0", level, targets, Ai.MaxSkill, new Random(1), loadout: new Loadout());
             Assert.That(railgun.Kind, Is.EqualTo(AiShotKind.Railgun));
             Assert.That(railgun.Weapon, Is.EqualTo(Weapon.Railgun));
-            Volley volley = Arsenal.Fire(Weapon.Railgun, Vec2.Zero, railgun.Heading, 1, 0, 0, level, targets);
+            Volley volley = Arsenal.Fire(Weapon.Railgun, Vec2.Zero, railgun.Heading, 0, 0, level, targets);
             Assert.That(volley.Strikes.Select(s => s.TargetId), Does.Contain("seat:1"));
 
             var empty = new ArsenalRules();
@@ -102,28 +101,26 @@ namespace Ricochet.Core.Tests
         public void ARunOfHittingHeadingsAcrossZeroDegreesIsAimedAtItsMiddle()
         {
             var targets = new List<Target> { Me, new Target("seat:1", new Vec2(6, 0), 0.45) };
-            AiPlan plan = Ai.Aim(Vec2.Zero, "seat:0", Box(), targets, 1);
+            AiPlan plan = Ai.Aim(Vec2.Zero, "seat:0", Box(), targets);
             Assert.That(Math.Abs(Ai.Difference(0, plan.Aim)), Is.LessThan(0.5), "not 0 + half the run, and not 360 - half of it: " + plan.Aim);
         }
 
         [Test]
-        public void AimAssistAimsLikeAFullySkilledAi_AtThePlayersPower_OrFullPowerWhenThatFallsShort()
+        public void AimAssistAimsLikeAFullySkilledAi()
         {
-            var rules = new ShotRules { MinRange = 2, MaxRange = 30 };
+            var rules = new ShotRules();
             var near = new List<Target> { Me, new Target("seat:1", new Vec2(0, 1.5), 0.45) };
-            AiPlan close = Ai.Assist(Vec2.Zero, "seat:0", Box(), near, 0, rules);
+            AiPlan close = Ai.Assist(Vec2.Zero, "seat:0", Box(), near, rules);
             Assert.That(close.TargetId, Is.EqualTo("seat:1"));
-            Assert.That(close.Power, Is.EqualTo(0), "in reach at their own power: kept");
             Assert.That(close.Heading, Is.EqualTo(close.Aim));
 
             var far = new List<Target> { Me, new Target("seat:1", new Vec2(8, 0), 0.45) };
-            AiPlan stretched = Ai.Assist(Vec2.Zero, "seat:0", Box(), far, 0, rules);
-            Assert.That(stretched.TargetId, Is.EqualTo("seat:1"));
-            Assert.That(stretched.Power, Is.EqualTo(1));
+            AiPlan stretched = Ai.Assist(Vec2.Zero, "seat:0", Box(), far, rules);
+            Assert.That(stretched.TargetId, Is.EqualTo("seat:1"), "a shot has no range: it reaches anyone its bounces do");
 
             // (Off the whole numbers: a shot running exactly through the corner where two walls meet can slip between them.)
             var caged = new List<Target> { Me, new Target("seat:1", new Vec2(7.7, 0.3), 0.45) };
-            Assert.That(Ai.Assist(Vec2.Zero, "seat:0", Box(Cage(7.7, 0.3)), caged, 0.5, rules), Is.Null, "nobody in reach: no assist");
+            Assert.That(Ai.Assist(Vec2.Zero, "seat:0", Box(Cage(7.7, 0.3)), caged, rules), Is.Null, "nobody in reach: no assist");
         }
 
         [Test]
@@ -143,7 +140,7 @@ namespace Ricochet.Core.Tests
             var turn = new AiTurn(2, 7, 1.0, 90);
             Assert.That(turn.Step(0.5, 0, 10, out _), Is.EqualTo(AiStep.Think));
             Assert.That(turn.Step(0.5, 0, 9.5, out _), Is.EqualTo(AiStep.Plan));
-            turn.SetPlan(new AiPlan(AiShotKind.Direct, Weapon.Cannon, 90, 90, 1, "seat:0"));
+            turn.SetPlan(new AiPlan(AiShotKind.Direct, Weapon.Cannon, 90, 90, "seat:0"));
 
             double heading = 0;
             Assert.That(turn.Step(0.5, heading, 9, out heading), Is.EqualTo(AiStep.Turn));
@@ -157,7 +154,7 @@ namespace Ricochet.Core.Tests
         {
             var turn = new AiTurn(0, 0, 0, 10);
             turn.Step(0, 0, 1, out _);
-            turn.SetPlan(new AiPlan(AiShotKind.Direct, Weapon.Cannon, 180, 180, 1, "seat:1"));
+            turn.SetPlan(new AiPlan(AiShotKind.Direct, Weapon.Cannon, 180, 180, "seat:1"));
 
             // 180 degrees with 1 second left: arrive in half of it (360 a second), not in 18 seconds at 10.
             Assert.That(turn.Step(0.25, 0, 1, out double heading), Is.EqualTo(AiStep.Turn));

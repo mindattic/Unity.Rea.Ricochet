@@ -12,8 +12,6 @@
     {"id": "match.pointsBounce", "label": "Points a bounce", "group": "Scoring", "file": "match.json", "key": "pointsBounce", "kind": "Integer", "min": 0, "max": 10000, "step": 5},
     {"id": "match.pointsFlightTime", "label": "Points a tenth-second in the air", "group": "Scoring", "file": "match.json", "key": "pointsFlightTime", "kind": "Integer", "min": 0, "max": 10000, "step": 1},
     {"id": "shot.maxBounces", "label": "Bounces before a shot goes off", "group": "Shot", "file": "shot.json", "key": "maxBounces", "kind": "Integer", "min": 1, "max": 50, "step": 1},
-    {"id": "shot.minRange", "label": "Range at power 0", "group": "Shot", "file": "shot.json", "key": "minRange", "kind": "Number", "min": 0, "max": 200, "step": 1},
-    {"id": "shot.maxRange", "label": "Range at full power", "group": "Shot", "file": "shot.json", "key": "maxRange", "kind": "Number", "min": 1, "max": 500, "step": 1},
     {"id": "shot.speed", "label": "Shot speed", "group": "Shot", "file": "shot.json", "key": "speed", "kind": "Number", "min": 1, "max": 200, "step": 1},
     {"id": "shot.driveSpeed", "label": "Tank drive speed", "group": "Shot", "file": "shot.json", "key": "driveSpeed", "kind": "Number", "min": 0, "max": 50, "step": 0.5},
     {"id": "hazards.shieldWallLength", "label": "Shield wall length", "group": "Hazards", "file": "hazards.json", "key": "shieldWallLength", "kind": "Number", "min": 0.1, "max": 20, "step": 0.1},

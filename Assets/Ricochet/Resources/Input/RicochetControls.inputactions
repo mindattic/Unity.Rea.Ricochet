@@ -15,15 +15,6 @@
                     "expectedControlType": "Axis"
                 },
                 {
-                    "name": "Power",
-                    "id": "8b1d8cd5-df09-4777-8629-149c7162411c",
-                    "type": "Value",
-                    "interactions": "",
-                    "processors": "",
-                    "initialStateCheck": true,
-                    "expectedControlType": "Axis"
-                },
-                {
                     "name": "Drive",
                     "id": "875d448e-5a8a-4d24-9fa9-29158c4e8051",
                     "type": "Value",
@@ -206,50 +197,6 @@
                     "processors": "invert",
                     "groups": "Gamepad",
                     "action": "Aim",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "Arrows",
-                    "id": "81b354d6-52ac-4df2-a75b-2b00214de9b1",
-                    "path": "1DAxis",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Power",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "negative",
-                    "id": "92a6080c-edf7-4de7-acf7-0a465b921467",
-                    "path": "<Keyboard>/downArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Power",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "6e61d176-4543-479a-8bb6-024fbbde5b43",
-                    "path": "<Keyboard>/upArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Power",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "",
-                    "id": "8bedc821-b20e-4bd0-bbbb-d4a545b959a4",
-                    "path": "<Gamepad>/rightStick/y",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Power",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

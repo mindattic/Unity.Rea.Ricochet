@@ -39,7 +39,6 @@ namespace Ricochet.Core.Tests
                 ShotPath a = actual.Paths[p];
                 Assert.That(a.Origin, Is.EqualTo(e.Origin));
                 Assert.That(a.Heading, Is.EqualTo(e.Heading));
-                Assert.That(a.Power, Is.EqualTo(e.Power));
                 Assert.That(a.End, Is.EqualTo(e.End));
                 Assert.That(a.TargetId, Is.EqualTo(e.TargetId));
                 Assert.That(a.HazardId, Is.EqualTo(e.HazardId));
@@ -75,7 +74,7 @@ namespace Ricochet.Core.Tests
             var targets = new[] { T("seat:0", 0, 0), T("seat:3", 6, 1.2), T("dummy:1", -7, 3) };
             foreach (double heading in new[] { 0.0, 17.5, 160.0, 233.25 })
             {
-                Volley solved = Arsenal.Fire(weapon, Vec2.Zero, heading, 0.8, 1.5, 1, Room(), targets);
+                Volley solved = Arsenal.Fire(weapon, Vec2.Zero, heading, 1.5, 1, Room(), targets);
                 AssertSame(solved, RoundTrip(solved));
             }
         }
@@ -83,7 +82,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void AStrikeAndTheTargetItLandedOnCarryTheirIds()
         {
-            Volley solved = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 1, 2, 0, new Level(-10, -5, 10, 5), new[] { T("seat:0", 0, 0), T("seat:7", 3, 0) });
+            Volley solved = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 2, 0, new Level(-10, -5, 10, 5), new[] { T("seat:0", 0, 0), T("seat:7", 3, 0) });
             Assume.That(solved.Main.End, Is.EqualTo(ShotEndKind.Target));
             ShotWire.Encode(solved, out _, out string ids);
             Assert.That(ids, Is.EqualTo("seat:7"), "each id goes over once");
@@ -96,7 +95,7 @@ namespace Ricochet.Core.Tests
         public void AVortexSetOffInTheAirComesOverCutShort()
         {
             var targets = new[] { T("seat:0", 0, 0), T("seat:2", 3, 0.5) };
-            Volley vortex = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 1, 2, 0, new Level(-10, -5, 10, 5), targets);
+            Volley vortex = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 2, 0, new Level(-10, -5, 10, 5), targets);
             Volley cut = Arsenal.Detonate(vortex, 3, targets);
             Assume.That(cut.Main.End, Is.EqualTo(ShotEndKind.Detonated));
             AssertSame(cut, RoundTrip(cut));
@@ -106,7 +105,7 @@ namespace Ricochet.Core.Tests
         public void AShotStoppedByAHazardKeepsTheHazardItRanInto()
         {
             var level = new Level(-10, -5, 10, 5).With(null, new[] { new Barrier(42, HazardKind.Electricity, new Vec2(3, -2), new Vec2(3, 2)) }, null);
-            Volley solved = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 1, 2, 0, level, null);
+            Volley solved = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 2, 0, level, null);
             Assume.That(solved.Main.End, Is.EqualTo(ShotEndKind.Absorbed));
             Volley onClient = RoundTrip(solved);
             Assert.That(onClient.Main.HazardId, Is.EqualTo(42));
@@ -146,7 +145,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void AnythingEncodeDidNotWriteDecodesToNothing()
         {
-            Volley solved = Arsenal.Fire(Weapon.Shotgun, Vec2.Zero, 30, 1, 2, 0, Room(), new[] { T("seat:1", 5, 2) });
+            Volley solved = Arsenal.Fire(Weapon.Shotgun, Vec2.Zero, 30, 2, 0, Room(), new[] { T("seat:1", 5, 2) });
             ShotWire.Encode(solved, out double[] numbers, out string ids);
 
             Assert.That(ShotWire.Decode(null, ids), Is.Null);

@@ -1,6 +1,6 @@
 # Unity.Ricochet
 
-Turn-based bounce-shot artillery for up to 16 players: pick an angle and a power, bank your shot off walls and
+Turn-based bounce-shot artillery for up to 16 players: pick an angle, bank your shot off walls and
 redirectors, and land it on an opponent before they land one on you. Rebuilt in Unity 6 from a 2013 GameMaker
 original that could only ever pass the keyboard around one machine; this version adds the real networked
 multiplayer GML never could.
@@ -24,7 +24,7 @@ multiplayer GML never could.
 
 From the original `Ricochet.project.gmx` (`objects/`, `scripts/`, `rooms/`):
 
-- **Turn-based aim-and-fire**: an angle, a power meter and a bounce-count limit per shot; a potential-path
+- **Turn-based aim-and-fire**: an angle and a bounce-count limit per shot (no power: a shot flies until its bounces run out); a potential-path
   preview (`draw_potential`, `draw_bounceinfo`) traces the ricochet off level borders and rail redirectors
   before the player commits.
 - **Up to 16 players**, human or AI, each with a health bar (`obj_bar1`…`obj_bar16`), a turn-order/turn-timer
@@ -47,7 +47,7 @@ See [docs/BIBLE.md](docs/BIBLE.md) for what this project is and is not, and
 ## Status
 
 The Unity project is scaffolded from Unity.Multiplayer's New Game wizard and the first slice is playable (UR-T3):
-aim with an angle and a power, see the whole bounce path before firing (off the border, mirror walls and rail
+aim with an angle, see the whole bounce path before firing (off the border, mirror walls and rail
 redirectors, up to the five-contact limit), fire, and watch the server-authoritative shot fly and knock down a
 practice dummy, hosted or joined over the network. Matches are in (UR-T4): up to 16 seats of humans and AI
 opponents taking turns against a 20-second clock, with health bars and the turn order along the top. Weapons and
@@ -94,7 +94,7 @@ git clone https://github.com/mindattic/Unity.Shared
 `Packages/manifest.json` already lists the three as local packages. Open the project in Unity Hub; the first
 open regenerates `Library/` (not committed) from `Packages/` and `ProjectSettings/`. Open `Assets/Ricochet/Game.unity`,
 press Play, click Play on the title, then Host (free practice) or Players > Next: Map > Next: Lobby > Start (a match): Left/Right
-aim, Up/Down set the power, Space fires.
+aim, Space fires.
 
 Tests: `dotnet test Core.slnx` runs the bounce solver's unit tests without Unity; the PlayMode and EditMode suites
 are listed in [Assets/Ricochet/README.md](Assets/Ricochet/README.md).

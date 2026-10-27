@@ -2,8 +2,8 @@
 // fly the same thing from the same synced inputs (the weapon, the aim, the fuse and any extra bounce). The original's
 // shoot_bullet/shoot_laser/shoot_shotgun/shoot_grenade/shoot_railgun/shoot_vortex.gml spawned objects that stepped a
 // pixel at a time (design reference only, UR-LAW-2); here each is one or more solved ShotPaths plus what they strike:
-//   Cannon   one shell along the aim at the aim's power; it stops in the first player it reaches (hit.gml's damage).
-//   Laser    a beam: always full range, at three times a shell's speed; otherwise a cannon shot.
+//   Cannon   one shell along the aim until its bounces run out; it stops in the first player it reaches (hit.gml's damage).
+//   Laser    a beam at three times a shell's speed; otherwise a cannon shot.
 //   Shotgun  a fan of pellets (pelletCount, +/- shotgunSpread degrees), each its own bouncing shot doing a share of a hit.
 //   Grenade  bounces like a shell but passes through players, and goes off when its fuse runs out (grenade_countdown.gml)
 //            or on its bounce limit (grenade_step.gml), hurting everyone within its blast (check_grenade_intersection.gml).
@@ -181,13 +181,12 @@ namespace Ricochet.Core.Arsenal
     public static class Arsenal
     {
         /// <summary>
-        /// Solves what <paramref name="weapon"/> fired from <paramref name="origin"/> at <paramref name="heading"/> and
-        /// <paramref name="power"/> does. <paramref name="targets"/> may include the shooter (a shot that banks back hurts
+        /// Solves what <paramref name="weapon"/> fired from <paramref name="origin"/> at <paramref name="heading"/> does. <paramref name="targets"/> may include the shooter (a shot that banks back hurts
         /// them, as hit.gml's self-hit did); the muzzle starts clear of them.
         /// </summary>
         /// <param name="fuse">A grenade's fuse in seconds (ignored by the others).</param>
         /// <param name="extraBounces">Extra Bounce items used this turn: each lets the shot survive one more contact.</param>
-        public static Volley Fire(Weapon weapon, Vec2 origin, double heading, double power, double fuse, int extraBounces,
+        public static Volley Fire(Weapon weapon, Vec2 origin, double heading, double fuse, int extraBounces,
             Level level, IReadOnlyList<Target> targets, ShotRules rules = null, ArsenalRules arsenal = null)
         {
             if (level == null)
@@ -205,7 +204,7 @@ namespace Ricochet.Core.Arsenal
             {
                 case Weapon.Laser:
                 {
-                    ShotPath path = BounceSolver.Solve(origin, heading, 1, level, targets, shot);
+                    ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot);
                     paths.Add(path);
                     AddTargetStrike(path, 1, strikes);
                     return new Volley(weapon, paths, shot.Speed * arsenal.LaserSpeed, strikes, false, default, 0);
@@ -217,7 +216,7 @@ namespace Ricochet.Core.Arsenal
                     for (int i = 0; i < pellets; i++)
                     {
                         double offset = pellets == 1 ? 0 : arsenal.PelletSpread * (2.0 * i / (pellets - 1) - 1);
-                        ShotPath path = BounceSolver.Solve(origin, heading + offset, power, level, targets, shot);
+                        ShotPath path = BounceSolver.Solve(origin, heading + offset, level, targets, shot);
                         paths.Add(path);
                         AddTargetStrike(path, arsenal.PelletDamage, strikes);
                     }
@@ -234,9 +233,7 @@ namespace Ricochet.Core.Arsenal
                 {
                     // The fuse is the range: it flies at a shell's speed until the fuse runs out.
                     double range = arsenal.ClampFuse(fuse) * shot.Speed;
-                    shot.MinRange = range;
-                    shot.MaxRange = range;
-                    ShotPath path = BounceSolver.Solve(origin, heading, 1, level, null, shot);
+                    ShotPath path = BounceSolver.Solve(origin, heading, level, null, shot, range);
                     paths.Add(path);
                     if (path.End == ShotEndKind.Absorbed)
                     {
@@ -251,8 +248,7 @@ namespace Ricochet.Core.Arsenal
                 {
                     var open = new Level(level.MinX, level.MinY, level.MaxX, level.MaxY, null, null, null, level.Breaches);
                     shot.MaxBounces = 1;
-                    shot.MinRange = shot.MaxRange = 2 * ((level.MaxX - level.MinX) + (level.MaxY - level.MinY));
-                    ShotPath path = BounceSolver.Solve(origin, heading, 1, open, null, shot);
+                    ShotPath path = BounceSolver.Solve(origin, heading, open, null, shot);
                     paths.Add(path);
                     if (targets != null)
                     {
@@ -271,13 +267,13 @@ namespace Ricochet.Core.Arsenal
 
                 case Weapon.Vortex:
                 {
-                    ShotPath path = BounceSolver.Solve(origin, heading, power, level, targets, shot);
+                    ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot);
                     return Implode(path, shot.Speed, targets, arsenal);
                 }
 
                 default:
                 {
-                    ShotPath path = BounceSolver.Solve(origin, heading, power, level, targets, shot);
+                    ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot);
                     paths.Add(path);
                     AddTargetStrike(path, 1, strikes);
                     return new Volley(Weapon.Cannon, paths, shot.Speed, strikes, false, default, 0);
@@ -303,9 +299,8 @@ namespace Ricochet.Core.Arsenal
 
         /// <summary>
         /// shoot_redirector.gml (U.RICO-T80): a redirector flies along the aim like a shell (through players, bouncing off
-        /// the walls and the border) until its owner presses the item key again (redirector_detonate), not as far as the power
-        /// sends it. The path is solved out to <see cref="ItemLooks.RedirectorMaxSeconds"/> of flight, where the authority
-        /// stops it if its owner never has; <see cref="PlaceRedirector"/> says where it stops.
+        /// the walls and the border) until its owner presses the item key again (redirector_detonate). The path is solved
+        /// out to <see cref="ItemLooks.RedirectorMaxSeconds"/> of flight; <see cref="PlaceRedirector"/> says where it stops.
         /// </summary>
         public static ShotPath FlyRedirector(Vec2 origin, double aim, Level level, ShotRules rules)
         {
@@ -328,9 +323,7 @@ namespace Ricochet.Core.Arsenal
             ShotRules flying = (rules ?? ShotRules.Default).Clone();
             double range = flying.Speed * seconds;
             flying.MaxBounces = RedirectorMaxBounces;
-            flying.MinRange = range;
-            flying.MaxRange = range;
-            return BounceSolver.Solve(origin, aim, 1, level, null, flying);
+            return BounceSolver.Solve(origin, aim, level, null, flying, range);
         }
 
         // The level as a flying item sees it: the border and the walls (the shapes), and the standing redirectors only when

@@ -107,7 +107,7 @@ namespace Ricochet.Tests
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Cannon), "Ann's click changed the host's weapon");
 
             // Ann's turn: her icons, and a click on the grenade selects it on the server.
-            host.ServerFire(0f, 0f);
+            host.ServerFire(0f);
             Player annOnClient = Player.In(Client).First(p => p.IsLocalHuman);
             yield return WaitUntil(() => Turns.For(Client).Current == ann.Seat && Turns.For(Client).MatchPhase == MatchPhase.Aiming && _hud.Icons.Subject == annOnClient,
                 "the turn never passed to Ann", 10f);

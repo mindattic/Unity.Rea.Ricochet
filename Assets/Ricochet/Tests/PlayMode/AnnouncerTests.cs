@@ -125,8 +125,14 @@ namespace Ricochet.Tests
             Turns turns = null;
             yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.Announced == 1, "the client never heard the welcome");
 
-            host.ServerFire(0f, 0f); // a short shot to the right, at nobody
-            yield return WaitUntil(() => turns.Announced == 2, "no heckle for a shot that hit nobody", 10f);
+            float miss = 0f; // a shot flies all its bounces (U.RICO-T88): one that reaches nobody
+            while (host.Solve(miss).End == Ricochet.Core.Aim.ShotEndKind.Target)
+            {
+                miss += 1f;
+            }
+
+            host.ServerFire(miss);
+            yield return WaitUntil(() => turns.Announced == 2, "no heckle for a shot that hit nobody", 20f);
             Assert.That(turns.LastAnnouncement.Kind, Is.EqualTo(AnnouncementKind.Lose));
             Assert.That(turns.LastAnnouncement.Subject, Is.EqualTo(host.Seat));
             string line = Announcer.Text(turns.LastAnnouncement, seat => Player.In(Client).First(p => p.Seat == seat).DisplayName);
@@ -144,9 +150,9 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => Turns.For(Client) != null && Turns.For(Client).Announced == 1, "the client never heard the welcome");
 
             string target = Arena.SeatTarget(ann.Seat);
-            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), 1, target, Arena.Level, Arena.Targets(Server), Arena.Rules);
+            double? heading = BounceSolver.FindHeading(Arena.ToCore(host.Position), target, Arena.Level, Arena.Targets(Server), Arena.Rules);
             Assert.That(heading, Is.Not.Null, "no aim from " + host.Position + " reaches Ann at " + ann.Position);
-            host.ServerFire((float)heading.Value, 1f);
+            host.ServerFire((float)heading.Value);
             Assert.That(host.LastShot.TargetId, Is.EqualTo(target));
             int expected = Arena.MatchRules.Points(host.LastShot.Bounces, host.LastVolley.Duration);
 
@@ -176,7 +182,7 @@ namespace Ricochet.Tests
             Turns turns = null;
             yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.Round == 1, "the client never got the match");
 
-            host.ServerFire(0f, 0f);
+            host.ServerFire(0f);
             yield return new WaitForSeconds(1.5f);
             Assert.That(turns.Announced, Is.EqualTo(0));
             Assert.That(Turns.For(Server).Announced, Is.EqualTo(0));

@@ -1,6 +1,6 @@
 // The player: one per connection, spawned by the NetworkManager as its Player Prefab, standing at its seat's spot; or an
 // AI opponent, the same thing spawned by the server under a key ("ai:1", from the Opponent prefab) when a match starts.
-// The owner turns an aim and charges a power (AimState) and sees the shot's whole bounce path before firing; Fire
+// The owner turns an aim (AimState) and sees the shot's whole bounce path before firing; Fire
 // sends the aim to the server, which is the one that decides (UR-LAW-1): it clamps the input, solves the shot with
 // Core's BounceSolver, flies it, and knocks down whatever it lands on. It sends every client the volley it solved
 // (UR-T12: ShotResolved, packed by Core's ShotWire), so every peer draws the server's own bounce rather than solving it
@@ -55,9 +55,8 @@ namespace Ricochet
 {
     public partial class Player : NetEntity
     {
-        /// <summary>The aim a new player starts with: straight up, half power.</summary>
+        /// <summary>The aim a new player starts with: straight up.</summary>
         public const float StartHeading = 90f;
-        public const float StartPower = 0.5f;
 
         /// <summary>Health before the first match (Arena.MatchRules.MaxHealth; the server keeps it from then on).</summary>
         public const int StartHealth = 100;
@@ -338,7 +337,7 @@ namespace Ricochet
             _assistBeam = DottedBeam.Create(_shotView.transform, "Aim assist", 3);
             if (LocallyControlled)
             {
-                _aim.Set(Heading, Power);
+                _aim.Set(Heading);
                 _previewBeam = DottedBeam.Create(_shotView.transform, "Preview", 2);
             }
         }

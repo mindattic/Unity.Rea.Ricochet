@@ -204,7 +204,6 @@ namespace Ricochet.Core.Net
             n.Add(path.Origin.X);
             n.Add(path.Origin.Y);
             n.Add(path.Heading);
-            n.Add(path.Power);
             n.Add((int)path.End);
             n.Add(path.HazardId);
             n.Add(IdIndex(path.TargetId, names));
@@ -239,7 +238,6 @@ namespace Ricochet.Core.Net
 
             var origin = new Vec2(reader.Next(), reader.Next());
             double heading = reader.Next();
-            double power = reader.Next();
             int end = reader.Int();
             int hazardId = reader.Int();
             int target = reader.Int();
@@ -280,7 +278,7 @@ namespace Ricochet.Core.Net
                 contacts.Add(new Contact((ContactKind)kind, point, distance, headingIn, headingOut, deflected, index));
             }
 
-            return new ShotPath(origin, heading, power, points, contacts, (ShotEndKind)end, targetId, hazardId);
+            return new ShotPath(origin, heading, points, contacts, (ShotEndKind)end, targetId, hazardId);
         }
 
         private static int IdIndex(string id, List<string> names)

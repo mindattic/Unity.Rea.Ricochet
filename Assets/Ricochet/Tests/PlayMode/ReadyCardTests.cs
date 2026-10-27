@@ -76,7 +76,7 @@ namespace Ricochet.Tests
             Assert.That(_hud.Ready.NameColor, Is.EqualTo(hostColor), "in their colour");
             Assert.That(_hud.Ready.Alpha, Is.EqualTo(1f), "full strength while it holds");
 
-            host.ServerFire(0f, 0f);
+            host.ServerFire(0f);
             Assert.That(host.Shots, Is.EqualTo(0), "no shot while the card is up");
             yield return new WaitForSeconds(0.8f);
             Assert.That(serverTurns.MatchPhase, Is.EqualTo(MatchPhase.Ready), "still holding");
@@ -91,7 +91,7 @@ namespace Ricochet.Tests
             Assert.That(_hud.Ready.Showing, Is.False, "the card is gone once the clock runs");
             Assert.That(_hud.Ready.OverTankText, Is.Empty);
 
-            host.ServerFire(0f, 0f);
+            host.ServerFire(0f);
             Assert.That(host.Shots, Is.EqualTo(1), "the turn is theirs now");
 
             // The next turn gets its own card.
@@ -117,7 +117,7 @@ namespace Ricochet.Tests
             foreach (Player human in new[] { host, ann })
             {
                 yield return WaitUntil(() => turns.Current == human.Seat && turns.MatchPhase == MatchPhase.Aiming, "seat " + human.Seat + "'s clock never started", 10f);
-                human.ServerFire(0f, 0f);
+                human.ServerFire(0f);
                 Assert.That(human.Shots, Is.EqualTo(1));
             }
 

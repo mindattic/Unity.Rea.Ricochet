@@ -65,7 +65,7 @@ namespace Ricochet.Core.Tests
 
             double heading = a.Heading;
             Assert.That(authority.Apply(new AimCommand(1, heading + 45)), Is.Empty, "no turning");
-            Assert.That(authority.Apply(new FireCommand(1, 90, 1)), Is.Empty, "no firing");
+            Assert.That(authority.Apply(new FireCommand(1, 90)), Is.Empty, "no firing");
             Assert.That(authority.Apply(new EndTurnCommand(1)), Is.Empty, "no ending the turn");
             authority.Apply(new DriveCommand(1, 1));
             authority.AdvanceDrive(1, 0.2);
@@ -82,7 +82,7 @@ namespace Ricochet.Core.Tests
         {
             GameAuthority authority = TwoSeats(out PlayerState a, out PlayerState b);
             authority.Apply(new DriveCommand(2, 1)); // not B's turn: nothing
-            authority.Apply(new FireCommand(1, 180, 1));
+            authority.Apply(new FireCommand(1, 180));
             Assert.That(a.InFlight, Is.True);
             authority.AdvanceFlight(1, 0.05);
             Vec2 at = a.Flight.Flights[0].Position;
@@ -156,7 +156,7 @@ namespace Ricochet.Core.Tests
         public void Randomize_IsGoneOnceAnyoneHasFiredThisRound_AndBackNextRound()
         {
             GameAuthority authority = TwoSeats(out PlayerState a, out PlayerState b);
-            authority.Apply(new FireCommand(1, 90, 0.1));
+            authority.Apply(new FireCommand(1, 90));
             Assert.That(authority.MayRerollRound, Is.False, "a shot is in the air");
             for (int i = 0; i < 400 && a.InFlight; i++)
             {
@@ -182,7 +182,7 @@ namespace Ricochet.Core.Tests
             Assert.That(authority.Paused, Is.False);
             Assert.That(authority.MatchRunning, Is.False);
             Assert.That(authority.Match.Phase, Is.EqualTo(MatchPhase.Practice));
-            Assert.That(Of<ShotFired>(authority.Apply(new FireCommand(1, 90, 0.5))), Has.Count.EqualTo(1), "practice: anyone fires");
+            Assert.That(Of<ShotFired>(authority.Apply(new FireCommand(1, 90))), Has.Count.EqualTo(1), "practice: anyone fires");
         }
     }
 }

@@ -311,10 +311,10 @@ namespace Ricochet
                     ai.ServerSelectWeapon(plan.Weapon);
                     break;
                 case AiStep.Turn:
-                    ai.ServerAim((float)next, (float)_aiTurn.Plan.Power);
+                    ai.ServerAim((float)next);
                     break;
                 case AiStep.Fire:
-                    ai.ServerFire((float)_aiTurn.Plan.Heading, (float)_aiTurn.Plan.Power);
+                    ai.ServerFire((float)_aiTurn.Plan.Heading);
                     break;
             }
         }

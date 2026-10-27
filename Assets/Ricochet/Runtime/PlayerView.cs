@@ -109,7 +109,7 @@ namespace Ricochet
             {
                 _seenAssists = Assists;
                 _assistShownUntil = Time.time + AssistSeconds;
-                ShotPath path = SolveVolley(Weapon.Cannon, AssistHeading, AssistPower, Arena.ArsenalRules.DefaultFuse, ExtraBounces).Main;
+                ShotPath path = SolveVolley(Weapon.Cannon, AssistHeading, Arena.ArsenalRules.DefaultFuse, ExtraBounces).Main;
                 _assistPoints.Clear();
                 for (int i = 0; i < path.Points.Count; i++)
                 {
@@ -134,7 +134,7 @@ namespace Ricochet
             LastVolley = volley;
             LastVolleyShot = shot;
             // The view draws it and GameAudio plays the fire sound (UR-T10), each from the feed.
-            Presentation.Raise(this, new Cmd.ShotFired(PlayerId, Seat, shot, volley.Weapon, ShotHeading, ShotPower, ShotFuse, ShotExtraBounces, volley));
+            Presentation.Raise(this, new Cmd.ShotFired(PlayerId, Seat, shot, volley.Weapon, ShotHeading, ShotFuse, ShotExtraBounces, volley));
         }
 
         // Every peer, once its own flight of the shot lands (hit.gml, U.RICO-T48): "+N pts" flashing over the shooter, the damage
@@ -239,7 +239,7 @@ namespace Ricochet
             _seenExtraBounces = ExtraBounces;
         }
 
-        /// <summary>The owner's draw_bounceinfo line (angle, power, "Bounces: n/max" and where the shot ends), or null for anyone else.</summary>
+        /// <summary>The owner's draw_bounceinfo line (angle, "Bounces: n/max" and where the shot ends), or null for anyone else.</summary>
         public string AimReadout
         {
             get
@@ -258,8 +258,8 @@ namespace Ricochet
                     : _preview != null && _preview.HasBlast ? string.Empty
                     : shown.End == ShotEndKind.Target ? "  -> HIT"
                     : shown.End == ShotEndKind.Spent ? "  -> falls short" : string.Empty;
-                return "Angle " + Mathf.RoundToInt((float)_aim.Heading) + "°   Power " + Mathf.RoundToInt((float)_aim.Power * 100f) + "%   Bounces: "
-                    + bounces + "/" + (Arena.Rules.MaxBounces + ExtraBounces) + end + "   (A/D aim, Up/Down power, W/S drive, Space fire, F end turn)";
+                return "Angle " + Mathf.RoundToInt((float)_aim.Heading) + "°   Bounces: "
+                    + bounces + "/" + (Arena.Rules.MaxBounces + ExtraBounces) + end + "   (A/D aim, W/S drive, Space fire, F end turn)";
             }
         }
 

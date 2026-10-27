@@ -125,7 +125,7 @@ namespace Ricochet.Tests
 
             // The host's shell, mid-flight and then where it lands.
             Player current = Turns.For(Server).Current == host.Seat ? host : ann;
-            current.ServerFire(30f, 1f);
+            current.ServerFire(30f);
             yield return new WaitForSeconds(0.08f);
             yield return Capture("shell");
             yield return WaitUntil(() => current.LastVolley != null, "the shell never flew");
@@ -143,7 +143,7 @@ namespace Ricochet.Tests
             Assert.That(other.Loadout.Weapon, Is.EqualTo(Weapon.Grenade));
             other.Loadout.SetFuse(0.5);
             other.MirrorLoadout();
-            other.ServerFire(200f, 1f);
+            other.ServerFire(200f);
             ShotView grenade = null;
             yield return WaitUntil(() => (grenade = Object.FindObjectsByType<ShotView>().FirstOrDefault(v => v.Flying && v.Flight.Volley.Weapon == Weapon.Grenade)) != null, "the grenade never flew", 5f);
             yield return WaitUntil(() => !grenade.Flying, "the grenade never went off", 10f);
@@ -156,7 +156,7 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => turns.MatchPhase == MatchPhase.Aiming && turns.Current != other.Seat, "the turn never passed again", 20f);
             Player driver = Object.FindObjectsByType<Player>().First(p => p.IsLocalHuman && p.Seat == turns.Current);
             Assert.That(driver.Tank, Is.Not.Null, "the tank fell back to squares");
-            driver.Aim(driver.Heading + 120f, 0.5f);
+            driver.Aim(driver.Heading + 120f);
             yield return new WaitForSeconds(0.3f);
             float until = Time.time + 1.5f;
             while (Time.time < until)
@@ -206,7 +206,7 @@ namespace Ricochet.Tests
             ShotView view = Object.FindObjectsByType<ShotView>().First(v => v.Owner == host);
             host.ServerCycleWeapon(1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Laser));
-            host.ServerFire(35f, 1f);
+            host.ServerFire(35f);
             yield return WaitUntil(() => view.LaserPulses > 1 || !view.Flying, "no pulses rode the beam", 10f);
             yield return Capture("laser", "U.RICO-T47");
             yield return WaitUntil(() => !view.Flying, "the laser never landed", 10f);
@@ -218,7 +218,7 @@ namespace Ricochet.Tests
             host.ServerCycleWeapon(-1);
             host.ServerCycleWeapon(-1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Railgun));
-            host.ServerFire(35f, 1f);
+            host.ServerFire(35f);
             yield return WaitUntil(() => !view.Flying && view.RailShowing, "the rail never reached the border", 5f);
             yield return Capture("railgun", "U.RICO-T47");
             yield return WaitUntil(() => !view.RailShowing && !host.ShotInFlight, "the rail never faded", 10f);
@@ -226,13 +226,13 @@ namespace Ricochet.Tests
             host.ServerCycleWeapon(1);
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Vortex));
             float clear = 60f; // a heading whose vortex flies a good way before anything stops it
-            while (clear < 420f && (host.SolveVolley(Weapon.Vortex, clear, 1f, 2, 0).Main.End == ShotEndKind.Absorbed
-                || host.SolveVolley(Weapon.Vortex, clear, 1f, 2, 0).Main.Length < 6))
+            while (clear < 420f && (host.SolveVolley(Weapon.Vortex, clear, 2, 0).Main.End == ShotEndKind.Absorbed
+                || host.SolveVolley(Weapon.Vortex, clear, 2, 0).Main.Length < 6))
             {
                 clear += 5f;
             }
 
-            host.ServerFire(clear, 1f);
+            host.ServerFire(clear);
             yield return new WaitForSeconds(0.25f);
             yield return Capture("vortex-flying", "U.RICO-T47");
             host.ServerDetonate();
@@ -249,7 +249,7 @@ namespace Ricochet.Tests
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Grenade));
             host.Loadout.SetFuse(0.5);
             host.MirrorLoadout();
-            host.ServerFire(200f, 1f);
+            host.ServerFire(200f);
             yield return WaitUntil(() => view.BlastShowing, "the grenade never went off", 10f);
             yield return new WaitForSeconds(0.4f);
             yield return Capture("grenade-circle", "U.RICO-T47");
@@ -258,14 +258,14 @@ namespace Ricochet.Tests
             Player annOnHerClient = Player.In(Client).First(p => p.OwnerClientId == Client.LocalClientId);
             annOnHerClient.CycleItem(1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.ShieldWall, "the shield wall was never selected");
-            ann.ServerUseItem(0f, 0.5f);
+            ann.ServerUseItem(0f);
             annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.ExtraBounce, "the extra bounce was never selected");
             annOnHerClient.CycleItem(-1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.Redirector, "the redirector was never selected");
-            ann.ServerUseItem(90f, 0.2f);
+            ann.ServerUseItem(90f);
             yield return new WaitForSeconds(0.1f);
-            ann.ServerUseItem(90f, 0.2f); // U.RICO-T80: the second press stops it where it is
+            ann.ServerUseItem(90f); // U.RICO-T80: the second press stops it where it is
             yield return WaitUntil(() => LevelHazard.In(Client).Count(h => h.Ready && h.Art != null) == 2, "the items never stood", 5f);
             yield return new WaitForSeconds(1.6f);
             yield return Capture("items", "U.RICO-T47");
@@ -315,10 +315,10 @@ namespace Ricochet.Tests
                 yield return WaitUntil(() => annOnHerClient.Weapons != 0, "her loadout never came");
                 annOnHerClient.CycleItem(1);
                 yield return WaitUntil(() => ann.Loadout.Item == Item.ShieldWall, "the shield wall was never selected");
-                ann.ServerUseItem(0f, 0.5f);
+                ann.ServerUseItem(0f);
                 yield return WaitUntil(() => LevelHazard.In(Client).Any(h => h.Ready && h.Art != null), "the wall never stood", 5f);
                 yield return new WaitForSeconds(1.2f);
-                host.ServerFire(180f, 1f);
+                host.ServerFire(180f);
                 yield return WaitUntil(() => FieldEffects.Shards > 0, "the glass never flew", 10f);
                 yield return new WaitForSeconds(0.1f);
                 yield return Capture("glass", "U.RICO-T48");
@@ -342,7 +342,7 @@ namespace Ricochet.Tests
                 Player current = Turns.For(Server).Current == host.Seat ? host : ann;
                 Player target = current == host ? ann : host;
                 Vector2 toTarget = target.Position - current.Position;
-                current.ServerFire(Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg, 1f);
+                current.ServerFire(Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg);
                 yield return WaitUntil(() => FieldEffects.KnockOuts > 0, "the tank never blew up", 10f);
                 yield return new WaitForSeconds(0.15f);
                 yield return Capture("knock-out", "U.RICO-T48");
@@ -393,9 +393,9 @@ namespace Ricochet.Tests
                 Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange(2)), Is.True);
                 yield return WaitUntil(() => Turns.For(Client) != null && Turns.For(Server).MatchPhase == MatchPhase.Aiming && _hud.Icons.Showing, "the match never opened", 10f);
                 Player host = hostSpawn.Result;
-                host.ServerAim(60f, 0.6f);
+                host.ServerAim(60f);
                 host.ServerCycleWeapon(1);
-                host.ServerUseItem(60f, 0.6f); // an extra bounce on this turn
+                host.ServerUseItem(60f); // an extra bounce on this turn
                 yield return new WaitForSeconds(0.6f);
                 yield return Capture("hud", "U.RICO-T49");
 

@@ -89,7 +89,7 @@ namespace Ricochet.Tests
             Player annOnHerClient = Mine();
             yield return WaitUntil(() => annOnHerClient.Position != Vector2.zero && annOnHerClient.Weapons != 0, "her client never got her seat");
 
-            annOnHerClient.UseItem(90f, 0.5f);
+            annOnHerClient.UseItem(90f);
             yield return WaitUntil(() => annOnHerClient.ExtraBounces == 1, "the extra bounce never came back");
             Assert.That(ann.Loadout.Count(Item.ExtraBounce), Is.EqualTo(3), "practice is free: nothing spent");
 
@@ -101,12 +101,12 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => ann.Loadout.Item == Item.Teleporter, "the teleporter was never selected");
             Vector2 from = ann.Position;
             Vec2 expected = Arsenal.Teleport(Arena.ToCore(from), 0, Arena.Level, Arena.Rules, ann.Radius, out _);
-            annOnHerClient.UseItem(0f, 0f);
+            annOnHerClient.UseItem(0f);
             yield return WaitUntil(() => annOnHerClient.Position != from, "she never moved"); // when the teleporter arrives (U.RICO-T80)
             Assert.That(annOnHerClient.Position.x, Is.EqualTo((float)expected.X).Within(1e-4f));
             Assert.That(annOnHerClient.Position.y, Is.EqualTo((float)expected.Y).Within(1e-4f));
 
-            annOnHerClient.Fire(90f, 0.5f);
+            annOnHerClient.Fire(90f);
             yield return WaitUntil(() => annOnHerClient.LastVolley != null, "her client never drew the shot");
             Assert.That(annOnHerClient.ShotExtraBounces, Is.EqualTo(1), "the shot carried the extra bounce");
             yield return WaitUntil(() => annOnHerClient.ExtraBounces == 0, "the extra bounce was never used up");
@@ -134,7 +134,7 @@ namespace Ricochet.Tests
             Assert.That(host.Loadout.Weapon, Is.EqualTo(Weapon.Grenade));
             host.Loadout.SetFuse(0.5);
             host.MirrorLoadout();
-            host.ServerFire(180f, 1f);
+            host.ServerFire(180f);
             Assert.That(host.Shots, Is.EqualTo(1));
             Assert.That(host.Loadout.Count(Weapon.Grenade), Is.EqualTo(2), "a grenade spent");
             Assert.That(host.LastVolley.HasBlast, Is.True);
@@ -166,7 +166,7 @@ namespace Ricochet.Tests
             Assert.That(crate.Spot, Is.EqualTo(new Vector2(0f, -2f)));
 
             int itemsBefore = Enumerable.Range(0, ArsenalRules.Kinds).Sum(i => host.Loadout.Count((Item)i));
-            host.ServerFire(90f, 0f);
+            host.ServerFire(90f);
             Player hostOnClient = Player.In(Client).First(p => p.Seat == host.Seat);
             yield return WaitUntil(() => hostOnClient.PickupCount == 1, "her client never saw the host collect it", 10f);
             Assert.That(Client.Objects.Contains(Crate.KeyFor(drop.Id)), Is.False, "the crate is gone");

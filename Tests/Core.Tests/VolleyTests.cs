@@ -13,16 +13,16 @@ namespace Ricochet.Core.Tests
 
         private static Target T(string id, double x, double y) => new Target(id, new Vec2(x, y), 0.45);
 
-        private static Volley Fire(Weapon weapon, double heading, double power, Level level, params Target[] targets)
+        private static Volley Fire(Weapon weapon, double heading, Level level, params Target[] targets)
         {
-            return Arsenal.Fire(weapon, Vec2.Zero, heading, power, 2, 0, level, targets.ToList());
+            return Arsenal.Fire(weapon, Vec2.Zero, heading, 2, 0, level, targets.ToList());
         }
 
         [Test]
         public void TheCannonIsTheSingleShotItAlwaysWas()
         {
-            Volley volley = Fire(Weapon.Cannon, 0, 1, Open(), T("me", 0, 0), T("ann", 5, 0));
-            ShotPath alone = BounceSolver.Solve(Vec2.Zero, 0, 1, Open(), new[] { T("me", 0, 0), T("ann", 5, 0) });
+            Volley volley = Fire(Weapon.Cannon, 0, Open(), T("me", 0, 0), T("ann", 5, 0));
+            ShotPath alone = BounceSolver.Solve(Vec2.Zero, 0, Open(), new[] { T("me", 0, 0), T("ann", 5, 0) });
 
             Assert.That(volley.Paths.Count, Is.EqualTo(1));
             Assert.That(volley.Main.Impact.X, Is.EqualTo(alone.Impact.X).Within(1e-9));
@@ -36,8 +36,8 @@ namespace Ricochet.Core.Tests
         public void AnExtraBounceLetsTheShotSurviveOneMoreContact()
         {
             var level = new Level(-3, -3, 3, 3);
-            Volley plain = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 1, 2, 0, level, null);
-            Volley extra = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 1, 2, 1, level, null);
+            Volley plain = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 2, 0, level, null);
+            Volley extra = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 10, 2, 1, level, null);
             Assert.That(plain.Main.End, Is.EqualTo(ShotEndKind.BounceLimit));
             Assert.That(plain.Main.Contacts.Count, Is.EqualTo(5));
             Assert.That(extra.Main.Contacts.Count, Is.EqualTo(6));
@@ -45,19 +45,18 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void TheLaserIgnoresPower_AndFliesThreeTimesAsFast()
+        public void TheLaserFliesTheCannonsPath_ThreeTimesAsFast()
         {
-            Volley laser = Fire(Weapon.Laser, 0, 0, Open());
-            Volley cannon = Fire(Weapon.Cannon, 0, 0, Open());
-            Assert.That(cannon.Main.Length, Is.EqualTo(ShotRules.Default.MinRange).Within(1e-9));
-            Assert.That(laser.Main.Length, Is.GreaterThan(cannon.Main.Length * 3));
+            Volley laser = Fire(Weapon.Laser, 0, Open());
+            Volley cannon = Fire(Weapon.Cannon, 0, Open());
+            Assert.That(laser.Main.Length, Is.EqualTo(cannon.Main.Length).Within(1e-9));
             Assert.That(laser.Speed, Is.EqualTo(ShotRules.Default.Speed * 3));
         }
 
         [Test]
         public void TheShotgunFansFivePellets_EachStrikingForAShare()
         {
-            Volley close = Fire(Weapon.Shotgun, 0, 1, Open(), T("me", 0, 0), T("ann", 4, 0));
+            Volley close = Fire(Weapon.Shotgun, 0, Open(), T("me", 0, 0), T("ann", 4, 0));
             Assert.That(close.Paths.Count, Is.EqualTo(5));
             Assert.That(close.Main.Heading, Is.EqualTo(0).Within(1e-9), "the middle pellet flies along the aim");
             Assert.That(close.Paths.Select(p => p.Heading > 180 ? p.Heading - 360 : p.Heading).OrderBy(h => h).ToArray(),
@@ -65,7 +64,7 @@ namespace Ricochet.Core.Tests
             Assert.That(close.Strikes.Count, Is.EqualTo(5), "point blank, every pellet hits");
             Assert.That(close.Strikes.All(s => s.TargetId == "ann" && s.Scale == ArsenalRules.Default.PelletDamage), Is.True);
 
-            Volley far = Fire(Weapon.Shotgun, 0, 1, Open(), T("ann", 9.5, 0));
+            Volley far = Fire(Weapon.Shotgun, 0, Open(), T("ann", 9.5, 0));
             Assert.That(far.Strikes.Count, Is.EqualTo(3), "at range the outer pellets spread past");
         }
 
@@ -73,7 +72,7 @@ namespace Ricochet.Core.Tests
         public void AGrenadePassesThroughPlayers_AndGoesOffWhenItsFuseRunsOut()
         {
             // Half a second at 18 units a second: 9 units from the muzzle (0.6 out), short of the right border.
-            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 1, 0.5, 0, Open(),
+            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 0.5, 0, Open(),
                 new[] { T("me", 0, 0), T("inTheWay", 5, 0), T("nearTheBlast", 9, 1), T("far", 0, 4) });
 
             Assert.That(grenade.HasBlast, Is.True);
@@ -87,19 +86,19 @@ namespace Ricochet.Core.Tests
         public void ALongerFuseCarriesTheGrenadeFurther_OffTheBorders()
         {
             // Two seconds: 36 units: right border (9.4), back across (20), and 6.6 more.
-            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 0, 2, 0, Open(), new[] { T("me", 0, 0) });
+            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 2, 0, Open(), new[] { T("me", 0, 0) });
             Assert.That(grenade.Main.Bounces, Is.EqualTo(2));
             Assert.That(grenade.BlastCenter.X, Is.EqualTo(-3.4).Within(1e-9));
             Assert.That(grenade.Strikes.Count, Is.EqualTo(0));
 
-            Volley self = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 0, 1, 0, new Level(-5, -5, 5, 5), new[] { T("me", 0, 0) });
+            Volley self = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 1, 0, new Level(-5, -5, 5, 5), new[] { T("me", 0, 0) });
             Assert.That(self.Strikes.Select(s => s.TargetId), Is.EqualTo(new[] { "me" }), "a grenade that comes back hurts its thrower");
         }
 
         [Test]
         public void AGrenadeAlsoGoesOffOnItsBounceLimit()
         {
-            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 10, 0, 6, 0, new Level(-2, -2, 2, 2), null);
+            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 10, 6, 0, new Level(-2, -2, 2, 2), null);
             Assert.That(grenade.Main.End, Is.EqualTo(ShotEndKind.BounceLimit));
             Assert.That(grenade.BlastCenter, Is.EqualTo(grenade.Main.Impact));
         }
@@ -109,7 +108,7 @@ namespace Ricochet.Core.Tests
         {
             var level = new Level(-10, -5, 10, 5, new[] { new Wall(new Vec2(5, -2), new Vec2(5, 2)) },
                 new[] { new Redirector(new Vec2(3, -1), new Vec2(3, 1), 90) });
-            Volley rail = Fire(Weapon.Railgun, 0, 0, level, T("me", 0, 0), T("ann", 7, 0), T("bob", 9, 0.2), T("off", 7, 2));
+            Volley rail = Fire(Weapon.Railgun, 0, level, T("me", 0, 0), T("ann", 7, 0), T("bob", 9, 0.2), T("off", 7, 2));
 
             Assert.That(rail.Main.Contacts.Count, Is.EqualTo(1));
             Assert.That(rail.Main.Contacts[0].Kind, Is.EqualTo(ContactKind.Border));
@@ -121,7 +120,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void AVolleyKnowsWhatItPassesOver()
         {
-            Volley volley = Fire(Weapon.Cannon, 0, 1, Open());
+            Volley volley = Fire(Weapon.Cannon, 0, Open());
             Assert.That(volley.PassDistance(new Vec2(5, 0.3), 0.5), Is.EqualTo(4.4).Within(1e-9));
             Assert.That(volley.PassDistance(new Vec2(5, 3), 0.5), Is.Null);
             Assert.That(volley.Duration, Is.EqualTo(volley.Main.Length / volley.Speed).Within(1e-9));
@@ -130,7 +129,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void AVolleyLandsWhenItsLastProjectileDoes()
         {
-            Volley volley = Fire(Weapon.Shotgun, 30, 0.5, Open());
+            Volley volley = Fire(Weapon.Shotgun, 30, Open());
             var flight = new VolleyFlight(volley);
             Assert.That(flight.Flights.Count, Is.EqualTo(5));
             double longest = volley.Paths.Max(p => p.Length);
@@ -209,7 +208,7 @@ namespace Ricochet.Core.Tests
             Level seen = field.LevelFor(0);
             Assert.That(seen.Walls, Has.Count.EqualTo(1));
             Assert.That(seen.Walls[0], Is.SameAs(level.Walls[3]), "the other shapes stay");
-            Assert.That(BounceSolver.Solve(Vec2.Zero, 0, 1, seen).Contacts[0].Kind, Is.EqualTo(ContactKind.Border), "a shot flies through where it stood");
+            Assert.That(BounceSolver.Solve(Vec2.Zero, 0, seen).Contacts[0].Kind, Is.EqualTo(ContactKind.Border), "a shot flies through where it stood");
 
             Hazard wire = field.Hazards[0];
             var onClient = new Hazard(wire.Id, wire.Kind, wire.A, wire.B, wire.Radius, wire.Owner, wire.Heading, wire.Active);
