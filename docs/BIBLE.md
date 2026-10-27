@@ -730,6 +730,8 @@ Source: the original's `sound/sfx_{sly,rye,sid,vlad,baxter,doctor,scottish}_{wel
 play_random_announcement, random_announcement_{welcome,win,lose}, random_<key>_<kind>, random_{welcome,win,lose}_number,
 obj_announcer, obj_announcer_portrait, obj_speaker and the spr_profile_* sprites.
 
+- The match starts with Matt Baxter on the air, as the shipped config.ini and the Default button set it (globals.gml's
+  "sly" never survived read_config; U.RICO-T108).
 - The 210 voice lines (seven personalities x three kinds x ten) are imported by `Tools/import-gml-sound.ps1` into
   `Resources/Ricochet/Voice/<name>` (Git LFS) and listed under `voices` in `Assets/Ricochet/Audio/gml-sound.json`. Each is
   the .ogg the original's `sound/audio` holds beside the definition's .wav (the same take: the .wavs are 162 MB that Unity

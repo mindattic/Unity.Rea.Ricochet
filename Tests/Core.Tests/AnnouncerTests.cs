@@ -19,7 +19,7 @@ namespace Ricochet.Core.Tests
             {
                 "Kurt Sly", "Rye Wheatley", "Sid Steinburger", "Vlad", "Matt Baxter", "Doctor", "Haggis McKnight",
             }));
-            Assert.That(Announcer.VoiceAt(Announcer.DefaultVoice).Key, Is.EqualTo("sly"));
+            Assert.That(Announcer.VoiceAt(Announcer.DefaultVoice).Key, Is.EqualTo("baxter"));
             Assert.That(Announcer.VoiceAt(0).Initials, Is.EqualTo("KS"));
             Assert.That(Announcer.VoiceAt(3).Initials, Is.EqualTo("V"));
             Assert.That(Announcer.VoiceAt(99).Name, Is.EqualTo("Haggis McKnight"), "clamped");

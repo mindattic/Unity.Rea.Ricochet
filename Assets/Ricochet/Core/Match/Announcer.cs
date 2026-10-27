@@ -116,8 +116,12 @@ namespace Ricochet.Core.Match
         /// <summary>The setting the original started with: every time.</summary>
         public const int DefaultFrequency = 1;
 
-        /// <summary>The personality the original started with (globals.gml's announcer = "sly").</summary>
-        public const int DefaultVoice = 0;
+        /// <summary>
+        /// The personality the original started with: Matt Baxter, as its shipped config.ini and the Default button
+        /// (write_default_settings) set it (globals.gml's "sly" was always overwritten by read_config; U.RICO-T108). The
+        /// index of "baxter" in announcer.json's voices.
+        /// </summary>
+        public const int DefaultVoice = 4;
 
         /// <summary>The Resources folder the voice lines are imported into (Tools/import-gml-sound.ps1, U.RICO-T51).</summary>
         public const string VoiceFolder = "Ricochet/Voice";
