@@ -2,13 +2,13 @@
 .SYNOPSIS
     Launches a playable Unity.Ricochet for development, muted.
 .DESCRIPTION
-    Starts Build/Ricochet/Ricochet.exe (building it with Tools/deploy.ps1 first when it is missing or -Build is
+    Starts Build/Ricochet/Ricochet.exe (building it with Tools/run.ps1 first when it is missing or -Build is
     given) with MINDATTIC_CLI_MUTED=1 and -muted, so a CLI or agent launching the game never plays sound. The mute
     is Unity.Shared's session mute: it lasts for this run only and never changes the player's saved settings.json.
     Pass -Sound to launch with audio. Any other arguments go to the player (for example -screen-fullscreen 0).
     The player's log is Logs/play.log.
 .PARAMETER Build
-    Rebuild the player with Tools/deploy.ps1 before launching.
+    Rebuild the player with Tools/run.ps1 before launching.
 .PARAMETER Sound
     Launch with audio (no MINDATTIC_CLI_MUTED, no -muted).
 .PARAMETER Wait
@@ -27,7 +27,7 @@ $exe = Join-Path $root 'Build/Ricochet/Ricochet.exe'
 $log = Join-Path $root 'Logs/play.log'
 
 if ($Build -or -not (Test-Path $exe)) {
-    & (Join-Path $PSScriptRoot 'deploy.ps1')
+    & (Join-Path $PSScriptRoot 'run.ps1')
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 New-Item -ItemType Directory -Force (Split-Path $log) | Out-Null

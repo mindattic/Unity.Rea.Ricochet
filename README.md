@@ -102,7 +102,7 @@ are listed in [Assets/Ricochet/README.md](Assets/Ricochet/README.md).
 ### Muted launches
 
 `powershell -File Tools/play.ps1` launches a playable build (`Build/Ricochet/Ricochet.exe`, built first by
-`Tools/deploy.ps1` when missing or with `-Build`; the Editor must be closed for the build) **muted by default**: it
+`Tools/run.ps1` when missing or with `-Build`; the Editor must be closed for the build) **muted by default**: it
 passes `-muted` and sets `MINDATTIC_CLI_MUTED=1` for the launch only, so a CLI or agent starting the game never plays
 sound. Add `-Sound` to launch with audio. The mute is Unity.Shared's session mute (`Profiles.SessionMuted`): it lasts
 for that run only, and `GameAudio` keeps the listener and both sources silent while still saving the player's real

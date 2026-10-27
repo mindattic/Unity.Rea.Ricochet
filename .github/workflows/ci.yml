@@ -116,7 +116,7 @@ jobs:
             playmode-results
           if-no-files-found: warn
 
-      # Tools/deploy.ps1 drives a local Windows Unity.exe through this same build method; GameCI builds the Windows
+      # Tools/run.ps1 drives a local Windows Unity.exe through this same build method; GameCI builds the Windows
       # player from its Linux image with the identical entry point.
       # !cancelled(): a red PlayMode run still gets its build, so the build is a check in its own right.
       - uses: game-ci/unity-builder@v4

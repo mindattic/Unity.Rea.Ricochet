@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Runs Unity.Ricochet in Unity batch mode and surfaces compile/test errors -- the helper deploy.ps1 calls (same
+  Runs Unity.Ricochet in Unity batch mode and surfaces compile/test errors -- the helper run.ps1 calls (same
   pattern as Unity.Hare and Unity.Chain's tools/unity.ps1).
 .EXAMPLE
   powershell -File Tools/unity.ps1 -Log compile
