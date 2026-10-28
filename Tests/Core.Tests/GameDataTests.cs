@@ -255,7 +255,7 @@ namespace Ricochet.Core.Tests
                 .Replace("\"key\": \"maxHealth\"", "\"key\": \"maxHelth\"")
                 .Replace("\"id\": \"match.turnSeconds\"", "\"id\": \"match.maxHealth\"")
                 .Replace("\"file\": \"shot.json\", \"key\": \"speed\"", "\"file\": \"nope.json\", \"key\": \"speed\"")
-                .Replace("\"key\": \"pellets\", \"kind\": \"Integer\", \"min\": 1, \"max\": 50", "\"key\": \"pellets\", \"kind\": \"Integer\", \"min\": 8, \"max\": 50")));
+                .Replace("\"key\": \"pellets\", \"kind\": \"Integer\", \"min\": 1, \"max\": 50", "\"key\": \"pellets\", \"kind\": \"Integer\", \"min\": 20, \"max\": 50")));
             Assert.That(ex.Errors.Any(e => e.Contains("registry.json") && e.Contains("'maxHelth'") && e.Contains("does not have")), Is.True, string.Join("\n", ex.Errors));
             Assert.That(ex.Errors.Any(e => e.Contains("id 'match.maxHealth' is used twice")), Is.True);
             Assert.That(ex.Errors.Any(e => e.Contains("nope.json")), Is.True);
