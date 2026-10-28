@@ -241,6 +241,21 @@ namespace Ricochet.Core.Aim
             into.Add(PositionAt(to, out _));
         }
 
+        /// <summary>The bounces (deflected contacts that are not a tank) within <paramref name="distance"/> of the muzzle; the HUD's running "Bounces: n".</summary>
+        public int BouncesBefore(double distance)
+        {
+            int count = 0;
+            foreach (Contact contact in _contacts)
+            {
+                if (contact.Deflected && contact.Kind != ContactKind.Tank && contact.Distance <= distance + Geometry.Epsilon)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
         /// <summary>Contacts at or before <paramref name="distance"/> along the path.</summary>
         public int ContactsBefore(double distance)
         {

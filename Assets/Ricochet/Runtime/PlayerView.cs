@@ -251,7 +251,7 @@ namespace Ricochet
 
                 bool flying = ShotInFlight && _shotView != null && _shotView.Flight != null;
                 ShotPath shown = flying ? _shotView.Flight.Volley.Main : _preview != null ? _preview.Main : null;
-                int bounces = flying ? _shotView.Flight.Flights[0].Contacts : shown != null ? shown.Contacts.Count : 0;
+                int bounces = flying ? _shotView.Flight.Flights[0].Bounces : shown != null ? shown.Bounces : 0;
                 string end = shown == null ? string.Empty
                     : shown.End == ShotEndKind.Absorbed ? "  -> blocked"
                     : shown.End == ShotEndKind.Escaped ? "  -> out through the breach"

@@ -41,6 +41,9 @@ namespace Ricochet.Core.Aim
         /// <summary>Contacts passed so far (the HUD's running "Bounces: n").</summary>
         public int Contacts { get; private set; }
 
+        /// <summary>Bounces passed so far (a tank hit is not one): the HUD's "Bounces: n", matching the bounce limit.</summary>
+        public int Bounces { get; private set; }
+
         /// <summary>True once the shot has reached its impact point.</summary>
         public bool Landed { get; private set; }
 
@@ -63,6 +66,7 @@ namespace Ricochet.Core.Aim
             Heading = heading;
             int before = Contacts;
             Contacts = Path.ContactsBefore(Travelled);
+            Bounces = Path.BouncesBefore(Travelled);
             if (Travelled >= Path.Length)
             {
                 Landed = true;
