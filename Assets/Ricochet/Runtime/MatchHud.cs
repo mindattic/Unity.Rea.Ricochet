@@ -10,7 +10,7 @@
 // them the line under the clock says so, with the seconds they have left to reconnect. The canvas sorts under the kit's
 // menus and dialogs (UR-T18), so the Esc menu, the main menu and a modal simply cover it. It lays out on the kit's
 // 1920x1080 reference and shrinks the bars, their gaps and the clock's own gap together (Seating.BarScale, UR-T17) when
-// the canvas is narrower than the eight columns need, so all 16 seats stay on screen from 1280x720 up. The local
+// the canvas is narrower than the eight columns need, so all 8 seats stay on screen from 1280x720 up. The local
 // player's own aim line and the vortex hint (Player.AimReadout, draw_bounceinfo and draw_vortexdetonate) run along the
 // bottom, in practice too. U.RICO-T49: each slot's bar is obj_healthbar's art with its "shown/max", the AI tag is
 // draw_scores' spr_icon_computer (spr_icon_player for a human), and obj_turnarrow stands beside the current seat; the weapon

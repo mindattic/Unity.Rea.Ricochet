@@ -25,7 +25,7 @@ namespace Ricochet.Core.Menu
         public static bool CanStart(int humans, int aiCount) => HumanSeats(humans) + AiSeats(humans, aiCount) >= MinSeats;
 
         /// <summary>
-        /// How the seats fill: "2 players and 3 AI opponents: 5 of 16 seats", with what is missing when a match cannot start
+        /// How the seats fill: "2 players and 3 AI opponents: 5 of 8 seats", with what is missing when a match cannot start
         /// yet and how many AI opponents were left out when the table is full.
         /// </summary>
         public static string SeatLine(int humans, int aiCount)

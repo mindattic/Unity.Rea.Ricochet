@@ -93,7 +93,7 @@ namespace Ricochet.Tests
 
             yield return WaitUntil(() => Roster().Length == 2, "the roster never showed Bob");
             Assert.That(Roster(), Is.EqualTo(new[] { "Ann", "Bob" }));
-            yield return WaitUntil(() => _lobby.Lines.Contains("2 players and no AI opponents: 2 of 16 seats"),
+            yield return WaitUntil(() => _lobby.Lines.Contains("2 players and no AI opponents: 2 of 8 seats"),
                 () => "the match box never counted Bob: " + string.Join(" | ", _lobby.Lines));
             Assert.That(StartButton().Interactable, Is.True, "two seats: Start can begin the match");
             yield return WaitUntil(() => Player.In(Server).Count(p => !p.IsAi) == 2, "the server never spawned both players");

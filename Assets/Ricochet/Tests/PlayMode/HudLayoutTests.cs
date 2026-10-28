@@ -1,4 +1,4 @@
-// The HUD without IMGUI (UR-T38): with a full 16-seat match running, MatchHud shows a slot for every seat inside the
+// The HUD without IMGUI (UR-T38): with a full 8-seat match running, MatchHud shows a slot for every seat inside the
 // canvas, the clock and the turn order are text on its canvas (under the kit's menus, not IMGUI over them), and each
 // player's name and health bar are world TextMeshPro objects. That no type still defines OnGUI is HudNoImguiTests (EditMode).
 using System.Collections;
@@ -49,7 +49,7 @@ namespace Ricochet.Tests
             _hud = MatchHud.Create(Client);
             Assert.That(arena.StartMatch(new MatchSetup { AiCount = MatchRules.MaxSeats - 2 }), Is.True);
 
-            yield return WaitUntil(() => _hud.SlotsShowing == MatchRules.MaxSeats, () => "the HUD showed " + _hud.SlotsShowing + " of 16 seats", 10f);
+            yield return WaitUntil(() => _hud.SlotsShowing == MatchRules.MaxSeats, () => "the HUD showed " + _hud.SlotsShowing + " of 8 seats", 10f);
             Assert.That(_hud.Canvas.sortingOrder, Is.LessThan(90), "the menus (90 and up) draw over the HUD");
             Assert.That(_hud.Canvas.renderMode, Is.EqualTo(RenderMode.ScreenSpaceOverlay));
 

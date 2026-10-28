@@ -12,8 +12,8 @@ namespace Ricochet.Core.Match
     using Ricochet.Core.Arsenal;
     public sealed class MatchRules
     {
-        /// <summary>The most seats a match has, humans and AI together (the original's sixteen).</summary>
-        public const int MaxSeats = 16;
+        /// <summary>The most seats a match has, humans and AI together (the original's eight: obj_btn_players_more and obj_btn_ai_more stop at 8).</summary>
+        public const int MaxSeats = 8;
 
         /// <summary>Health a player starts each round with (maxhp).</summary>
         public int MaxHealth { get; set; }
