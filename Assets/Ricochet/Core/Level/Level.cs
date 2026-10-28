@@ -206,13 +206,20 @@ namespace Ricochet.Core.Level
             }
         }
 
-        /// <summary>Keeps where a vortex's storm left every shape it moved (their pull and fling together).</summary>
+        private Ricochet.Core.Arsenal.StormResult _lastStorm;
+
+        /// <summary>
+        /// Keeps where a vortex's storm left every shape it moved (their pull and fling together). A storm is kept once per level:
+        /// the same storm again (this level reached by the authority and by a view of it, or by a host's client) changes nothing.
+        /// </summary>
         public void Apply(Ricochet.Core.Arsenal.StormResult storm)
         {
-            if (storm == null)
+            if (storm == null || storm.Shapes.Count == 0 || (_lastStorm != null && _lastStorm.SameAs(storm)))
             {
                 return;
             }
+
+            _lastStorm = storm;
 
             foreach (Ricochet.Core.Arsenal.StormShape shape in storm.Shapes)
             {

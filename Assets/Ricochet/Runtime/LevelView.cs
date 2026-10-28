@@ -98,9 +98,21 @@ namespace Ricochet
         }
 
         /// <summary>
-        /// The storm is over: the shapes it moved stay where it left them, in the level (<paramref name="startedOn"/> is the level it
-        /// played on; nothing is kept if another round has been laid since) and in the drawing. The same storm seen twice in one
-        /// process (a host and its own client) is kept once.
+        /// A vortex landed and set its storm off (U.RICO-T134): this peer's level keeps the shapes where the storm leaves them, once
+        /// (nothing is kept if another round has been laid since <paramref name="level"/>), though they are drawn walking there only
+        /// as the implosion plays (<see cref="WalkStorm"/>, then <see cref="SettleStorm"/>).
+        /// </summary>
+        public static void KeepStorm(StormResult storm, Level level)
+        {
+            if (storm != null && level != null && ReferenceEquals(level, Arena.Level))
+            {
+                level.Apply(storm);
+            }
+        }
+
+        /// <summary>
+        /// The storm is over (or cut short): the shapes it moved are drawn where the level has them now. The level kept them when the
+        /// shot landed (<see cref="KeepStorm"/>); <paramref name="startedOn"/> is the level the storm played on.
         /// </summary>
         public static void SettleStorm(StormResult storm, Level startedOn)
         {
@@ -109,21 +121,11 @@ namespace Ricochet
                 return;
             }
 
-            if (startedOn != null && ReferenceEquals(startedOn, Arena.Level) && !(s_lastKept != null && ReferenceEquals(s_lastKeptOn, startedOn) && s_lastKept.SameAs(storm)))
-            {
-                startedOn.Apply(storm);
-                s_lastKept = storm;
-                s_lastKeptOn = startedOn;
-            }
-
             if (s_current != null && ReferenceEquals(s_current.Shown, startedOn))
             {
                 s_current.Rebase();
             }
         }
-
-        private static StormResult s_lastKept;
-        private static Level s_lastKeptOn;
 
         /// <summary>The level drawn now.</summary>
         public Level Shown { get; private set; }
@@ -197,9 +199,9 @@ namespace Ricochet
                     Wall wall = level.Walls[i];
                     LineRenderer line = Lines.Create(transform, "Wall " + i, WallColor, 0.15f, -4);
                     Lines.Set(line, Arena.ToUnity(wall.A), Arena.ToUnity(wall.B));
-                    var piece = new Piece { Line = line, LineHome = new[] { (Vector3)Arena.ToUnity(wall.A), (Vector3)Arena.ToUnity(wall.B) } };
+                    var piece = new Piece { Line = line, LineHome = new[] { (Vector3)Arena.ToUnity(wall.A), (Vector3)Arena.ToUnity(wall.B) }, FirstWall = i, First = wall.A };
                     _pieces.Add(piece);
-                    _pieceOfWall[i] = piece; // drawn where the level has the wall now, so nothing to rebase
+                    _pieceOfWall[i] = piece; // drawn where the level has the wall now; a storm later moves it from there
                 }
             }
 
@@ -223,11 +225,6 @@ namespace Ricochet
                 {
                     piece.Kept = level.Walls[piece.FirstWall].A - piece.First;
                 }
-                else if (piece.FirstWall < 0)
-                {
-                    piece.Kept = piece.Kept + piece.Walking; // a hand-laid wall is drawn where it was; the storm's move is kept on top
-                }
-
                 piece.Walking = default;
 
                 Place(piece);

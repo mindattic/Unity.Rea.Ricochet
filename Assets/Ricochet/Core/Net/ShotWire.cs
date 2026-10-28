@@ -182,11 +182,12 @@ namespace Ricochet.Core.Net
                 }
 
                 int wallCount = reader.Int();
-                totalWalls += wallCount;
-                if (wallCount < 1 || totalWalls > MaxStormWalls || !reader.Has(wallCount + 4))
+                if (wallCount < 1 || wallCount > MaxStormWalls - totalWalls || !reader.Has(wallCount + 4))
                 {
                     return null;
                 }
+
+                totalWalls += wallCount;
 
                 var walls = new int[wallCount];
                 for (int w = 0; w < wallCount; w++)

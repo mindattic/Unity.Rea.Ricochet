@@ -473,6 +473,10 @@ namespace Ricochet
                 _implosion.Start(center, WeaponLooks.ShotStepsPerSecond(Arena.Rules.Speed));
                 _storm = volley.Storm.Shapes.Count > 0 ? volley.Storm : null;
                 _stormLevel = Arena.Level;
+                if (_storm != null)
+                {
+                    LevelView.KeepStorm(_storm, _stormLevel); // the server's level moved the shapes as the shot landed; so does this peer's
+                }
             }
             else if (volley.HasBlast)
             {
