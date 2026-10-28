@@ -46,11 +46,15 @@ namespace Ricochet
         [Synced] private int _goal;
         [Synced] private int _champion = -1;
 
-        // The AI opponents' names (UR-T28): each AI's AiNames index plus one (0 for "AI n"), four to an int, AI 1 first.
+        // The AI opponents' names (UR-T28): each AI's AiNames index plus one (0 for "AI n"), two to an int (16 bits each: the pools hold about 5,300 names), AI 1 first.
         [Synced] private int _aiNames0;
         [Synced] private int _aiNames1;
         [Synced] private int _aiNames2;
         [Synced] private int _aiNames3;
+        [Synced] private int _aiNames4;
+        [Synced] private int _aiNames5;
+        [Synced] private int _aiNames6;
+        [Synced] private int _aiNames7;
 
         // The match rules the host set (UR-T76), packed by MatchSetup.PackRules: turn time, bounces, damage, arsenal, drops,
         // redirector pause. Every client applies them, so its bounce preview and rules agree with the host's.
@@ -144,7 +148,7 @@ namespace Ricochet
         public string AiName(int number)
         {
             int slot = number - 1;
-            int word = slot < 0 || slot >= MatchRules.MaxSeats - 1 ? 0 : (PackedAiNames(slot / 4) >> (8 * (slot % 4))) & 0xFF;
+            int word = slot < 0 || slot >= MatchRules.MaxSeats - 1 ? 0 : (PackedAiNames(slot / 2) >> (16 * (slot % 2))) & 0xFFFF;
             return AiNames.NameFor(number, word - 1);
         }
 
@@ -155,23 +159,31 @@ namespace Ricochet
                 case 0: return AiNames0;
                 case 1: return AiNames1;
                 case 2: return AiNames2;
-                default: return AiNames3;
+                case 3: return AiNames3;
+                case 4: return AiNames4;
+                case 5: return AiNames5;
+                case 6: return AiNames6;
+                default: return AiNames7;
             }
         }
 
         /// <summary>Server: the AI opponents' names for this match.</summary>
         internal void MirrorAiNames(MatchSetup setup)
         {
-            var words = new int[4];
+            var words = new int[8];
             for (int i = 0; i < MatchRules.MaxSeats - 1; i++)
             {
-                words[i / 4] |= (setup.NameIndexOf(i) + 1 & 0xFF) << (8 * (i % 4));
+                words[i / 2] |= (setup.NameIndexOf(i) + 1 & 0xFFFF) << (16 * (i % 2));
             }
 
             if (AiNames0 != words[0]) AiNames0 = words[0];
             if (AiNames1 != words[1]) AiNames1 = words[1];
             if (AiNames2 != words[2]) AiNames2 = words[2];
             if (AiNames3 != words[3]) AiNames3 = words[3];
+            if (AiNames4 != words[4]) AiNames4 = words[4];
+            if (AiNames5 != words[5]) AiNames5 = words[5];
+            if (AiNames6 != words[6]) AiNames6 = words[6];
+            if (AiNames7 != words[7]) AiNames7 = words[7];
         }
 
         /// <summary>Fog of war (UR-T26) as the host set it: each player sees only around their own tank. Read from the synced rules on every peer.</summary>

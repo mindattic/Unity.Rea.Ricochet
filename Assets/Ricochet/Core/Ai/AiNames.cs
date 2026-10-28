@@ -1,7 +1,7 @@
 // The names an AI opponent can wear (UR-T28). The original's players room gave every player a default name
 // (write_default_names: the eight in backup.ini) or a random one (obj_btn_random_names, get_random_name: a first name out
-// of names_f.ini and names_m.ini, about 5,300 of them). Here a short list of first names stands in: an AI's name is an
-// index into it, or Default (-1, "AI n"), so a name travels as one small number.
+// of names_f.ini and names_m.ini, about 5,300 of them). Those two files are carried over as data (AiNamesData): an AI's name is an
+// index into them, or Default (-1, "AI n"), so a name travels as one small number.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,13 +13,16 @@ namespace Ricochet.Core.Ai
         /// <summary>The index meaning "no chosen name": the AI is called "AI n".</summary>
         public const int Default = -1;
 
-        private static readonly string[] s_names =
+        // The original's two pools (names_f.ini then names_m.ini), as one list: an index below FemaleCount is a female name.
+        private static readonly string[] s_names = Join(AiNamesData.Female, AiNamesData.Male);
+
+        private static string[] Join(string[] first, string[] second)
         {
-            "Ada", "Alma", "Barney", "Beth", "Bruno", "Cleo", "Cora", "Dale", "Dana", "Dex", "Edna", "Eli", "Ezra", "Fern", "Finn", "Gus",
-            "Hank", "Hazel", "Ida", "Igor", "Ivy", "Jack", "Jade", "Kai", "Kurt", "Lena", "Leo", "Lily", "Max", "Mia", "Milo", "Nell",
-            "Nico", "Olga", "Otto", "Pearl", "Pete", "Quinn", "Rae", "Rex", "Rita", "Rosa", "Sam", "Stella", "Tess", "Theo", "Uma", "Vic",
-            "Vera", "Walt", "Wren", "Xena", "Yuri", "Zane", "Zoe", "Bea", "Cal", "Dot", "Gil", "Hugo", "Ines", "Joy", "Lou", "Moe",
-        };
+            var all = new string[first.Length + second.Length];
+            first.CopyTo(all, 0);
+            second.CopyTo(all, first.Length);
+            return all;
+        }
 
         /// <summary>How many names can be picked.</summary>
         public static int Count => s_names.Length;
@@ -37,7 +40,7 @@ namespace Ricochet.Core.Ai
             return index == Default ? "AI " + number.ToString(CultureInfo.InvariantCulture) : s_names[index];
         }
 
-        /// <summary>The Random names button: <paramref name="count"/> distinct names (as many as the list holds), drawn with <paramref name="random"/>.</summary>
+        /// <summary>The Random names button: <paramref name="count"/> distinct names (as many as the pools hold), drawn with <paramref name="random"/>.</summary>
         public static int[] RandomIndices(int count, Random random)
         {
             if (random == null)
@@ -45,24 +48,25 @@ namespace Ricochet.Core.Ai
                 throw new ArgumentNullException(nameof(random));
             }
 
-            var pool = new List<int>(s_names.Length);
-            for (int i = 0; i < s_names.Length; i++)
-            {
-                pool.Add(i);
-            }
-
+            // get_random_name: a coin picks names_m or names_f, then a line of it; names here are also kept distinct.
+            int femaleCount = AiNamesData.Female.Length;
+            var taken = new HashSet<int>();
             var picks = new int[Math.Max(0, count)];
             for (int i = 0; i < picks.Length; i++)
             {
-                if (pool.Count == 0)
+                if (taken.Count >= s_names.Length)
                 {
                     picks[i] = Default;
                     continue;
                 }
 
-                int at = random.Next(pool.Count);
-                picks[i] = pool[at];
-                pool.RemoveAt(at);
+                int pick;
+                do
+                {
+                    pick = random.Next(2) == 0 ? random.Next(femaleCount) : femaleCount + random.Next(AiNamesData.Male.Length);
+                }
+                while (!taken.Add(pick));
+                picks[i] = pick;
             }
 
             return picks;
