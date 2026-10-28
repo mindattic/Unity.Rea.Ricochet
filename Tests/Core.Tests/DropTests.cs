@@ -13,7 +13,7 @@ namespace Ricochet.Core.Tests
     {
         private static Level Open() => new Level(-10, -5, 10, 5);
 
-        private static DropRules Every(double seconds) => new DropRules { MinDelay = seconds, MaxDelay = seconds, MinLife = 3, MaxLife = 3 };
+        private static DropRules Every(double seconds) => new DropRules { FirstMinDelay = seconds, FirstMaxDelay = seconds, MinDelay = seconds, MaxDelay = seconds, MinLife = 3, MaxLife = 3 };
 
         [Test]
         public void EachKindFallsOnItsOwnTimer_FromAboveTheTopToASpotInsideTheMargins()
@@ -25,7 +25,7 @@ namespace Ricochet.Core.Tests
             field.Tick(0.5);
             Assert.That(spawned, Is.Empty);
             field.Tick(0.5);
-            Assert.That(spawned.Select(d => d.Kind), Is.EquivalentTo(new[] { DropKind.Weapon, DropKind.Item, DropKind.Health, DropKind.Powerup }));
+            Assert.That(spawned.Select(d => d.Kind), Is.EquivalentTo(new[] { DropKind.Weapon, DropKind.Item, DropKind.Health }), "add_powerup is never called: no powerup crate");
             foreach (Drop drop in spawned)
             {
                 Assert.That(drop.Y, Is.GreaterThan(Open().MaxY));
@@ -34,7 +34,7 @@ namespace Ricochet.Core.Tests
                 Assert.That(drop.Spot.Y, Is.InRange(-3.5, 3.5));
             }
 
-            Assert.That(spawned.Select(d => d.Id).Distinct().Count(), Is.EqualTo(4));
+            Assert.That(spawned.Select(d => d.Id).Distinct().Count(), Is.EqualTo(3));
             Assert.That(field.UntilNext(DropKind.Weapon), Is.EqualTo(1).Within(1e-9), "the timer starts over");
         }
 
@@ -76,12 +76,38 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void NoMoreThanTheCapAtOnce()
+        public void TheOriginalHasNoCapOnCrates()
         {
-            var field = new DropField(Open(), new DropRules { MaxOnField = 2 }, new Random(1));
-            Assert.That(field.Spawn(DropKind.Weapon), Is.Not.Null);
-            Assert.That(field.Spawn(DropKind.Item), Is.Not.Null);
-            Assert.That(field.Spawn(DropKind.Health), Is.Null);
+            var field = new DropField(Open(), null, new Random(1));
+            for (int i = 0; i < 20; i++)
+            {
+                Assert.That(field.Spawn(DropKind.Weapon), Is.Not.Null);
+            }
+        }
+
+        [Test]
+        public void TheFirstDropComesAfterTenToThirtySeconds()
+        {
+            var field = new DropField(Open(), null, new Random(5));
+            foreach (DropKind kind in new[] { DropKind.Weapon, DropKind.Item, DropKind.Health })
+            {
+                Assert.That(field.UntilNext(kind), Is.InRange(10, 30));
+            }
+        }
+
+        [Test]
+        public void ATankDrivenIntoALandedCrateCollectsIt_AnyKind()
+        {
+            var field = new DropField(Open(), Every(1000), new Random(3));
+            Drop weapon = field.Spawn(DropKind.Weapon, new Vec2(3, 0));
+            Drop health = field.Spawn(DropKind.Health, new Vec2(-4, 0));
+            field.Tick(2);
+            Drop falling = field.Spawn(DropKind.Item, new Vec2(3, 0));
+
+            List<Drop> got = field.CollectByTank(new Vec2(3.2, 0), 0.4);
+            Assert.That(got, Is.EqualTo(new[] { weapon }));
+            Assert.That(field.Drops, Is.EquivalentTo(new[] { health, falling }));
+            Assert.That(weapon.End, Is.EqualTo(DropEnd.Collected));
         }
 
         [Test]

@@ -327,6 +327,7 @@ namespace Ricochet.Core.Commands
                     if (Match.IsRunning && Match.Phase != MatchPhase.RoundOver && Match.Phase != MatchPhase.GameOver)
                     {
                         Crates.Tick(seconds);
+                        CollectByTanks();
                         Hazards.Tick(seconds); // shield walls decay
                     }
                     else if ((!Match.IsRunning || Match.Phase == MatchPhase.GameOver) && Crates.Drops.Count > 0)
@@ -1443,6 +1444,29 @@ namespace Ricochet.Core.Commands
             Vec2 from = state.Position;
             state.Position = new Vec2(Quantize(to.X), Quantize(to.Y));
             Emit(new Moved(state.Id, from, state.Position, cause));
+            CollectByTank(state);
+        }
+
+        // obj_player's collision with a crate: driving a tank into a landed one (or a crate landing on it) collects it.
+        private void CollectByTanks()
+        {
+            foreach (PlayerState state in _players.Values)
+            {
+                CollectByTank(state);
+            }
+        }
+
+        private void CollectByTank(PlayerState state)
+        {
+            if (Crates == null || Match == null || state.Seat < 0 || !Match.TryGetSeat(state.Seat, out MatchSeat seat) || !seat.Alive)
+            {
+                return;
+            }
+
+            foreach (Drop drop in Crates.CollectByTank(state.Position, state.Radius))
+            {
+                Give(state, drop.Kind);
+            }
         }
 
         // What a client sees as a float is held as one here too.

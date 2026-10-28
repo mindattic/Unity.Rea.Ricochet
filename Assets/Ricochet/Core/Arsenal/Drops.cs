@@ -1,10 +1,16 @@
-// Random drops: crates that fall onto the level during a match and give whoever's shot passes over one a random
-// weapon, a random item or some health. Ports obj_drop_emitter (one timer per kind, each firing after a random
-// 20-120 seconds and starting over), add_weapondrop/itemdrop/healthdrop/powerup.gml (a crate at a random x falls from
-// above the top to a random height between two border widths of the edges), the crates' own step (fall, land, sit for
-// a random 20-120 seconds, then burst), their collision events (a bullet, pellet, grenade or laser that touches one
-// collects it for its owner) and add_random_weapon/item/health.gml (what a crate gives). The powerup crate
-// (add_powerup.gml, the "random drops" option) gave a random weapon, as obj_powerup did. Two of the original's slips
+// Random drops: crates that fall onto the level during a match and give whoever's shot passes over one, or whose
+// tank is driven into one, a random weapon, a random item or some health. Ports obj_drop_emitter (one timer per kind;
+// the first fires after a random 10-30 seconds, globals.gml, then each starts over with a random 20-120 s), add_weapondrop/
+// itemdrop/healthdrop.gml (a crate at a random x falls from above the top to a random height between two border widths
+// of the edges), the crates' own step (fall, land, sit for a random 20-120 seconds, then burst), their collision events
+// (a bullet, pellet, grenade or laser, or an obj_player, that touches one collects it) and add_random_weapon/item/
+// health.gml (what a crate gives). The original has no cap on crates. add_powerup.gml (the "random drops" option) is
+// never called, so the powerup crate never drops (DropKind.Powerup stays for the wire and the art, but DropField
+// never spawns one on its own). The gamescreen room holds TWO obj_drop_emitter instances, and the timers and delays are
+// globalvars (globals.gml), so both step the same three timers (each step adds tick(1) twice); recorded here, not
+// modelled: the port runs one emitter, as the owner's 10-30 s first drop states. The weapon crate's player event used
+// other.owner, a typo for the player's pID, so in the original it did nothing; that defect is fixed here (a tank collects
+// every kind). Two of the original's slips
 // are not carried over: add_random_weapon's roll for the cannon gave a laser, and add_random_item's roll for aim assist
 // gave a teleporter; here a roll lands on the kind it names, moving right past any not in play (as hasX did).
 // Design reference only (UR-LAW-2). Plain C#: the server runs one DropField per match; the network layer mirrors it.
@@ -50,7 +56,16 @@ namespace Ricochet.Core.Arsenal
     {
         public const int KindCount = 4;
 
+        /// <summary>The kinds the emitter's timers spawn: weapon, item, health (the powerup is never added).</summary>
+        public const int EmittedKinds = 3;
+
         private readonly bool[] _enabled = { true, true, true, true };
+
+        /// <summary>The shortest wait before a kind's first drop (globals.gml: irandom_range(10 * normalFPS, ...)).</summary>
+        public double FirstMinDelay { get; set; } = 10;
+
+        /// <summary>The longest wait before a kind's first drop (... 30 * normalFPS).</summary>
+        public double FirstMaxDelay { get; set; } = 30;
 
         /// <summary>The shortest wait between two drops of a kind, in seconds (irandom_range(20 * normalFPS, ...)).</summary>
         public double MinDelay { get; set; } = 20;
@@ -73,8 +88,8 @@ namespace Ricochet.Core.Arsenal
         /// <summary>How far in from the border a crate lands (border * 2).</summary>
         public double Margin { get; set; } = 1.5;
 
-        /// <summary>The most crates on the level at once (the original had no cap).</summary>
-        public int MaxOnField { get; set; } = 8;
+        /// <summary>The most crates on the level at once (the original had no cap: unlimited).</summary>
+        public int MaxOnField { get; set; } = int.MaxValue;
 
         public static DropRules Default => new DropRules();
 
@@ -137,7 +152,7 @@ namespace Ricochet.Core.Arsenal
             _dice = dice ?? new Random();
             for (int i = 0; i < DropRules.KindCount; i++)
             {
-                _untilNext[i] = NextDelay();
+                _untilNext[i] = Between(Rules.FirstMinDelay, Rules.FirstMaxDelay);
             }
         }
 
@@ -191,7 +206,7 @@ namespace Ricochet.Core.Arsenal
                 }
             }
 
-            for (int i = 0; i < DropRules.KindCount; i++)
+            for (int i = 0; i < DropRules.EmittedKinds; i++)
             {
                 _untilNext[i] -= seconds;
                 if (_untilNext[i] <= 0)
@@ -262,6 +277,26 @@ namespace Ricochet.Core.Arsenal
 
                     collected.Insert(at, drop);
                     distances.Insert(at, distance.Value);
+                    RemoveAt(i, DropEnd.Collected);
+                }
+            }
+
+            return collected;
+        }
+
+        /// <summary>
+        /// The landed crates a tank at <paramref name="center"/> (radius <paramref name="radius"/>) touches (obj_player's
+        /// collision event on each drop); each is taken off the level. The caller gives their contents to that player.
+        /// </summary>
+        public List<Drop> CollectByTank(Vec2 center, double radius)
+        {
+            var collected = new List<Drop>();
+            for (int i = _drops.Count - 1; i >= 0; i--)
+            {
+                Drop drop = _drops[i];
+                if (drop.Landed && Vec2.Distance(center, drop.Spot) <= radius + Rules.PickupRadius)
+                {
+                    collected.Insert(0, drop);
                     RemoveAt(i, DropEnd.Collected);
                 }
             }
