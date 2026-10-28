@@ -10,7 +10,7 @@
 //   Railgun  a slug in a straight line through walls and redirectors to the border (shoot_railgun.gml's 2000 px line),
 //            hitting every player on the way.
 //   Vortex   flies like a shell and implodes where it stops, or where its shooter sets it off in mid-flight
-//            (vortex_detonate.gml, Detonate), hurting everyone within its pull and swallowing hazards (UR-T6, Hazards.cs).
+//            (vortex_detonate.gml, Detonate), its pull flings the level's shapes out and one that strikes a tank hurts it (VortexStorm, U.RICO-T96).
 // A shot that runs into a barrier (a hazard, UR-T6) stops there and strikes nothing: a grenade or vortex stopped by one
 // is lost without going off, as obj_shieldwall destroyed them.
 using System;
@@ -268,7 +268,7 @@ namespace Ricochet.Core.Arsenal
                 case Weapon.Vortex:
                 {
                     ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot);
-                    return Implode(path, shot.Speed, targets, arsenal);
+                    return Implode(path, shot.Speed, targets, arsenal, level);
                 }
 
                 default:
@@ -286,7 +286,7 @@ namespace Ricochet.Core.Arsenal
         /// cut short there, imploding at that point (and striking whoever is within its pull then); the volley unchanged
         /// when it is not a vortex, was stopped by a barrier, or the distance is not short of where it lands anyway.
         /// </summary>
-        public static Volley Detonate(Volley volley, double distance, IReadOnlyList<Target> targets, ArsenalRules arsenal = null)
+        public static Volley Detonate(Volley volley, double distance, IReadOnlyList<Target> targets, ArsenalRules arsenal = null, Level level = null)
         {
             if (volley == null || volley.Weapon != Weapon.Vortex || !volley.HasBlast)
             {
@@ -294,7 +294,7 @@ namespace Ricochet.Core.Arsenal
             }
 
             ShotPath cut = volley.Main.Truncate(distance);
-            return ReferenceEquals(cut, volley.Main) ? volley : Implode(cut, volley.Speed, targets, arsenal ?? ArsenalRules.Default);
+            return ReferenceEquals(cut, volley.Main) ? volley : Implode(cut, volley.Speed, targets, arsenal ?? ArsenalRules.Default, level);
         }
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace Ricochet.Core.Arsenal
         }
 
         // A vortex's end: lost without going off when a barrier stopped it, else an implosion that strikes everyone in reach.
-        private static Volley Implode(ShotPath path, double speed, IReadOnlyList<Target> targets, ArsenalRules arsenal)
+        private static Volley Implode(ShotPath path, double speed, IReadOnlyList<Target> targets, ArsenalRules arsenal, Level level)
         {
             var paths = new List<ShotPath> { path };
             var strikes = new List<Strike>();
@@ -448,7 +448,14 @@ namespace Ricochet.Core.Arsenal
                 return new Volley(Weapon.Vortex, paths, speed, strikes, false, default, 0);
             }
 
-            AddBlastStrikes(path.Impact, arsenal.VortexRadius, path.Bounces, targets, strikes);
+            // vortex_step.gml: the pull and blow move the level's shapes; a tank is hurt only when a flung shape strikes it.
+            int seed = unchecked((int)Math.Round(path.Impact.X * 1000) * 31 + (int)Math.Round(path.Impact.Y * 1000));
+            Target? struck = VortexStorm.Strike(path.Impact, arsenal.VortexRadius, level, targets, seed);
+            if (struck.HasValue)
+            {
+                strikes.Add(new Strike(struck.Value.Id, path.Bounces, 1));
+            }
+
             return new Volley(Weapon.Vortex, paths, speed, strikes, true, path.Impact, arsenal.VortexRadius);
         }
 

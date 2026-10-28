@@ -1041,7 +1041,7 @@ namespace Ricochet.Core.Commands
             }
 
             double at = Quantize(Math.Max(0.001, flight.Flights[0].Travelled));
-            Volley cut = Arsenal.Detonate(flight.Volley, at, Targets(), Arms);
+            Volley cut = Arsenal.Detonate(flight.Volley, at, Targets(), Arms, LevelFor(state.Seat));
             if (ReferenceEquals(cut, flight.Volley))
             {
                 return;
@@ -1160,16 +1160,12 @@ namespace Ricochet.Core.Commands
             }
 
             // A landed volley's mark on the level: every shield wall or tuft it ran into goes (obj_shieldwall's collision
-            // events), and a vortex that went off swallows what it reaches and breaches the border near it.
+            // events), (a vortex touches no hazard and no border: vortex_step.gml only moves shapes, U.RICO-T96).
             foreach (int id in volley.HazardsHit)
             {
                 Hazards.Struck(id, state.Seat);
             }
 
-            if (volley.Weapon == Weapon.Vortex && volley.HasBlast)
-            {
-                Hazards.Implode(volley.BlastCenter, volley.BlastRadius);
-            }
             // obj_redirector's collision events set fade: each redirector a shot (not a railgun slug) was sent on by fades away.
             if (volley.Weapon != Weapon.Railgun)
             {

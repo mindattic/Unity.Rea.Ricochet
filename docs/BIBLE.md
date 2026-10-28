@@ -102,8 +102,11 @@ copy of any of these is a bug.
   `dotnet test Core.slnx`, the wire by `Tests/PlayMode/AiOpponentTests.cs`).
 - ✅ Level hazards: an electric arc and a laser gate (on every other turn) that stop a shot, foliage a shot cuts down,
   the shield wall item (only its owner's shots pass; anyone else's shatters it; it decays after 20–120 s), the
-  redirector item, and the vortex device set off in mid-flight (vortex_detonate.gml), which hurts everyone in its pull,
-  swallows the destructible hazards it reaches and breaches the border it reaches, so later shots fly out (UR-T6;
+  redirector item, and the vortex device set off in mid-flight (vortex_detonate.gml). Corrected by U.RICO-T96 to match
+  vortex_step.gml: the vortex hurts no one itself and touches no hazard or border; it pulls the level's shapes within 200 px
+  (2.2917 units) in at 1 px a step and flings them out at 10 px a step, and a tank is hurt (once) only when a flung shape
+  strikes it (`Core/Arsenal/VortexStorm.cs`; shapes are the walls grouped by shared corners; the shapes' new places are not
+  kept after the turn, and the flight still ends on a tank it meets, both unlike the original) (UR-T6;
   `Core/Hazards.cs` with `Level`'s barriers and breaches tested by `dotnet test Core.slnx`, the wire by
   `Tests/PlayMode/HazardTests.cs`).
 - ✅ Announcer and HUD: the start-match vote carries one of the original's seven on-air personalities and how often they

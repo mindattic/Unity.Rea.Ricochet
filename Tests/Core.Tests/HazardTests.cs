@@ -162,40 +162,6 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void AVortexSwallowsWhatItCanReach_AndTearsTheBorderAlongTheChordItCuts()
-        {
-            HazardField field = Field();
-            Hazard nearWall = field.AddShieldWall(1, new Vec2(6, 0), 0);  // stands at x 7
-            Hazard nearTuft = field.AddFoliage(new Vec2(8, 2));
-            Hazard farTuft = field.AddFoliage(new Vec2(-5, 0));
-            Hazard arc = field.AddArc(new Vec2(8, -1), new Vec2(8, 1));
-
-            List<Hazard> changed = field.Implode(new Vec2(8, 0), 3.4);
-
-            Assert.That(changed.Take(2), Is.EquivalentTo(new[] { nearWall, nearTuft }));
-            Assert.That(field.Hazards, Has.Member(farTuft).And.Member(arc), "out of reach, or indestructible");
-            Hazard[] breaches = field.Hazards.Where(h => h.Kind == HazardKind.Breach).ToArray();
-            Assert.That(breaches.Length, Is.EqualTo(1), "only the right side is within 3.4");
-            double half = Math.Sqrt(3.4 * 3.4 - 2 * 2);
-            Assert.That(breaches[0].A.X, Is.EqualTo(10).Within(1e-9));
-            Assert.That(breaches[0].A.Y, Is.EqualTo(-half).Within(1e-9));
-            Assert.That(breaches[0].B.Y, Is.EqualTo(half).Within(1e-9));
-            Assert.That(changed.Last(), Is.SameAs(breaches[0]));
-        }
-
-        [Test]
-        public void AVortexInACornerBreachesBothSides_ClampedToTheBorder()
-        {
-            HazardField field = Field();
-            field.Implode(new Vec2(9, 4), 3);
-            Hazard[] breaches = field.Hazards.Where(h => h.Kind == HazardKind.Breach).ToArray();
-            Assert.That(breaches.Length, Is.EqualTo(2));
-            Assert.That(breaches.All(b => b.A.Y <= 5 + 1e-9 && b.B.Y <= 5 + 1e-9 && b.A.X <= 10 + 1e-9 && b.B.X <= 10 + 1e-9), Is.True);
-            ShotPath escaped = BounceSolver.Solve(new Vec2(9, 0), 90, field.LevelFor(0));
-            Assert.That(escaped.End, Is.EqualTo(ShotEndKind.Escaped));
-        }
-
-        [Test]
         public void TheLayoutLaysTheArcsAndGates_AndFoliageClearOfThePlayersAndWalls()
         {
             Level level = Level.Default();
@@ -244,30 +210,53 @@ namespace Ricochet.Core.Tests
             Assert.That(shot.Contacts[0].Point.X, Is.EqualTo(spot.X).Within(1e-9), "it stands across the way it flew");
             Assert.That(shot.Contacts[0].HeadingOut, Is.EqualTo(0).Within(1e-9), "and sends shots on the way it flew");
 
-            Hazard redirector = field.Hazards[0];
-            field.Implode(spot, 1);
-            Assert.That(field.Hazards, Has.No.Member(redirector), "a vortex swallows a placed redirector");
         }
 
         [Test]
-        public void AVortexSetOffInMidFlightImplodesThere_StrikingWhoeverIsInReachThen()
+        public void AVortexSetOffInMidFlightGoesOffThere_HurtingNoOneWithoutAShapeToFling()
         {
             Target[] targets = { T("me", 0, 0), T("near", 4, 2), T("atTheEnd", 9.4, 0) };
             Volley whole = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 2, 0, Open(), targets);
             Assert.That(whole.HasBlast, Is.True);
             Assert.That(whole.Main.End, Is.EqualTo(ShotEndKind.Target));
-            Assert.That(whole.Strikes.Select(s => s.TargetId), Is.EquivalentTo(new[] { "atTheEnd" }));
+            Assert.That(whole.Strikes, Is.Empty, "no shape to fling: nobody is hurt");
 
             Volley early = Arsenal.Detonate(whole, 3.4, targets);
             Assert.That(early.Main.End, Is.EqualTo(ShotEndKind.Detonated));
             Assert.That(early.BlastCenter.X, Is.EqualTo(4).Within(1e-9), "3.4 past the muzzle at 0.6");
             Assert.That(early.Main.Length, Is.EqualTo(3.4).Within(1e-9));
-            Assert.That(early.Strikes.Select(s => s.TargetId), Is.EquivalentTo(new[] { "near" }));
+            Assert.That(early.Strikes, Is.Empty, "a vortex hurts no one itself, only the shapes it flings (U.RICO-T96)");
             Assert.That(early.Speed, Is.EqualTo(whole.Speed));
 
             Assert.That(Arsenal.Detonate(whole, 100, targets), Is.SameAs(whole), "too late: it lands where it was going");
             Volley cannon = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 2, 0, Open(), targets);
             Assert.That(Arsenal.Detonate(cannon, 2, targets), Is.SameAs(cannon), "only a vortex can be set off");
+        }
+
+        // A square shape of side 1 whose corner sits at (x, y).
+        private static Wall[] Square(double x, double y) => new[]
+        {
+            new Wall(new Vec2(x, y), new Vec2(x + 1, y)), new Wall(new Vec2(x + 1, y), new Vec2(x + 1, y + 1)),
+            new Wall(new Vec2(x + 1, y + 1), new Vec2(x, y + 1)), new Wall(new Vec2(x, y + 1), new Vec2(x, y)),
+        };
+
+        [Test]
+        public void AVortexHurtsATankOnlyWhenAFlungShapeStrikesIt_AndItsRadiusIs200Pixels()
+        {
+            Assert.That(ArsenalRules.Default.VortexRadius, Is.EqualTo(200 * 22.0 / 1920.0).Within(1e-3));
+
+            // No shapes in reach: a tank sitting right at the vortex is not hurt by the blast itself.
+            var bare = new Level(-10, -5, 10, 5);
+            Assert.That(VortexStorm.Strike(new Vec2(0, 0), 2.29, bare, new[] { T("a", 0.5, 0) }, 1), Is.Null);
+
+            // A shape in reach is pulled onto the vortex and flung out again: a tank on top of the vortex is struck.
+            var shapes = new Level(-10, -5, 10, 5, Square(1, 1));
+            Target? hit = VortexStorm.Strike(new Vec2(0, 0), 2.29, shapes, new[] { T("far", 8, 4), T("here", 0, 0) }, 1);
+            Assert.That(hit.HasValue && hit.Value.Id == "here", Is.True);
+
+            // A shape out of reach is not touched, so a tank beside it is safe.
+            var out_of_reach = new Level(-10, -5, 10, 5, Square(5, 3));
+            Assert.That(VortexStorm.Strike(new Vec2(0, 0), 2.29, out_of_reach, new[] { T("here", 0, 0), T("beside", 5.5, 3.5) }, 1), Is.Null);
         }
 
         [Test]

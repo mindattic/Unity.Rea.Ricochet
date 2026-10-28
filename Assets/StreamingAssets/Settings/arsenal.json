@@ -5,7 +5,7 @@
   "maxFuse": 6,
   "fuseStep": 0.5,
   "grenadeRadius": 2.5,
-  "vortexRadius": 3.4,
+  "vortexRadius": 2.2916666667,
   "pellets": 5,
   "pelletSpread": 4,
   "pelletDamage": 0.35,
@@ -17,7 +17,7 @@
     { "id": "Shotgun", "name": "Shotgun", "start": 3, "inPlay": true, "about": "Fans pellets around your aim; each pellet that hits does a share of the damage." },
     { "id": "Grenade", "name": "Grenade", "start": 3, "inPlay": true, "about": "Bounces until its fuse runs out, then blasts everyone near it. Set the fuse with 1-3." },
     { "id": "Railgun", "name": "Railgun", "start": 3, "inPlay": true, "about": "A slug that flies near enough instantly along your aim." },
-    { "id": "Vortex", "name": "Vortex Device", "start": 3, "inPlay": true, "about": "Fire it, then press Space again to set it off: it pulls in and hurts everyone near it." }
+    { "id": "Vortex", "name": "Vortex Device", "start": 3, "inPlay": true, "about": "Fire it, then press Space again to set it off: it flings the shapes near it, and one that hits you hurts." }
   ],
   "items": [
     { "id": "ExtraBounce", "name": "Extra Bounce", "start": 3, "inPlay": true, "about": "Your shot bounces one more time this turn." },

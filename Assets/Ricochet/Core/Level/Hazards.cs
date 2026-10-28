@@ -4,12 +4,11 @@
 //                 their aim, 128 px (about 1.47 units) long. The owner's own shots pass through it; anyone else's that
 //                 touches it shatters it and is stopped there (obj_shieldwall's collision events: the bullet destroyed, the
 //                 turn over). Left alone it decays after a random 20-120 s (decayDelay). destroy_shieldwall.gml was an empty
-//                 stub; its job is Struck (a shot) and Implode (a vortex) here.
+//                 stub; its job is Struck (a shot) here.
 //   Vortex        shoot_vortex.gml / vortex_detonate.gml (detonate_vortex.gml is an older copy): fire again while it is in
-//                 the air to set it off there (Arsenal.Detonate). The original's implosion sucked every obj_polygon_parent
-//                 within vortexRadius (200 px) in and blew it back out at random, the border pieces (obj_border_top etc.
-//                 are polygon_parent children) included; here it swallows every destructible hazard within its radius and
-//                 tears a breach in any border side it reaches, which shots then fly out through for the rest of the round.
+//                 the air to set it off there (Arsenal.Detonate). The original's vortex pulled every obj_polygon_parent
+//                 within vortexRadius (200 px) in and flung it back out; it touched no hazard and tore no border (VortexStorm,
+//                 U.RICO-T96), so the hazard field has no part in it.
 //   Electricity   draw_electricity.gml: a jittering bolt between two points, drawn with random offsets every step. The
 //                 original never called it; here it is an arc between two pylons that stops any shot touching it.
 //   Laser         check_source_laser.gml: a beam whose source walks toward its end (dX, dY a step) until within 5 px. Also
@@ -515,36 +514,6 @@ namespace Ricochet.Core.Level
             return hazard;
         }
 
-        /// <summary>
-        /// vortex_detonate.gml's implosion at <paramref name="center"/>: every destructible hazard within
-        /// <paramref name="radius"/> is swallowed, and every border side the circle reaches is breached along the chord
-        /// it cuts. Returns the hazards swallowed and the breaches torn, in that order.
-        /// </summary>
-        public List<Hazard> Implode(Vec2 center, double radius)
-        {
-            var changed = new List<Hazard>();
-            if (!(radius > 0))
-            {
-                return changed;
-            }
-
-            for (int i = _hazards.Count - 1; i >= 0; i--)
-            {
-                Hazard hazard = _hazards[i];
-                if (hazard.Destructible && Reaches(hazard, center, radius))
-                {
-                    changed.Insert(0, hazard);
-                    Remove(hazard, HazardEnd.Swallowed);
-                }
-            }
-
-            BreachSide(center, radius, center.X - Level.MinX, true, Level.MinX, Level.MinY, Level.MaxY, changed);
-            BreachSide(center, radius, Level.MaxX - center.X, true, Level.MaxX, Level.MinY, Level.MaxY, changed);
-            BreachSide(center, radius, center.Y - Level.MinY, false, Level.MinY, Level.MinX, Level.MaxX, changed);
-            BreachSide(center, radius, Level.MaxY - center.Y, false, Level.MaxY, Level.MinX, Level.MaxX, changed);
-            return changed;
-        }
-
         /// <summary>A new turn: every laser gate switches (when <see cref="HazardRules.LasersAlternate"/>) and every standing redirector is destroyed.</summary>
         public void NextTurn()
         {
@@ -654,34 +623,6 @@ namespace Ricochet.Core.Level
                 hazard.End = end;
                 Removed?.Invoke(hazard);
             }
-        }
-
-        // The circle reaches a side gap = distance from the centre to that side is less than the radius: the chord it cuts.
-        private void BreachSide(Vec2 center, double radius, double gap, bool vertical, double at, double min, double max, List<Hazard> changed)
-        {
-            if (gap < 0 || gap >= radius)
-            {
-                return;
-            }
-
-            double half = Math.Sqrt(radius * radius - gap * gap);
-            double mid = vertical ? center.Y : center.X;
-            double from = Math.Max(min, mid - half);
-            double to = Math.Min(max, mid + half);
-            if (to - from < Geometry.Epsilon)
-            {
-                return;
-            }
-
-            changed.Add(vertical ? AddBreach(new Vec2(at, from), new Vec2(at, to)) : AddBreach(new Vec2(from, at), new Vec2(to, at)));
-        }
-
-        private static bool Reaches(Hazard hazard, Vec2 center, double radius)
-        {
-            double gap = hazard.Radius > 0 || Vec2.Distance(hazard.A, hazard.B) < Geometry.Epsilon
-                ? Vec2.Distance(hazard.A, center)
-                : Geometry.SegmentDistance(hazard.A, hazard.B, center, out _);
-            return gap <= radius + hazard.Radius;
         }
 
         private bool Clear(Vec2 spot, List<Vec2> avoid, double margin)
