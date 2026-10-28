@@ -244,16 +244,17 @@ namespace Ricochet.Tests
             yield return null;
 
             MaRange[] ranges = settings.GetComponentsInChildren<MaRange>();
-            // After the announcements range: the turn time, the bounces and the damage.
-            MaRange turn = ranges[1], bounces = ranges[2], damage = ranges[3];
+            // After the announcements range: the turn time and the bounces; the damage is a choice (the original's 5/10/25/33/50/100).
+            MaRange turn = ranges[1], bounces = ranges[2];
+            MaSelect damage = settings.GetComponentsInChildren<MaSelect>().Last();
             Assert.That((turn.Min, turn.Max), Is.EqualTo(((float)MatchSetup.MinTurnSeconds, (float)MatchSetup.MaxTurnSeconds)));
             Assert.That((bounces.Min, bounces.Max), Is.EqualTo((1f, (float)MatchSetup.MaxBouncesLimit)));
-            Assert.That((damage.Min, damage.Max), Is.EqualTo((1f, (float)MatchSetup.MaxWeaponDamage)));
+            Assert.That((turn.Min, turn.Max), Is.EqualTo((5f, 30f)));
             Assert.That(turn.Value, Is.EqualTo(setup.TurnSeconds));
-            turn.Value = 50;
+            turn.Value = 25;
             bounces.Value = 4;
-            damage.Value = 25;
-            Assert.That((setup.TurnSeconds, setup.MaxBounces, setup.WeaponDamage), Is.EqualTo((50, 4, 25)));
+            damage.Value = 2; // 25
+            Assert.That((setup.TurnSeconds, setup.MaxBounces, setup.WeaponDamage), Is.EqualTo((25, 4, 25)));
 
             Assert.That(Toggle(settings, ArsenalRules.Name(Weapon.Cannon) + " in play"), Is.Null, "the cannon is always in play");
             MaToggle railgun = Toggle(settings, ArsenalRules.Name(Weapon.Railgun) + " in play");

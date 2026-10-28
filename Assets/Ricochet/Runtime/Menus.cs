@@ -182,7 +182,19 @@ namespace Ricochet
             s.AddRange("Turn time (seconds)", MatchSetup.MinTurnSeconds, MatchSetup.MaxTurnSeconds, setup.TurnSeconds,
                 v => setup.TurnSeconds = Mathf.RoundToInt(v), wholeNumbers: true);
             s.AddRange("Bounces a shot makes", 1, MatchSetup.MaxBouncesLimit, setup.MaxBounces, v => setup.MaxBounces = Mathf.RoundToInt(v), wholeNumbers: true);
-            s.AddRange("Weapon damage", 1, MatchSetup.MaxWeaponDamage, setup.WeaponDamage, v => setup.WeaponDamage = Mathf.RoundToInt(v), wholeNumbers: true);
+            var damages = new List<string>();
+            int damageIndex = 0;
+            for (int d = 0; d < MatchSetup.DamageChoices.Length; d++)
+            {
+                damages.Add(MatchSetup.DamageChoices[d].ToString());
+                if (MatchSetup.DamageChoices[d] <= setup.WeaponDamage)
+                {
+                    damageIndex = d;
+                }
+            }
+
+            s.AddSelect("Weapon damage", damages, damageIndex,
+                v => setup.WeaponDamage = MatchSetup.DamageChoices[Mathf.Clamp(v, 0, MatchSetup.DamageChoices.Length - 1)]);
             s.AddSection("Weapons (on, and how many each player starts with; 10 = unlimited)");
             for (int i = 0; i < ArsenalRules.Kinds; i++)
             {

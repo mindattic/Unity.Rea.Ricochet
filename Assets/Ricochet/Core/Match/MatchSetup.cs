@@ -45,11 +45,11 @@ namespace Ricochet.Core.Match
         /// <summary>The seconds a turn lasts unless set (turnTime = 20).</summary>
         public const int DefaultTurnSeconds = 20;
 
-        /// <summary>The shortest turn the settings screen sets (the original's arrows went 10 to 30 in fives).</summary>
+        /// <summary>The shortest turn the settings screen sets (the original's turn time: 5 to 30 seconds).</summary>
         public const int MinTurnSeconds = 5;
 
         /// <summary>The longest turn the settings screen sets.</summary>
-        public const int MaxTurnSeconds = 60;
+        public const int MaxTurnSeconds = 30;
 
         /// <summary>How far each step of the turn time moves it (obj_btn_turntime_more's 5).</summary>
         public const int TurnSecondsStep = 5;
@@ -65,6 +65,9 @@ namespace Ricochet.Core.Match
 
         /// <summary>The most base damage the settings screen sets.</summary>
         public const int MaxWeaponDamage = 100;
+
+        /// <summary>The damage choices the original's settings offered (obj_btn_damage_less/more): 5, 10, 25, 33, 50, 100.</summary>
+        public static readonly int[] DamageChoices = { 5, 10, 25, 33, 50, 100 };
 
         private int _aiCount = 1;
         private readonly int[] _skills = NewFilled(Ai.DefaultSkill);
@@ -170,7 +173,7 @@ namespace Ricochet.Core.Match
             set { _itemCount[(int)Item.AimAssist] = ArsenalRules.ClampCount(value); }
         }
 
-        /// <summary>Seconds a player has to fire (turnTime): 5 to 60.</summary>
+        /// <summary>Seconds a player has to fire (turnTime): 5 to 30.</summary>
         public int TurnSeconds
         {
             get { return _turnSeconds; }
@@ -184,7 +187,7 @@ namespace Ricochet.Core.Match
             set { _maxBounces = Math.Max(1, Math.Min(MaxBouncesLimit, value)); }
         }
 
-        /// <summary>A hit's base damage (weapon_damage): 1 to 100.</summary>
+        /// <summary>A hit's base damage (weapon_damage): 1 to 100 (the settings screen offers <see cref="DamageChoices"/>).</summary>
         public int WeaponDamage
         {
             get { return _weaponDamage; }
