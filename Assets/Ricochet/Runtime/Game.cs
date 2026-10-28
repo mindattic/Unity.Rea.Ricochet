@@ -80,6 +80,9 @@ namespace Ricochet
             // U.RICO-T53: the one black curtain every screen change fades through (obj_fade and its ten copies).
             ScreenFade.Create();
 
+            // U.RICO-T54: obj_mouse's spr_mouse as the pointer, over everything, in every room.
+            GameCursor.Create();
+
             // U.RICO-T78: every menu control in the original's spr_button / checkbox / input box / arrow art and fonts.
             GmlMenuSkin.Ensure();
 

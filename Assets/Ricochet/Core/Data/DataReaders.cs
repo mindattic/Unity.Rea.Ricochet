@@ -407,7 +407,7 @@ namespace Ricochet.Core.Data
             var slides = new List<Slide>();
             foreach (SettingsReader s in r.Objects("slides", 1))
             {
-                slides.Add(new Slide(s.Text("title"), s.Texts("lines", 1).ToArray()));
+                slides.Add(new Slide(s.Text("title"), s.Texts("lines", 1).ToArray(), s.Texts("images", 1).ToArray()));
                 s.Done();
             }
 

@@ -67,6 +67,7 @@
   "slides": [
     {
       "title": "Introduction",
+      "images": ["spr_icon_player", "spr_icon_weapon_cannon", "spr_icon_computer"],
       "lines": [
         "Ricochet is a game of angles: every player has a cannon, and the shortest way to an opponent is rarely a straight line.",
         "The faint line in front of you is the whole path your shot will fly, bounce by bounce."
@@ -74,6 +75,7 @@
     },
     {
       "title": "Attacking",
+      "images": ["spr_icon_weapon_cannon", "spr_redirector_arrow", "spr_icon_health"],
       "lines": [
         "Players take turns firing at each other. Bank a shot off the border and the white walls, and the orange redirectors send it along their arrows.",
         "A shot goes off on its fifth contact. Every bounce before a hit adds to the damage, and to the points it scores.",
@@ -82,12 +84,14 @@
     },
     {
       "title": "Time limit",
+      "images": ["spr_turnarrow"],
       "lines": [
         "Each turn has a 20-second clock at the top of the screen. Fire before it runs out, or the turn passes to the next player."
       ]
     },
     {
       "title": "Rounds and the goal",
+      "images": ["spr_icon_player", "spr_icon_computer", "spr_icon_health"],
       "lines": [
         "A round goes on until one player is left standing. A hit on an opponent scores 100 points, 25 more for each bounce and 5 for every tenth of a second the shot was in the air.",
         "Scores last the whole game. Once a round ends with someone at the goal (500 points unless you change it), the game is over and the top score wins."
@@ -95,12 +99,14 @@
     },
     {
       "title": "Crates",
+      "images": ["spr_weapon_land", "spr_item_land", "spr_healthdrop_land", "spr_powerup_cover"],
       "lines": [
         "Crates fall into the arena during a round. Shoot across one to collect it: W a weapon, I an item, + some health, ? a mystery weapon."
       ]
     },
     {
       "title": "Weapons",
+      "images": ["spr_icon_weapon_cannon", "spr_icon_weapon_laser", "spr_icon_weapon_shotgun", "spr_icon_weapon_grenade", "spr_icon_weapon_railgun", "spr_icon_weapon_vortex"],
       "lines": [
         "Q and E cycle your weapon. You carry three of each, and the cannon never runs out.",
         "Cannon: one shell. Laser: the full range, at a shell's speed. Shotgun: a fan of five pellets.",
@@ -110,6 +116,7 @@
     },
     {
       "title": "Items",
+      "images": ["spr_item_extrabounce", "spr_item_shieldwall", "spr_item_shrinkray", "spr_item_teleporter", "spr_item_aimassist", "spr_item_redirector"],
       "lines": [
         "Z and C cycle your item, F uses it before you fire.",
         "Extra bounce: one more contact for this turn's shot. Shield wall: a wall in front of you only your own shots pass.",
@@ -119,6 +126,7 @@
     },
     {
       "title": "Hazards",
+      "images": ["spr_laser_pulse", "spr_sprite_grass1", "spr_sprite_grass2"],
       "lines": [
         "The blue electric arc stops any shot that touches it. The red laser gate does too, but only on every other turn.",
         "A shot cuts down the first tuft of grass it touches, and stops there."
@@ -126,6 +134,7 @@
     },
     {
       "title": "Opponents and the announcer",
+      "images": ["spr_icon_computer", "spr_profile_rye", "spr_profile_sid", "spr_profile_sly"],
       "lines": [
         "AI opponents fill the empty seats: choose how many and how well they aim on the Players screen. On its turn an AI thinks out loud, then looks for a straight shot, a bank shot or a railgun shot.",
         "The announcer welcomes everyone, cheers a knock-out and heckles a shot that hits nobody. Choose who, and how often, under Game settings."
@@ -133,6 +142,7 @@
     },
     {
       "title": "Playing together",
+      "images": ["spr_icon_player", "spr_icon_player", "spr_icon_player", "spr_icon_computer"],
       "lines": [
         "Everyone plays on their own computer. One player hosts: Start, then Players, then the map, then Start opens the lobby with a join code to share (or the address to join at).",
         "The others click Join by code and type it in, or Join by IP with the host's address. When everyone is in the lobby, the host presses Start and the match begins.",
@@ -141,6 +151,7 @@
     },
     {
       "title": "Your profile",
+      "images": ["spr_icon_player", "spr_icon_gear"],
       "lines": [
         "Your name, colour and sound volumes come from your MindAttic profile, so you set them once: change them under Settings and every session, and every MindAttic game, keeps them."
       ]

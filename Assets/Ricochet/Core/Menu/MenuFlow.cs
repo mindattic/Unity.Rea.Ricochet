@@ -57,18 +57,27 @@ namespace Ricochet.Core.Menu
         public override string ToString() => Keys + ": " + Action;
     }
 
-    /// <summary>One how-to-play slide (obj_slide's slidetext): a heading and its lines.</summary>
+    /// <summary>One how-to-play slide (obj_slide's slidetext): a heading and its lines, and the pictures on its frame.</summary>
     public sealed class Slide
     {
         public Slide(string title, params string[] lines)
+            : this(title, lines, null)
+        {
+        }
+
+        public Slide(string title, string[] lines, string[] images)
         {
             Title = title;
             Lines = lines ?? Array.Empty<string>();
+            Images = images ?? Array.Empty<string>();
         }
 
         public string Title { get; }
 
         public IReadOnlyList<string> Lines { get; }
+
+        /// <summary>U.RICO-T54: the GML sprites drawn on the slide's frame, in order (Core's SlidePicture lays them out).</summary>
+        public IReadOnlyList<string> Images { get; }
 
         /// <summary>Everything on the slide, the heading first, a line each.</summary>
         public string Text => Title + "\n" + string.Join("\n", Lines);

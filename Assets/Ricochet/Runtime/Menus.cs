@@ -296,7 +296,8 @@ namespace Ricochet
         /// <summary>The controls room: a line a binding.</summary>
         public static void BuildControls(MenuScreen s)
         {
-            AddPicture(s, MenuLooks.KeyboardLayout, 300f); // obj_keyboardlayout, centred in the controls room
+            // obj_keyboardlayout, centred in the controls room, redrawn for the bindings as they are now (U.RICO-T54)
+            KeyboardPictureView.Attach(AddPicture(s, MenuLooks.KeyboardLayout, 300f));
             foreach (ControlBinding binding in MenuFlow.Controls)
             {
                 s.AddText(binding.Keys + "   " + binding.Action);
@@ -388,7 +389,8 @@ namespace Ricochet
         {
             int slide = MenuFlow.ClampSlide(first);
             MaText counter = s.AddText(string.Empty, TextStyle.Caption);
-            AddPicture(s, MenuLooks.HowToPlaySlide, 300f); // obj_slide's spr_howtoplay1, its counter over it and its text under it
+            // obj_slide's spr_howtoplay1, its counter over it and its text under it; the slide's pictures on it (U.RICO-T54)
+            UnityEngine.UI.Image frame = AddPicture(s, MenuLooks.HowToPlaySlide, 300f);
             MaText title = s.AddText(string.Empty, TextStyle.Heading);
             MaText body = s.AddText(string.Empty);
 
@@ -398,6 +400,7 @@ namespace Ricochet
                 counter.Text = MenuFlow.SlideCounter(slide);
                 title.Text = shown.Title;
                 body.Text = string.Join("\n\n", shown.Lines);
+                ShowSlidePictures(frame, shown);
             }
 
             MaRow row = s.AddRow();
@@ -412,6 +415,52 @@ namespace Ricochet
                 Show();
             }, ButtonVariant.Primary);
             Show();
+        }
+
+        /// <summary>The name of a slide picture on the how-to-play frame (followed by its sprite), for tests.</summary>
+        public const string SlideImageName = "Slide image";
+
+        // U.RICO-T54: the slide's pictures (menu.json's "images") on the black frame, in Core's SlidePicture slots, each in
+        // its own proportions; a sprite the catalogue lacks leaves its slot empty.
+        private static void ShowSlidePictures(UnityEngine.UI.Image frame, Slide slide)
+        {
+            if (frame == null)
+            {
+                return;
+            }
+
+            Transform parent = frame.transform;
+            for (int i = parent.childCount - 1; i >= 0; i--)
+            {
+                GameObject old = parent.GetChild(i).gameObject;
+                old.SetActive(false);
+                UnityEngine.Object.Destroy(old);
+            }
+
+            IReadOnlyList<PictureRect> slots = SlidePicture.Slots(slide.Images.Count);
+            float w = (float)SlidePicture.Width;
+            float h = (float)SlidePicture.Height;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                Sprite sprite = GameArt.Frame(slide.Images[i]);
+                if (sprite == null)
+                {
+                    continue;
+                }
+
+                PictureRect r = slots[i];
+                var rect = new GameObject(SlideImageName + ": " + slide.Images[i], typeof(RectTransform)).GetComponent<RectTransform>();
+                rect.gameObject.layer = parent.gameObject.layer;
+                rect.SetParent(parent, false);
+                rect.anchorMin = new Vector2((float)r.X / w, 1f - (float)r.Bottom / h);
+                rect.anchorMax = new Vector2((float)r.Right / w, 1f - (float)r.Y / h);
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+                UnityEngine.UI.Image image = rect.gameObject.AddComponent<UnityEngine.UI.Image>();
+                image.sprite = sprite;
+                image.preserveAspect = true;
+                image.raycastTarget = false;
+            }
         }
 
         /// <summary>

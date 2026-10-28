@@ -614,6 +614,22 @@ rooms `titlescreen`, `controls`, `howtoplay`, `credits` and `gamescreen` (U.RICO
 - **Pictures**: the title is on bg_titlescreen with obj_letter_R ... obj_letter_T where the titlescreen room placed them;
   the controls room shows spr_keyboardlayout, the how-to-play room obj_slide's spr_howtoplay1 between its counter and its
   text, and the credits room spr_creditsimage.
+- **Controls and how-to-play art** (U.RICO-T54; source `obj_Controls`, `obj_keyboardlayout`, `obj_mouse`, `obj_slide`,
+  `obj_btn_nextslide` / `_lastslide`, `obj_howtoplay`, `obj_howtoplayimage`): the keyboard picture is redrawn for this
+  game's controls (Core's `KeyboardPicture`, drawn by `KeyboardPictureView` over the room's spr_keyboardlayout image, which
+  keeps its place and size but is no longer drawn): a full keyboard (main block, navigation block, number pad), every key
+  bound in the Input System's Gameplay map as it is now (after the rebind screen) coloured for its action, and each action's
+  name at the end of a line from its leftmost key, above or below the keyboard in lanes that keep the names apart, as the
+  original's were; the three grenade fuses are one name, the border's thinner and thicker one; Esc (Go back) and the
+  number pad's quick angles are drawn though no binding names them. A mouse beside the number pad has its bound buttons
+  coloured and named (left Fire, right Use item by default). A rebind or Reset to defaults redraws it at once. The
+  gamepad's bindings are not drawn (the original had no pad; the rebind screen lists them). obj_mouse drew spr_mouse
+  (18 x 25, tip at its top left) at the pointer in every room, so `GameCursor` draws it over everything (the room fade
+  too) at the room's scale, hiding the system's arrow while the window has focus. Each how-to-play slide carries its own
+  pictures (menu.json's `images`, every slide must list at least one; Core's `SlidePicture` lays up to four in a row, two
+  rows past that, on the black 640 x 480 frame): the game's own sprites for what it explains (the player and AI icons,
+  the weapons' and items' icons, the crates, the hazards, the announcers' portraits). The original drew one blank frame
+  for all ten slides; there are eleven here, with the counter showing "n/11". `Tests/Core.Tests/KeyboardPictureTests`.
 - **Rooms** (U.RICO-T84, `GmlRoomLayout`, attached by the same sweep): every menu room (mainmenu, settings, players, names,
   controls, howtoplay, credits, maproom, the multiplayer rooms) was 1920 x 1080 on bg_titlescreen with each object's sprite
   centred on its place, so every menu screen now stands on bg_titlescreen (not over the live arena) with its card dissolved
