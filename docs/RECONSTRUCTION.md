@@ -187,3 +187,28 @@ UR-T22 (Relay) depends on the owner's Unity Cloud account and sits outside the o
 A networked turn with server authority, real multiplayer in place of the
 hotseat rooms, up to 16 seats (the original had 8 in its setup rooms and 16 bars), votes and reconnect, the kit's menus under
 the original's screens, and pause as a host or vote action. Each is recorded in the BIBLE.
+
+## 7. Parity verification (U.RICO-T58, 2026-10-28)
+
+How it was checked: the Windows player built clean with `Tools/run.ps1` (0 errors, `Build/Ricochet/Ricochet.exe`) and was launched muted; it opened on the splash card and went into the startup credits (screenshots taken). The rest of the walk was **not driven by play**: the player has no scripted-input hook and keystrokes sent to a shared desktop could land in other windows, and the seeded Core replay would be a new test, which this ticket may not run. So every row below rests on the code, the data files, the closed tickets' own notes and the room-by-room reading of the original's `rooms/*.gmx` recorded in section 3, not on a play-through. A real walk needs a player-side autowalk hook (filed as a follow-up). Status: **built**, **deviation** (with its reason), **left out** (on purpose).
+
+| Original room or system | Status | Note |
+|---|---|---|
+| splashscreen, startup_credits | built, seen in the built player | UR-T57 |
+| titlescreen (letters, setup panel) | built | UR-T52 |
+| mainmenu | built | UR-T52 |
+| names, players | built | UR-T21, UR-T28, UR-T41 |
+| maproom | left out | removed on purpose by U.RICO-T101: Start goes straight to the lobby and game, as the original's flow did in play (its campaign map no button reached) |
+| gamescreen: turn, aim, drive, fuse, six weapons, six items, drops, hazards, AI, announcer, pause | built | UR-T23 to T27, T42 to T51, T80, T88, T90, T91, T98, T99 |
+| endgame | built | UR-T56 |
+| settings, controls, howtoplay | built | UR-T25, T54 |
+| credits | built | UR-T55 |
+| multiplayer_hostorjoin, _host, _join | deviation | replaced by the kit's real multiplayer (section 6) |
+| intro, room0 | left out | empty or startup-only in the original (section 1.2) |
+| Debug keys, sheep, dead objects, laser sight item | left out | section 1.2 |
+| Section 3 rows UR-T19 to UR-T57 | built | each closed; UR-T22 (Relay) stays open on the owner's Unity Cloud account |
+| Section 3 row UR-T54 | built | closed 2026-10-28 |
+| Section 3 row UR-T58 | this section | play-through still owed, see below |
+| Section 4 rows UR-T36, T37, T38, T39, T40 | built | their tickets are closed; the "gap" wording in section 4 predates them |
+| Section 4 row UR-T59 | open | README and BIBLE final pass |
+| Section 3 row UR-T53: "covers the map room's way into the lobby" | stale | the map room is gone (U.RICO-T101) |
