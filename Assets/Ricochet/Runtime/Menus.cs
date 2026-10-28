@@ -260,11 +260,6 @@ namespace Ricochet
             for (int i = 0; i < ArsenalRules.Kinds; i++)
             {
                 var weapon = (Weapon)i;
-                if (weapon == Weapon.Cannon)
-                {
-                    continue; // always in play and unlimited: a player always has a shot
-                }
-
                 string name = ArsenalRules.Name(weapon);
                 s.AddToggle(name + " in play", setup.WeaponOn(weapon), v => setup.SetWeaponOn(weapon, v));
                 s.AddRange(name + " at the start", 0, ArsenalRules.Unlimited, setup.WeaponCount(weapon), v => setup.SetWeaponCount(weapon, Mathf.RoundToInt(v)),

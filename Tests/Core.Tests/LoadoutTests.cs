@@ -7,11 +7,11 @@ namespace Ricochet.Core.Tests
     public class LoadoutTests
     {
         [Test]
-        public void APlayerStartsWithAnUnlimitedCannon_ThreeOfEveryWeaponInPlay_AndNoneOfTheRest()
+        public void APlayerStartsWithThreeOfEveryWeaponInPlay_TheCannonIncluded_AndNoneOfTheRest()
         {
             var loadout = new Loadout();
             Assert.That(loadout.Weapon, Is.EqualTo(Weapon.Cannon));
-            Assert.That(loadout.Count(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
+            Assert.That(loadout.Count(Weapon.Cannon), Is.EqualTo(3), "countcannon = 3");
             Assert.That(loadout.Count(Weapon.Laser), Is.EqualTo(3));
             Assert.That(loadout.Count(Weapon.Grenade), Is.EqualTo(3));
             Assert.That(loadout.Count(Weapon.Vortex), Is.EqualTo(3), "the vortex came into play with its detonation (UR-T6)");
@@ -76,9 +76,11 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void FiringSpendsOne_AnUnlimitedCannonNever_AndSpendingTheLastMovesTheSelectionRight()
+        public void FiringSpendsOne_AnUnlimitedCountNever_AndSpendingTheLastMovesTheSelectionRight()
         {
-            var loadout = new Loadout();
+            var unlimited = new ArsenalRules();
+            unlimited.SetStartCount(Weapon.Cannon, ArsenalRules.Unlimited);
+            var loadout = new Loadout(unlimited);
             for (int i = 0; i < 20; i++)
             {
                 Assert.That(loadout.Fire(), Is.EqualTo(Weapon.Cannon));
@@ -86,7 +88,13 @@ namespace Ricochet.Core.Tests
 
             Assert.That(loadout.Count(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
 
-            loadout.CycleWeapon(1);
+            loadout = new Loadout();
+            for (int i = 0; i < 3; i++)
+            {
+                Assert.That(loadout.Fire(), Is.EqualTo(Weapon.Cannon));
+            }
+
+            Assert.That((loadout.Count(Weapon.Cannon), loadout.Weapon), Is.EqualTo((0, Weapon.Laser)), "the third shell was the last: cycle right");
             Assert.That(loadout.Fire(), Is.EqualTo(Weapon.Laser));
             Assert.That(loadout.Fire(), Is.EqualTo(Weapon.Laser));
             Assert.That(loadout.Weapon, Is.EqualTo(Weapon.Laser));
@@ -129,8 +137,11 @@ namespace Ricochet.Core.Tests
             Assert.That(loadout.Count(Weapon.Grenade), Is.EqualTo(7));
             loadout.Add(Weapon.Grenade, 5);
             Assert.That(loadout.Count(Weapon.Grenade), Is.EqualTo(ArsenalRules.MaxCount), "never counted up into unlimited");
-            loadout.Add(Weapon.Cannon);
-            Assert.That(loadout.Count(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
+            var unlimited = new ArsenalRules();
+            unlimited.SetStartCount(Weapon.Cannon, ArsenalRules.Unlimited);
+            var endless = new Loadout(unlimited);
+            endless.Add(Weapon.Cannon);
+            Assert.That(endless.Count(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
             loadout.Add(Item.AimAssist);
             Assert.That(loadout.Count(Item.AimAssist), Is.EqualTo(4));
         }

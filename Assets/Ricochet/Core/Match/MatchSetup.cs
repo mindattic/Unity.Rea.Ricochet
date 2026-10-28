@@ -215,15 +215,15 @@ namespace Ricochet.Core.Match
             set { _pauseRedirector = value; }
         }
 
-        /// <summary>The weapon's box (hasX): whether it is in play at all. The cannon is always in play and unlimited, so a player always has a shot.</summary>
-        public bool WeaponOn(Weapon weapon) => weapon == Weapon.Cannon || _weaponOn[(int)weapon];
+        /// <summary>The weapon's box (hasX): whether it is in play at all (obj_checkbox_cannon switches the cannon too).</summary>
+        public bool WeaponOn(Weapon weapon) => _weaponOn[(int)weapon];
 
-        public void SetWeaponOn(Weapon weapon, bool on) => _weaponOn[(int)weapon] = weapon == Weapon.Cannon || on;
+        public void SetWeaponOn(Weapon weapon, bool on) => _weaponOn[(int)weapon] = on;
 
         /// <summary>The count each player starts a round with (countX): 0 to 9, or 10 for unlimited.</summary>
-        public int WeaponCount(Weapon weapon) => weapon == Weapon.Cannon ? ArsenalRules.Unlimited : _weaponCount[(int)weapon];
+        public int WeaponCount(Weapon weapon) => _weaponCount[(int)weapon];
 
-        public void SetWeaponCount(Weapon weapon, int count) => _weaponCount[(int)weapon] = weapon == Weapon.Cannon ? ArsenalRules.Unlimited : ArsenalRules.ClampCount(count);
+        public void SetWeaponCount(Weapon weapon, int count) => _weaponCount[(int)weapon] = ArsenalRules.ClampCount(count);
 
         /// <summary>The item's box (hasX): whether it is in play at all (the aim assist is also out of play at a count of 0).</summary>
         public bool ItemOn(Item item) => _itemOn[(int)item];
@@ -251,13 +251,13 @@ namespace Ricochet.Core.Match
             return on;
         }
 
-        // Every count starts at 3 (countX), but the cannon, which is never spent (the stock arsenal.json's 10).
+        // Every count starts at 3 (countX), the cannon's too (config.ini countcannon = 3).
         private static int[] NewCounts(bool weapons)
         {
             var counts = new int[ArsenalRules.Kinds];
             for (int i = 0; i < counts.Length; i++)
             {
-                counts[i] = weapons && i == (int)Weapon.Cannon ? ArsenalRules.Unlimited : DefaultAimAssists;
+                counts[i] = DefaultAimAssists;
             }
 
             return counts;

@@ -227,6 +227,7 @@ namespace Ricochet.Core.Tests
             setup.PauseRedirector = false;
             setup.SetWeaponOn(Weapon.Railgun, false);
             setup.SetWeaponCount(Weapon.Laser, 7);
+            setup.SetWeaponCount(Weapon.Cannon, ArsenalRules.Unlimited);
             setup.SetItemOn(Item.Teleporter, false);
             setup.SetItemCount(Item.ShieldWall, 0);
             setup.SetDropOn(DropKind.Health, false);
@@ -254,7 +255,7 @@ namespace Ricochet.Core.Tests
             var setup = new MatchSetup();
             Assert.That((setup.TurnSeconds, setup.MaxBounces, setup.WeaponDamage, setup.PauseRedirector), Is.EqualTo((20, 5, 10, true)));
             Assert.That(setup.WeaponCount(Weapon.Laser), Is.EqualTo(3));
-            Assert.That(setup.WeaponCount(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
+            Assert.That(setup.WeaponCount(Weapon.Cannon), Is.EqualTo(3), "countcannon = 3");
             Assert.That(setup.ItemCount(Item.Redirector), Is.EqualTo(3));
             Assert.That(Enumerable.Range(0, ArsenalRules.Kinds).All(i => setup.WeaponOn((Weapon)i) && setup.ItemOn((Item)i)), Is.True);
             Assert.That(setup.Format(), Does.Not.Contain("turn=").And.Not.Contain("wpn"), "defaults stay out of the vote text");
@@ -265,14 +266,16 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void TheCannonCannotBeSwitchedOffOrSpent()
+        public void TheCannonIsSetLikeAnyWeapon_ThreeByDefault_TenUnlimited()
         {
             var setup = new MatchSetup();
-            setup.SetWeaponOn(Weapon.Cannon, false);
-            setup.SetWeaponCount(Weapon.Cannon, 0);
             var arsenal = new ArsenalRules();
             setup.ApplyTo(arsenal);
-            Assert.That((arsenal.InPlay(Weapon.Cannon), arsenal.StartCount(Weapon.Cannon)), Is.EqualTo((true, ArsenalRules.Unlimited)));
+            Assert.That((arsenal.InPlay(Weapon.Cannon), arsenal.StartCount(Weapon.Cannon)), Is.EqualTo((true, 3)));
+            setup.SetWeaponOn(Weapon.Cannon, false);
+            setup.SetWeaponCount(Weapon.Cannon, ArsenalRules.Unlimited);
+            setup.ApplyTo(arsenal);
+            Assert.That((arsenal.InPlay(Weapon.Cannon), arsenal.StartCount(Weapon.Cannon)), Is.EqualTo((false, ArsenalRules.Unlimited)));
         }
 
         [Test]

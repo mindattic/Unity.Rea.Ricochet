@@ -3,8 +3,8 @@
 // item_extrabounce = 0 .. item_redirector = 5), gave every player count_X of each at the start (3 by default), treated a
 // count of 10 as unlimited (fire_weapon.gml and use_item.gml only spend one "if count < 10"), set a grenade's fuse with
 // keys 1-3 between 0.5 and 6 seconds in half-second steps (default 2), and named them in draw_weaponinfo.gml /
-// draw_iteminfo.gml. What differs here: the cannon is unlimited by default, so a player who has spent everything else
-// can still take their turn (the original's empty-handed player could only let the clock run out). Aim assist (UR-T7)
+// draw_iteminfo.gml. The cannon starts at 3 like the rest (config.ini countcannon = 3), and a player who has spent
+// everything can only let the clock run out, as the original. Aim assist (UR-T7)
 // starts at the original's count_AimAssist of 3; a match's setup (MatchSetup) changes that, or takes it out of play. The
 // vortex, the shield wall and the redirector came into play with the level hazards (UR-T6).
 using System;

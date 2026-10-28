@@ -70,8 +70,7 @@ namespace Ricochet.Core.Tests
             Assert.That(hazards.Gates.Select(a => (a[0].X, a[0].Y, a[1].X, a[1].Y)), Is.EqualTo(new[] { (4.6, 4.6, 8.2, 4.6) }));
 
             var arsenal = ArsenalRules.Default;
-            Assert.That(arsenal.StartCount(Weapon.Cannon), Is.EqualTo(ArsenalRules.Unlimited));
-            foreach (Weapon w in Enum.GetValues(typeof(Weapon)).Cast<Weapon>().Skip(1))
+            foreach (Weapon w in Enum.GetValues(typeof(Weapon)).Cast<Weapon>())
             {
                 Assert.That(arsenal.StartCount(w), Is.EqualTo(3));
                 Assert.That(arsenal.InPlay(w), Is.True);

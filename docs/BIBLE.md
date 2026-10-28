@@ -85,7 +85,7 @@ copy of any of these is a bug.
   the clock and the turn order (UR-T4; `Core/Match.cs` tested by `dotnet test Core.slnx`, the wire by
   `Tests/PlayMode/TurnTests.cs`).
 - ✅ Weapons and items: a per-player loadout of six weapons and six items cycled left/right (cycle_weapon/item_*.gml),
-  a count of 10 meaning unlimited, the cannon unlimited, three of the rest each round; the laser, shotgun, fused grenade
+  a count of 10 meaning unlimited, three of every weapon each round, the cannon included (config.ini countcannon = 3; each shot spends one, and a spent cannon cycles right like any weapon; a player with nothing left cannot fire and the clock runs out, as the original; the setup screen sets the cannon like the rest: obj_btn_cannon_more/less, 0 to 10, 10 unlimited); the laser, shotgun, fused grenade
   (1/2/3 set a 0.5–6 s fuse; it passes through players and blasts everyone near where it goes off) and railgun; the
   extra bounce, teleporter and shrink ray; and weapon/item/health/powerup crates that fall during a match on
   obj_drop_emitter's random timers and go to whoever's shot passes over one (UR-T5; `Core/Loadout.cs`, `Volley.cs`,

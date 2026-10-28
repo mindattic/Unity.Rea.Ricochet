@@ -12,7 +12,7 @@
   "laserSpeed": 1,
   "railgunSpeed": 8,
   "weapons": [
-    { "id": "Cannon", "name": "Cannon", "start": 10, "inPlay": true, "about": "Fires a shell that ricochets off the walls and shapes until its bounces run out." },
+    { "id": "Cannon", "name": "Cannon", "start": 3, "inPlay": true, "about": "Fires a shell that ricochets off the walls and shapes until its bounces run out." },
     { "id": "Laser", "name": "Laser", "start": 3, "inPlay": true, "about": "A fast beam that ricochets like a shell and hits whoever it reaches." },
     { "id": "Shotgun", "name": "Shotgun", "start": 3, "inPlay": true, "about": "Fans pellets around your aim; each pellet that hits does a share of the damage." },
     { "id": "Grenade", "name": "Grenade", "start": 3, "inPlay": true, "about": "Bounces until its fuse runs out, then blasts everyone near it. Set the fuse with 1-3." },

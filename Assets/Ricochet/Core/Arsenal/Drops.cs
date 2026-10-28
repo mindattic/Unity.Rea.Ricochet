@@ -331,7 +331,7 @@ namespace Ricochet.Core.Arsenal
     {
         /// <summary>
         /// A random weapon a drop can give: a roll of the six, moved right past any not in play or carried unlimited from
-        /// the start (the cannon, here); null when none can drop.
+        /// the start; never the cannon (add_random_weapon's roll for it gave a laser); null when none can drop.
         /// </summary>
         public static Weapon? RandomWeapon(Random dice, ArsenalRules rules)
         {
@@ -340,7 +340,7 @@ namespace Ricochet.Core.Arsenal
             for (int i = 0; i < ArsenalRules.Kinds; i++)
             {
                 var weapon = (Weapon)((roll + i) % ArsenalRules.Kinds);
-                if (rules.InPlay(weapon) && rules.StartCount(weapon) < ArsenalRules.Unlimited)
+                if (weapon != Weapon.Cannon && rules.InPlay(weapon) && rules.StartCount(weapon) < ArsenalRules.Unlimited)
                 {
                     return weapon;
                 }
