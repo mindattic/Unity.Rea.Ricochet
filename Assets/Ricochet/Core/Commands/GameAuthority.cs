@@ -849,16 +849,10 @@ namespace Ricochet.Core.Commands
                     Hazards.AddShieldWall(state.Seat, state.Position, state.Heading); // spawn_shieldwall.gml
                     break;
                 case Item.AimAssist:
-                    // obj_aimassist, with the AI's targeting: onto the shot that reaches an opponent, if any does.
-                    AiPlan assist = Ai.Assist(state.Position, TargetIds.Seat(state.Seat), LevelFor(state.Seat), Targets(), Rules);
-                    if (assist != null)
-                    {
-                        SetAim(state, assist.Heading);
-                    }
-
+                    // obj_aimassist (U.RICO-T97): it only draws a line along the current aim; it never turns the aim.
                     state.AssistHeading = state.Heading;
                     state.Assists++;
-                    Emit(new AssistApplied(state.Id, state.Heading, assist != null));
+                    Emit(new AssistApplied(state.Id, state.Heading, false));
                     break;
             }
 

@@ -91,7 +91,7 @@ namespace Ricochet.Tests
         }
 
         [UnityTest]
-        public IEnumerator AClientsAimAssistTurnsHerAimOntoTheHost_SpendsOne_AndHerShotLands()
+        public IEnumerator AClientsAimAssistKeepsHerAim_SpendsOne_AndTheBeamGoesWithHerShot()
         {
             Arena.MatchRules.EndTurnSeconds = 0.2;
             Arena arena = null;
@@ -115,14 +115,8 @@ namespace Ricochet.Tests
             Assert.That(ann.Loadout.Count(Item.AimAssist), Is.EqualTo(1), "one spent");
             Assert.That(annOnHerClient.AssistShown, Is.True, "her client draws the beam");
 
-            string target = Arena.SeatTarget(host.Seat);
-            Assert.That(ann.Solve(ann.Heading).TargetId, Is.EqualTo(target), "the server turned her aim onto the host");
-            yield return WaitUntil(() => annOnHerClient.Preview != null && annOnHerClient.Preview.Main.TargetId == target,
-                "her own aim never followed the assist");
-
+            Assert.That(annOnHerClient.AssistHeading, Is.EqualTo(270f).Within(1e-3f), "the assist keeps her aim (U.RICO-T97)");
             annOnHerClient.Fire(annOnHerClient.AssistHeading);
-            Player hostOnClient = Player.In(Client).First(p => p.Seat == host.Seat);
-            yield return WaitUntil(() => hostOnClient.Health < Arena.MatchRules.MaxHealth, "her assisted shot never hurt the host", 10f);
             // The client draws her shot (and drops the beam) when the server's ShotResolved reaches it, which can land after the
             // host's synced health: wait for that, not for the damage, before looking at the beam.
             yield return WaitUntil(() => annOnHerClient.LastVolleyShot >= 1, "her client never drew her shot");

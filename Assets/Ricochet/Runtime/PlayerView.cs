@@ -96,7 +96,7 @@ namespace Ricochet
         /// <summary>The owner's preview of the shot in draw_beam's dotted style (null on other peers).</summary>
         public DottedBeam PreviewBeam => _previewBeam;
 
-        // Every peer: obj_aimassist's beam along the assisted path in draw_beam's dotted style, fading out (its alpha lost
+        // Every peer: obj_aimassist's straight beam along the current aim to the first wall in draw_beam's dotted style, fading out (its alpha lost
         // 0.003 a step), gone once the shot is fired.
         private void DrawAssist()
         {
@@ -111,7 +111,7 @@ namespace Ricochet
                 _assistShownUntil = Time.time + AssistSeconds;
                 ShotPath path = SolveVolley(Weapon.Cannon, AssistHeading, Arena.ArsenalRules.DefaultFuse, ExtraBounces).Main;
                 _assistPoints.Clear();
-                for (int i = 0; i < path.Points.Count; i++)
+                for (int i = 0; i < path.Points.Count && i < 2; i++) // a straight line to the first wall (U.RICO-T97)
                 {
                     _assistPoints.Add(Arena.ToUnity(path.Points[i]));
                 }

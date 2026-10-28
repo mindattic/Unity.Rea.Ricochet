@@ -15,9 +15,8 @@
 // (Core's Arsenal: cannon, laser, shotgun, grenade, railgun) and spends one in a match (practice is free fire); its
 // weapon, fuse and extra bounces are synced with the aim so every peer flies the same volley. The items: an extra
 // bounce for this turn's shot, a teleporter that moves you to where it lands, and a shrink ray that shrinks the first
-// player it reaches for the rest of the round. Aim assist (UR-T7) is the AI's targeting offered to a human: the server
-// turns their aim onto the shot a fully skilled AI would take (Core's Ai.Assist), the owner's aim follows, and every
-// peer draws that path as a fading beam (obj_aimassist) until the shot is fired. An AI seat aims (ServerAim), picks its
+// player it reaches for the rest of the round. Aim assist (UR-T7, U.RICO-T97) keeps the aim as it is: every
+// peer draws a straight line along it to the first wall as a fading beam (obj_aimassist) until the shot is fired. An AI seat aims (ServerAim), picks its
 // weapon (ServerSelectWeapon) and fires through the same server calls; Arena plays its turn.
 // Level hazards (UR-T6): every shot, preview and item flight is solved in the level as this player's shot sees it
 // (Arena.LevelFor: the hazards on it, less this player's own shield walls). The shield wall item stands a wall in front

@@ -570,7 +570,7 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void UseItem_AimAssist_TurnsTheAimOntoAShotAtAnOpponent()
+        public void UseItem_AimAssist_KeepsTheAimAndOnlyMarksIt()
         {
             GameAuthority authority = TwoSeats(out PlayerState a, out _);
             for (int i = 0; i < 4; i++)
@@ -581,10 +581,10 @@ namespace Ricochet.Core.Tests
             Assert.That(a.Loadout.Item, Is.EqualTo(Item.AimAssist));
             IReadOnlyList<GameEvent> events = authority.Apply(new UseItemCommand(1, 90));
             AssistApplied assist = Of<AssistApplied>(events).Single();
-            Assert.That(assist.Found, Is.True);
+            Assert.That(assist.Found, Is.False, "it never retargets");
             Assert.That(a.Assists, Is.EqualTo(1));
             Assert.That(a.AssistHeading, Is.EqualTo(a.Heading));
-            Assert.That(a.Heading, Is.Not.EqualTo(90), "the aim moved onto a shot");
+            Assert.That(a.Heading, Is.EqualTo(90), "the aim stays where the player had it");
         }
 
         [Test]
