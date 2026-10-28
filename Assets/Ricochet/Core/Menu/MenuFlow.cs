@@ -1,9 +1,9 @@
 // The menu flow (UR-T9): the original's room graph, and what its screens say. The 2013 original (design reference only,
 // UR-LAW-2) went titlescreen -> mainmenu -> names/players (the roster: names, colours, AI players and their skill) ->
-// maproom (the level) -> gamescreen (the match) -> endgame (the winner on a pedestal and a leaderboard), with settings,
+// gamescreen (the match) -> endgame (the winner on a pedestal and a leaderboard), with settings,
 // controls, howtoplay and credits each one button off the main menu and a Back button to it. Its multiplayer_hostorjoin/
 // host/join rooms are not here: the kit's Host / Join by IP / Join by code screens replace them (BIBLE §3).
-// The kit's host lobby (the join code and who is in, UR-T11) stands between the map room and the game as the Lobby room.
+// The kit's host lobby (the join code and who is in, UR-T11) stands between the players room and the game as the Lobby room.
 // Here every room but the game is a screen: the title is shown first, the kit's main menu is the main menu, and the
 // setup rooms are screens on it and on the in-game menu (the setup is only proposed to the others by the match vote).
 // The how-to-play slides, the controls and the credits are written for this game, in this project's own words, and are
@@ -20,7 +20,6 @@ namespace Ricochet.Core.Menu
         Title,
         MainMenu,
         Players,
-        MapRoom,
         Game,
         Endgame,
         Settings,
@@ -30,7 +29,7 @@ namespace Ricochet.Core.Menu
 
         /// <summary>
         /// The host's lobby (UR-T11): the kit's lobby screen, with the join code (or the address) and who is in, and the
-        /// match it will start. It stands where the original's multiplayer_host room did, between the map room and the game.
+        /// match it will start. It stands where the original's multiplayer_host room did, between the players room and the game.
         /// </summary>
         Lobby,
 
@@ -84,7 +83,7 @@ namespace Ricochet.Core.Menu
 
         /// <summary>
         /// The room a room's main button goes on to: the title's Start (and the main menu's) opens the Start screen (U.RICO-T52,
-        /// the titlescreen room's setup panel), then players -> maproom -> lobby -> game -> endgame -> mainmenu.
+        /// the titlescreen room's setup panel), then players (whose Start goes straight on to the game, obj_btn_start: no map room, every round is the random level) -> lobby -> game -> endgame -> mainmenu.
         /// </summary>
         public static Room Next(Room room)
         {
@@ -96,8 +95,6 @@ namespace Ricochet.Core.Menu
                 case Room.Setup:
                     return Room.Players;
                 case Room.Players:
-                    return Room.MapRoom;
-                case Room.MapRoom:
                     return Room.Lobby;
                 case Room.Lobby:
                     return Room.Game;
@@ -109,8 +106,8 @@ namespace Ricochet.Core.Menu
         }
 
         /// <summary>
-        /// Where a room's Back button goes (obj_btn_back_*): the main menu for every room off it, the players room from the
-        /// map room and the Start screen from the players room (one step back along the setup), and the title for the main
+        /// Where a room's Back button goes (obj_btn_back_*): the main menu for every room off it, the Start screen from the
+        /// players room (one step back along the setup), and the title for the main
         /// menu itself. Back from the lobby ends the game being hosted, so it is the main menu too.
         /// </summary>
         public static Room Back(Room room)
@@ -119,8 +116,6 @@ namespace Ricochet.Core.Menu
             {
                 case Room.MainMenu:
                     return Room.Title;
-                case Room.MapRoom:
-                    return Room.Players;
                 case Room.Players:
                     return Room.Setup;
                 case Room.Title:

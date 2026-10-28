@@ -135,7 +135,7 @@ namespace Ricochet.Tests
         }
 
         [UnityTest]
-        public IEnumerator AMatchOnAnotherMapIsPlayedThere_ByEveryPeer()
+        public IEnumerator AMatchOnTheRandomMapIsPlayedThere_ByEveryPeer()
         {
             Arena arena = null;
             yield return Begin(a => arena = a, (h, c) => { });
@@ -143,12 +143,12 @@ namespace Ricochet.Tests
             try
             {
                 Assert.That(Arena.MapIndex, Is.EqualTo(0), "a session opens on the practice range");
-                Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, Map = 2 }), Is.True);
+                Assert.That(arena.StartMatch(new MatchSetup { AiCount = 0, Map = Maps.RandomIndex }), Is.True);
                 Turns turns = null;
-                yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.MapIndex == 2, "the client never heard which map");
+                yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.MapIndex == Maps.RandomIndex, "the client never heard which map");
 
-                Level pillars = Maps.At(2).Build();
-                Assert.That(Arena.MapIndex, Is.EqualTo(2));
+                Level pillars = Arena.Level; // the round's random level (U.RICO-T101: no hand-laid maps)
+                Assert.That(Arena.MapIndex, Is.EqualTo(Maps.RandomIndex));
                 Assert.That(Arena.Level.Walls.Count, Is.EqualTo(pillars.Walls.Count));
                 Assert.That(Arena.LevelFor(Client, 0).Walls.Count, Is.EqualTo(pillars.Walls.Count), "the client's shots bounce in the same room");
                 Assert.That(view.Shown, Is.SameAs(Arena.Level), "the level view redrew the new map");
@@ -255,31 +255,19 @@ namespace Ricochet.Tests
         }
 
         [UnityTest]
-        public IEnumerator ThePlayersRoomSetsTheAiAndGoesOnToTheMapRoom_WhichSetsTheMapAndTheGoal()
+        public IEnumerator ThePlayersRoomSetsTheAi_AndItsStartGoesStraightOn_NoMapRoom()
         {
             _stack = MenuStack.Create();
             var setup = new MatchSetup();
             bool started = false;
-            MenuScreen players = _stack.Push(MenuFlow.Title(Room.Players), s => Menus.BuildPlayers(s, setup, "Ann", null,
-                from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), m => Menus.BuildMap(m, setup, "Start", () => started = true))));
+            MenuScreen players = _stack.Push(MenuFlow.Title(Room.Players), s => Menus.BuildPlayers(s, setup, "Ann", null, from => started = true));
             yield return null;
             Assert.That(Texts(players), Has.Some.Contains("You play as Ann"));
+            Assert.That(players.GetComponentsInChildren<MaSelect>(), Is.Empty, "no map and no goal here: the goal is on the Start screen");
 
-            Button(players, "Next: Map").Click();
-            yield return null;
-            MenuScreen map = _stack.Current;
-            Assert.That(map.Title, Is.EqualTo("Map"));
-            MaSelect[] selects = map.GetComponentsInChildren<MaSelect>();
-            Assert.That(selects.Length, Is.EqualTo(2), "the map and the goal");
-            selects[0].Value = 2;
-            selects[1].Value = 0;
-            yield return null;
-            Assert.That(setup.Map, Is.EqualTo(2));
-            Assert.That(setup.Goal, Is.EqualTo(MatchSetup.OneRound));
-            Assert.That(Texts(map), Has.Some.EqualTo(Maps.At(2).Description));
-
-            Button(map, "Start").Click();
+            Button(players, "Start").Click();
             Assert.That(started, Is.True);
+            Assert.That(_stack.Current, Is.SameAs(players), "no map room in between");
         }
 
         // UR-T25: the settings room's rule controls: turn time, bounces and damage, a box and a starting count for each

@@ -39,7 +39,7 @@ namespace Ricochet.Core.Tests
             Assert.That(shipped, Is.EqualTo(GameData.Files.OrderBy(n => n).ToArray()), "no data file is left unloaded");
 
             GameData data = GameData.Load(stock);
-            Assert.That(data.Maps.Count, Is.EqualTo(5));
+            Assert.That(data.Maps.Count, Is.EqualTo(2));
             Assert.That(data.Registry.Count, Is.GreaterThan(0));
         }
 
@@ -112,18 +112,11 @@ namespace Ricochet.Core.Tests
         [Test]
         public void StockContentReproducesTheCodedContent()
         {
-            Assert.That(Maps.All.Select(m => m.Name), Is.EqualTo(new[] { "Practice Range", "Crossfire", "Pillars", "Funnel", "Random Arena" }));
-            Assert.That(Maps.RandomIndex, Is.EqualTo(4));
-            Level.Level crossfire = Maps.At(1).Build();
-            Assert.That(crossfire.Walls.Count, Is.EqualTo(4));
-            Assert.That(crossfire.Walls[2].A.X, Is.EqualTo(-11));
-            Assert.That(crossfire.Walls[2].B.Y, Is.EqualTo(-6));
-            Assert.That(crossfire.Redirectors[1].Heading, Is.EqualTo(180));
+            Assert.That(Maps.All.Select(m => m.Name), Is.EqualTo(new[] { "Practice Range", "Random Arena" }));
+            Assert.That(Maps.RandomIndex, Is.EqualTo(1));
             Level.Level practice = Level.Level.Default();
             Assert.That((practice.Walls.Count, practice.Redirectors.Count, practice.MinX, practice.MaxY), Is.EqualTo((3, 2, -11.0, 6.0)));
             Assert.That(practice.Redirectors[1].Heading, Is.EqualTo(225));
-            Assert.That(Maps.At(3).Build().Redirectors.Count, Is.EqualTo(2));
-            Assert.That(Maps.At(2).Build().Walls.Count, Is.EqualTo(7));
 
             Assert.That(Announcer.Voices.Select(v => v.Key), Is.EqualTo(new[] { "sly", "rye", "sid", "vlad", "baxter", "doctor", "scottish" }));
             Assert.That(Announcer.VoiceAt(0).Name, Is.EqualTo("Kurt Sly"));

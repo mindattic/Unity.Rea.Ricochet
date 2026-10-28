@@ -3,7 +3,7 @@
 // the host a lobby with the join code (or the address to join at), the live roster (names, colours, Host tag, remove) and
 // Leave / Start. This adds the game's part to that lobby screen: a Match box saying what Start will begin (the map and the
 // goal, how the sixteen seats fill as people join, the AI and the announcer, from Core's Lobby), with Start held back while
-// a match could not seat two; and it carries the map room's setup through the lobby, so the match starts with everyone
+// a match could not seat two; and it carries the players room's setup through the lobby, so the match starts with everyone
 // who joined when the host presses Start. Hosting from the main menu's Host button (no setup chosen) opens the same lobby
 // for free practice. Clients go straight into the game when they join, as the kit does.
 using System;
@@ -64,7 +64,7 @@ namespace Ricochet
             return new LobbyRoom(frontEnd, runner, startMatch ?? throw new ArgumentNullException(nameof(startMatch)));
         }
 
-        /// <summary>The match Start will begin: the map room's setup, while hosting from it; null for free practice.</summary>
+        /// <summary>The match Start will begin: the players room's setup, while hosting from it; null for free practice.</summary>
         public MatchSetup Pending => _pending;
 
         /// <summary>The lobby screen this box is on (null when no lobby is showing).</summary>
@@ -80,7 +80,7 @@ namespace Ricochet
         public bool CanStart => _pending == null || Lobby.CanStart(People, _pending.AiCount);
 
         /// <summary>
-        /// The map room's Start: hosts a game carrying <paramref name="setup"/>, opening the lobby (the join code and who
+        /// The players room's Start: hosts a game carrying <paramref name="setup"/>, opening the lobby (the join code and who
         /// is in); the host's Start there begins the match with everyone who joined. When the front end is set to skip
         /// the lobby, the match begins at once.
         /// </summary>

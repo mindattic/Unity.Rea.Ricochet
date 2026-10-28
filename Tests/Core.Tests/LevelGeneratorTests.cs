@@ -286,7 +286,7 @@ namespace Ricochet.Core.Tests
             Assert.That(new MatchSetup().Map, Is.EqualTo(random.Index), "random is the default, as in the original");
             Assert.That(random.Layout(7).Spots, Is.Not.EqualTo(random.Layout(8).Spots));
 
-            MapInfo pillars = Maps.At(2);
+            MapInfo pillars = Maps.At(0); // the practice range, the one hand-laid fixture
             Assert.That(pillars.Layout(7).Level.Walls.Count, Is.EqualTo(pillars.Layout(8).Level.Walls.Count));
             Assert.That(pillars.Layout(7).SpawnPoint(3), Is.EqualTo(Seating.SpawnPoint(3)));
         }

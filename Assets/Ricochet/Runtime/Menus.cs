@@ -1,14 +1,14 @@
 // The original's rooms as MindAttic Components screens (UR-T9), filled from Core's MenuFlow, Maps and MatchSetup. Game
 // adds them to the kit's front end: Players, Controls, How to play and Credits on the main menu and the in-game menu, the
-// map room one step on from Players, and the game settings (the announcer) under the kit's Settings, beside the name and
+// game settings (the announcer) under the kit's Settings, beside the name and
 // colour. Each builder only fills a screen it is handed, so a test can build one on a stack of its own.
 //   Start (U.RICO-T52, the titlescreen room's setup panel): players, shapes, type, rotation, overlap, goal, turn time and
 //     bounces, each row's message on the line at the bottom while the pointer is on it, Default, and Next to Players.
 //   Players (names/players rooms): who you play as (the kit's name and colour), how many AI opponents fill the empty
-//     seats, how well they aim and how many aim assists everyone starts with; Next goes on to the map room.
-//   Map (maproom): which map, what it is like, and the goal (one round, or first to 500 ... 10000 points); its button
-//     starts the game: hosts one from the main menu, or asks the others by the match vote in a game.
-//   Players and Map both carry a Reset to defaults (UR-T41, the original's Default button) when Game gives them a reset:
+//     seats, how well they aim and how many aim assists everyone starts with; its Start button goes straight on to the game
+//     (obj_btn_start: hosts one from the main menu, or asks the others by the match vote in a game). There is no map room:
+//     every round is the random level and the point goal is set on the Start screen.
+//   Start and Players both carry a Reset to defaults (UR-T41, the original's Default button) when Game gives them a reset:
 //     the whole setup back to the defaults and saved, the screen rebuilt to show it.
 //   Vote to kick (UR-T14, in game only): a button for each player who may be voted out.
 //   Controls, How to play (obj_slide's slides with Last/Next and a "3/9" counter), Credits.
@@ -33,13 +33,14 @@ namespace Ricochet
     {
         /// <summary>
         /// The players room: the local player's name (and a way to change it and the colour), then the AI opponents, their
-        /// skill and the aim assists, and Next for the map room (<paramref name="next"/>, when given).
+        /// skill and the aim assists, and the Start button that goes on to the game (<paramref name="next"/>, when given, labelled
+        /// <paramref name="nextLabel"/> or "Start").
         /// </summary>
         public static void BuildPlayers(MenuScreen s, MatchSetup setup, string playingAs, Action changeNameAndColour, Action<MenuScreen> next,
-            Action resetSetup = null)
+            Action resetSetup = null, string nextLabel = null)
         {
             s.Subtitle = "Up to " + MatchRules.MaxSeats + " seats: everyone who joins, then the AI opponents.";
-            AddResetButton(s, resetSetup, () => BuildPlayers(s, setup, playingAs, changeNameAndColour, next, resetSetup));
+            AddResetButton(s, resetSetup, () => BuildPlayers(s, setup, playingAs, changeNameAndColour, next, resetSetup, nextLabel));
             if (!string.IsNullOrEmpty(playingAs))
             {
                 s.AddText("You play as " + playingAs + ".", TextStyle.Label);
@@ -57,9 +58,12 @@ namespace Ricochet
                 wholeNumbers: true);
             if (next != null)
             {
-                s.AddButton("Next: " + MenuFlow.Title(MenuFlow.Next(Room.Players)), () => next(s), ButtonVariant.Primary);
+                s.AddButton(nextLabel ?? StartLabel, () => next(s), ButtonVariant.Primary);
             }
         }
+
+        /// <summary>The players room's go-on button (obj_btn_start).</summary>
+        public const string StartLabel = "Start";
 
         /// <summary>The title of the screen that sets each AI opponent apart.</summary>
         public const string OpponentsTitle = "AI opponents";
@@ -91,38 +95,6 @@ namespace Ricochet
                 s.AddSelect("AI " + (ai + 1) + " name", names, setup.NameIndexOf(ai) + 1, v => setup.SetNameIndex(ai, v - 1));
                 s.AddRange("AI " + (ai + 1) + " skill", Ai.MinSkill, Ai.MaxSkill, setup.SkillOf(ai), v => setup.SetSkill(ai, Mathf.RoundToInt(v)),
                     wholeNumbers: true);
-            }
-        }
-
-        /// <summary>
-        /// The map room: the map (with its description) and the goal; <paramref name="start"/>, when given, is the button
-        /// that goes on into the game, labelled <paramref name="startLabel"/>.
-        /// </summary>
-        public static void BuildMap(MenuScreen s, MatchSetup setup, string startLabel, Action start, Action resetSetup = null)
-        {
-            s.Subtitle = "Pick where to play and what it takes to win.";
-            AddResetButton(s, resetSetup, () => BuildMap(s, setup, startLabel, start, resetSetup));
-            var names = new List<string>();
-            foreach (MapInfo map in Maps.All)
-            {
-                names.Add(map.Name);
-            }
-
-            MaText description = null;
-            s.AddSelect("Map", names, setup.Map, v =>
-            {
-                setup.Map = v;
-                if (description != null)
-                {
-                    description.Text = Maps.At(setup.Map).Description;
-                }
-            });
-            description = s.AddText(Maps.At(setup.Map).Description, TextStyle.Muted);
-
-            AddGoal(s, setup);
-            if (start != null)
-            {
-                s.AddButton(startLabel, start, ButtonVariant.Primary);
             }
         }
 

@@ -230,7 +230,7 @@ namespace Ricochet
         }
 
         // obj_btn_quit_round's room_goto(players): the round is over for everyone, so each player lands on the in-game menu,
-        // whose Players and Map rooms start the next match.
+        // whose Start and Players rooms start the next match.
         private static void ToTheInGameMenu()
         {
             NetFrontEnd frontEnd = NetFrontEnd.Instance;

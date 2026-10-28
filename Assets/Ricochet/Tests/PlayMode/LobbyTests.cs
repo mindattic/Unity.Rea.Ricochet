@@ -64,12 +64,12 @@ namespace Ricochet.Tests
         }
 
         [UnityTest]
-        public IEnumerator HostingFromTheMapRoom_OpensTheLobbyWithTheCodeAndTheMatch_AClientJoinsByCode_AndStartPlaysTheMatchThere()
+        public IEnumerator HostingFromPlayersStart_OpensTheLobbyWithTheCodeAndTheMatch_AClientJoinsByCode_AndStartPlaysTheMatchThere()
         {
             _rendezvous = StartRendezvous();
             yield return CreateFrontEnds(withCodes: true);
 
-            var setup = new MatchSetup { AiCount = 0, Map = 3, Goal = MatchSetup.OneRound, Announcements = 0 };
+            var setup = new MatchSetup { AiCount = 0, Map = 1, Goal = MatchSetup.OneRound, Announcements = 0 };
             _ = _lobby.HostMatch(setup);
             yield return WaitUntil(() => _host.State == FrontEndState.Lobby, () => "the host never reached the lobby: " + _host.State);
             yield return WaitUntil(() => FrontEndTesting.LobbyCode(_host) != null, "the lobby never showed a join code");
@@ -79,7 +79,7 @@ namespace Ricochet.Tests
             Assert.That(code, Is.EqualTo(Server.PublishedCodeText));
             Assert.That(Roster(), Is.EqualTo(new[] { "Ann" }));
             Assert.That(_lobby.Pending, Is.Not.Null);
-            Assert.That(_lobby.Lines, Has.Some.EqualTo(Maps.At(3).Name + ", one round"));
+            Assert.That(_lobby.Lines, Has.Some.EqualTo(Maps.At(1).Name + ", one round"));
             Assert.That(_lobby.Lines, Has.Some.StartsWith("1 player and no AI opponents: a match needs 2"));
             Assert.That(StartButton().Interactable, Is.False, "Start waits for a second seat");
 

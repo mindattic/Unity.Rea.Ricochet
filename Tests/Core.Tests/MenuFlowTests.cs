@@ -19,14 +19,14 @@ namespace Ricochet.Core.Tests
         public void TheRoomGraphRunsTitleToStartToPlayersToMapToLobbyToGameToEndgame_AndBackToTheMainMenu()
         {
             var walked = new List<Room> { Room.Title };
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 6; i++)
             {
                 walked.Add(MenuFlow.Next(walked[walked.Count - 1]));
             }
 
             Assert.That(walked, Is.EqualTo(new[]
             {
-                Room.Title, Room.Setup, Room.Players, Room.MapRoom, Room.Lobby, Room.Game, Room.Endgame, Room.MainMenu, Room.Setup,
+                Room.Title, Room.Setup, Room.Players, Room.Lobby, Room.Game, Room.Endgame, Room.MainMenu,
             }), "U.RICO-T52: the title's Start (and the main menu's) opens the Start screen");
             Assert.That(MenuFlow.Title(Room.Setup), Is.EqualTo("Start"));
             Assert.That(MenuFlow.OffTheMainMenu.First(), Is.EqualTo(Room.Setup), "the main menu's first button");
@@ -36,14 +36,13 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void EveryRoomOffTheMainMenuGoesBackToIt_TheMapRoomBackToPlayers_PlayersBackToStart_AndTheMainMenuBackToTheTitle()
+        public void EveryRoomOffTheMainMenuGoesBackToIt_PlayersBackToStart_AndTheMainMenuBackToTheTitle()
         {
             foreach (Room room in new[] { Room.Setup, Room.Settings, Room.Controls, Room.HowToPlay, Room.Credits, Room.Endgame })
             {
                 Assert.That(MenuFlow.Back(room), Is.EqualTo(Room.MainMenu), room.ToString());
             }
 
-            Assert.That(MenuFlow.Back(Room.MapRoom), Is.EqualTo(Room.Players));
             Assert.That(MenuFlow.Back(Room.Players), Is.EqualTo(Room.Setup));
             Assert.That(MenuFlow.Back(Room.MainMenu), Is.EqualTo(Room.Title));
             Assert.That(MenuFlow.OffTheMainMenu, Does.Not.Contain(Room.Game).And.Not.Contain(Room.Title));
@@ -92,7 +91,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void TheMapsAreNamed_WrapAndClamp_AndTheFirstIsThePracticeRange()
         {
-            Assert.That(Maps.Count, Is.GreaterThanOrEqualTo(3));
+            Assert.That(Maps.Count, Is.EqualTo(2), "the practice fixture and the random arena: no hand-laid maps in the flow (U.RICO-T101)");
             Assert.That(Maps.All.Select(m => m.Index), Is.EqualTo(Enumerable.Range(0, Maps.Count)));
             Assert.That(Maps.All.Select(m => m.Name).Distinct().Count(), Is.EqualTo(Maps.Count));
             Assert.That(Maps.Clamp(-1), Is.EqualTo(0));
@@ -175,12 +174,12 @@ namespace Ricochet.Core.Tests
         [Test]
         public void TheVoteCarriesTheGoalAndTheMap()
         {
-            var setup = new MatchSetup { AiCount = 2, Goal = 2000, Map = 2 };
+            var setup = new MatchSetup { AiCount = 2, Goal = 2000, Map = 1 };
             MatchSetup back = MatchSetup.Parse(2, setup.Format());
-            Assert.That((back.Goal, back.Map), Is.EqualTo((2000, 2)));
+            Assert.That((back.Goal, back.Map), Is.EqualTo((2000, 1)));
             Assert.That(MatchSetup.Parse(2, "skill=5").Goal, Is.EqualTo(500), "an old vote keeps the default goal");
             Assert.That(MatchSetup.Parse(2, "map=99").Map, Is.EqualTo(0));
-            Assert.That(setup.DescribeGame(), Is.EqualTo(Maps.At(2).Name + ", first to 2000 points"));
+            Assert.That(setup.DescribeGame(), Is.EqualTo(Maps.At(1).Name + ", first to 2000 points"));
         }
 
         [Test]

@@ -91,6 +91,7 @@ namespace Ricochet
 
             // UR-T41: the setup starts where the last session left it (the original's read_config), from the profile.
             SetupMemory.Load(_setup);
+            _setup.Map = Maps.RandomIndex; // U.RICO-T101: no map room, every round is the random level (a saved older choice is dropped)
             _saved = _setup.Clone();
 
             // The Settings screen: the kit's name and colour (read from and saved to the MindAttic profile, Unity.Shared,
@@ -98,8 +99,8 @@ namespace Ricochet
             frontEnd.AddSettingsItems(AddAudioSettings);
 
             // The original's room graph (UR-T9): the title first, then the kit's main menu with the setup rooms (the Start
-            // screen, players, then the map room, then into the game) and the controls, how-to-play and credits rooms off it; the same rooms
-            // in the in-game menu, where the map room's button asks everyone by the match vote. The settings room's
+            // screen, players, whose Start goes into the game) and the controls, how-to-play and credits rooms off it; the same rooms
+            // in the in-game menu, where the players room's button asks everyone by the match vote. The settings room's
             // announcer box sits under the kit's Settings, beside the name and colour.
             StartCoroutine(ShowTitle(frontEnd));
 
@@ -195,25 +196,16 @@ namespace Ricochet
             Menus.BuildSetup(s, _setup, from => from.Stack.Push(MenuFlow.Title(Room.Players), BuildPlayersRoom), ResetSetup);
         }
 
-        // The players room, then the map room.
+        // The players room: its Start goes straight on to the game (obj_btn_start). From the main menu that hosts a game with the
+        // setup and opens the lobby (UR-T11: the join code, who is in, and the match), whose Start begins the match with everyone
+        // who joined; in a game it is the match vote. There is no map room: every round is the random level.
         private void BuildPlayersRoom(MenuScreen s)
         {
             NetFrontEnd frontEnd = NetFrontEnd.Instance;
             RememberOnHide(s);
-            Menus.BuildPlayers(s, _setup, frontEnd != null ? frontEnd.Identity.DisplayName : null, frontEnd != null ? (System.Action)frontEnd.OpenSettings : null,
-                from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), BuildMapRoom), ResetSetup);
-        }
-
-        // The map room, one step on from the players room: its button goes on. From the main menu that hosts a game with
-        // the setup and opens the lobby (UR-T11: the join code, who is in, and the match), whose Start begins the match with
-        // everyone who joined; in a game it is the match vote.
-        private void BuildMapRoom(MenuScreen s)
-        {
-            NetFrontEnd frontEnd = NetFrontEnd.Instance;
             bool inGame = frontEnd != null && frontEnd.State == FrontEndState.InGame;
-            RememberOnHide(s);
-            Menus.BuildMap(s, _setup, inGame ? "Vote to start a match" : "Next: " + MenuFlow.Title(MenuFlow.Next(Room.MapRoom)),
-                inGame ? (System.Action)StartMatchVote : HostFromMapRoom, ResetSetup);
+            Menus.BuildPlayers(s, _setup, frontEnd != null ? frontEnd.Identity.DisplayName : null, frontEnd != null ? (System.Action)frontEnd.OpenSettings : null,
+                from => (inGame ? (System.Action)StartMatchVote : HostFromStart)(), ResetSetup, inGame ? "Vote to start a match" : Menus.StartLabel);
         }
 
         // UR-T41: a setup screen saves the setup to the profile as it closes (once, not on every step of a slider), the way
@@ -248,8 +240,8 @@ namespace Ricochet
             }
         }
 
-        // titlescreen -> Start screen -> players -> maproom -> lobby -> gamescreen: host with the setup; the lobby's Start plays it.
-        private void HostFromMapRoom()
+        // titlescreen -> Start screen -> players (Start) -> lobby -> gamescreen: host with the setup; the lobby's Start plays it.
+        private void HostFromStart()
         {
             RememberSetup();
             if (_lobby == null)
@@ -257,7 +249,7 @@ namespace Ricochet
                 return;
             }
 
-            // U.RICO-T53: the map room fades to black before it goes on (obj_maproom set its curtain to "fadein" and its
+            // U.RICO-T53/T101: Start fades to black before it goes on (obj_btn_start's curtain went to "fadein" and its
             // room_goto came once it was black); the lobby then comes up out of black.
             ScreenFade.Cover(() =>
             {

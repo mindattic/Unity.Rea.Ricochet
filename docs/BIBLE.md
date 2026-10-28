@@ -114,10 +114,10 @@ copy of any of these is a bug.
   turn it is with their score, weapon, item and combo (draw_weaponinfo/draw_iteminfo). The cards are MindAttic Components
   widgets; the per-colour health bars are MatchHud's own uGUI (UR-T8, IMGUI until UR-T38; `Core/Announcer.cs`, `MatchRules.Points` and `Match`'s scores
   tested by `dotnet test Core.slnx`, the wire and HUD by `Tests/PlayMode/AnnouncerTests.cs`).
-- ✅ Menu flow and rooms: the original's room graph (titlescreen → mainmenu → players → maproom → gamescreen → endgame,
+- ✅ Menu flow and rooms: the original's room graph (titlescreen → mainmenu → players → gamescreen → endgame,
   with settings, controls, howtoplay and credits off the main menu) as a title screen and MindAttic Components screens on the
-  kit's front end: Players (name and colour, AI count, skill, aim assists), the map room (four hand-laid maps on the same
-  border, seats and laid hazards, and the goal: one round or first to 500–10000 points, check_endgame/obj_btn_goal_*), the
+  kit's front end: Players (name and colour, AI count, skill, aim assists), (no map room, U.RICO-T101: the goal, one round or first to
+  500–10000 points, check_endgame/obj_btn_goal_*, is on the Start screen), the
   announcer under Settings, Controls, How to play (obj_slide's slides) and Credits; the match vote carries the map and goal,
   every peer builds the map's level from its index (synced on `Turns`), and once a round ends with the goal reached the match
   is over (`GameOver`, nobody fires) and every peer's endgame recap shows the champion and the leaderboard (obj_endgame) with
@@ -136,7 +136,7 @@ copy of any of these is a bug.
   round, passing the turn if it was theirs (UR-T14; `Core/VoteMenu.cs` tested by `dotnet test Core.slnx`, the wire by
   `Tests/PlayMode/KickVoteTests.cs`).
 - 🟡 End-to-end port check (UR-T15, 2026-10-23): the Windows player builds (`-buildWindows64Player`) and launches;
-  title → main menu → Players → map room → lobby → Start plays a match against an AI to its goal, the endgame recap
+  title → main menu → Players → Start → lobby → Start plays a match against an AI to its goal, the endgame recap
   shows the champion and leaderboard, Main menu leads back, and a rematch vote replays it; Settings, Controls, How to
   play and Credits open and close; a second build joins by IP into practice and plays the vote-started match. hit.gml's
   damage, check_endgame's goal and the score-ranked recap match the source. Gaps filed as fix tickets: the build's
@@ -684,7 +684,7 @@ in flight (spr_teleporter, spr_shrinkball) and the endgame's spr_flash are U.RIC
   unscaled time so a paused match does not hold it.
 - **Which changes fade**: every screen pushed or popped on the kit's main menu and in-game menu (the setup rooms, settings,
   controls, how to play, credits, kick), the front end moving between the menus, the lobby and the game, and the endgame
-  recap opening (obj_fade_endgame). The map room's Next covers to black before it hosts (obj_maproom's "fadein"), and the
+  recap opening (obj_fade_endgame). Players' Start covers to black before it hosts (obj_btn_start's "fadein"; U.RICO-T53, T101), and the
   lobby comes up out of black. The curtain takes clicks only while it is going to black, so nothing is pressed twice
   before the change; clearing, it never blocks the new screen (the original's curtain sat over a room whose buttons still
   worked).
@@ -819,3 +819,8 @@ wherever both exist. (2) Sid Steinburger has a drawn portrait, spr_profile_sid, 
 Deviation: random_sly_* and random_rye_* drew with irandom_range (repeats possible) where the other five used the
 no-repeat random_*_number scripts; every personality uses the no-repeat deck, as the rebuild already did. The eighth set
 in the folder, sfx_announce_*, is not imported: no script or object plays it.
+U.RICO-T101 (parity audit, port faithfully): Players' Start goes straight on to the game (obj_btn_start). The map room and the four
+invented hand-laid maps (Crossfire, Pillars, Funnel and the menu's map picker) are out of the flow: `Room.MapRoom` and `Menus.BuildMap`
+are gone, the Start button hosts through `ScreenFade.Cover` as the map room's Next did, the goal lives on the Start screen, and
+every round is the random level (randomize_level); `Game` resets a remembered profile map to the random index on load. maps.json
+keeps only the practice range, as a test fixture, and the random arena.
