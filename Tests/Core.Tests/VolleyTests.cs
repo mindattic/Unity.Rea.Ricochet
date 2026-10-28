@@ -45,12 +45,12 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void TheLaserFliesTheCannonsPath_ThreeTimesAsFast()
+        public void TheLaserFliesTheCannonsPath_AtAShellsSpeed()
         {
             Volley laser = Fire(Weapon.Laser, 0, Open());
             Volley cannon = Fire(Weapon.Cannon, 0, Open());
             Assert.That(laser.Main.Length, Is.EqualTo(cannon.Main.Length).Within(1e-9));
-            Assert.That(laser.Speed, Is.EqualTo(ShotRules.Default.Speed * 3));
+            Assert.That(laser.Speed, Is.EqualTo(ShotRules.Default.Speed));
         }
 
         [Test]
