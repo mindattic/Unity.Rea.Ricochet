@@ -6,8 +6,10 @@
 // Nothing in the script touches a hazard or the border, and nothing ever puts a moved shape back: the shapes stay where the
 // storm left them for the rest of the round (U.RICO-T134: Play says where each went, Level.Apply keeps it, the level view
 // walks the shapes along it). Design reference only (UR-LAW-2); this is its own model: the shapes are the level's walls
-// grouped by shared corners, each moving as one rigid piece (the original also turned them a degree a step; not modelled),
-// and every step is one GameMaker step.
+// grouped by shared corners, each moving as one rigid piece, and every step is one GameMaker step. The shapes also turn: every
+// step of the pull and the wait vortex_step.gml does image_angle -= 1 on each shape in reach (a degree clockwise, as Core's
+// angles run counterclockwise), 550 degrees in all, never while blowing; a turn about the shape's own origin, modelled as the
+// centre of its bounding box (StormShape.Pivot), which the pull carries along.
 using System;
 using System.Collections.Generic;
 
@@ -36,6 +38,12 @@ namespace Ricochet.Core.Arsenal
 
         /// <summary>The step the blow starts at: 500 steps of growth, then the 300-step wait.</summary>
         public const int FlingStart = 500 + 300;
+
+        /// <summary>Degrees a step a shape in reach turns while pulled (image_angle -= 1; negative is clockwise).</summary>
+        public const double SpinPerStep = -1;
+
+        /// <summary>The whole turn a pulled shape makes: <see cref="PullSteps"/> steps of <see cref="SpinPerStep"/>.</summary>
+        public const double SpinDegrees = SpinPerStep * PullSteps;
 
         /// <summary>
         /// The target a flung shape strikes first, or null when none does. <paramref name="radius"/> is the pull radius in
@@ -79,6 +87,8 @@ namespace Ricochet.Core.Arsenal
 
             // Pulling in: each shape in reach drifts to the vortex a step at a time (it keeps pulling while it stays in reach).
             var pulled = new Vec2[corners.Count];
+            var pivots = new Vec2[corners.Count];
+            var reached = new bool[corners.Count];
             for (int s = 0; s < corners.Count; s++)
             {
                 if (BoxDistance(corners[s], center) > radius)
@@ -87,9 +97,12 @@ namespace Ricochet.Core.Arsenal
                 }
 
                 Vec2 origin = BoxCenter(corners[s]);
+                pivots[s] = origin;
+                reached[s] = true;
                 double travel = Math.Min(Vec2.Distance(origin, center), PullSteps * pull);
                 pulled[s] = (center - origin).Normalized * travel;
                 Shift(corners[s], pulled[s]);
+                Turn(corners[s], origin + pulled[s], SpinDegrees);
             }
 
             // Blowing out: every shape still in reach leaves along the line from the vortex through itself.
@@ -138,9 +151,9 @@ namespace Ricochet.Core.Arsenal
             for (int s = 0; s < corners.Count; s++)
             {
                 bool flies = flying.Contains(s);
-                if (flies || pulled[s].Length > 0)
+                if (flies || reached[s])
                 {
-                    moved.Add(new StormShape(shapes[s], pulled[s], flies ? heading[s] * (fling * flung) : default));
+                    moved.Add(new StormShape(shapes[s], pulled[s], flies ? heading[s] * (fling * flung) : default, pivots[s]));
                 }
             }
 
@@ -206,6 +219,14 @@ namespace Ricochet.Core.Arsenal
             }
         }
 
+        private static void Turn(Vec2[] points, Vec2 about, double degrees)
+        {
+            for (int i = 0; i < points.Length; i++)
+            {
+                points[i] = StormShape.Turned(points[i], about, degrees);
+            }
+        }
+
         private static void Bounds(Vec2[] points, out double minX, out double minY, out double maxX, out double maxY)
         {
             minX = minY = double.MaxValue;
@@ -251,8 +272,9 @@ namespace Ricochet.Core.Arsenal
     /// <summary>One shape the storm moved: the walls it is made of, how far the pull took it and how far the fling then did.</summary>
     public sealed class StormShape
     {
-        public StormShape(IReadOnlyList<int> walls, Vec2 pull, Vec2 fling)
+        public StormShape(IReadOnlyList<int> walls, Vec2 pull, Vec2 fling, Vec2 pivot)
         {
+            Pivot = pivot;
             Walls = walls;
             Pull = pull;
             Fling = fling;
@@ -261,11 +283,44 @@ namespace Ricochet.Core.Arsenal
         /// <summary>Indices into the level's walls.</summary>
         public IReadOnlyList<int> Walls { get; }
 
+        /// <summary>The centre of the shape's bounding box before the storm: what it turns about (the pull carries it along).</summary>
+        public Vec2 Pivot { get; }
+
         /// <summary>The way it was drawn in (arena units).</summary>
         public Vec2 Pull { get; }
 
         /// <summary>The way it was then flung out, as far as it went before the storm ended.</summary>
         public Vec2 Fling { get; }
+
+        /// <summary><paramref name="point"/> turned <paramref name="degrees"/> (counterclockwise positive) about <paramref name="about"/>.</summary>
+        public static Vec2 Turned(Vec2 point, Vec2 about, double degrees)
+        {
+            double radians = degrees * Math.PI / 180.0;
+            double cos = Math.Cos(radians), sin = Math.Sin(radians);
+            Vec2 d = point - about;
+            return new Vec2(about.X + d.X * cos - d.Y * sin, about.Y + d.X * sin + d.Y * cos);
+        }
+
+        /// <summary>How far the shape has turned <paramref name="steps"/> steps after the vortex went off: a degree clockwise a step of the pull and the wait, still after.</summary>
+        public static double AngleAt(double steps)
+        {
+            return VortexStorm.SpinPerStep * Math.Max(0, Math.Min(steps - VortexStorm.PullStart, VortexStorm.PullSteps));
+        }
+
+        /// <summary>
+        /// Where a point of the shape (as the level laid it) is <paramref name="steps"/> steps after the vortex went off: turned
+        /// about the pivot as the pull carries it, then offset as <see cref="OffsetAt"/> says.
+        /// </summary>
+        public Vec2 PoseAt(Vec2 point, double steps, int flingSteps)
+        {
+            return Turned(point, Pivot, AngleAt(steps)) + OffsetAt(steps, flingSteps);
+        }
+
+        /// <summary>Where a point of the shape ends up once the storm is over (what <see cref="Level.Apply"/> keeps).</summary>
+        public Vec2 Final(Vec2 point)
+        {
+            return Turned(point, Pivot, VortexStorm.SpinDegrees) + Pull + Fling;
+        }
 
         /// <summary>
         /// Where the shape is, as an offset from where it started, <paramref name="steps"/> steps after the vortex went off
@@ -322,7 +377,7 @@ namespace Ricochet.Core.Arsenal
             for (int i = 0; i < Shapes.Count; i++)
             {
                 StormShape a = Shapes[i], b = other.Shapes[i];
-                if (a.Walls.Count != b.Walls.Count || Vec2.Distance(a.Pull, b.Pull) > 1e-9 || Vec2.Distance(a.Fling, b.Fling) > 1e-9)
+                if (a.Walls.Count != b.Walls.Count || Vec2.Distance(a.Pull, b.Pull) > 1e-9 || Vec2.Distance(a.Fling, b.Fling) > 1e-9 || Vec2.Distance(a.Pivot, b.Pivot) > 1e-9)
                 {
                     return false;
                 }

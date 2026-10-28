@@ -37,6 +37,11 @@ namespace Ricochet
             public int FirstWall = -1;
             public Vec2 Kept;
             public Vec2 Walking;
+            public Vec2 FirstDir; // the laid first wall's direction (B - A), to tell how far a storm has turned the piece
+            public double KeptAngle; // degrees the level has turned the piece about First, as the storm left it
+            public float SpriteHomeAngle;
+            public Vec2 Pivot; // what the storm turns the piece about while it walks
+            public double WalkingAngle; // degrees the storm has turned it so far
         }
 
         private readonly List<Piece> _pieces = new List<Piece>();
@@ -182,6 +187,7 @@ namespace Ricochet
                     Piece piece = DrawShape(i, layout.Shapes[i]);
                     piece.FirstWall = first;
                     piece.First = layout.Shapes[i].Corners[0];
+                    piece.FirstDir = layout.Shapes[i].Corners[1 % layout.Shapes[i].Corners.Length] - piece.First;
                     for (int w = 0; w < layout.Shapes[i].Corners.Length; w++)
                     {
                         _pieceOfWall[first + w] = piece;
@@ -199,7 +205,7 @@ namespace Ricochet
                     Wall wall = level.Walls[i];
                     LineRenderer line = Lines.Create(transform, "Wall " + i, WallColor, 0.15f, -4);
                     Lines.Set(line, Arena.ToUnity(wall.A), Arena.ToUnity(wall.B));
-                    var piece = new Piece { Line = line, LineHome = new[] { (Vector3)Arena.ToUnity(wall.A), (Vector3)Arena.ToUnity(wall.B) }, FirstWall = i, First = wall.A };
+                    var piece = new Piece { Line = line, LineHome = new[] { (Vector3)Arena.ToUnity(wall.A), (Vector3)Arena.ToUnity(wall.B) }, FirstWall = i, First = wall.A, FirstDir = wall.B - wall.A };
                     _pieces.Add(piece);
                     _pieceOfWall[i] = piece; // drawn where the level has the wall now; a storm later moves it from there
                 }
@@ -223,9 +229,13 @@ namespace Ricochet
             {
                 if (piece.FirstWall >= 0 && level != null && piece.FirstWall < level.Walls.Count)
                 {
-                    piece.Kept = level.Walls[piece.FirstWall].A - piece.First;
+                    Wall wall = level.Walls[piece.FirstWall];
+                    piece.Kept = wall.A - piece.First;
+                    Vec2 dir = wall.B - wall.A;
+                    piece.KeptAngle = dir.Length > 1e-9 && piece.FirstDir.Length > 1e-9 ? Angles.Normalize(dir.Angle - piece.FirstDir.Angle) : 0;
                 }
                 piece.Walking = default;
+                piece.WalkingAngle = 0;
 
                 Place(piece);
             }
@@ -236,16 +246,20 @@ namespace Ricochet
             foreach (Piece piece in _pieces)
             {
                 piece.Walking = default;
+                piece.WalkingAngle = 0;
             }
 
             foreach (StormShape shape in storm.Shapes)
             {
                 Vec2 offset = shape.OffsetAt(steps, storm.FlingSteps);
+                double angle = StormShape.AngleAt(steps);
                 foreach (int wall in shape.Walls)
                 {
                     if (_pieceOfWall.TryGetValue(wall, out Piece piece))
                     {
                         piece.Walking = offset;
+                        piece.WalkingAngle = angle;
+                        piece.Pivot = shape.Pivot;
                     }
                 }
             }
@@ -256,19 +270,28 @@ namespace Ricochet
             }
         }
 
+        // A laid point as the piece shows it: turned about its first corner and moved to where the level kept it, then the storm's
+        // turn about the shape's pivot and its offset on top.
+        private static Vector3 Posed(Piece piece, Vector3 home)
+        {
+            Vec2 kept = StormShape.Turned(new Vec2(home.x, home.y), piece.First, piece.KeptAngle) + piece.Kept;
+            Vec2 walked = StormShape.Turned(kept, piece.Pivot, piece.WalkingAngle) + piece.Walking;
+            return new Vector3((float)walked.X, (float)walked.Y, home.z);
+        }
+
         private static void Place(Piece piece)
         {
-            Vector3 by = Arena.ToUnity(piece.Kept + piece.Walking);
             if (piece.Sprite != null)
             {
-                piece.Sprite.position = piece.SpriteHome + by;
+                piece.Sprite.position = Posed(piece, piece.SpriteHome);
+                piece.Sprite.rotation = Quaternion.Euler(0f, 0f, piece.SpriteHomeAngle + (float)(piece.KeptAngle + piece.WalkingAngle));
             }
 
             if (piece.Line != null && piece.LineHome != null)
             {
                 for (int i = 0; i < piece.LineHome.Length; i++)
                 {
-                    piece.Line.SetPosition(i, piece.LineHome[i] + by);
+                    piece.Line.SetPosition(i, Posed(piece, piece.LineHome[i]));
                 }
             }
         }
@@ -301,6 +324,7 @@ namespace Ricochet
             ShapesFromArt++;
             piece.Sprite = go.transform;
             piece.SpriteHome = go.transform.position;
+            piece.SpriteHomeAngle = (float)shape.Degrees;
             return piece;
         }
     }

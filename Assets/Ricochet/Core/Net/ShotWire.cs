@@ -15,7 +15,7 @@ namespace Ricochet.Core.Net
     public static class ShotWire
     {
         /// <summary>The format's version, the first number; Decode refuses any other.</summary>
-        public const int Version = 2;
+        public const int Version = 3;
 
         /// <summary>The most projectiles, points per path, contacts per path and strikes Decode accepts.</summary>
         public const int MaxPaths = 64;
@@ -82,6 +82,8 @@ namespace Ricochet.Core.Net
                 n.Add(shape.Pull.Y);
                 n.Add(shape.Fling.X);
                 n.Add(shape.Fling.Y);
+                n.Add(shape.Pivot.X);
+                n.Add(shape.Pivot.Y);
             }
 
             numbers = n.ToArray();
@@ -182,7 +184,7 @@ namespace Ricochet.Core.Net
                 }
 
                 int wallCount = reader.Int();
-                if (wallCount < 1 || wallCount > MaxStormWalls - totalWalls || !reader.Has(wallCount + 4))
+                if (wallCount < 1 || wallCount > MaxStormWalls - totalWalls || !reader.Has(wallCount + 6))
                 {
                     return null;
                 }
@@ -201,7 +203,8 @@ namespace Ricochet.Core.Net
 
                 var pull = new Vec2(reader.Next(), reader.Next());
                 var fling = new Vec2(reader.Next(), reader.Next());
-                shapes.Add(new StormShape(walls, pull, fling));
+                var pivot = new Vec2(reader.Next(), reader.Next());
+                shapes.Add(new StormShape(walls, pull, fling, pivot));
             }
 
             if (reader.Has(1))

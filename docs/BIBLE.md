@@ -107,10 +107,12 @@ copy of any of these is a bug.
   (2.2917 units) in at 1 px a step and flings them out at 10 px a step, and a tank is hurt (once) only when a flung shape
   strikes it (`Core/Arsenal/VortexStorm.cs`; shapes are the walls grouped by shared corners; the shapes stay where the storm leaves them, as in
   the original, which never puts a moved shape back: U.RICO-T134 has `VortexStorm.Play` give every moved shape's pull and fling
-  (`Volley.Storm`, carried by `ShotWire` version 2), the server's level keep them when the shot lands (`Level.Apply`), and each
+  (`Volley.Storm`, carried by `ShotWire`, version 3 since U.RICO-T141), the server's level keep them when the shot lands (`Level.Apply`), and each
   peer's `LevelView` walk the shapes along it in step with the implosion (`WalkStorm`, 250 steps in the pull starts, 800 the
-  fling) and keep them in its own level when it ends (`SettleStorm`); not modelled: the shapes' one degree a step of spin
-  while pulled, and a client that joins after a storm lays the round's shapes unmoved until the next round; the flight no longer stops on a tank it meets: obj_vortex has no collision event with a tank, so it flies through to its landing point, U.RICO-T135) (UR-T6;
+  fling) and keep them in its own level when it ends (`SettleStorm`); U.RICO-T141 turns them as vortex_step.gml did
+  (`image_angle -= 1` each step of the pull and the wait, 550 degrees clockwise in all, none while blowing, about the shape's box
+  centre, `StormShape.Pivot`, which the pull carries along; `Level.Apply` leaves the walls at the turned pose and `ShotWire` version 3
+  carries the pivot); not modelled: a client that joins after a storm lays the round's shapes unmoved until the next round; the flight no longer stops on a tank it meets: obj_vortex has no collision event with a tank, so it flies through to its landing point, U.RICO-T135) (UR-T6;
   `Core/Hazards.cs` with `Level`'s barriers and breaches tested by `dotnet test Core.slnx`, the wire by
   `Tests/PlayMode/HazardTests.cs`).
 - ✅ Announcer and HUD: the start-match vote carries one of the original's seven on-air personalities and how often they
@@ -523,7 +525,7 @@ way, smaller each step, for the 100 steps it took to go: a shot is solved whole 
 (1) A flight is a path the authority solves when the item is used, so it can cross the wire whole: an item's path
 is solved for 60 seconds of flight (`ItemLooks.RedirectorMaxSeconds`, the longest turn), and a redirector that flies all of it
 unstopped is gone with nothing placed, as the original's was when its turn ended. (2) The flashes are drawn over the rebuild's
-endgame recap (UR-T9) rather than in the original's endgame room.
+endgame room (the recap, UR-T9, drawn as the original's podium since U.RICO-T56).
 
 Not carried: shoot_*'s ef_smoke at the muzzle (the weapons' launch puffs are not carried either), obj_shrinkray_child (never
 created), and the shrink ray's own sprite (never drawn).
@@ -724,6 +726,45 @@ picture is drawn at alpha 0.35 under the roll so its painted names do not fight 
 freesound.org contributor, which the roll points to rather than repeats. (3) fnt_credits was never drawn by the original, so
 it has no size to match: the lines draw it at twice its Verdana 10 face to read at the room's size.
 
+## Endgame podium (U.RICO-T56)
+
+Source: `obj_endgame`, `obj_pedastal`, `obj_pedastool`, `obj_winner_top`, `obj_winner_bottom`, `obj_flashemitter`,
+`obj_flash`, `obj_btn_back_endgame`, `obj_fade_endgame`, `obj_win`, `check_endgame.gml`, `hit.gml`, `music_victory`,
+`sfx_applause`, `sfx_woot` and the `endgame` room.
+
+- **The original**: check_endgame (called when obj_win's "Wins!" card has faded) goes to the endgame room once a seat's score
+  reaches the goal. The room is 1920 x 1080 at 60 steps a second on bg_stadium, tiled. obj_endgame's create stops the music
+  and plays music_victory once (`audio_play_music(music_victory, 0)`), centres obj_pedastal (spr_pedastal, 278 x 247, origin
+  139, 123) at (960, 864), sorts every seat by score (highest first) and stands the first three on it as obj_winner_bottom's
+  hull (spr_tank_bottom, depth 1) under obj_winner_top's turret (spr_tank_top, depth 0), both blended in the player's colour:
+  first at (960, 786), second at (871, 831) to the left, third at (1049, 880) to the right, each turret at image_angle 270
+  (facing down). Its step spins the champion's turret alone: spinAngle starts at 90 and loses a degree a step. Its draw puts
+  "Wins!" (fnt_impact, white, outlined 2 px) at the room's middle, the champion's name (fnt_mono, their colour, outlined 2 px
+  black) a border (32 px) above it, and the leaderboard at the top: "Rank" / "Player" / "Score" in fnt_score at y 100 (left
+  edge x 760, centre 960, right edge 1160) and a row a seat 30 px apart from y 130, "1st" ... "8th", the name and the score
+  (a negative score shown as 0), in each seat's colour. obj_flashemitter's flashes go off everywhere but the pedestal
+  (U.RICO-T79's), obj_fade_endgame brings it out of black (U.RICO-T53's), and obj_btn_back_endgame at (128, 1024), "Main
+  Menu" with "Return to Title Screen" on hover, stops the music and goes to the main menu. obj_pedastool shares
+  spr_pedastal but is placed nowhere; obj_win is the gamescreen's round card, not the podium's.
+- **The rebuild** (Core's `Podium`, `Runtime/EndgameRecap`, `GameAudio`): on every peer, once the synced turn state says
+  `GameOver`, the endgame room comes up on its own canvas over the game, the 1920 x 1080 room scaled whole into the screen
+  on bg_stadium tiled across it (the room's silver without the art), every place, size, origin, angle, font and colour as
+  above (`Podium.Spot`, `Podium.Angle`, `Podium.RowY`; the ranking is the existing `Recap.Rank`, at most eight seats,
+  U.RICO-T100). The champion's turret turns a degree a step on the room's 60 steps. `GameAudio` stops the turn's track and
+  plays music_victory once through as the game ends, and a rematch picks a new track. The Main Menu button stands at
+  (128, 1024) and leaves the game; the vote for a rematch stands at (1792, 1024) (the rooms' way on), Close at (1792, 928).
+  The flashes and the fade in are the existing `EndgameFlashes` and `ScreenFade`.
+- `Tests/Core.Tests/PodiumTests` (the places, the spin, the rows, the track and the cheer); PlayMode `MenuFlowTests` (the
+  recap's headline and lines on a client).
+
+Fixed defects: (1) sfx_woot is in the original's folder and played by nothing; the podium is where it belongs, so it plays
+with sfx_applause (the round's last knock-out's applause in hit.gml, heard again by the crowd at the podium) as the room
+comes up. Deviations: (1) the vote for a rematch and Close are the rebuild's (the original had only Main Menu); Esc does not
+go to the settings room and F1 does not toggle full screen (the window setting is the player's). (2) No confetti: the
+original's endgame has none (its only celebration is obj_flashemitter's camera flashes), so none is invented. (3) The
+champion's turret is drawn at 270 until the first step and at 89 from it, as the original's did; the jump is under the fade's
+black.
+
 ## Room fades (U.RICO-T53)
 
 - **One curtain** (Core's `RoomFade`, `Runtime/ScreenFade`): the original gave every room its own copy of one object
@@ -764,7 +805,7 @@ Source: `sound/music_*.sound.gmx` and `sound/audio/music_*.mp3`, `play_random_mu
   nothing is saved. Tests read `CurrentTrack`, `MusicRequests` and the source's volume.
 - Deviations: the original's `audio_play_music` calls are commented out in play_random_music.gml (so the shipped game
   played no music; the port plays it, as the ticket asks); its track restarts on every turn (a new pick, as the script's
-  intent), looping; music_victory is imported for the podium (U.RICO-T56) and not yet played; music_inaheartbeat and
+  intent), looping; music_victory plays once through as a game ends (U.RICO-T56, Endgame podium); music_inaheartbeat and
   music_windsong are imported but, as in the original, never picked. A turn is noticed by the seat or round changing, so a
   turn passing back to the same seat (only one seat left taking turns) keeps its track; the original would have picked anew.
   The track stops when the match ends.
@@ -832,9 +873,10 @@ between the two that exist.
 Not played (no moment of the rebuild makes them yet): sfx_hologram_pass (a shot passing through its owner's own shield wall,
 which leaves no contact on the rebuild's path), sfx_hacktivated (obj_game's debug key), sfx_blip (obj_selector), the
 splash's sfx_tech, sfx_startup, sfx_whoosh, sfx_static1-6 and sfx_type_quiet (U.RICO-T57), sfx_type for the name boxes
-(the kit's lobby), and the endgame's (U.RICO-T56). sfx_bounce, sfx_bounce_shotgun (sfx_bounce_shotgun1's bytes),
-sfx_dummy, sfx_fire, sfx_shoot_vortex, sfx_static, sfx_fuse4-6 and sfx_woot are in the original's folder but played
-nowhere; each is imported and has its cue.
+(the kit's lobby). sfx_bounce, sfx_bounce_shotgun (sfx_bounce_shotgun1's bytes),
+sfx_dummy, sfx_fire, sfx_shoot_vortex, sfx_static and sfx_fuse4-6 are in the original's folder but played
+nowhere; each is imported and has its cue. sfx_woot, also played nowhere in the original, cheers the endgame podium with
+sfx_applause (U.RICO-T56, Endgame podium).
 
 ## Announcer voices and portraits (U.RICO-T51)
 

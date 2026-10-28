@@ -273,9 +273,21 @@ namespace Ricochet.Core.Tests
             Vec2 end = storm.Shapes[0].OffsetAt(storm.EndStep, storm.FlingSteps);
             Assert.That(Vec2.Distance(end, storm.Shapes[0].Pull + storm.Shapes[0].Fling), Is.EqualTo(0).Within(1e-9));
 
+            // vortex_step.gml turns every shape in reach a degree a step (image_angle -= 1) while it pulls and waits, never while it blows.
+            StormShape shape = storm.Shapes[0];
+            Assert.That(StormShape.AngleAt(VortexStorm.PullStart), Is.EqualTo(0));
+            Assert.That(StormShape.AngleAt(VortexStorm.PullStart + 10), Is.EqualTo(-10));
+            Assert.That(StormShape.AngleAt(storm.EndStep), Is.EqualTo(-VortexStorm.PullSteps), "no more turning once the blow starts");
+            Assert.That(StormShape.AngleAt(VortexStorm.FlingStart + 50), Is.EqualTo(-VortexStorm.PullSteps));
+            Assert.That(shape.Pivot.X, Is.EqualTo(1.5).Within(1e-9), "it turns about the middle of its box");
+
             Vec2 before = level.Walls[0].A;
+            Vec2 expected = shape.PoseAt(before, storm.EndStep, storm.FlingSteps);
+            Assert.That(Vec2.Distance(expected, shape.Final(before)), Is.EqualTo(0).Within(1e-9));
+            Assert.That(Vec2.Distance(expected, before + end), Is.GreaterThan(0.1), "turned, not just slid");
             level.Apply(storm);
-            Assert.That(Vec2.Distance(level.Walls[0].A, before + end), Is.EqualTo(0).Within(1e-9));
+            Assert.That(Vec2.Distance(level.Walls[0].A, expected), Is.EqualTo(0).Within(1e-9));
+            Assert.That(Vec2.Distance(level.Walls[0].A, level.Walls[0].B), Is.EqualTo(Vec2.Distance(Square(1, 1).First().A, Square(1, 1).First().B)).Within(1e-9), "rigid");
             Assert.That(level.Walls[4].A.X, Is.EqualTo(6).Within(1e-9), "the shape out of reach stayed");
 
             var fresh = new Level(-10, -5, 10, 5, Square(1, 1));
