@@ -43,16 +43,16 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void AShieldWallStandsAcrossTheAim_AUnitAhead_AndOnlyItsOwnersShotsPassThrough()
+        public void AShieldWallStandsAcrossTheAim_60PxAhead_AndOnlyItsOwnersShotsPassThrough()
         {
             HazardField field = Field();
             Hazard wall = field.AddShieldWall(2, Vec2.Zero, 0);
 
             Assert.That(wall.Kind, Is.EqualTo(HazardKind.ShieldWall));
-            Assert.That(wall.Center.X, Is.EqualTo(1).Within(1e-9));
+            Assert.That(wall.Center.X, Is.EqualTo(0.6875).Within(1e-9), "60 px ahead");
             Assert.That(wall.Center.Y, Is.EqualTo(0).Within(1e-9));
             Assert.That(Vec2.Distance(wall.A, wall.B), Is.EqualTo(HazardRules.Default.ShieldWallLength).Within(1e-9));
-            Assert.That(wall.A.X, Is.EqualTo(1).Within(1e-9), "across the aim");
+            Assert.That(wall.A.X, Is.EqualTo(0.6875).Within(1e-9), "across the aim");
             Assert.That(wall.LifeLeft, Is.InRange(20, 120));
 
             ShotPath own = BounceSolver.Solve(new Vec2(-3, 0), 0, field.LevelFor(2), new[] { T("ann", 6, 0) });

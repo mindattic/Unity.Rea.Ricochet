@@ -64,7 +64,7 @@ namespace Ricochet.Core.Tests
 
             var hazards = HazardRules.Default;
             Assert.That(new double[] { hazards.ShieldWallOffset, hazards.ShieldWallLength, hazards.ShieldWallMinLife, hazards.ShieldWallMaxLife, hazards.RedirectorLength, hazards.FoliageCount, hazards.FoliageRadius, hazards.FoliageClearance },
-                Is.EqualTo(new[] { 1.0, 2.2, 20, 120, 1.0, 6, 0.25, 1.2 }));
+                Is.EqualTo(new[] { 0.6875, 128 * 22.0 / 1920.0, 20, 120, 1.0, 6, 0.25, 1.2 }));
             Assert.That(hazards.LasersAlternate, Is.True);
             Assert.That(hazards.Arcs.Select(a => (a[0].X, a[0].Y, a[1].X, a[1].Y)), Is.EqualTo(new[] { (-6.5, 3.2, -6.5, 5.6) }));
             Assert.That(hazards.Gates.Select(a => (a[0].X, a[0].Y, a[1].X, a[1].Y)), Is.EqualTo(new[] { (4.6, 4.6, 8.2, 4.6) }));

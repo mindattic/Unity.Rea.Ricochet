@@ -1,7 +1,7 @@
 // Level hazards (UR-T6): what a level holds besides its border, mirror walls and rail redirectors, and how each one
 // comes and goes. Design reference only (UR-LAW-2); the 2013 original's pieces, and what became of each:
-//   Shield wall   use_item.gml + spawn_shieldwall.gml: a hologram wall 60 px (about a unit) in front of the player, across
-//                 their aim, 128 px (about 2.2 units) long. The owner's own shots pass through it; anyone else's that
+//   Shield wall   use_item.gml + spawn_shieldwall.gml: a hologram wall 60 px (0.6875 units) in front of the player, across
+//                 their aim, 128 px (about 1.47 units) long. The owner's own shots pass through it; anyone else's that
 //                 touches it shatters it and is stopped there (obj_shieldwall's collision events: the bullet destroyed, the
 //                 turn over). Left alone it decays after a random 20-120 s (decayDelay). destroy_shieldwall.gml was an empty
 //                 stub; its job is Struck (a shot) and Implode (a vortex) here.

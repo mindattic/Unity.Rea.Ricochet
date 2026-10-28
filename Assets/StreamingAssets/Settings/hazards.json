@@ -1,7 +1,7 @@
 {
   "_source": "HazardRules: shield walls, redirectors, foliage and the arcs and laser gates every round starts with (see Hazards.cs).",
-  "shieldWallOffset": 1.0,
-  "shieldWallLength": 2.2,
+  "shieldWallOffset": 0.6875,
+  "shieldWallLength": 1.4666666666666666,
   "shieldWallMinLife": 20,
   "shieldWallMaxLife": 120,
   "redirectorLength": 1.0,
