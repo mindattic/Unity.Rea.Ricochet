@@ -155,7 +155,7 @@ copy of any of these is a bug.
   title → main menu → Players → Start → lobby → Start plays a match against an AI to its goal, the endgame recap
   shows the champion and leaderboard, Main menu leads back, and a rematch vote replays it; Settings, Controls, How to
   play and Credits open and close; a second build joins by IP into practice and plays the vote-started match. hit.gml's
-  damage, check_endgame's goal and the score-ranked recap match the source. Gaps filed as fix tickets: the build's
+  damage (default weapon_damage 100, chosen from 5/10/25/33/50/100; U.RICO-T92), check_endgame's goal and the score-ranked recap match the source. Gaps filed as fix tickets: the build's
   `UR-T3` branding (UR-T16), the HUD at narrow widths and over menus (UR-T17, UR-T18, UR-T19), the vote overlay never
   showing on a client (UR-T20), identical default names and colours (UR-T21), join by code without Relay (UR-T22),
   randomised levels and spots (UR-T23), driving and ending a turn (UR-T24), the settings room's match rules (UR-T25),

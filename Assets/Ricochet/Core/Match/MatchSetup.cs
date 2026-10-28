@@ -64,7 +64,7 @@ namespace Ricochet.Core.Match
         public const int MaxBouncesLimit = 20;
 
         /// <summary>A hit's base damage unless set (the stock match.json's weaponDamage).</summary>
-        public const int DefaultWeaponDamage = 10;
+        public const int DefaultWeaponDamage = 100;
 
         /// <summary>The most base damage the settings screen sets.</summary>
         public const int MaxWeaponDamage = 100;

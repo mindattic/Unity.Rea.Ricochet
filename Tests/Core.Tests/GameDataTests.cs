@@ -50,7 +50,7 @@ namespace Ricochet.Core.Tests
             Assert.That(match.MaxHealth, Is.EqualTo(100));
             Assert.That(match.TurnSeconds, Is.EqualTo(20));
             Assert.That(match.CountdownBeeps, Is.EqualTo(4));
-            Assert.That(match.WeaponDamage, Is.EqualTo(10));
+            Assert.That(match.WeaponDamage, Is.EqualTo(100));
             Assert.That(match.EndTurnSeconds, Is.EqualTo(50.0 / 60));
             Assert.That(match.RoundOverSeconds, Is.EqualTo(4));
             Assert.That(match.PointsHit, Is.EqualTo(100));
@@ -65,6 +65,7 @@ namespace Ricochet.Core.Tests
             var hazards = HazardRules.Default;
             Assert.That(new double[] { hazards.ShieldWallOffset, hazards.ShieldWallLength, hazards.ShieldWallMinLife, hazards.ShieldWallMaxLife, hazards.RedirectorLength, hazards.FoliageCount, hazards.FoliageRadius, hazards.FoliageClearance },
                 Is.EqualTo(new[] { 0.6875, 128 * 22.0 / 1920.0, 20, 120, 1.0, 6, 0.25, 1.2 }));
+            Assert.That(hazards.LayHazards, Is.False, "U.RICO-T91: the original laid no arcs, laser gates or foliage");
             Assert.That(hazards.LasersAlternate, Is.True);
             Assert.That(hazards.Arcs.Select(a => (a[0].X, a[0].Y, a[1].X, a[1].Y)), Is.EqualTo(new[] { (-6.5, 3.2, -6.5, 5.6) }));
             Assert.That(hazards.Gates.Select(a => (a[0].X, a[0].Y, a[1].X, a[1].Y)), Is.EqualTo(new[] { (4.6, 4.6, 8.2, 4.6) }));

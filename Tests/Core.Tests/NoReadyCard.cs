@@ -11,6 +11,11 @@ namespace Ricochet.Core.Tests
         public static MatchRules Rules(MatchRules rules = null)
         {
             rules = rules ?? new MatchRules();
+            if (rules.WeaponDamage == MatchSetup.DefaultWeaponDamage)
+            {
+                rules.WeaponDamage = 10; // the stock hit is a knock-out (100); these fixtures play multi-hit fights, so they keep a 10-point cannon unless a test sets its own
+            }
+
             rules.ReadyHoldSeconds = 0;
             rules.ReadyFadeSeconds = 0;
             return rules;

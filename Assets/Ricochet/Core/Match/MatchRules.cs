@@ -1,7 +1,7 @@
 // The numbers a match plays by. Defaults follow the 2013 original (globals.gml, hit.gml, turn_countdown.gml, design
 // reference only, UR-LAW-2): 100 health a player (maxhp), a 20-second turn (turnTime; draw_turntime showed "20.00" before
-// the first turn), a countdown beep on each of the last four seconds, and a cannon that does 10 damage (weapon_damage)
-// plus a fifth of that per bounce to an opponent, or the full 10 per bounce to yourself, with a dice roll of a tenth
+// the first turn), a countdown beep on each of the last four seconds, and a cannon that does 100 damage (weapon_damage, config.ini default; one hit is a knock-out)
+// plus a fifth of that per bounce to an opponent, or the full 100 per bounce to yourself, with a dice roll of a tenth
 // either way on an opponent hit. Scoring (UR-T8) follows hit.gml and draw_potential.gml: a hit on an opponent pays the
 // shooter 100 points (points_kill), 25 a bounce (points_bounce) and 5 for every tenth of a second in the air
 // (points_flighttime on obj_bullet's alarm); scores carry over from round to round for the whole match.

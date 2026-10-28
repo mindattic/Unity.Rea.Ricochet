@@ -253,7 +253,7 @@ namespace Ricochet.Core.Tests
         public void TheDefaultRulesAreTheOriginals_AndAnOlderSaveKeepsThem()
         {
             var setup = new MatchSetup();
-            Assert.That((setup.TurnSeconds, setup.MaxBounces, setup.WeaponDamage, setup.PauseRedirector), Is.EqualTo((20, 5, 10, true)));
+            Assert.That((setup.TurnSeconds, setup.MaxBounces, setup.WeaponDamage, setup.PauseRedirector), Is.EqualTo((20, 5, 100, true)));
             Assert.That(setup.WeaponCount(Weapon.Laser), Is.EqualTo(3));
             Assert.That(setup.WeaponCount(Weapon.Cannon), Is.EqualTo(3), "countcannon = 3");
             Assert.That(setup.ItemCount(Item.Redirector), Is.EqualTo(3));

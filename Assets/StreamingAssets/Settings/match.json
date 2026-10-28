@@ -3,7 +3,7 @@
   "maxHealth": 100,
   "turnSeconds": 20,
   "countdownBeeps": 4,
-  "weaponDamage": 10,
+  "weaponDamage": 100,
   "endTurnSeconds": 0.8333333333333334,
   "roundOverSeconds": 4,
   "readyHoldSeconds": 1.3333333333333333,
