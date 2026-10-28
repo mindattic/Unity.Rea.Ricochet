@@ -267,7 +267,8 @@ namespace Ricochet.Core.Arsenal
 
                 case Weapon.Vortex:
                 {
-                    ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot);
+                    // obj_vortex has no collision with a tank: it flies through to where it lands (U.RICO-T135).
+                    ShotPath path = BounceSolver.Solve(origin, heading, level, null, shot);
                     return Implode(path, shot.Speed, targets, arsenal, level);
                 }
 
