@@ -1041,7 +1041,7 @@ namespace Ricochet.Core.Commands
             }
 
             double at = Quantize(Math.Max(0.001, flight.Flights[0].Travelled));
-            Volley cut = Arsenal.Detonate(flight.Volley, at, Targets(), Arms, LevelFor(state.Seat));
+            Volley cut = Arsenal.Detonate(flight.Volley, at, Targets(), LevelFor(state.Seat), Arms);
             if (ReferenceEquals(cut, flight.Volley))
             {
                 return;

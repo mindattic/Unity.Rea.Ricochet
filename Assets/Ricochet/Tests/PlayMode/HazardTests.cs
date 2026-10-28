@@ -141,7 +141,7 @@ namespace Ricochet.Tests
         }
 
         [UnityTest]
-        public IEnumerator AVortexSetOffInMidFlightGoesOffThere_SwallowsAWall_AndBreachesTheBorderAShotThenFliesOutThrough()
+        public IEnumerator AVortexSetOffInMidFlightGoesOffThere_TouchesNoHazardAndTearsNoBorder()
         {
             Player host = null, ann = null;
             yield return Begin(false, _ => { }, (h, c) => { host = h; ann = c; });
@@ -176,20 +176,9 @@ namespace Ricochet.Tests
             yield return WaitUntil(() => hostOnClient.LastVolley.Main.End == ShotEndKind.Detonated, "her client never cut its vortex short", 5f);
             Assert.That(hostOnClient.LastVolley.BlastCenter.X, Is.EqualTo(center.X).Within(1e-3));
 
-            // The wall in reach is swallowed and the bottom border breached on every peer.
-            Assert.That(Arena.Current.HazardsOnField.Any(h => h.Kind == HazardKind.ShieldWall), Is.False, "the wall was not swallowed");
-            Hazard breach = Arena.Current.HazardsOnField.Single(h => h.Kind == HazardKind.Breach);
-            Assert.That(breach.A.Y, Is.EqualTo(Arena.Level.MinY).Within(1e-6));
-            yield return WaitUntil(() => LevelHazard.In(Client).Count() == 1 && LevelHazard.In(Client).Single().Ready && LevelHazard.In(Client).Single().HazardKind == HazardKind.Breach,
-                () => "her client sees " + string.Join(", ", LevelHazard.In(Client).Select(h => h.HazardKind)), 5f);
-
-            // Ann, standing over the breach, fires straight down: her shot flies out of the level.
-            Assert.That(ann.Position.x, Is.InRange((float)System.Math.Min(breach.A.X, breach.B.X), (float)System.Math.Max(breach.A.X, breach.B.X)));
-            annOnHerClient.Fire(270f);
-            yield return WaitUntil(() => ann.LastVolley != null, "the server never took her shot");
-            Assert.That(ann.LastVolley.Main.End, Is.EqualTo(ShotEndKind.Escaped));
-            yield return WaitUntil(() => annOnHerClient.LastVolley != null, "her client never drew her shot");
-            Assert.That(annOnHerClient.LastVolley.Main.End, Is.EqualTo(ShotEndKind.Escaped), "her client saw it fly out too");
+            // vortex_step.gml moves shapes only (U.RICO-T96): the wall in reach still stands and the border is whole.
+            Assert.That(Arena.Current.HazardsOnField.Any(h => h.Kind == HazardKind.ShieldWall), Is.True, "the wall was swallowed");
+            Assert.That(Arena.Current.HazardsOnField.Any(h => h.Kind == HazardKind.Breach), Is.False, "the border was breached");
         }
 
         [UnityTest]

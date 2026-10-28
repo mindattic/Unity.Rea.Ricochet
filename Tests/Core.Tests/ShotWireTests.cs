@@ -96,7 +96,7 @@ namespace Ricochet.Core.Tests
         {
             var targets = new[] { T("seat:0", 0, 0), T("seat:2", 3, 0.5) };
             Volley vortex = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 2, 0, new Level(-10, -5, 10, 5), targets);
-            Volley cut = Arsenal.Detonate(vortex, 3, targets);
+            Volley cut = Arsenal.Detonate(vortex, 3, targets, new Level(-10, -5, 10, 5));
             Assume.That(cut.Main.End, Is.EqualTo(ShotEndKind.Detonated));
             AssertSame(cut, RoundTrip(cut));
         }

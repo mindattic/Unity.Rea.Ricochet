@@ -286,7 +286,7 @@ namespace Ricochet.Core.Arsenal
         /// cut short there, imploding at that point (and striking whoever is within its pull then); the volley unchanged
         /// when it is not a vortex, was stopped by a barrier, or the distance is not short of where it lands anyway.
         /// </summary>
-        public static Volley Detonate(Volley volley, double distance, IReadOnlyList<Target> targets, ArsenalRules arsenal = null, Level level = null)
+        public static Volley Detonate(Volley volley, double distance, IReadOnlyList<Target> targets, Level level, ArsenalRules arsenal = null)
         {
             if (volley == null || volley.Weapon != Weapon.Vortex || !volley.HasBlast)
             {

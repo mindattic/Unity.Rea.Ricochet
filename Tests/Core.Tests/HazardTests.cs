@@ -221,16 +221,16 @@ namespace Ricochet.Core.Tests
             Assert.That(whole.Main.End, Is.EqualTo(ShotEndKind.Target));
             Assert.That(whole.Strikes, Is.Empty, "no shape to fling: nobody is hurt");
 
-            Volley early = Arsenal.Detonate(whole, 3.4, targets);
+            Volley early = Arsenal.Detonate(whole, 3.4, targets, Open());
             Assert.That(early.Main.End, Is.EqualTo(ShotEndKind.Detonated));
             Assert.That(early.BlastCenter.X, Is.EqualTo(4).Within(1e-9), "3.4 past the muzzle at 0.6");
             Assert.That(early.Main.Length, Is.EqualTo(3.4).Within(1e-9));
             Assert.That(early.Strikes, Is.Empty, "a vortex hurts no one itself, only the shapes it flings (U.RICO-T96)");
             Assert.That(early.Speed, Is.EqualTo(whole.Speed));
 
-            Assert.That(Arsenal.Detonate(whole, 100, targets), Is.SameAs(whole), "too late: it lands where it was going");
+            Assert.That(Arsenal.Detonate(whole, 100, targets, Open()), Is.SameAs(whole), "too late: it lands where it was going");
             Volley cannon = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 2, 0, Open(), targets);
-            Assert.That(Arsenal.Detonate(cannon, 2, targets), Is.SameAs(cannon), "only a vortex can be set off");
+            Assert.That(Arsenal.Detonate(cannon, 2, targets, Open()), Is.SameAs(cannon), "only a vortex can be set off");
         }
 
         // A square shape of side 1 whose corner sits at (x, y).
