@@ -73,7 +73,7 @@ a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `
 | Announcer (recordings, written lines as captions, the original's portraits) | built (U.RICO-T51) | `Core/Match/Announcer`, `Runtime/HudOverlay`, `Runtime/GameAudio` |
 | Room graph, how to play, controls, credits | built as MindAttic Components screens | `Core/Menu/MenuFlow`, `Runtime/Menus` |
 | Four hand-laid maps | built (deviation: the original randomised the level, UR-T23) | `Core/Level/Maps` |
-| Endgame recap | built as a list (the original had a podium) | `Runtime/EndgameRecap` |
+| Endgame recap | built as the original's podium room (U.RICO-T56) | `Core/Menu/Podium`, `Runtime/EndgameRecap` |
 | Commands and events: every input a command with a player id, one authority, ordered events (new, UR-T34) | built | `Core/Commands/` (`GameAuthority`, `PlayerState`, `Commands`, `GameEvents`) |
 | Real multiplayer, votes, reconnect, profile | built (new, replaces the hotseat rooms) | `Core/Menu/` (`Lobby`, `VoteMenu`), `Core/Net/ShotWire`, kit |
 | Sound | the original's 70 non-voice recordings, one `SoundCue` each (U.RICO-T50); the announcers' 210 voice lines (U.RICO-T51) | `Core/Menu/Sound`, `Runtime/GameAudio`, `Runtime/UiSounds` |
@@ -112,7 +112,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Room fades | UR-T53 (built: Core's `RoomFade` is obj_fade and its ten per-room copies as one black curtain, out of black at 0.01 a step (menu.json's `fadeSeconds`, about 1.67 s) and, where a room left that way, to black before the change; `Runtime/ScreenFade` lays it over everything and opens it on every menu screen change, every front-end move between the menus, lobby and game, and the endgame recap, and covers the map room's way into the lobby; the screen-change sfx_click comes from `UiSounds` for a pointer and from the curtain otherwise. The splash and startup credits' fades come with them in UR-T57, through the same curtain; see the BIBLE's Room fades) |
 | Controls and how-to-play art | UR-T54 |
 | Credits roll | UR-T55 (built: the original's credits room only showed spr_creditsimage, every name painted into it, with obj_creditsimage centring it and obj_credits sizing the view; nothing moved and fnt_credits was never set. Core's `CreditsRoll` and menu.json's `credits` (sections, each a heading and its lines, in this project's own words, crediting the original's people and the house kit) and `creditsScrollSpeed` (60 room px a second, a pixel a step); `Runtime/Art/CreditsRollView` rolls them up over the dimmed picture inside its own rect, headings in fnt_mono, lines in fnt_credits, and starts over each pass; see the BIBLE's Credits roll) |
-| Endgame podium | UR-T56 |
+| Endgame podium | UR-T56 (built: Core's `Podium` holds obj_endgame's room: obj_pedastal at (960, 864), the first three as their tanks in their colours at (960, 786), (871, 831) and (1049, 880), turrets at 270 and the champion's spinning a degree a step from 90, "Wins!" and the name, the leaderboard at y 100 and rows 30 apart, obj_btn_back_endgame at (128, 1024), music_victory once through; `Runtime/EndgameRecap` draws it on bg_stadium with the existing flashes and fade, `GameAudio` plays the track, and sfx_woot (played nowhere in the original, fixed) cheers with sfx_applause; the original has no confetti; see the BIBLE's Endgame podium) |
 | Splash and startup credits | UR-T57 |
 | Whole-game parity verification | UR-T58 |
 

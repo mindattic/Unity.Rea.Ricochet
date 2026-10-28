@@ -62,6 +62,7 @@ namespace Ricochet
         private readonly Dictionary<MusicTrack, AudioClip> _tracks = new Dictionary<MusicTrack, AudioClip>();
         private Turns _turns;
         private bool _musicSeen;
+        private bool _victoryPlayed; // U.RICO-T56: the endgame room's music_victory has started for this game
         private float _nextTurnsSearch;
         private int _lastRound = -1;
         private int _lastTurn = -1;
@@ -741,14 +742,25 @@ namespace Ricochet
                 }
 
                 _musicSeen = false;
+                _victoryPlayed = false;
                 return;
             }
 
             int round = _turns.Round;
             int turn = _turns.Current;
-            if (!_musicSeen || MusicBook.IsNewMoment(true, _lastRound, _lastTurn, round, turn))
+            if (_turns.MatchPhase == MatchPhase.GameOver)
             {
-                PlayRandomMusic();
+                // U.RICO-T56, obj_endgame's create: audio_stop_music, then music_victory once through; no turn picks after.
+                if (!_victoryPlayed)
+                {
+                    PlayMusic(Podium.Track, Podium.TrackLoops);
+                    _victoryPlayed = true;
+                }
+            }
+            else if (_victoryPlayed || !_musicSeen || MusicBook.IsNewMoment(true, _lastRound, _lastTurn, round, turn))
+            {
+                PlayRandomMusic(); // a rematch after the podium starts a new pick even on the same round and seat
+                _victoryPlayed = false;
             }
 
             _musicSeen = true;
