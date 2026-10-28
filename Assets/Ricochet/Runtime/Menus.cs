@@ -508,13 +508,24 @@ namespace Ricochet
             return image;
         }
 
-        /// <summary>The credits room.</summary>
+        /// <summary>
+        /// The credits room: obj_creditsimage's picture where the room centred it, with the credits rolling up over it
+        /// (U.RICO-T55, <see cref="CreditsRollView"/>); a plain list, a line each, when the picture's art is missing.
+        /// </summary>
         public static void BuildCredits(MenuScreen s)
         {
-            AddPicture(s, MenuLooks.CreditsImage, 360f); // obj_creditsimage, centred in the credits room
-            for (int i = 0; i < MenuFlow.Credits.Count; i++)
+            UnityEngine.UI.Image picture = AddPicture(s, MenuLooks.CreditsImage, 360f);
+            if (picture != null)
             {
-                s.AddText(MenuFlow.Credits[i], i == 0 ? TextStyle.Heading : TextStyle.Body);
+                CreditsRollView.Create(picture, MenuFlow.Credits);
+                return;
+            }
+
+            bool first = true;
+            foreach (string line in CreditsRoll.Lines(MenuFlow.Credits))
+            {
+                s.AddText(line, first ? TextStyle.Heading : TextStyle.Body);
+                first = false;
             }
         }
     }

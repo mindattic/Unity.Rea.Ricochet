@@ -49,10 +49,11 @@ namespace Ricochet.Core.Data
     /// <summary>The menu flow's text: tagline, room titles, controls, how-to-play slides and credits (menu.json).</summary>
     public sealed class MenuData
     {
-        internal MenuData(string tagline, Dictionary<Room, string> titles, Room[] offTheMainMenu, ControlBinding[] controls, Slide[] slides, string[] credits,
-            Dictionary<string, string> tips = null, double fadeSeconds = 0)
+        internal MenuData(string tagline, Dictionary<Room, string> titles, Room[] offTheMainMenu, ControlBinding[] controls, Slide[] slides, CreditsSection[] credits,
+            Dictionary<string, string> tips = null, double fadeSeconds = 0, double creditsScrollSpeed = 0)
         {
             FadeSeconds = fadeSeconds;
+            CreditsScrollSpeed = creditsScrollSpeed;
             Tagline = tagline;
             Titles = titles;
             OffTheMainMenu = offTheMainMenu;
@@ -78,7 +79,11 @@ namespace Ricochet.Core.Data
 
         public IReadOnlyList<Slide> Slides { get; }
 
-        public IReadOnlyList<string> Credits { get; }
+        /// <summary>U.RICO-T55: the credits, a heading and its lines a section.</summary>
+        public IReadOnlyList<CreditsSection> Credits { get; }
+
+        /// <summary>U.RICO-T55: how fast the credits roll, in room pixels a second (0: CreditsRoll.DefaultSpeed).</summary>
+        public double CreditsScrollSpeed { get; }
     }
 
     /// <summary>The original's 80 level-shape outlines, by kind (shapes.json).</summary>

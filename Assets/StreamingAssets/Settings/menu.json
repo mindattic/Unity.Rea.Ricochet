@@ -157,14 +157,69 @@
       ]
     }
   ],
+  "creditsScrollSpeed": 60,
   "credits": [
-    "Ricochet",
-    "Based on the 2013 GameMaker game of the same name.",
-    "Rebuilt in Unity 6 by MindAttic, with real network play in place of the original's one shared keyboard.",
-    "Networking, lobby, join codes and votes: Unity.Multiplayer.",
-    "Menus and HUD cards: MindAttic Components.",
-    "Player profiles: Unity.Shared.",
-    "Thanks for playing."
+    {
+      "heading": "Ricochet",
+      "lines": [
+        "Bank shots between tanks, for up to eight players.",
+        "Rebuilt in Unity 6 from the 2013 GameMaker game."
+      ]
+    },
+    {
+      "heading": "The original game",
+      "lines": [
+        "Made by Ryan DeBraal",
+        "From an idea by Jeffery R. Olson"
+      ]
+    },
+    {
+      "heading": "Voices",
+      "lines": [
+        "Jordan Rusnack, every announcer"
+      ]
+    },
+    {
+      "heading": "Music",
+      "lines": [
+        "Kevin MacLeod, incompetech.com"
+      ]
+    },
+    {
+      "heading": "More art",
+      "lines": [
+        "Daniel Cook: the powerup art",
+        "Kaynos: the tank",
+        "HHH316: the seamless floor textures"
+      ]
+    },
+    {
+      "heading": "Sound effects",
+      "lines": [
+        "The freesound.org community.",
+        "Each sound's maker is named on the picture behind this roll."
+      ]
+    },
+    {
+      "heading": "With thanks to",
+      "lines": [
+        "YoYo Games, for GameMaker, where it all began"
+      ]
+    },
+    {
+      "heading": "This rebuild",
+      "lines": [
+        "MindAttic",
+        "Real network play in place of one shared keyboard",
+        "Networking, lobby, join codes and votes: Unity.Multiplayer",
+        "Menus, cards and HUD: MindAttic Components",
+        "Player profiles and settings: Unity.Shared"
+      ]
+    },
+    {
+      "heading": "Thanks for playing",
+      "lines": []
+    }
   ],
   "tips": {
     "start": "Start new game with current settings",

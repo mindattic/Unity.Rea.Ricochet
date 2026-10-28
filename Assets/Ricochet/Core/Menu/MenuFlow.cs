@@ -157,8 +157,8 @@ namespace Ricochet.Core.Menu
 
         public static int ClampSlide(int slide) => slide >= 0 && slide < Slides.Count ? slide : 0;
 
-        /// <summary>The credits screen, a line each.</summary>
-        public static IReadOnlyList<string> Credits => Data.Menu.Credits;
+        /// <summary>The credits screen's sections, rolled over the credits picture (U.RICO-T55, CreditsRoll).</summary>
+        public static IReadOnlyList<CreditsSection> Credits => Data.Menu.Credits;
 
         /// <summary>
         /// U.RICO-T52: the names of the hover tips (menu.json's "tips": each control's message, which the original drew at the

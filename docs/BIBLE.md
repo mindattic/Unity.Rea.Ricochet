@@ -656,7 +656,7 @@ a button keeps the kit's width when its label is wider than spr_button's 226 px 
 slider or dropdown stays between the arrows. A screen too long even for four columns (the settings, which the original
 spread over its own hand-placed grid) keeps the kit's card, on bg_titlescreen. The controls room's binding lines (the
 rebuild's, for its remappable bindings) are kept but not drawn, under the keyboard picture as the room had only the picture;
-the credits room's lines stand left of spr_creditsimage. (2) The kit's own back icon is hidden on a taken screen in favour
+the credits room's lines roll over spr_creditsimage (U.RICO-T55, Credits roll, below). (2) The kit's own back icon is hidden on a taken screen in favour
 of the room's Back button at (128, 1024); the title, the vote's pause menu and the kit's in-game and endgame menus are not
 re-laid (they draw over the game, or their own room). (3) The title's letters drift as obj_letter_parent moved them and the
 main menu repeats them (U.RICO-T52, below). The announcer's portrait and speaker are U.RICO-T51's (Announcer voices and
@@ -693,6 +693,32 @@ in flight (spr_teleporter, spr_shrinkball) and the endgame's spr_flash are U.RIC
 - `Tests/Core.Tests/TitleAndStartTests` holds the letters, the seeds and the setup's level settings to the original;
   `MenuFlowTests` the room graph; PlayMode `MenuScreenTests` the title's Start and the Start screen, `MenuArtTests` the
   letters' drift.
+
+## Credits roll (U.RICO-T55)
+
+Source: `obj_credits`, `obj_creditsimage`, `obj_btn_back_credits`, `spr_creditsimage`, `fnt_credits` and the `credits` room.
+
+- **The original**: the credits room (1920 x 1080 on bg_titlescreen) held obj_creditsimage, which centred spr_creditsimage
+  (486 x 714, origin 243, 357) with every name already painted into the picture; obj_btn_back_credits at (128, 1024), its
+  "Main Menu" label in fnt_mono outlined 2 px, back to the main menu with sfx_click; and obj_credits, which only sized the
+  view and toggled full screen on F1. Nothing scrolled and no credits text was drawn: fnt_credits (Verdana 10) is on disk
+  but not in the project, and nothing sets it.
+- **The rebuild** (Core's `CreditsRoll`, `Runtime/Art/CreditsRollView`, `Menus.BuildCredits`): the picture stands where
+  the room put it (`RoomLayout.Credits`) and this project's own credits roll up over it, masked to the picture's rect: from
+  just under its bottom edge until the last line has left its top, then again, restarting each time the screen opens, on
+  unscaled time. menu.json's `credits` is a list of sections (a heading and its lines) written in this project's own words,
+  crediting the original's maker, its idea, voices, music, art, sound effects and GameMaker, then the house kit
+  (Unity.Multiplayer, MindAttic Components, Unity.Shared); `creditsScrollSpeed` is 60 room pixels a second, a pixel a step
+  at the rooms' 60 steps (the pace the menu rooms' floors scrolled). Headings are fnt_mono outlined 2 px as the rooms'
+  captions; lines fnt_credits outlined 1 px, white, centred. Without the picture's art the credits are a plain list.
+  The room's Back is U.RICO-T84's at (128, 1024).
+- `Tests/Core.Tests/CreditsRollTests` (the roll's place over time, its period and wrap), `GameDataTests` (the sections and
+  speed load).
+
+Deviations: (1) The roll itself: the original's credits were the still picture; the ticket's credits scroll over it. (2) The
+picture is drawn at alpha 0.35 under the roll so its painted names do not fight the moving text; it still names every
+freesound.org contributor, which the roll points to rather than repeats. (3) fnt_credits was never drawn by the original, so
+it has no size to match: the lines draw it at twice its Verdana 10 face to read at the room's size.
 
 ## Room fades (U.RICO-T53)
 

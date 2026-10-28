@@ -411,7 +411,15 @@ namespace Ricochet.Core.Data
                 s.Done();
             }
 
-            List<string> credits = r.Texts("credits", 1);
+            // U.RICO-T55: the credits roll, a heading and its lines a section, and how fast it climbs (room pixels a second).
+            var credits = new List<CreditsSection>();
+            foreach (SettingsReader c in r.Objects("credits", 1))
+            {
+                credits.Add(new CreditsSection(c.Text("heading"), c.Texts("lines").ToArray()));
+                c.Done();
+            }
+
+            double creditsScrollSpeed = r.Number("creditsScrollSpeed", 1, 1000);
 
             // U.RICO-T52: the Start screen's hover tips, one per MenuFlow.TipNames entry.
             var tips = new Dictionary<string, string>();
@@ -423,7 +431,7 @@ namespace Ricochet.Core.Data
 
             tip.Done();
             r.Done();
-            return new MenuData(tagline, titles, off.ToArray(), controls.ToArray(), slides.ToArray(), credits.ToArray(), tips, fadeSeconds);
+            return new MenuData(tagline, titles, off.ToArray(), controls.ToArray(), slides.ToArray(), credits.ToArray(), tips, fadeSeconds, creditsScrollSpeed);
         }
 
         public static List<SettingDef> ReadRegistry(SettingsReader r, Dictionary<string, JsonValue> docs, List<string> errors)
