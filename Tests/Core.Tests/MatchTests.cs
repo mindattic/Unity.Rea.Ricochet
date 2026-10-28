@@ -211,7 +211,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void DamageFollowsHitGml_OpponentsGetAFifthPerBounceAndADiceRoll_SelfHitsTheFullBasePerBounce()
         {
-            MatchRules rules = MatchRules.Default;
+            MatchRules rules = new MatchRules { WeaponDamage = 10 };
             Assert.That(rules.Damage(self: false, bounces: 0, roll: 0), Is.EqualTo(10));
             Assert.That(rules.Damage(false, 3, 0), Is.EqualTo(16), "10 + ceil(10 / 5) x 3");
             Assert.That(rules.Damage(false, 3, 1), Is.EqualTo(17), "the dice add up to a tenth");
