@@ -322,7 +322,7 @@ namespace Ricochet.Core.Tests
             var hazards = new HazardRules();
             setup.ApplyTo(arsenal);
             setup.ApplyTo(match, shot, drops, hazards);
-            Assert.That((match.TurnSeconds, match.WeaponDamage, shot.MaxBounces), Is.EqualTo((35.0, 40, 9)));
+            Assert.That((match.TurnSeconds, match.WeaponDamage, shot.MaxBounces), Is.EqualTo((25.0, 40, 9)));
             Assert.That((arsenal.InPlay(Weapon.Railgun), arsenal.StartCount(Weapon.Laser), arsenal.StartCount(Weapon.Cannon)), Is.EqualTo((false, 7, ArsenalRules.Unlimited)));
             Assert.That((arsenal.InPlay(Item.Teleporter), arsenal.StartCount(Item.ShieldWall), arsenal.InPlay(Item.AimAssist)), Is.EqualTo((false, 0, true)));
             Assert.That((drops.Enabled(DropKind.Health), drops.Enabled(DropKind.Weapon)), Is.EqualTo((false, true)));
