@@ -198,7 +198,13 @@ namespace Ricochet
                 && int.TryParse(key.Substring(DummyKeyPrefix.Length), out index) ? index : 0;
         }
 
-        public static Vector2 DummyStart(int index) => DummyStarts[((index % DummyStarts.Length) + DummyStarts.Length) % DummyStarts.Length];
+        public static Vector2 DummyStart(int index)
+        {
+            Vector2 start = DummyStarts[((index % DummyStarts.Length) + DummyStarts.Length) % DummyStarts.Length];
+            var level = Layout.Level;
+            Vec2 in2 = new Playfield(level.MinX, level.MinY, level.MaxX, level.MaxY).Clamp(new Vec2(start.x, start.y), DummyRadius + 0.3);
+            return new Vector2((float)in2.X, (float)in2.Y);
+        }
 
         /// <summary>Where a seat's player stands this round (a random map's spots, else Core's fixed sixteen).</summary>
         public static Vector2 SpawnPoint(int seat) => ToUnity(s_layout.SpawnPoint(Math.Max(0, seat)));

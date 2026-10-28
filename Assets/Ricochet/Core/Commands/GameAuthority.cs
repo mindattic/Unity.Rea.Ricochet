@@ -369,7 +369,7 @@ namespace Ricochet.Core.Commands
 
             foreach (Vec2 start in Seating.DummyStarts)
             {
-                keepClear.Add(start);
+                keepClear.Add(new Playfield(Layout.Level.MinX, Layout.Level.MinY, Layout.Level.MaxX, Layout.Level.MaxY).Clamp(start, 0.3));
             }
 
             foreach (PlayerState state in _order)

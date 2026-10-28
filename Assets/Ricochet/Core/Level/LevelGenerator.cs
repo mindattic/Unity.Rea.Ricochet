@@ -233,6 +233,21 @@ namespace Ricochet.Core.Level
         public double MaxX { get; }
 
         public double MaxY { get; }
+
+        /// <summary>
+        /// <paramref name="point"/> pulled inside this playfield, <paramref name="margin"/> from each edge (U.RICO-T126): a spot
+        /// that is fixed in the stock arena (a dummy, an arc's pylon) stays in play however thick the border. A field narrower
+        /// than twice the margin gives its middle.
+        /// </summary>
+        public Vec2 Clamp(Vec2 point, double margin = 0)
+        {
+            return new Vec2(Pull(point.X, MinX + margin, MaxX - margin), Pull(point.Y, MinY + margin, MaxY - margin));
+        }
+
+        private static double Pull(double v, double low, double high)
+        {
+            return high < low ? (low + high) / 2 : Math.Max(low, Math.Min(high, v));
+        }
     }
 
     public static class LevelGenerator
@@ -295,7 +310,7 @@ namespace Ricochet.Core.Level
             settings = settings ?? LevelSettings.Default;
             var dice = new Random(seed);
             Playfield field = Inset(settings.Border);
-            var avoid = new List<Vec2>(keepClear ?? DefaultKeepClear());
+            var avoid = new List<Vec2>(keepClear ?? DefaultKeepClear(field));
             var shapes = new List<PlacedShape>();
             var laid = new List<LaidShape>();
             var walls = new List<Wall>();
@@ -403,17 +418,23 @@ namespace Ricochet.Core.Level
         }
 
         /// <summary>The practice dummies and, sampled along them, the electric arcs and laser gates every round lays.</summary>
-        private static List<Vec2> DefaultKeepClear()
+        private static List<Vec2> DefaultKeepClear(Playfield field)
         {
-            var keep = new List<Vec2>(Seating.DummyStarts);
+            var keep = new List<Vec2>();
+            foreach (Vec2 start in Seating.DummyStarts)
+            {
+                keep.Add(field.Clamp(start, EdgeGap));
+            }
+
             HazardRules hazards = HazardRules.Default;
             foreach (Vec2[] segment in hazards.Arcs.Concat(hazards.Gates))
             {
-                int steps = Math.Max(1, (int)Math.Ceiling(Vec2.Distance(segment[0], segment[1]) / 0.5));
+                Vec2 from = field.Clamp(segment[0], EdgeGap), to = field.Clamp(segment[1], EdgeGap);
+                int steps = Math.Max(1, (int)Math.Ceiling(Vec2.Distance(from, to) / 0.5));
                 for (int i = 0; i <= steps; i++)
                 {
                     double t = (double)i / steps;
-                    keep.Add(new Vec2(segment[0].X + (segment[1].X - segment[0].X) * t, segment[0].Y + (segment[1].Y - segment[0].Y) * t));
+                    keep.Add(new Vec2(from.X + (to.X - from.X) * t, from.Y + (to.Y - from.Y) * t));
                 }
             }
 

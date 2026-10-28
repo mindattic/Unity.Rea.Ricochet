@@ -458,6 +458,9 @@ namespace Ricochet.Core.Level
         /// <summary>A tuft of foliage at <paramref name="center"/>.</summary>
         public Hazard AddFoliage(Vec2 center) => Add(new Hazard(++_nextId, HazardKind.Foliage, center, center, Rules.FoliageRadius));
 
+        /// <summary>A fixed hazard end pulled inside the level's (inset) playfield (U.RICO-T126).</summary>
+        private Vec2 InPlay(Vec2 end) => new Playfield(Level.MinX, Level.MinY, Level.MaxX, Level.MaxY).Clamp(end, 0.3);
+
         /// <summary>A breach in the border from <paramref name="a"/> to <paramref name="b"/> (both on one side).</summary>
         public Hazard AddBreach(Vec2 a, Vec2 b) => Add(new Hazard(++_nextId, HazardKind.Breach, a, b));
 
@@ -471,12 +474,12 @@ namespace Ricochet.Core.Level
         {
             foreach (Vec2[] arc in Rules.Arcs)
             {
-                AddArc(arc[0], arc[1]);
+                AddArc(InPlay(arc[0]), InPlay(arc[1]));
             }
 
             foreach (Vec2[] gate in Rules.Gates)
             {
-                AddGate(gate[0], gate[1]);
+                AddGate(InPlay(gate[0]), InPlay(gate[1]));
             }
 
             var avoid = new List<Vec2>(keepClear ?? Array.Empty<Vec2>());
