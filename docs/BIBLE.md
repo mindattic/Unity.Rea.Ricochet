@@ -105,8 +105,12 @@ copy of any of these is a bug.
   redirector item, and the vortex device set off in mid-flight (vortex_detonate.gml). Corrected by U.RICO-T96 to match
   vortex_step.gml: the vortex hurts no one itself and touches no hazard or border; it pulls the level's shapes within 200 px
   (2.2917 units) in at 1 px a step and flings them out at 10 px a step, and a tank is hurt (once) only when a flung shape
-  strikes it (`Core/Arsenal/VortexStorm.cs`; shapes are the walls grouped by shared corners; the shapes' new places are not
-  kept after the turn, unlike the original; the flight no longer stops on a tank it meets: obj_vortex has no collision event with a tank, so it flies through to its landing point, U.RICO-T135) (UR-T6;
+  strikes it (`Core/Arsenal/VortexStorm.cs`; shapes are the walls grouped by shared corners; the shapes stay where the storm leaves them, as in
+  the original, which never puts a moved shape back: U.RICO-T134 has `VortexStorm.Play` give every moved shape's pull and fling
+  (`Volley.Storm`, carried by `ShotWire` version 2), the server's level keep them when the shot lands (`Level.Apply`), and each
+  peer's `LevelView` walk the shapes along it in step with the implosion (`WalkStorm`, 250 steps in the pull starts, 800 the
+  fling) and keep them in its own level when it ends (`SettleStorm`); not modelled: the shapes' one degree a step of spin
+  while pulled, and a client that joins after a storm lays the round's shapes unmoved until the next round; the flight no longer stops on a tank it meets: obj_vortex has no collision event with a tank, so it flies through to its landing point, U.RICO-T135) (UR-T6;
   `Core/Hazards.cs` with `Level`'s barriers and breaches tested by `dotnet test Core.slnx`, the wire by
   `Tests/PlayMode/HazardTests.cs`).
 - ✅ Announcer and HUD: the start-match vote carries one of the original's seven on-air personalities and how often they

@@ -1166,6 +1166,13 @@ namespace Ricochet.Core.Commands
                 Hazards.Struck(id, state.Seat);
             }
 
+            // vortex_step.gml never puts a shape it moved back: the storm's shapes stay where it left them (U.RICO-T134), so
+            // every shot after this one flies among them. (Every peer's own level view keeps them the same way, from the wire.)
+            if (volley.Weapon == Weapon.Vortex && volley.Storm.Shapes.Count > 0)
+            {
+                Hazards.Level.Apply(volley.Storm);
+            }
+
             // obj_redirector's collision events set fade: each redirector a shot (not a railgun slug) was sent on by fades away.
             if (volley.Weapon != Weapon.Railgun)
             {

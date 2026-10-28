@@ -168,7 +168,7 @@ namespace Ricochet.Core.Level
             MinY = minY;
             MaxX = maxX;
             MaxY = maxY;
-            Walls = new List<Wall>(walls ?? Array.Empty<Wall>());
+            _walls = new List<Wall>(walls ?? Array.Empty<Wall>());
             Redirectors = new List<Redirector>(redirectors ?? Array.Empty<Redirector>());
             Barriers = new List<Barrier>(barriers ?? Array.Empty<Barrier>());
             Breaches = new List<Breach>(breaches ?? Array.Empty<Breach>());
@@ -182,7 +182,43 @@ namespace Ricochet.Core.Level
 
         public double MaxY { get; }
 
-        public IReadOnlyList<Wall> Walls { get; }
+        private readonly List<Wall> _walls;
+
+        public IReadOnlyList<Wall> Walls => _walls;
+
+        /// <summary>
+        /// Slides the walls at <paramref name="walls"/> (indices into <see cref="Walls"/>) by <paramref name="by"/>, in place, so the
+        /// level every holder shares keeps their new places (a vortex's flung shapes stay where they land, U.RICO-T134).
+        /// </summary>
+        public void MoveWalls(IEnumerable<int> walls, Vec2 by)
+        {
+            if (walls == null)
+            {
+                return;
+            }
+
+            foreach (int i in walls)
+            {
+                if (i >= 0 && i < _walls.Count)
+                {
+                    _walls[i] = new Wall(_walls[i].A + by, _walls[i].B + by);
+                }
+            }
+        }
+
+        /// <summary>Keeps where a vortex's storm left every shape it moved (their pull and fling together).</summary>
+        public void Apply(Ricochet.Core.Arsenal.StormResult storm)
+        {
+            if (storm == null)
+            {
+                return;
+            }
+
+            foreach (Ricochet.Core.Arsenal.StormShape shape in storm.Shapes)
+            {
+                MoveWalls(shape.Walls, shape.Pull + shape.Fling);
+            }
+        }
 
         public IReadOnlyList<Redirector> Redirectors { get; }
 

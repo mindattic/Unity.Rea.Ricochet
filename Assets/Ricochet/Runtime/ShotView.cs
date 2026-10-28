@@ -66,6 +66,8 @@ namespace Ricochet
         private Rail _rail;
         private BlastRing _ring;
         private Implosion _implosion;
+        private StormResult _storm;      // the storm walking the level's shapes while the implosion plays (U.RICO-T134)
+        private Level _stormLevel;
         private VortexMode _heardMode = VortexMode.Done;
 
         /// <summary>The player whose shots it draws.</summary>
@@ -159,6 +161,7 @@ namespace Ricochet
         {
             Presentation.Raised -= OnEvent;
             HearImplosion(VortexMode.Done); // a view going lets go of its vortex's sounds
+            EndStorm();
         }
 
         // The events about this view's owner: a shot fired is drawn in their colour, a vortex set off cuts it short.
@@ -273,6 +276,7 @@ namespace Ricochet
             Struck(volley);
             _blast.enabled = false;
             _ring.Hide();
+            EndStorm();
             _implosion.Hide();
             _flashLeft = 0f;
         }
@@ -467,6 +471,8 @@ namespace Ricochet
                 SpriteBurst.Play(GmlSprites.SmallExplosion, center, _detonated ? (float)WeaponLooks.DetonateFlashImageSpeed : SmallExplosionSpeed);
                 FieldEffects.ScorchAt(center, false);
                 _implosion.Start(center, WeaponLooks.ShotStepsPerSecond(Arena.Rules.Speed));
+                _storm = volley.Storm.Shapes.Count > 0 ? volley.Storm : null;
+                _stormLevel = Arena.Level;
             }
             else if (volley.HasBlast)
             {
@@ -541,8 +547,37 @@ namespace Ricochet
                 _blast.enabled = false; // obj_grenade_explosion is gone once its circle reaches grenadeRadius
             }
 
+            bool imploding = _implosion.Showing;
             _implosion.Step(dt);
+            if (_storm != null)
+            {
+                // vortex_step.gml moves the level's shapes while it pulls and blows: walk them along the storm in step with the
+                // implosion, and keep where they end up once it is over (the original never puts them back; U.RICO-T134).
+                if (imploding && _implosion.Showing)
+                {
+                    LevelView.WalkStorm(_storm, _implosion.ElapsedSteps);
+                }
+                else if (imploding)
+                {
+                    EndStorm();
+                }
+            }
+
             HearImplosion(_implosion.Showing ? _implosion.Mode : VortexMode.Done);
+        }
+
+        // The storm is over (or cut short by the next shot): every shape it moved takes its final place and the level keeps it.
+        private void EndStorm()
+        {
+            if (_storm == null)
+            {
+                return;
+            }
+
+            StormResult storm = _storm;
+            _storm = null;
+            LevelView.SettleStorm(storm, _stormLevel);
+            _stormLevel = null;
         }
 
         // vortex_step.gml's sounds (U.RICO-T50): sfx_vortex_suck again each time it ends while it pulls in, stopped when it

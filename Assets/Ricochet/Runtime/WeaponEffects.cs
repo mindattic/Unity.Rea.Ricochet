@@ -440,6 +440,7 @@ namespace Ricochet
         private Vector2 _center;
         private double _stepsPerSecond;
         private float _clock;
+        private int _steps;
 
         public Implosion(Transform parent)
         {
@@ -450,6 +451,9 @@ namespace Ricochet
         }
 
         public bool Showing => _vortex != null;
+
+        /// <summary>Steps since it went off, with the part of the next one the clock has run (what the storm over the level's shapes is walked by).</summary>
+        public double ElapsedSteps => _steps + (_stepsPerSecond > 0 ? _clock * _stepsPerSecond : 0);
 
         /// <summary>The mode it is in (Done when not showing).</summary>
         public VortexMode Mode => _vortex != null ? _vortex.Mode : VortexMode.Done;
@@ -465,6 +469,7 @@ namespace Ricochet
             _center = center;
             _stepsPerSecond = stepsPerSecond;
             _clock = 0f;
+            _steps = 0;
             Sprite art = GameArt.Frame(GmlSprites.Vortex);
             _body.sprite = art;
             _child.sprite = art;
@@ -496,6 +501,7 @@ namespace Ricochet
             {
                 _clock -= step;
                 _vortex.Step();
+                _steps++;
             }
 
             if (_vortex.Done)

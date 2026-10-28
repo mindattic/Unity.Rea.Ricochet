@@ -15,12 +15,14 @@ namespace Ricochet.Core.Net
     public static class ShotWire
     {
         /// <summary>The format's version, the first number; Decode refuses any other.</summary>
-        public const int Version = 1;
+        public const int Version = 2;
 
         /// <summary>The most projectiles, points per path, contacts per path and strikes Decode accepts.</summary>
         public const int MaxPaths = 64;
         public const int MaxPoints = 1024;
         public const int MaxStrikes = 256;
+        public const int MaxStormShapes = 1024;
+        public const int MaxStormWalls = 8192;
 
         private const int HeaderLength = 8;
         private const int PathHeaderLength = 8;
@@ -63,6 +65,23 @@ namespace Ricochet.Core.Net
                 n.Add(IdIndex(strike.TargetId, names));
                 n.Add(strike.Bounces);
                 n.Add(strike.Scale);
+            }
+
+            // U.RICO-T134: a vortex's storm, so every peer walks the same shapes the same way and keeps where they land.
+            n.Add(volley.Storm.FlingSteps);
+            n.Add(volley.Storm.Shapes.Count);
+            foreach (StormShape shape in volley.Storm.Shapes)
+            {
+                n.Add(shape.Walls.Count);
+                foreach (int wall in shape.Walls)
+                {
+                    n.Add(wall);
+                }
+
+                n.Add(shape.Pull.X);
+                n.Add(shape.Pull.Y);
+                n.Add(shape.Fling.X);
+                n.Add(shape.Fling.Y);
             }
 
             numbers = n.ToArray();
@@ -141,12 +160,56 @@ namespace Ricochet.Core.Net
                 strikes.Add(new Strike(targetId, bounces, scale));
             }
 
+            if (!reader.Has(2))
+            {
+                return null;
+            }
+
+            int flingSteps = reader.Int();
+            int shapeCount = reader.Int();
+            if (flingSteps < 0 || flingSteps > VortexStorm.FlingSteps || shapeCount < 0 || shapeCount > MaxStormShapes)
+            {
+                return null;
+            }
+
+            var shapes = new List<StormShape>(shapeCount);
+            int totalWalls = 0;
+            for (int i = 0; i < shapeCount; i++)
+            {
+                if (!reader.Has(1))
+                {
+                    return null;
+                }
+
+                int wallCount = reader.Int();
+                totalWalls += wallCount;
+                if (wallCount < 1 || totalWalls > MaxStormWalls || !reader.Has(wallCount + 4))
+                {
+                    return null;
+                }
+
+                var walls = new int[wallCount];
+                for (int w = 0; w < wallCount; w++)
+                {
+                    walls[w] = reader.Int();
+                    if (walls[w] < 0)
+                    {
+                        return null;
+                    }
+                }
+
+                var pull = new Vec2(reader.Next(), reader.Next());
+                var fling = new Vec2(reader.Next(), reader.Next());
+                shapes.Add(new StormShape(walls, pull, fling));
+            }
+
             if (reader.Has(1))
             {
                 return null; // trailing numbers: not something Encode wrote
             }
 
-            return new Volley((Weapon)weapon, paths, speed, strikes, blast, blastCenter, blastRadius);
+            StormResult storm = shapeCount == 0 && flingSteps == 0 ? StormResult.None : new StormResult(null, shapes, flingSteps);
+            return new Volley((Weapon)weapon, paths, speed, strikes, blast, blastCenter, blastRadius, storm);
         }
 
         /// <summary>

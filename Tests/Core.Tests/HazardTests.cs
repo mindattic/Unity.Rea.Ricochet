@@ -9,6 +9,7 @@ namespace Ricochet.Core.Tests
     using Ricochet.Core.Arsenal;
     using Ricochet.Core.Level;
     using Ricochet.Core.Match;
+    using Ricochet.Core.Net;
     public class HazardTests
     {
         // An open 20 x 10 room: nothing to bounce off but the border.
@@ -257,6 +258,36 @@ namespace Ricochet.Core.Tests
             // A shape out of reach is not touched, so a tank beside it is safe.
             var out_of_reach = new Level(-10, -5, 10, 5, Square(5, 3));
             Assert.That(VortexStorm.Strike(new Vec2(0, 0), 2.29, out_of_reach, new[] { T("here", 0, 0), T("beside", 5.5, 3.5) }, 1), Is.Null);
+        }
+
+        [Test]
+        public void AVortexStormMovesTheShapesAndTheLevelKeepsThemWhereTheyLand_AndTheWireCarriesIt()
+        {
+            // U.RICO-T134: vortex_step.gml never puts a moved shape back.
+            var level = new Level(-10, -5, 10, 5, Square(1, 1).Concat(Square(6, 3)));
+            StormResult storm = VortexStorm.Play(new Vec2(0, 0), 2.29, level, new[] { T("far", 8, -4) }, 1);
+            Assert.That(storm.Shapes.Count, Is.EqualTo(1), "only the shape in reach moves");
+            Assert.That(storm.Shapes[0].Walls, Is.EqualTo(new[] { 0, 1, 2, 3 }));
+            Assert.That(storm.FlingSteps, Is.EqualTo(VortexStorm.FlingSteps), "nothing struck, so it flew the whole blow");
+            Assert.That(storm.Shapes[0].OffsetAt(0, storm.FlingSteps).Length, Is.EqualTo(0).Within(1e-9));
+            Vec2 end = storm.Shapes[0].OffsetAt(storm.EndStep, storm.FlingSteps);
+            Assert.That(Vec2.Distance(end, storm.Shapes[0].Pull + storm.Shapes[0].Fling), Is.EqualTo(0).Within(1e-9));
+
+            Vec2 before = level.Walls[0].A;
+            level.Apply(storm);
+            Assert.That(Vec2.Distance(level.Walls[0].A, before + end), Is.EqualTo(0).Within(1e-9));
+            Assert.That(level.Walls[4].A.X, Is.EqualTo(6).Within(1e-9), "the shape out of reach stayed");
+
+            var fresh = new Level(-10, -5, 10, 5, Square(1, 1));
+            var arena = new Level(-10, -5, 10, 5, Square(1, 1));
+            Volley flying = Arsenal.Fire(Weapon.Vortex, new Vec2(-3, 0), 0, 6, 0, arena, new[] { T("far", 8, -4) });
+            Volley volley = Arsenal.Detonate(flying, 3, new[] { T("far", 8, -4) }, arena);
+            Assert.That(volley.Storm.Shapes, Is.Not.Empty);
+            ShotWire.Encode(volley, out double[] numbers, out string ids);
+            Volley onClient = ShotWire.Decode(numbers, ids);
+            Assert.That(onClient, Is.Not.Null);
+            Assert.That(onClient.Storm.SameAs(volley.Storm), Is.True);
+            Assert.That(fresh.Walls.Count, Is.EqualTo(4));
         }
 
         [Test]

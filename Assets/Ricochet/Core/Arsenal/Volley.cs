@@ -46,8 +46,9 @@ namespace Ricochet.Core.Arsenal
         private readonly List<ShotPath> _paths;
         private readonly List<Strike> _strikes;
 
-        internal Volley(Weapon weapon, List<ShotPath> paths, double speed, List<Strike> strikes, bool blast, Vec2 blastCenter, double blastRadius)
+        internal Volley(Weapon weapon, List<ShotPath> paths, double speed, List<Strike> strikes, bool blast, Vec2 blastCenter, double blastRadius, StormResult storm = null)
         {
+            Storm = storm ?? StormResult.None;
             Weapon = weapon;
             _paths = paths;
             Speed = speed;
@@ -77,6 +78,9 @@ namespace Ricochet.Core.Arsenal
         public Vec2 BlastCenter { get; }
 
         public double BlastRadius { get; }
+
+        /// <summary>A vortex's storm: where each shape it pulled in and flung out went (none for any other weapon; U.RICO-T134).</summary>
+        public StormResult Storm { get; }
 
         /// <summary>The hazards (barrier ids) the volley's projectiles ran into, each once, in path order.</summary>
         public IReadOnlyList<int> HazardsHit
@@ -452,13 +456,13 @@ namespace Ricochet.Core.Arsenal
 
             // vortex_step.gml: the pull and blow move the level's shapes; a tank is hurt only when a flung shape strikes it.
             int seed = unchecked((int)Math.Round(path.Impact.X * 1000) * 31 + (int)Math.Round(path.Impact.Y * 1000));
-            Target? struck = VortexStorm.Strike(path.Impact, arsenal.VortexRadius, level, targets, seed);
-            if (struck.HasValue)
+            StormResult storm = VortexStorm.Play(path.Impact, arsenal.VortexRadius, level, targets, seed);
+            if (storm.Struck.HasValue)
             {
-                strikes.Add(new Strike(struck.Value.Id, path.Bounces, 1));
+                strikes.Add(new Strike(storm.Struck.Value.Id, path.Bounces, 1));
             }
 
-            return new Volley(Weapon.Vortex, paths, speed, strikes, true, path.Impact, arsenal.VortexRadius);
+            return new Volley(Weapon.Vortex, paths, speed, strikes, true, path.Impact, arsenal.VortexRadius, storm);
         }
 
         private static void AddTargetStrike(ShotPath path, double scale, List<Strike> strikes)

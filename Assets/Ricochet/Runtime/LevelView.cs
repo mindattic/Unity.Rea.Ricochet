@@ -3,7 +3,9 @@
 // shot. Presentation only: the level itself is Core data, the same everywhere. When a match is played on another map
 // (UR-T9) or a new round is laid, the drawing is rebuilt from the new level. The floor, clouds, lights and border
 // sprites under and around it are BackdropView's.
+using System.Collections.Generic;
 using Ricochet.Core.Aim;
+using Ricochet.Core.Arsenal;
 using Ricochet.Core.Art;
 using Ricochet.Core.Level;
 using UnityEngine;
@@ -22,6 +24,23 @@ namespace Ricochet
         private static readonly Color RedirectorColor = new Color(1f, 0.55f, 0.15f);
 
         private static LevelView s_current;
+
+        // A drawn shape that a vortex's storm can move (U.RICO-T134): a sprite or an outline, where it was laid (Home), where
+        // the storms already over left it (Kept) and how far the storm now playing has taken it (Walking).
+        private sealed class Piece
+        {
+            public Transform Sprite;
+            public Vector3 SpriteHome;
+            public LineRenderer Line;
+            public Vector3[] LineHome;
+            public Vec2 First; // the laid corner the first wall starts at
+            public int FirstWall = -1;
+            public Vec2 Kept;
+            public Vec2 Walking;
+        }
+
+        private readonly List<Piece> _pieces = new List<Piece>();
+        private readonly Dictionary<int, Piece> _pieceOfWall = new Dictionary<int, Piece>();
 
         /// <summary>Builds the drawing for <paramref name="level"/> under a new GameObject.</summary>
         public static LevelView Create(Level level)
@@ -63,6 +82,49 @@ namespace Ricochet
             return true;
         }
 
+        /// <summary>
+        /// A vortex's storm <paramref name="steps"/> steps after it went off (U.RICO-T134): every shape it moves drawn where it
+        /// has taken it, in step with the implosion. False when no level is drawn.
+        /// </summary>
+        public static bool WalkStorm(StormResult storm, double steps)
+        {
+            if (s_current == null || storm == null)
+            {
+                return false;
+            }
+
+            s_current.Walk(storm, steps);
+            return true;
+        }
+
+        /// <summary>
+        /// The storm is over: the shapes it moved stay where it left them, in the level (<paramref name="startedOn"/> is the level it
+        /// played on; nothing is kept if another round has been laid since) and in the drawing. The same storm seen twice in one
+        /// process (a host and its own client) is kept once.
+        /// </summary>
+        public static void SettleStorm(StormResult storm, Level startedOn)
+        {
+            if (storm == null)
+            {
+                return;
+            }
+
+            if (startedOn != null && ReferenceEquals(startedOn, Arena.Level) && !(s_lastKept != null && ReferenceEquals(s_lastKeptOn, startedOn) && s_lastKept.SameAs(storm)))
+            {
+                startedOn.Apply(storm);
+                s_lastKept = storm;
+                s_lastKeptOn = startedOn;
+            }
+
+            if (s_current != null && ReferenceEquals(s_current.Shown, startedOn))
+            {
+                s_current.Rebase();
+            }
+        }
+
+        private static StormResult s_lastKept;
+        private static Level s_lastKeptOn;
+
         /// <summary>The level drawn now.</summary>
         public Level Shown { get; private set; }
 
@@ -97,6 +159,8 @@ namespace Ricochet
         {
             Shown = level;
             ShapesFromArt = 0;
+            _pieces.Clear();
+            _pieceOfWall.Clear();
             var corners = new[]
             {
                 new Vector3((float)level.MinX, (float)level.MinY), new Vector3((float)level.MaxX, (float)level.MinY),
@@ -110,17 +174,32 @@ namespace Ricochet
             RoundLayout layout = Arena.Layout;
             if (layout != null && ReferenceEquals(layout.Level, level) && layout.Shapes.Count > 0)
             {
+                int first = 0;
                 for (int i = 0; i < layout.Shapes.Count; i++)
                 {
-                    DrawShape(i, layout.Shapes[i]);
+                    Piece piece = DrawShape(i, layout.Shapes[i]);
+                    piece.FirstWall = first;
+                    piece.First = layout.Shapes[i].Corners[0];
+                    for (int w = 0; w < layout.Shapes[i].Corners.Length; w++)
+                    {
+                        _pieceOfWall[first + w] = piece;
+                    }
+
+                    first += layout.Shapes[i].Corners.Length;
                 }
+
+                Rebase();
             }
             else
             {
                 for (int i = 0; i < level.Walls.Count; i++)
                 {
                     Wall wall = level.Walls[i];
-                    Lines.Set(Lines.Create(transform, "Wall " + i, WallColor, 0.15f, -4), Arena.ToUnity(wall.A), Arena.ToUnity(wall.B));
+                    LineRenderer line = Lines.Create(transform, "Wall " + i, WallColor, 0.15f, -4);
+                    Lines.Set(line, Arena.ToUnity(wall.A), Arena.ToUnity(wall.B));
+                    var piece = new Piece { Line = line, LineHome = new[] { (Vector3)Arena.ToUnity(wall.A), (Vector3)Arena.ToUnity(wall.B) } };
+                    _pieces.Add(piece);
+                    _pieceOfWall[i] = piece; // drawn where the level has the wall now, so nothing to rebase
                 }
             }
 
@@ -134,8 +213,73 @@ namespace Ricochet
             }
         }
 
-        private void DrawShape(int index, LaidShape shape)
+        // Every piece's Kept offset from the level as it is now (a layout shape's first wall against where it was laid), and the storm's reset.
+        private void Rebase()
         {
+            Level level = Shown;
+            foreach (Piece piece in _pieces)
+            {
+                if (piece.FirstWall >= 0 && level != null && piece.FirstWall < level.Walls.Count)
+                {
+                    piece.Kept = level.Walls[piece.FirstWall].A - piece.First;
+                }
+                else if (piece.FirstWall < 0)
+                {
+                    piece.Kept = piece.Kept + piece.Walking; // a hand-laid wall is drawn where it was; the storm's move is kept on top
+                }
+
+                piece.Walking = default;
+
+                Place(piece);
+            }
+        }
+
+        private void Walk(StormResult storm, double steps)
+        {
+            foreach (Piece piece in _pieces)
+            {
+                piece.Walking = default;
+            }
+
+            foreach (StormShape shape in storm.Shapes)
+            {
+                Vec2 offset = shape.OffsetAt(steps, storm.FlingSteps);
+                foreach (int wall in shape.Walls)
+                {
+                    if (_pieceOfWall.TryGetValue(wall, out Piece piece))
+                    {
+                        piece.Walking = offset;
+                    }
+                }
+            }
+
+            foreach (Piece piece in _pieces)
+            {
+                Place(piece);
+            }
+        }
+
+        private static void Place(Piece piece)
+        {
+            Vector3 by = Arena.ToUnity(piece.Kept + piece.Walking);
+            if (piece.Sprite != null)
+            {
+                piece.Sprite.position = piece.SpriteHome + by;
+            }
+
+            if (piece.Line != null && piece.LineHome != null)
+            {
+                for (int i = 0; i < piece.LineHome.Length; i++)
+                {
+                    piece.Line.SetPosition(i, piece.LineHome[i] + by);
+                }
+            }
+        }
+
+        private Piece DrawShape(int index, LaidShape shape)
+        {
+            var piece = new Piece();
+            _pieces.Add(piece);
             Sprite sprite = GameArt.Frame(GmlSprites.Shape(shape.Id.Kind, shape.Id.Index));
             if (sprite == null)
             {
@@ -145,8 +289,10 @@ namespace Ricochet
                     outline[k] = Arena.ToUnity(shape.Corners[k % shape.Corners.Length]);
                 }
 
-                Lines.Set(Lines.Create(transform, "Shape " + index, WallColor, 0.15f, -4), outline);
-                return;
+                piece.Line = Lines.Create(transform, "Shape " + index, WallColor, 0.15f, -4);
+                Lines.Set(piece.Line, outline);
+                piece.LineHome = outline;
+                return piece;
             }
 
             var go = new GameObject("Shape " + index);
@@ -156,6 +302,9 @@ namespace Ricochet
             renderer.sprite = sprite;
             renderer.sortingOrder = ShapeOrder;
             ShapesFromArt++;
+            piece.Sprite = go.transform;
+            piece.SpriteHome = go.transform.position;
+            return piece;
         }
     }
 }
