@@ -161,8 +161,9 @@ copy of any of these is a bug.
   randomised levels and spots (UR-T23), driving and ending a turn (UR-T24), the settings room's match rules (UR-T25),
   fog of war (UR-T26), music (UR-T27), per-AI skill and names (UR-T28), mouse and numpad controls (UR-T29), and in the
   kit, bots joining from a player build (UM-T76) and a second copy taking over the host's player (UM-T77). Left out on
-  purpose: the hotseat and multiplayer rooms (§3), the studio splash and startup credits (the title screen stands in),
-  and the original's unused rooms (`room0`, the empty `intro`, and the campaign `maproom` no button reached).
+  purpose: the hotseat and multiplayer rooms (§3) and the original's unused rooms (`room0`, the empty `intro`, and the
+  campaign `maproom` no button reached). The studio splash and startup credits, then left out too, are restored by
+  U.RICO-T57 (Splash and startup credits).
 - ⬜ Anything not above is ticketed and unstarted. See
   [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.
 
@@ -792,9 +793,38 @@ black.
 - **Click**: every obj_btn_* that changed rooms played sfx_click on Left Pressed. A change made with the pointer already has
   it from `UiSounds` (its press, or the release a uGUI button acts on), so the curtain plays sfx_click only for one made
   another way (Enter, Esc, a pad). sfx_select stays the less / more steppers' (U.RICO-T50).
-- Not yet: the splash and startup credits (obj_fade_splashscreen, obj_startup_credits, obj_lotus_card_picture) are
-  U.RICO-T57's, which fades them through this same `ScreenFade.Open` and `Cover`. Deviation: the kit's busy dialog while
+- The splash and startup credits (obj_fade_splashscreen, obj_startup_credits, obj_lotus_card_picture; U.RICO-T57) open
+  out of black and leave through this same `ScreenFade.Cover`. Deviation: the kit's busy dialog while
   joining or reconnecting comes up without a fade.
+
+## Splash and startup credits (U.RICO-T57)
+
+Source: the splashscreen and startup_credits rooms; object_splashscreen, obj_lotus_card, obj_lotus_card_picture,
+obj_lotus_card_top, obj_line_emitter, obj_static_line, obj_spotlight, obj_startup_credits, obj_typewriter,
+obj_creditsimage, obj_fade_splashscreen and obj_fade_credits.
+
+- **Order**: the game opens on the splash, then the startup credits, then the title (`Game.ShowTitle`,
+  `Runtime/SplashScreen`, Core's `Core/Menu/Splash.cs`). Each room leaves through the black curtain (Room fades). The front
+  end's menus stay hidden, the jukebox waits and the pointer is hidden (`GameCursor.HiddenByRoom`) until the title is up.
+  A headless process and a bot skip both rooms.
+- **Splash**: on silver, sfx_tech loops as the room's music; spr_lotus_card_noborder stands at the room's middle with a
+  second copy trembling a pixel every 2 steps toward a spot up to 6 px off; spr_spotlight pulses at (960, 712); spr_beach
+  comes up on the card 0.008 alpha every 5 steps with sfx_startup, flickering (hidden, nudged up to 4 px, now and then
+  spr_ryan, now and then one of sfx_static1-6) less as more of it shows, while faint black lines (0.3 alpha) fall down the
+  card; spr_lotus_card_frame frames it; "A game by" (fnt_score) and "Ryan DeBraal" (fnt_impact), white outlined 2 px,
+  under it. 200 steps after the picture is whole the room goes on.
+- **Startup credits**: the music stops; spr_creditsimage at (960, 576) and a red note outlined in black at room_height - 60,
+  typed a character every 2 steps with sfx_type_quiet on every second one. After 600 steps, or on a click, a pad's button
+  or any key but F1 and F12, it goes on to the title.
+- Fixed defects: (1) the original never reached the splash: the game started on startup_credits, so the splash was dead;
+  the rebuild shows it first. (2) obj_lotus_card_picture waited for a key before its picture started to show, and the same
+  key finished it, so the reveal was never seen; here it starts as the room opens and the first key or click finishes it
+  (stopping sfx_startup). (3) The flicker's rarity was checked from alpha > 0.5 down, so the rarer settings (> 0.6 ... > 0.9)
+  were never reached; the rebuild checks the rarest first.
+- Deviations: the startup credits' note is this project's own words, typed out by the typewriter; the original warned of
+  GameMaker trouble with a wireless Xbox 360 controller, which the rebuild does not have. Left out: obj_typewriter_intro
+  (the empty intro room's, never reached), and F1 (window) and F12 (game_restart) on the credits room, which are only
+  passed over, not acted on. room0 and intro hold nothing and are not rebuilt.
 
 ## Music (U.RICO-T27)
 
@@ -878,8 +908,9 @@ a third of the time, and that definition names no recording, so a third of the p
 between the two that exist.
 
 Not played (no moment of the rebuild makes them yet): sfx_hologram_pass (a shot passing through its owner's own shield wall,
-which leaves no contact on the rebuild's path), sfx_hacktivated (obj_game's debug key), sfx_blip (obj_selector), the
-splash's sfx_tech, sfx_startup, sfx_whoosh, sfx_static1-6 and sfx_type_quiet (U.RICO-T57), sfx_type for the name boxes
+which leaves no contact on the rebuild's path), sfx_hacktivated (obj_game's debug key), sfx_blip (obj_selector), sfx_whoosh
+(nothing in the splash or startup credits plays it; their sfx_tech, sfx_startup, sfx_static1-6 and sfx_type_quiet play
+since U.RICO-T57), sfx_type for the name boxes
 (the kit's lobby). sfx_bounce, sfx_bounce_shotgun (sfx_bounce_shotgun1's bytes),
 sfx_dummy, sfx_fire, sfx_shoot_vortex, sfx_static and sfx_fuse4-6 are in the original's folder but played
 nowhere; each is imported and has its cue. sfx_woot, also played nowhere in the original, cheers the endgame podium with

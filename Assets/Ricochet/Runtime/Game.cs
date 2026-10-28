@@ -182,14 +182,31 @@ namespace Ricochet
             yield return null;
             if (frontEnd != null && frontEnd.HasMenus && frontEnd.State == FrontEndState.Menu)
             {
-                TitleScreen.Show(frontEnd, Application.version, () =>
-                {
-                    if (frontEnd.MainMenu != null)
-                    {
-                        frontEnd.MainMenu.Push(MenuFlow.Title(Room.Setup), BuildSetupRoom);
-                    }
-                });
+                // U.RICO-T57: the splash and the startup credits first (the menus hidden until the title is done with them).
+                frontEnd.MenusVisible = false;
+                SplashScreen.Show(() => ShowTitleNow(frontEnd));
             }
+        }
+
+        private void ShowTitleNow(NetFrontEnd frontEnd)
+        {
+            if (frontEnd == null || frontEnd.State != FrontEndState.Menu)
+            {
+                if (frontEnd != null)
+                {
+                    frontEnd.MenusVisible = true;
+                }
+
+                return;
+            }
+
+            TitleScreen.Show(frontEnd, Application.version, () =>
+            {
+                if (frontEnd.MainMenu != null)
+                {
+                    frontEnd.MainMenu.Push(MenuFlow.Title(Room.Setup), BuildSetupRoom);
+                }
+            });
         }
 
         // U.RICO-T52: the Start screen, then the players room.
@@ -267,7 +284,8 @@ namespace Ricochet
         {
             // U.RICO-T52, obj_jukebox: in the menus, track after track (the match plays its own).
             NetFrontEnd frontEnd = NetFrontEnd.Instance;
-            if (frontEnd != null && frontEnd.HasMenus && frontEnd.State == FrontEndState.Menu && GameAudio.Instance != null)
+            // U.RICO-T57: not while the splash plays sfx_tech or the startup credits hold the silence.
+            if (frontEnd != null && frontEnd.HasMenus && frontEnd.State == FrontEndState.Menu && GameAudio.Instance != null && !SplashScreen.Showing)
             {
                 GameAudio.Instance.Jukebox();
             }

@@ -32,6 +32,12 @@ namespace Ricochet
         /// <summary>The pointer's image.</summary>
         public Image Pointer => _pointer;
 
+        /// <summary>
+        /// U.RICO-T57: true while a room shows no pointer at all (the splash, which has no obj_mouse, and the startup
+        /// credits, which set obj_mouse.visible = false): neither this image nor the system's arrow, while the window has focus.
+        /// </summary>
+        public static bool HiddenByRoom { get; set; }
+
         /// <summary>Creates the pointer once (none in a headless process, nor without spr_mouse).</summary>
         public static GameCursor Create()
         {
@@ -83,7 +89,8 @@ namespace Ricochet
         private void LateUpdate()
         {
             Mouse mouse = Mouse.current;
-            bool show = _pointer != null && mouse != null && Application.isFocused;
+            bool hidden = HiddenByRoom && Application.isFocused;
+            bool show = _pointer != null && mouse != null && Application.isFocused && !hidden;
             if (show)
             {
                 float scale = _canvas != null && _canvas.scaleFactor > 0f ? _canvas.scaleFactor : 1f;
@@ -100,7 +107,7 @@ namespace Ricochet
                 _pointer.enabled = show;
             }
 
-            Cursor.visible = !show;
+            Cursor.visible = !show && !hidden;
         }
     }
 }

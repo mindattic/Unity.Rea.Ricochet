@@ -355,6 +355,30 @@ namespace Ricochet
             _music.Play();
         }
 
+        /// <summary>
+        /// U.RICO-T57: an effect's recording played as the music (object_splashscreen's audio_play_music(sfx_tech, 1)), on
+        /// the music source at the music volume, in place of the track playing; <see cref="StopMusic"/> ends it.
+        /// </summary>
+        public void PlayMusicCue(SoundCue cue, bool loop)
+        {
+            CurrentTrack = null;
+            if (_music == null)
+            {
+                return;
+            }
+
+            AudioClip clip = ClipFor(cue);
+            Apply(_mix);
+            if (clip == null)
+            {
+                return;
+            }
+
+            _music.clip = clip;
+            _music.loop = loop;
+            _music.Play();
+        }
+
         /// <summary>The volume a cue is given now (SoundBook.Volume: the mix's effect volume, 0 when muted or session-muted).</summary>
         public float CueVolume => SoundBook.Volume(_mix, Profiles.SessionMuted);
 
