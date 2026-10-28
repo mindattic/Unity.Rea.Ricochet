@@ -45,7 +45,7 @@ namespace Ricochet.Core.Tests
             r.Step();
             Assert.That((r.HSpeed(0), r.X(0)), Is.EqualTo((-1.0, 1920.0)));
             Assert.That(r.Sprite(0), Is.EqualTo("spr_letter_T"), "R moving left shows T");
-            Assert.That(r.Sprite(3), Is.EqualTo("spr_letter_O"));
+            Assert.That(r.Sprite(3), Is.EqualTo("spr_letter_C"), "O moving left shows the second C (O <-> C2)");
         }
 
         [Test]
