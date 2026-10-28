@@ -263,11 +263,8 @@ namespace Ricochet
             });
         }
 
-        // A joining client's board spawns before its session is live, so the kit's auto-wire skips it: wire it here (U.RICO-T20).
         private void Update()
         {
-            ClientVoteOverlays.Ensure();
-
             // U.RICO-T52, obj_jukebox: in the menus, track after track (the match plays its own).
             NetFrontEnd frontEnd = NetFrontEnd.Instance;
             if (frontEnd != null && frontEnd.HasMenus && frontEnd.State == FrontEndState.Menu && GameAudio.Instance != null)
