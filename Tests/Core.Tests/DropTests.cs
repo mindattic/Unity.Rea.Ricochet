@@ -143,7 +143,7 @@ namespace Ricochet.Core.Tests
             };
             field.Clear();
             Assert.That(field.Drops, Is.Empty);
-            Assert.That(removed, Is.EqualTo(4));
+            Assert.That(removed, Is.EqualTo(3), "U.RICO-T102: weapon, item and health only; the original never drops a powerup crate");
         }
 
         [Test]
