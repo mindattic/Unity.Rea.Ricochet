@@ -9,7 +9,7 @@
   "pellets": 5,
   "pelletSpread": 4,
   "pelletDamage": 0.35,
-  "laserSpeed": 3,
+  "laserSpeed": 1,
   "railgunSpeed": 8,
   "weapons": [
     { "id": "Cannon", "name": "Cannon", "start": 10, "inPlay": true, "about": "Fires a shell that ricochets off the walls and shapes until its bounces run out." },

@@ -350,9 +350,7 @@ Source: `scripts/draw_beam.gml`, `draw_dottedline.gml`, `laser_create/step/draw.
   under white 1 px at 0.9 from the muzzle to the head through every bounce (new_laser's segments). obj_laser_pulse's
   spr_raingun_ring is sent from the muzzle 40-60 steps in and every 25-75 after (obj_laser's alarm), riding the beam at the
   head's speed turned to its heading. Once the last bounce is spent the beam's back end runs after the head at five times its
-  speed (laser_step's `originX += dX * 5`) until it is gone, and the pulses fade 0.02 a step. The rebuild flies the laser at
-  three times a shell's speed, so the pulses are spaced by the distance the original's head covered in those steps (3 px a
-  step), which keeps their spacing.
+  speed (laser_step's `originX += dX * 5`) until it is gone, and the pulses fade 0.02 a step. The rebuild flies the laser at a shell's speed too (shoot_laser.gml, U.RICO-T105), so the pulses keep the spacing the original's head covered in those steps.
 - **Railgun** (`Rail`): no sprite at the slug: railgun_draw's railColor (200, 255, 200) line 9 px at 0.1 and 1 px at railAlpha,
   and a spr_railgun_swirl every 56 px from the muzzle (generate_swirl) tinted railColor at railAlpha, each lighting the fog
   (swirl_create's lightSize 1). railAlpha starts at 0.8 and loses 0.005 a step: the rail is gone 160 steps (2.7 s) after it

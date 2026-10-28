@@ -78,7 +78,7 @@ namespace Ricochet.Core.Arsenal
         /// <summary>The share of a hit's damage one pellet does.</summary>
         public double PelletDamage { get; set; }
 
-        /// <summary>The laser flies this many times a shell's speed.</summary>
+        /// <summary>The laser flies this many times a shell's speed (1 in the original).</summary>
         public double LaserSpeed { get; set; }
 
         /// <summary>The railgun's slug flies this many times a shell's speed (near enough instant).</summary>

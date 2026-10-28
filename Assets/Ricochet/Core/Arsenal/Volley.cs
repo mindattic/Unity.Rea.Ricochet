@@ -3,7 +3,7 @@
 // shoot_bullet/shoot_laser/shoot_shotgun/shoot_grenade/shoot_railgun/shoot_vortex.gml spawned objects that stepped a
 // pixel at a time (design reference only, UR-LAW-2); here each is one or more solved ShotPaths plus what they strike:
 //   Cannon   one shell along the aim until its bounces run out; it stops in the first player it reaches (hit.gml's damage).
-//   Laser    a beam at three times a shell's speed; otherwise a cannon shot.
+//   Laser    a beam at a shell's speed (shoot_laser.gml); otherwise a cannon shot.
 //   Shotgun  a fan of pellets (pelletCount, +/- shotgunSpread degrees), each its own bouncing shot doing a share of a hit.
 //   Grenade  bounces like a shell but passes through players, and goes off when its fuse runs out (grenade_countdown.gml)
 //            or on its bounce limit (grenade_step.gml), hurting everyone within its blast (check_grenade_intersection.gml).
