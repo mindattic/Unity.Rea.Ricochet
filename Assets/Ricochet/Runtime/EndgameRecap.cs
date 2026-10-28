@@ -162,6 +162,7 @@ namespace Ricochet
             _screen.AddButton("Close", Close);
             _stack.Open();
             _screen.MarkNavigationDirty();
+            ScreenFade.Open(); // U.RICO-T53: the endgame room comes up out of black (obj_fade_endgame)
             if (_flashes != null)
             {
                 _flashes.Begin();

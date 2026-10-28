@@ -671,6 +671,30 @@ in flight (spr_teleporter, spr_shrinkball) and the endgame's spr_flash are U.RIC
   `MenuFlowTests` the room graph; PlayMode `MenuScreenTests` the title's Start and the Start screen, `MenuArtTests` the
   letters' drift.
 
+## Room fades (U.RICO-T53)
+
+- **One curtain** (Core's `RoomFade`, `Runtime/ScreenFade`): the original gave every room its own copy of one object
+  (obj_fade, obj_fade_game, _mainmenu, _maproom, _settings, _controls, _credits, _endgame, _howtoplay, _multiplayer,
+  _splashscreen): spr_black over the room at depth -10000, created at image_alpha 1 in mode "fadeout", its alpha stepping
+  0.01 a step to clear and the mode going "off"; a room that left by fading to black first (obj_maproom, obj_startup_credits,
+  obj_lotus_card_picture) set it to "fadein", and the room_goto came once it was black. The copies differ only in where that
+  room_goto went, so the rebuild has one curtain on its own canvas over everything (sorting order 30000): `Open` brings a
+  screen up out of black, `Cover` fades to black, makes the change, then opens.
+- **Length**: 100 steps of 0.01 at the rooms' 60 steps a second, about 1.67 s, as data (menu.json's `fadeSeconds`), on
+  unscaled time so a paused match does not hold it.
+- **Which changes fade**: every screen pushed or popped on the kit's main menu and in-game menu (the setup rooms, settings,
+  controls, how to play, credits, kick), the front end moving between the menus, the lobby and the game, and the endgame
+  recap opening (obj_fade_endgame). The map room's Next covers to black before it hosts (obj_maproom's "fadein"), and the
+  lobby comes up out of black. The curtain takes clicks only while it is going to black, so nothing is pressed twice
+  before the change; clearing, it never blocks the new screen (the original's curtain sat over a room whose buttons still
+  worked).
+- **Click**: every obj_btn_* that changed rooms played sfx_click on Left Pressed. A change made with the pointer already has
+  it from `UiSounds` (its press, or the release a uGUI button acts on), so the curtain plays sfx_click only for one made
+  another way (Enter, Esc, a pad). sfx_select stays the less / more steppers' (U.RICO-T50).
+- Not yet: the splash and startup credits (obj_fade_splashscreen, obj_startup_credits, obj_lotus_card_picture) are
+  U.RICO-T57's, which fades them through this same `ScreenFade.Open` and `Cover`. Deviation: the kit's busy dialog while
+  joining or reconnecting comes up without a fade.
+
 ## Music (U.RICO-T27)
 
 Source: `sound/music_*.sound.gmx` and `sound/audio/music_*.mp3`, `play_random_music.gml`, `play_next_track.gml`, `obj_jukebox`,

@@ -1,6 +1,7 @@
 {
   "_source": "The menu flow's text (see MenuFlow.cs): tagline, room titles, the main menu's buttons, controls, how-to-play slides and credits.",
   "tagline": "Bank it off the walls. Land it on your friends.",
+  "fadeSeconds": 1.6666666666666667,
   "titles": {
     "Title": "Ricochet",
     "MainMenu": "Main menu",

@@ -77,6 +77,9 @@ namespace Ricochet
             // Sound (UR-T10): the volumes and mutes are the active MindAttic profile's (none on a headless peer).
             GameAudio.Create();
 
+            // U.RICO-T53: the one black curtain every screen change fades through (obj_fade and its ten copies).
+            ScreenFade.Create();
+
             // U.RICO-T78: every menu control in the original's spr_button / checkbox / input box / arrow art and fonts.
             GmlMenuSkin.Ensure();
 
@@ -249,10 +252,20 @@ namespace Ricochet
         private void HostFromMapRoom()
         {
             RememberSetup();
-            if (_lobby != null)
+            if (_lobby == null)
             {
-                _ = _lobby.HostMatch(_setup);
+                return;
             }
+
+            // U.RICO-T53: the map room fades to black before it goes on (obj_maproom set its curtain to "fadein" and its
+            // room_goto came once it was black); the lobby then comes up out of black.
+            ScreenFade.Cover(() =>
+            {
+                if (_lobby != null)
+                {
+                    _ = _lobby.HostMatch(_setup);
+                }
+            });
         }
 
         // A joining client's board spawns before its session is live, so the kit's auto-wire skips it: wire it here (U.RICO-T20).

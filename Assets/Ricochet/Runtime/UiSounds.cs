@@ -24,6 +24,26 @@ namespace Ricochet
         public Selectable Hovered => _hovered;
 
         /// <summary>
+        /// The frame a pointer last pressed a control and played its cue (-1 for never): a screen change that frame has had
+        /// its click already (ScreenFade, U.RICO-T53).
+        /// </summary>
+        public static int PressedFrame { get; private set; } = -1;
+
+        /// <summary>
+        /// The frame the pointer was let go after a press that played its cue (-1 for never): uGUI buttons act on release,
+        /// so a screen change that frame has had its click too (U.RICO-T53).
+        /// </summary>
+        public static int ReleasedFrame { get; private set; } = -1;
+
+        private static bool _pressCued;
+
+        /// <summary>True when the pointer's press or release on <paramref name="frame"/> already made the click.</summary>
+        public static bool PointerClickedOn(int frame)
+        {
+            return frame >= 0 && (frame == PressedFrame || frame == ReleasedFrame);
+        }
+
+        /// <summary>
         /// The cue pressing <paramref name="control"/> plays: sfx_disabled when it cannot be pressed, sfx_select for a
         /// slider (the original's steppers), sfx_click for anything else (a button, a toggle); null for none.
         /// </summary>
@@ -50,8 +70,14 @@ namespace Ricochet
         }
 
         /// <summary>What the pointer is over, and whether it was pressed this frame: the sounds for both.</summary>
-        public void Observe(Selectable under, bool pressed)
+        public void Observe(Selectable under, bool pressed, bool released = false)
         {
+            if (released && _pressCued)
+            {
+                ReleasedFrame = Time.frameCount; // U.RICO-T53: the button acts now; its click was the press's
+                _pressCued = false;
+            }
+
             if (under != _hovered)
             {
                 _hovered = under;
@@ -60,7 +86,14 @@ namespace Ricochet
 
             if (pressed)
             {
-                GameAudio.Play(PressCue(under));
+                SoundCue? cue = PressCue(under);
+                _pressCued = cue != null;
+                if (cue != null)
+                {
+                    PressedFrame = Time.frameCount; // U.RICO-T53: this press is the screen change's click, if it changes one
+                }
+
+                GameAudio.Play(cue);
             }
         }
 
@@ -94,7 +127,7 @@ namespace Ricochet
                 break; // the topmost thing the pointer is over decides, as a click would
             }
 
-            Observe(under, pointer.press.wasPressedThisFrame);
+            Observe(under, pointer.press.wasPressedThisFrame, pointer.press.wasReleasedThisFrame);
         }
     }
 }

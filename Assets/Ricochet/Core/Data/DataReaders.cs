@@ -371,6 +371,8 @@ namespace Ricochet.Core.Data
         public static MenuData ReadMenu(SettingsReader r)
         {
             string tagline = r.Text("tagline");
+            // U.RICO-T53: how long a room fade takes (obj_fade's 100 steps of 0.01 at 60 steps a second).
+            double fadeSeconds = r.Number("fadeSeconds", 0.01, 10);
 
             var titles = new Dictionary<Room, string>();
             SettingsReader t = r.Section("titles");
@@ -421,7 +423,7 @@ namespace Ricochet.Core.Data
 
             tip.Done();
             r.Done();
-            return new MenuData(tagline, titles, off.ToArray(), controls.ToArray(), slides.ToArray(), credits.ToArray(), tips);
+            return new MenuData(tagline, titles, off.ToArray(), controls.ToArray(), slides.ToArray(), credits.ToArray(), tips, fadeSeconds);
         }
 
         public static List<SettingDef> ReadRegistry(SettingsReader r, Dictionary<string, JsonValue> docs, List<string> errors)

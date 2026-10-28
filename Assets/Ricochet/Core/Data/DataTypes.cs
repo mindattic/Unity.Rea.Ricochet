@@ -50,8 +50,9 @@ namespace Ricochet.Core.Data
     public sealed class MenuData
     {
         internal MenuData(string tagline, Dictionary<Room, string> titles, Room[] offTheMainMenu, ControlBinding[] controls, Slide[] slides, string[] credits,
-            Dictionary<string, string> tips = null)
+            Dictionary<string, string> tips = null, double fadeSeconds = 0)
         {
+            FadeSeconds = fadeSeconds;
             Tagline = tagline;
             Titles = titles;
             OffTheMainMenu = offTheMainMenu;
@@ -63,6 +64,9 @@ namespace Ricochet.Core.Data
 
         /// <summary>U.RICO-T52: the Start screen's hover tips by name (MenuFlow.TipNames).</summary>
         public IReadOnlyDictionary<string, string> Tips { get; }
+
+        /// <summary>U.RICO-T53: how long a room fade takes, in seconds (0: the original's, RoomFade.DefaultSeconds).</summary>
+        public double FadeSeconds { get; }
 
         public string Tagline { get; }
 
