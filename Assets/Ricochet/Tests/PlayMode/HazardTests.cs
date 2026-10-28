@@ -237,20 +237,22 @@ namespace Ricochet.Tests
         }
 
         // UR-T25: the settings screen's "Pause redirectors once placed" box, carried into the match by the setup: off, a
-        // placed redirector turns HazardRules.RedirectorSpinDegrees every turn; on, it stays as it was set down.
+        // standing redirector turns until its owner fires and, with the box on, stops there; off, it keeps turning.
         [UnityTest]
         public IEnumerator APlacedRedirectorTurnsEveryTurn_WhenTheSetupDoesNotPauseIt()
         {
-            yield return RedirectorAcrossATurn(pause: false, expectedTurn: Arena.HazardRules.RedirectorSpinDegrees);
+            yield return RedirectorAcrossAShot(pause: false);
         }
 
         [UnityTest]
         public IEnumerator APlacedRedirectorStaysPut_WhenTheSetupPausesIt()
         {
-            yield return RedirectorAcrossATurn(pause: true, expectedTurn: 0);
+            yield return RedirectorAcrossAShot(pause: true);
         }
 
-        private IEnumerator RedirectorAcrossATurn(bool pause, double expectedTurn)
+        // A standing redirector spins until its owner fires (pause_redirector on stops it there; off keeps it turning), and the
+        // next turn destroys it (U.RICO-T104).
+        private IEnumerator RedirectorAcrossAShot(bool pause)
         {
             Arena.MatchRules.EndTurnSeconds = 0.2;
             bool spinWas = Arena.HazardRules.RedirectorsSpin;
@@ -273,10 +275,27 @@ namespace Ricochet.Tests
                 Hazard placed = null;
                 yield return WaitUntil(() => (placed = arena.HazardsOnField.FirstOrDefault(h => h.Kind == HazardKind.Redirector)) != null, "no redirector was set down");
                 double before = placed.Heading;
+                yield return null;
+                yield return null;
+                Assert.That(Angles.Normalize(placed.Heading - before), Is.Not.EqualTo(0).Within(1e-9), "a standing redirector spins");
 
-                host.ServerFire(90f); // anywhere: the turn only has to pass
+                host.ServerFire(90f); // anywhere
+                yield return null;
+                double atFire = placed.Heading;
+                yield return null;
+                yield return null;
+                bool moved = System.Math.Abs(Angles.Normalize(placed.Heading - atFire)) > 1e-9;
+                if (pause)
+                {
+                    Assert.That(moved, Is.False, "pause_redirector on: it stops turning when its owner fires");
+                }
+                else
+                {
+                    Assert.That(moved, Is.True, "pause_redirector off: it keeps turning after the owner fires");
+                }
+
                 yield return WaitUntil(() => Turns.For(Server).Current == ann.Seat, "the turn never passed", 15f);
-                Assert.That(Angles.Normalize(placed.Heading - before), Is.EqualTo(Angles.Normalize(expectedTurn)).Within(1e-6));
+                Assert.That(arena.HazardsOnField.Contains(placed), Is.False, "next_player destroys the standing redirector");
             }
             finally
             {

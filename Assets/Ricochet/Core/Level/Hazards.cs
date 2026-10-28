@@ -107,11 +107,11 @@ namespace Ricochet.Core.Level
         /// <summary>Whether laser gates switch on and off every turn (off: always on).</summary>
         public bool LasersAlternate { get; set; }
 
-        /// <summary>pause_redirector off (UR-T25): placed redirectors keep turning, <see cref="RedirectorSpinDegrees"/> every turn.</summary>
+        /// <summary>pause_redirector off (U.RICO-T104): a placed redirector keeps turning; on, it turns until its owner fires or teleports (redirector_stop).</summary>
         public bool RedirectorsSpin { get; set; }
 
-        /// <summary>Degrees a spinning redirector turns at each new turn.</summary>
-        public double RedirectorSpinDegrees { get; set; } = 30;
+        /// <summary>Degrees a standing redirector turns every step (obj_redirector's spin = 1, through tick).</summary>
+        public double RedirectorSpinDegrees { get; set; } = 1;
 
         /// <summary>The electric arcs every round starts with (pairs of pylons), for <see cref="Level.Default"/>.</summary>
         public List<Vec2[]> Arcs { get; } = new List<Vec2[]>();
@@ -162,7 +162,7 @@ namespace Ricochet.Core.Level
     public sealed class Hazard
     {
         /// <summary>A hazard as the server made it, or as a peer read it back off the wire.</summary>
-        public Hazard(int id, HazardKind kind, Vec2 a, Vec2 b, double radius = 0, int owner = -1, double heading = 0, bool active = true)
+        public Hazard(int id, HazardKind kind, Vec2 a, Vec2 b, double radius = 0, int owner = -1, double heading = 0, bool active = true, double alpha = 1)
         {
             Id = id;
             Kind = kind;
@@ -172,6 +172,8 @@ namespace Ricochet.Core.Level
             Owner = owner;
             Heading = heading;
             Active = active;
+            Alpha = alpha;
+            Fading = alpha < 1; // a redirector's fade shows in its alpha, which is what peers are sent
             LifeLeft = double.PositiveInfinity;
         }
 
@@ -194,6 +196,15 @@ namespace Ricochet.Core.Level
 
         /// <summary>A placed redirector's heading, in degrees.</summary>
         public double Heading { get; internal set; }
+
+        /// <summary>A standing redirector's turn, in degrees a step (signed; 0 once stopped).</summary>
+        public double Spin { get; internal set; }
+
+        /// <summary>A standing redirector that has sent a shot on: it fades (image_alpha -= 0.01 a step) and is gone.</summary>
+        public bool Fading { get; internal set; }
+
+        /// <summary>image_alpha: 1, falling while <see cref="Fading"/>.</summary>
+        public double Alpha { get; internal set; } = 1;
 
         /// <summary>A laser gate's beam is on (the rest are always active).</summary>
         public bool Active { get; internal set; }
@@ -328,9 +339,10 @@ namespace Ricochet.Core.Level
                         breaches.Add(new Breach(hazard.A, hazard.B));
                         break;
                     case HazardKind.Redirector:
-                        if (Vec2.Distance(hazard.A, hazard.B) >= Geometry.Epsilon)
+                        // One shot only: a redirector that has sent one on no longer bends another (collision stays true).
+                        if (!hazard.Fading && Vec2.Distance(hazard.A, hazard.B) >= Geometry.Epsilon)
                         {
-                            redirectors.Add(new Redirector(hazard.A, hazard.B, hazard.Heading));
+                            redirectors.Add(new Redirector(hazard.A, hazard.B, hazard.Heading, hazard.Id));
                         }
 
                         break;
@@ -377,11 +389,46 @@ namespace Ricochet.Core.Level
         }
 
         /// <summary>The redirector item: a redirector at <paramref name="spot"/>, across <paramref name="heading"/>, sending shots along it.</summary>
-        public Hazard AddRedirector(int owner, Vec2 spot, double heading)
+        public Hazard AddRedirector(int owner, Vec2 spot, double heading, bool reversed = false)
         {
             Vec2 along = Vec2.FromAngle(heading);
             Vec2 across = new Vec2(-along.Y, along.X) * (Rules.RedirectorLength / 2);
-            return Add(new Hazard(++_nextId, HazardKind.Redirector, spot - across, spot + across, owner: owner, heading: Angles.Normalize(heading)));
+            var placed = new Hazard(++_nextId, HazardKind.Redirector, spot - across, spot + across, owner: owner, heading: Angles.Normalize(heading))
+            {
+                // spin = 1, negated by each bounce in flight (redirector_step); an odd number of bounces leaves it reversed.
+                Spin = reversed ? -Rules.RedirectorSpinDegrees : Rules.RedirectorSpinDegrees,
+            };
+            return Add(placed);
+        }
+
+        /// <summary>
+        /// redirector_stop (fire_weapon, use_item's teleporter): with pause_redirector on, <paramref name="owner"/>'s standing
+        /// redirector stops turning; with it off, it keeps turning.
+        /// </summary>
+        public void PauseRedirectors(int owner)
+        {
+            if (Rules.RedirectorsSpin)
+            {
+                return;
+            }
+
+            foreach (Hazard hazard in _hazards)
+            {
+                if (hazard.Kind == HazardKind.Redirector && hazard.Owner == owner)
+                {
+                    hazard.Spin = 0;
+                }
+            }
+        }
+
+        /// <summary>A redirector sent a shot on (obj_redirector's collision events set fade = true): it fades away.</summary>
+        public void RedirectorSpent(int id)
+        {
+            Hazard hazard = Find(id);
+            if (hazard != null && hazard.Kind == HazardKind.Redirector)
+            {
+                hazard.Fading = true;
+            }
         }
 
         /// <summary>
@@ -495,7 +542,7 @@ namespace Ricochet.Core.Level
             return changed;
         }
 
-        /// <summary>A new turn: every laser gate switches (when <see cref="HazardRules.LasersAlternate"/>) and every redirector turns (when <see cref="HazardRules.RedirectorsSpin"/>).</summary>
+        /// <summary>A new turn: every laser gate switches (when <see cref="HazardRules.LasersAlternate"/>) and every standing redirector is destroyed.</summary>
         public void NextTurn()
         {
             foreach (Hazard hazard in _hazards)
@@ -505,19 +552,14 @@ namespace Ricochet.Core.Level
                     hazard.Active = !hazard.Active;
                     Changed?.Invoke(hazard);
                 }
-                else if (hazard.Kind == HazardKind.Redirector && Rules.RedirectorsSpin)
+            }
+
+            // next_player: with(obj_redirector) instance_destroy().
+            for (int i = _hazards.Count - 1; i >= 0; i--)
+            {
+                if (_hazards[i].Kind == HazardKind.Redirector)
                 {
-                    // pause_redirector off: the rail turns about its centre and sends shots along its new heading.
-                    double radians = Rules.RedirectorSpinDegrees * Math.PI / 180;
-                    double cos = Math.Cos(radians);
-                    double sin = Math.Sin(radians);
-                    Vec2 center = hazard.Center;
-                    Vec2 half = (hazard.B - hazard.A) * 0.5;
-                    var turned = new Vec2(half.X * cos - half.Y * sin, half.X * sin + half.Y * cos);
-                    hazard.A = center - turned;
-                    hazard.B = center + turned;
-                    hazard.Heading = Angles.Normalize(hazard.Heading + Rules.RedirectorSpinDegrees);
-                    Changed?.Invoke(hazard);
+                    Remove(_hazards[i], HazardEnd.Cleared);
                 }
             }
         }
@@ -530,9 +572,16 @@ namespace Ricochet.Core.Level
                 return;
             }
 
+            double steps = seconds * StepsPerSecond;
             for (int i = _hazards.Count - 1; i >= 0; i--)
             {
                 Hazard hazard = _hazards[i];
+                if (hazard.Kind == HazardKind.Redirector)
+                {
+                    TickRedirector(hazard, steps);
+                    continue;
+                }
+
                 if (double.IsInfinity(hazard.LifeLeft))
                 {
                     continue;
@@ -540,6 +589,39 @@ namespace Ricochet.Core.Level
 
                 hazard.LifeLeft -= seconds;
                 if (hazard.LifeLeft <= 0)
+                {
+                    Remove(hazard, HazardEnd.Decayed);
+                }
+            }
+        }
+
+        /// <summary>The original's room speed.</summary>
+        public const double StepsPerSecond = 60;
+
+        // redirector_step, spinning: image_angle += tick(spin) a step; once it has sent a shot on, image_alpha -= 0.01 a step
+        // and it is destroyed when none is left.
+        private void TickRedirector(Hazard hazard, double steps)
+        {
+            if (hazard.Spin != 0)
+            {
+                double degrees = hazard.Spin * steps;
+                double radians = degrees * Math.PI / 180;
+                double cos = Math.Cos(radians);
+                double sin = Math.Sin(radians);
+                Vec2 center = hazard.Center;
+                Vec2 half = (hazard.B - hazard.A) * 0.5;
+                var turned = new Vec2(half.X * cos - half.Y * sin, half.X * sin + half.Y * cos);
+                hazard.A = center - turned;
+                hazard.B = center + turned;
+                hazard.Heading = Angles.Normalize(hazard.Heading + degrees);
+                Changed?.Invoke(hazard);
+            }
+
+            if (hazard.Fading)
+            {
+                hazard.Alpha -= 0.01 * steps;
+                Changed?.Invoke(hazard);
+                if (hazard.Alpha <= 0)
                 {
                     Remove(hazard, HazardEnd.Decayed);
                 }

@@ -716,6 +716,7 @@ namespace Ricochet.Core.Commands
             state.ShotHeading = state.Heading;
             state.ShotWeapon = weapon;
             state.ShotFuse = Quantize(loadout.Fuse);
+            Hazards.PauseRedirectors(state.Seat); // redirector_stop (fire_weapon)
             state.ShotExtraBounces = state.ExtraBounces;
             state.ShotDetonation = 0;
             state.ExtraBounces = 0;
@@ -791,6 +792,11 @@ namespace Ricochet.Core.Commands
 
             // The items that fly are flown first, so the event carries the path every peer draws them along (U.RICO-T79).
             ShotPath flight = null;
+            if (item == Item.Teleporter)
+            {
+                Hazards.PauseRedirectors(state.Seat); // redirector_stop (use_item's teleporter)
+            }
+
             Wall hit = null;
             switch (item)
             {
@@ -964,7 +970,8 @@ namespace Ricochet.Core.Commands
                 double distance = Quantize(Math.Max(0, Math.Min(flying.Flight.Length, flying.Travelled)));
                 Vec2 placed = Arsenal.PlaceRedirector(flying.Flight, distance, LevelFor(state.Seat), Rules, out double heading);
                 Emit(new RedirectorStopped(state.Id, distance));
-                Hazards.AddRedirector(state.Seat, placed, heading);
+                // redirector_step negates its spin at each bounce in flight: an odd count leaves it turning the other way.
+                Hazards.AddRedirector(state.Seat, placed, heading, flying.Flight.ContactsBefore(distance) % 2 == 1);
                 return;
             }
         }
@@ -1149,6 +1156,22 @@ namespace Ricochet.Core.Commands
             {
                 Hazards.Implode(volley.BlastCenter, volley.BlastRadius);
             }
+            // obj_redirector's collision events set fade: each redirector a shot (not a railgun slug) was sent on by fades away.
+            if (volley.Weapon != Weapon.Railgun)
+            {
+                Level seen = LevelFor(state.Seat);
+                foreach (ShotPath path in volley.Paths)
+                {
+                    foreach (Contact contact in path.Contacts)
+                    {
+                        if (contact.Kind == ContactKind.Redirector && contact.Index >= 0 && contact.Index < seen.Redirectors.Count)
+                        {
+                            Hazards.RedirectorSpent(seen.Redirectors[contact.Index].HazardId);
+                        }
+                    }
+                }
+            }
+
 
             foreach (Strike strike in volley.Strikes)
             {

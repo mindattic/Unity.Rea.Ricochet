@@ -330,17 +330,38 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void ASpinningRedirectorTurnsEachTurn_APausedOneStays()
+        public void AStandingRedirectorSpinsUntilItsOwnerFires_AndNoPauseKeepsItTurning()
         {
             foreach (bool spin in new[] { false, true })
             {
-                var rules = new HazardRules { RedirectorsSpin = spin, RedirectorSpinDegrees = 90 };
+                var rules = new HazardRules { RedirectorsSpin = spin };
                 var field = new HazardField(new Level(-10, -5, 10, 5), rules);
                 Hazard placed = field.AddRedirector(0, new Vec2(0, 0), 0);
-                field.NextTurn();
-                Assert.That(placed.Heading, Is.EqualTo(spin ? 90 : 0).Within(1e-9));
+                field.Tick(1.0); // 60 steps at 1 degree
+                Assert.That(placed.Heading, Is.EqualTo(60).Within(1e-6));
+                field.PauseRedirectors(0); // the owner fires
+                field.Tick(1.0);
+                Assert.That(placed.Heading, Is.EqualTo(spin ? 120 : 60).Within(1e-6));
                 Assert.That((placed.A + placed.B).Length, Is.EqualTo(0).Within(1e-9), "still about its centre");
             }
+        }
+
+        [Test]
+        public void ARedirectorBouncedInFlightSpinsTheOtherWay_FadesAfterOneShot_AndNextTurnDestroysIt()
+        {
+            var field = new HazardField(new Level(-10, -5, 10, 5), new HazardRules());
+            Hazard back = field.AddRedirector(0, new Vec2(0, 0), 0, reversed: true);
+            field.Tick(0.5);
+            Assert.That(back.Heading, Is.EqualTo(Angles.Normalize(-30)).Within(1e-6));
+
+            field.RedirectorSpent(back.Id);
+            Assert.That(field.LevelFor(0).Redirectors, Is.Empty, "it bends no second shot");
+            field.Tick(2.0); // 120 steps of 0.01 is past fully faded
+            Assert.That(field.Hazards, Does.Not.Contain(back));
+
+            Hazard other = field.AddRedirector(0, new Vec2(1, 1), 0);
+            field.NextTurn();
+            Assert.That(field.Hazards, Does.Not.Contain(other));
         }
 
         [Test]

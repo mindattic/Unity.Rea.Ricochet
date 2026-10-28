@@ -50,6 +50,7 @@ namespace Ricochet
         [Synced] private int _ownerSeat = -1;
         [Synced] private float _heading;
         [Synced] private bool _active = true;
+        [Synced] private float _alpha = 1f; // a redirector's image_alpha: it fades once it has sent a shot on
 
         private LineRenderer _line;
         private LineRenderer _glow;
@@ -124,12 +125,13 @@ namespace Ricochet
             OwnerSeat = hazard.Owner;
             Heading = (float)hazard.Heading;
             Active = hazard.Active;
+            Alpha = (float)hazard.Alpha;
         }
 
         /// <summary>This hazard as Core data.</summary>
         public Hazard ToCore()
         {
-            return new Hazard(HazardId, HazardKind, Arena.ToCore(A), Arena.ToCore(B), Radius, OwnerSeat, Heading, Active);
+            return new Hazard(HazardId, HazardKind, Arena.ToCore(A), Arena.ToCore(B), Radius, OwnerSeat, Heading, Active, Alpha);
         }
 
         protected override void OnSpawned()
@@ -365,6 +367,7 @@ namespace Ricochet
                         float scale = (float)WeaponLooks.RedirectorScaleAt((Time.time - _spawnedAt) * Steps.PerSecond);
                         _art.transform.localScale = new Vector3(scale, scale, 1f);
                         _art.transform.rotation = Quaternion.Euler(0f, 0f, Heading);
+                        _art.color = new Color(1f, 1f, 1f, Alpha);
                     }
 
                     break;

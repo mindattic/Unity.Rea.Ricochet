@@ -42,7 +42,7 @@ namespace Ricochet.Core.Level
     /// <summary>A rail redirector: a segment that sends whatever touches it off along <see cref="Heading"/>.</summary>
     public sealed class Redirector
     {
-        public Redirector(Vec2 a, Vec2 b, double heading)
+        public Redirector(Vec2 a, Vec2 b, double heading, int hazardId = -1)
         {
             if (Vec2.Distance(a, b) < Geometry.Epsilon)
             {
@@ -52,7 +52,11 @@ namespace Ricochet.Core.Level
             A = a;
             B = b;
             Heading = Angles.Normalize(heading);
+            HazardId = hazardId;
         }
+
+        /// <summary>The placed redirector's hazard id (a standing redirector fades after one shot); -1 for a map's own.</summary>
+        public int HazardId { get; }
 
         public Vec2 A { get; }
 
