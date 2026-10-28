@@ -205,7 +205,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void MapIdsMustBeUniqueAndInsideTheirBorder()
         {
-            var duplicate = Fails(s => Patched(s, "maps.json", t => t.Replace("\"id\": \"crossfire\"", "\"id\": \"practice\"")));
+            var duplicate = Fails(s => Patched(s, "maps.json", t => t.Replace("\"id\": \"random\"", "\"id\": \"practice\"")));
             Assert.That(duplicate.Errors.Any(e => e.Contains("maps.json") && e.Contains("id 'practice' is used twice")), Is.True);
 
             var outside = Fails(s => Patched(s, "maps.json", t => t.Replace("[-11, 3, -8, 6]", "[-11, 3, -8, 60]")));
