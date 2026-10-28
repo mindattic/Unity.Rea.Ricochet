@@ -218,7 +218,7 @@ namespace Ricochet.Core.Tests
             Target[] targets = { T("me", 0, 0), T("near", 4, 2), T("atTheEnd", 9.4, 0) };
             Volley whole = Arsenal.Fire(Weapon.Vortex, Vec2.Zero, 0, 2, 0, Open(), targets);
             Assert.That(whole.HasBlast, Is.True);
-            Assert.That(whole.Main.End, Is.EqualTo(ShotEndKind.Target));
+            Assert.That(whole.Main.End, Is.EqualTo(ShotEndKind.BounceLimit), "obj_vortex has no tank collision: it flies through to its bounce limit (U.RICO-T135)");
             Assert.That(whole.Strikes, Is.Empty, "no shape to fling: nobody is hurt");
 
             Volley early = Arsenal.Detonate(whole, 3.4, targets, Open());
@@ -228,7 +228,7 @@ namespace Ricochet.Core.Tests
             Assert.That(early.Strikes, Is.Empty, "a vortex hurts no one itself, only the shapes it flings (U.RICO-T96)");
             Assert.That(early.Speed, Is.EqualTo(whole.Speed));
 
-            Assert.That(Arsenal.Detonate(whole, 100, targets, Open()), Is.SameAs(whole), "too late: it lands where it was going");
+            Assert.That(Arsenal.Detonate(whole, whole.Main.Length + 1, targets, Open()), Is.SameAs(whole), "too late: it lands where it was going");
             Volley cannon = Arsenal.Fire(Weapon.Cannon, Vec2.Zero, 0, 2, 0, Open(), targets);
             Assert.That(Arsenal.Detonate(cannon, 2, targets, Open()), Is.SameAs(cannon), "only a vortex can be set off");
         }
