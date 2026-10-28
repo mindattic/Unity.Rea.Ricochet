@@ -56,7 +56,7 @@ Source read: `R:\Projects\_PRE_2022\_PRE_2021\_PRE_2020\_PRE_2017\gmlRicochet\09
 ### 1.2 Dormant or dead in the original (recorded, not rebuilt)
 
 `obj_sheep` and `create_random_sheep` (critters, commented out of `randomize_level`), `create_random_foliage`'s call (also
-commented out; the rebuild keeps foliage as a hazard from UR-T6), the laser sight item, `obj_powerup_doublespeed`, `_shield`,
+commented out; the rebuild keeps foliage, arcs and laser gates as hazards from UR-T6 but, from U.RICO-T91, lays none by default: `hazards.json` `layHazards` is false), the laser sight item, `obj_powerup_doublespeed`, `_shield`,
 `_teleport`, `_extrabounce` (HUD stubs for a powerup system that never shipped), `object261`, `obl_lbl_announcer` (a typo duplicate), the debug keys (F12 debug on, F11 skip to endgame with random scores, F10 and F9 give
 a weapon or an item, F8 trace every degree, numpad plus and minus game speed), `take_screenshot` (writes to `C:\`), the hotseat multiplayer rooms
 (replaced by the kit, BIBLE section 3), `room0`, the empty `intro` and the campaign `maproom` no button reached.

@@ -57,9 +57,9 @@ namespace Ricochet
             BackdropView.Create(() => Turns.PausedIn(session));
             MatchHud.Create();
 
-            // Server rules: dummies spawn when the session runs as a host or dedicated server, and the level is laid with its
-            // hazards (UR-T6): electric arcs, laser gates and foliage.
-            _arena = Arena.Serve(bootstrap.Session, dummyPrefab, layHazards: true);
+            // Server rules: dummies spawn when the session runs as a host or dedicated server. The arcs, laser gates and foliage
+            // (UR-T6) are laid only when hazards.json's layHazards asks (U.RICO-T91): the original laid none.
+            _arena = Arena.Serve(bootstrap.Session, dummyPrefab, layHazards: Arena.HazardRules.LayHazards);
 
             // Votes: NetVotes (beside the NetBootstrap) spawns the vote board; the front end shows the overlay in game. The
             // kick vote (UR-T14) is the kit's own with this game's line under it, in place of the one NetVotes adds.

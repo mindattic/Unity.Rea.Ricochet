@@ -8,6 +8,7 @@
   "foliageCount": 6,
   "foliageRadius": 0.25,
   "foliageClearance": 1.2,
+  "layHazards": false,
   "lasersAlternate": true,
   "arcs": [
     [-6.5, 3.2, -6.5, 5.6]

@@ -103,6 +103,9 @@ namespace Ricochet.Core.Level
         /// <summary>How far a tuft keeps from a seat's spot, a wall, a redirector and the border.</summary>
         public double FoliageClearance { get; set; }
 
+        /// <summary>Whether each round is laid with the arcs, laser gates and foliage (U.RICO-T91): off by default, the original never laid any (no obj_tesla, draw_electricity and check_source_laser never called, randomize_level's foliage commented out).</summary>
+        public bool LayHazards { get; set; }
+
         /// <summary>Whether laser gates switch on and off every turn (off: always on).</summary>
         public bool LasersAlternate { get; set; }
 
@@ -139,6 +142,7 @@ namespace Ricochet.Core.Level
             FoliageRadius = other.FoliageRadius;
             FoliageClearance = other.FoliageClearance;
             LasersAlternate = other.LasersAlternate;
+            LayHazards = other.LayHazards;
             RedirectorsSpin = other.RedirectorsSpin;
             RedirectorSpinDegrees = other.RedirectorSpinDegrees;
             Arcs.Clear();

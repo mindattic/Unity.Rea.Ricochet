@@ -121,7 +121,7 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    nothing; a grenade or vortex stopped by one is lost without going off (obj_shieldwall destroyed them). The server
    mirrors each hazard as a keyed `LevelHazard`; every peer builds the level a shot sees from them (`Arena.LevelFor`),
    so the preview, the AI and the server agree. The arcs, gates and foliage are laid only when the scene asks
-   (`Arena.Serve(..., layHazards: true)`, as `Game` does), so the other tests' shots fly in the bare level.
+   (`Arena.Serve(..., layHazards: true)`; `Game` passes hazards.json's `layHazards`, false by default since U.RICO-T91), so the other tests' shots fly in the bare level.
 5. **UR-T7** (done): AI — depends on UR-T3's bounce solver (reused for targeting) and UR-T4's turn loop.
    As built: Core `MatchSetup` (AI count, one AI skill 0–10 for every AI seat where the original had a pSkill per
    player, and the aim assists each player starts with, 0–10 with 0 taking the item out of play and 10 unlimited;

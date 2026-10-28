@@ -107,7 +107,7 @@ copy of any of these is a bug.
   (obj_check_ai calls shoot_bullet); the aim-assist item turns a human's aim onto the shot a
   fully skilled AI would take and draws it as a fading beam (UR-T7; `Core/Ai.cs`, `MatchSetup.cs` tested by
   `dotnet test Core.slnx`, the wire by `Tests/PlayMode/AiOpponentTests.cs`).
-- ✅ Level hazards: an electric arc and a laser gate (on every other turn) that stop a shot, foliage a shot cuts down,
+- ✅ Level hazards: an electric arc and a laser gate (on every other turn) that stop a shot, foliage a shot cuts down (U.RICO-T91: none is laid by default, as the original never created obj_tesla, never called draw_electricity or check_source_laser, and had randomize_level's foliage commented out; the code stays and `hazards.json`'s `layHazards: true` lays them every round),
   the shield wall item (only its owner's shots pass; anyone else's shatters it; it decays after 20–120 s), the
   redirector item, and the vortex device set off in mid-flight (vortex_detonate.gml). Corrected by U.RICO-T96 to match
   vortex_step.gml: the vortex hurts no one itself and touches no hazard or border; it pulls the level's shapes within 200 px

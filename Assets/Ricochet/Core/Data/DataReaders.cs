@@ -64,6 +64,7 @@ namespace Ricochet.Core.Data
                 FoliageRadius = r.Number("foliageRadius", 0.01, 10),
                 FoliageClearance = r.Number("foliageClearance", 0, 20),
                 LasersAlternate = r.Flag("lasersAlternate"),
+                LayHazards = r.Flag("layHazards"),
             };
             r.Check(rules.ShieldWallMinLife <= rules.ShieldWallMaxLife, "shieldWallMaxLife", "must not be less than shieldWallMinLife");
             foreach (double[] arc in r.Rows("arcs", 4, false, -Reach, Reach))
