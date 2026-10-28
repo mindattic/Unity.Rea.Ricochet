@@ -91,12 +91,23 @@ namespace Ricochet
         [ToClients]
         public partial void ItemFlown(int item, double[] numbers, string ids);
 
+        // client -> server (U.RICO-T140): a client that has just laid the server's level asks for the vortex storms the round has
+        // kept so far, because the walls they moved are in no layout the seed rebuilds. The server answers that client alone.
+        [ToServer(RateLimit = 2)]
+        public partial void RequestStorms();
+
+        // server -> one client (U.RICO-T140): the storms the level in play (version `version`) has kept, in order (Core's
+        // ShotWire.EncodeStorms), which the late joiner replays on its own copy of the level (Level.Restore).
+        [ToClient]
+        public partial void LevelStorms(ulong client, int version, double[] numbers);
+
         // The level in play (UR-T23): the map, the seed its random round was built from, and a count that goes up by one per
         // change, so a peer adopts the newest and every one lays the identical round (Arena.AdoptLayout). Every Player
         // carries the same three, so a late joiner learns the level whichever Player it sees first, practice included.
         [Synced] private int _levelMap;
         [Synced] private int _levelSeed;
         [Synced] private int _levelVersion;
+        private int _stormsAskedFor; // the level version this owner has asked the server's storms for (U.RICO-T140)
 
         // Only the server writes these; every peer, late joiners included, reads the same values.
         [Synced] private Vector2 _position;
@@ -419,6 +430,32 @@ namespace Ricochet
             }
 
             return null;
+        }
+
+        // Server: a client asked for the storms the round's level has kept.
+        private void OnRequestStorms(NetSender sender)
+        {
+            Ricochet.Core.Level.Level level = Arena.Level;
+            if (level != null && level.Storms.Count > 0)
+            {
+                LevelStorms(sender, Arena.LevelVersion, ShotWire.EncodeStorms(level.Storms));
+            }
+        }
+
+        // A late joiner: the walls the server's storms moved before this peer arrived, laid where the server has them.
+        private void OnLevelStorms(int version, double[] numbers)
+        {
+            List<StormResult> storms = ShotWire.DecodeStorms(numbers);
+            Ricochet.Core.Level.Level level = Arena.Level;
+            if (storms == null || level == null || version != Arena.LevelVersion)
+            {
+                return;
+            }
+
+            if (level.Restore(storms))
+            {
+                LevelView.Refresh(level);
+            }
         }
 
         // Every peer (the host's included): the server's flourish, raised on the feed as the event it came from.

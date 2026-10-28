@@ -303,6 +303,36 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
+        public void AClientThatJoinsAfterTheStormsReplaysThemOverTheWireAndLaysTheHostsWalls()
+        {
+            // U.RICO-T140: the moved walls are in no layout the seed rebuilds, so the host sends the storms it kept.
+            IEnumerable<Wall> Walls() => Square(1, 1).Concat(Square(-4, -2));
+            var host = new Level(-10, -5, 10, 5, Walls());
+            host.Apply(VortexStorm.Play(new Vec2(0, 0), 2.29, host, new[] { T("far", 8, -4) }, 1));
+            host.Apply(VortexStorm.Play(new Vec2(-3, -1), 2.29, host, new[] { T("far", 8, -4) }, 2));
+            Assert.That(host.Storms.Count, Is.EqualTo(2));
+
+            double[] numbers = ShotWire.EncodeStorms(host.Storms);
+            List<StormResult> onTheWire = ShotWire.DecodeStorms(numbers);
+            Assert.That(onTheWire, Is.Not.Null);
+            Assert.That(onTheWire.Count, Is.EqualTo(2));
+
+            var joiner = new Level(-10, -5, 10, 5, Walls());
+            Assert.That(joiner.Restore(onTheWire), Is.True);
+            for (int i = 0; i < host.Walls.Count; i++)
+            {
+                Assert.That(Vec2.Distance(joiner.Walls[i].A, host.Walls[i].A), Is.EqualTo(0).Within(1e-9), "wall " + i + " A");
+                Assert.That(Vec2.Distance(joiner.Walls[i].B, host.Walls[i].B), Is.EqualTo(0).Within(1e-9), "wall " + i + " B");
+            }
+
+            Assert.That(joiner.Restore(onTheWire), Is.False, "a level that kept the storms is not moved twice");
+            Assert.That(new Level(-10, -5, 10, 5, Walls()).Restore(ShotWire.DecodeStorms(ShotWire.EncodeStorms(new List<StormResult>()))), Is.False, "no storms, nothing to replay");
+            Assert.That(ShotWire.DecodeStorms(new double[] { 99, 0 }), Is.Null, "another version");
+            Assert.That(ShotWire.DecodeStorms(numbers.Concat(new double[] { 1 }).ToArray()), Is.Null, "trailing numbers");
+            Assert.That(ShotWire.DecodeStorms(numbers.Take(numbers.Length - 3).ToArray()), Is.Null, "cut short");
+        }
+
+        [Test]
         public void ATruncatedPathKeepsTheContactsBeforeTheCut()
         {
             ShotPath path = BounceSolver.Solve(Vec2.Zero, 0, new Level(-3, -3, 3, 3));

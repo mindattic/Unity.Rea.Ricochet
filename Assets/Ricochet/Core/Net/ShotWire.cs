@@ -68,23 +68,7 @@ namespace Ricochet.Core.Net
             }
 
             // U.RICO-T134: a vortex's storm, so every peer walks the same shapes the same way and keeps where they land.
-            n.Add(volley.Storm.FlingSteps);
-            n.Add(volley.Storm.Shapes.Count);
-            foreach (StormShape shape in volley.Storm.Shapes)
-            {
-                n.Add(shape.Walls.Count);
-                foreach (int wall in shape.Walls)
-                {
-                    n.Add(wall);
-                }
-
-                n.Add(shape.Pull.X);
-                n.Add(shape.Pull.Y);
-                n.Add(shape.Fling.X);
-                n.Add(shape.Fling.Y);
-                n.Add(shape.Pivot.X);
-                n.Add(shape.Pivot.Y);
-            }
+            WriteStorm(volley.Storm, n);
 
             numbers = n.ToArray();
             ids = string.Join(Separator.ToString(), names);
@@ -162,49 +146,9 @@ namespace Ricochet.Core.Net
                 strikes.Add(new Strike(targetId, bounces, scale));
             }
 
-            if (!reader.Has(2))
+            if (!ReadStorm(reader, out StormResult storm))
             {
                 return null;
-            }
-
-            int flingSteps = reader.Int();
-            int shapeCount = reader.Int();
-            if (flingSteps < 0 || flingSteps > VortexStorm.FlingSteps || shapeCount < 0 || shapeCount > MaxStormShapes)
-            {
-                return null;
-            }
-
-            var shapes = new List<StormShape>(shapeCount);
-            int totalWalls = 0;
-            for (int i = 0; i < shapeCount; i++)
-            {
-                if (!reader.Has(1))
-                {
-                    return null;
-                }
-
-                int wallCount = reader.Int();
-                if (wallCount < 1 || wallCount > MaxStormWalls - totalWalls || !reader.Has(wallCount + 6))
-                {
-                    return null;
-                }
-
-                totalWalls += wallCount;
-
-                var walls = new int[wallCount];
-                for (int w = 0; w < wallCount; w++)
-                {
-                    walls[w] = reader.Int();
-                    if (walls[w] < 0)
-                    {
-                        return null;
-                    }
-                }
-
-                var pull = new Vec2(reader.Next(), reader.Next());
-                var fling = new Vec2(reader.Next(), reader.Next());
-                var pivot = new Vec2(reader.Next(), reader.Next());
-                shapes.Add(new StormShape(walls, pull, fling, pivot));
             }
 
             if (reader.Has(1))
@@ -212,7 +156,6 @@ namespace Ricochet.Core.Net
                 return null; // trailing numbers: not something Encode wrote
             }
 
-            StormResult storm = shapeCount == 0 && flingSteps == 0 ? StormResult.None : new StormResult(null, shapes, flingSteps);
             return new Volley((Weapon)weapon, paths, speed, strikes, blast, blastCenter, blastRadius, storm);
         }
 
@@ -251,6 +194,135 @@ namespace Ricochet.Core.Net
 
             ShotPath path = ReadPath(reader, names);
             return path == null || reader.Has(1) ? null : path;
+        }
+
+        /// <summary>The most storms DecodeStorms accepts (a round's vortexes).</summary>
+        public const int MaxStorms = 256;
+
+        /// <summary>
+        /// Packs the storms a level has kept, in the order it kept them (U.RICO-T140), so a client that joins after a storm replays
+        /// them with Level.Restore and lays its walls where the host's are.
+        /// </summary>
+        public static double[] EncodeStorms(IReadOnlyList<StormResult> storms)
+        {
+            var n = new List<double> { Version, storms == null ? 0 : storms.Count };
+            if (storms != null)
+            {
+                foreach (StormResult storm in storms)
+                {
+                    WriteStorm(storm, n);
+                }
+            }
+
+            return n.ToArray();
+        }
+
+        /// <summary>Unpacks what <see cref="EncodeStorms"/> packed; null when it is not something this version packed.</summary>
+        public static List<StormResult> DecodeStorms(double[] numbers)
+        {
+            if (numbers == null || numbers.Length < 2 || !AllFinite(numbers))
+            {
+                return null;
+            }
+
+            var reader = new Reader(numbers);
+            if (reader.Int() != Version)
+            {
+                return null;
+            }
+
+            int count = reader.Int();
+            if (count < 0 || count > MaxStorms)
+            {
+                return null;
+            }
+
+            var storms = new List<StormResult>(count);
+            for (int i = 0; i < count; i++)
+            {
+                if (!ReadStorm(reader, out StormResult storm))
+                {
+                    return null;
+                }
+
+                storms.Add(storm);
+            }
+
+            return reader.Has(1) ? null : storms;
+        }
+
+        private static void WriteStorm(StormResult storm, List<double> n)
+        {
+            n.Add(storm.FlingSteps);
+            n.Add(storm.Shapes.Count);
+            foreach (StormShape shape in storm.Shapes)
+            {
+                n.Add(shape.Walls.Count);
+                foreach (int wall in shape.Walls)
+                {
+                    n.Add(wall);
+                }
+
+                n.Add(shape.Pull.X);
+                n.Add(shape.Pull.Y);
+                n.Add(shape.Fling.X);
+                n.Add(shape.Fling.Y);
+                n.Add(shape.Pivot.X);
+                n.Add(shape.Pivot.Y);
+            }
+        }
+
+        // One storm as WriteStorm laid it out; false when it is not one.
+        private static bool ReadStorm(Reader reader, out StormResult storm)
+        {
+            storm = null;
+            if (!reader.Has(2))
+            {
+                return false;
+            }
+
+            int flingSteps = reader.Int();
+            int shapeCount = reader.Int();
+            if (flingSteps < 0 || flingSteps > VortexStorm.FlingSteps || shapeCount < 0 || shapeCount > MaxStormShapes)
+            {
+                return false;
+            }
+
+            var shapes = new List<StormShape>(shapeCount);
+            int totalWalls = 0;
+            for (int i = 0; i < shapeCount; i++)
+            {
+                if (!reader.Has(1))
+                {
+                    return false;
+                }
+
+                int wallCount = reader.Int();
+                if (wallCount < 1 || wallCount > MaxStormWalls - totalWalls || !reader.Has(wallCount + 6))
+                {
+                    return false;
+                }
+
+                totalWalls += wallCount;
+
+                var walls = new int[wallCount];
+                for (int w = 0; w < wallCount; w++)
+                {
+                    walls[w] = reader.Int();
+                    if (walls[w] < 0)
+                    {
+                        return false;
+                    }
+                }
+
+                var pull = new Vec2(reader.Next(), reader.Next());
+                var fling = new Vec2(reader.Next(), reader.Next());
+                var pivot = new Vec2(reader.Next(), reader.Next());
+                shapes.Add(new StormShape(walls, pull, fling, pivot));
+            }
+
+            storm = shapeCount == 0 && flingSteps == 0 ? StormResult.None : new StormResult(null, shapes, flingSteps);
+            return true;
         }
 
         private static bool AllFinite(double[] numbers)

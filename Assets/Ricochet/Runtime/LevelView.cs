@@ -132,6 +132,15 @@ namespace Ricochet
             }
         }
 
+        /// <summary>Walls of <paramref name="level"/> were moved outside a storm this peer watched (a late joiner's replay, U.RICO-T140): draw them where the level has them.</summary>
+        public static void Refresh(Level level)
+        {
+            if (s_current != null && level != null && ReferenceEquals(s_current.Shown, level))
+            {
+                s_current.Rebase();
+            }
+        }
+
         /// <summary>The level drawn now.</summary>
         public Level Shown { get; private set; }
 

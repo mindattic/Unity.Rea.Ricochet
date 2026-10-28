@@ -207,6 +207,30 @@ namespace Ricochet.Core.Level
         }
 
         private Ricochet.Core.Arsenal.StormResult _lastStorm;
+        private readonly List<Ricochet.Core.Arsenal.StormResult> _storms = new List<Ricochet.Core.Arsenal.StormResult>();
+
+        /// <summary>The storms this level has kept, in order (U.RICO-T140): replayed on a peer's own copy, they lay its walls where this level has them.</summary>
+        public IReadOnlyList<Ricochet.Core.Arsenal.StormResult> Storms => _storms;
+
+        /// <summary>
+        /// A late joiner's catch-up (U.RICO-T140): replays <paramref name="kept"/>, the storms the authority's level kept, on this level when it
+        /// has kept none yet. A level that already kept a storm (a shot landed between joining and this reply) is left as it is: replaying
+        /// the earlier ones then would move its walls twice. True when it replayed them.
+        /// </summary>
+        public bool Restore(IReadOnlyList<Ricochet.Core.Arsenal.StormResult> kept)
+        {
+            if (kept == null || kept.Count == 0 || _storms.Count > 0)
+            {
+                return false;
+            }
+
+            foreach (Ricochet.Core.Arsenal.StormResult storm in kept)
+            {
+                Apply(storm);
+            }
+
+            return _storms.Count > 0;
+        }
 
         /// <summary>
         /// Keeps where a vortex's storm left every shape it moved (their turn, pull and fling together). A storm is kept once per level:
@@ -220,6 +244,7 @@ namespace Ricochet.Core.Level
             }
 
             _lastStorm = storm;
+            _storms.Add(storm);
 
             foreach (Ricochet.Core.Arsenal.StormShape shape in storm.Shapes)
             {

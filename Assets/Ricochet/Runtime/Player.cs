@@ -406,6 +406,13 @@ namespace Ricochet
                 Arena.AdoptLayout(LevelMap, LevelSeed, LevelVersion);
             }
 
+            // A client that joined after a vortex has moved shapes asks once per level for the storms that moved them (U.RICO-T140).
+            if (!IsServer && IsOwner && LevelVersion > 0 && LevelVersion == Arena.LevelVersion && _stormsAskedFor != LevelVersion)
+            {
+                _stormsAskedFor = LevelVersion;
+                RequestStorms();
+            }
+
             if (LocallyControlled) // a bot's driver calls Fire itself (GameBot.cs); Arena fires for an AI
             {
                 OwnerInput();
