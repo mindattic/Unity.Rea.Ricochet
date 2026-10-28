@@ -61,7 +61,7 @@ namespace Ricochet
             _setup.ApplyTo(ArsenalRules);
             _setup.ApplyTo(MatchRules, Rules, DropRules, HazardRules);
             _aiTurn = null;
-            _authority.BeginMatch(_setup.Map, _setup.Goal); // the map room's choice; a random map's level is rolled as round one starts
+            _authority.BeginMatch(_setup.Map, _setup.Goal, _setup.Level()); // the map room's choice; a random map's level is rolled as round one starts
             _humanSeats.Clear();
             for (int i = 0; i < humans.Count; i++)
             {

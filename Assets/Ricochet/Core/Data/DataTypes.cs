@@ -49,7 +49,8 @@ namespace Ricochet.Core.Data
     /// <summary>The menu flow's text: tagline, room titles, controls, how-to-play slides and credits (menu.json).</summary>
     public sealed class MenuData
     {
-        internal MenuData(string tagline, Dictionary<Room, string> titles, Room[] offTheMainMenu, ControlBinding[] controls, Slide[] slides, string[] credits)
+        internal MenuData(string tagline, Dictionary<Room, string> titles, Room[] offTheMainMenu, ControlBinding[] controls, Slide[] slides, string[] credits,
+            Dictionary<string, string> tips = null)
         {
             Tagline = tagline;
             Titles = titles;
@@ -57,7 +58,11 @@ namespace Ricochet.Core.Data
             Controls = controls;
             Slides = slides;
             Credits = credits;
+            Tips = tips ?? new Dictionary<string, string>();
         }
+
+        /// <summary>U.RICO-T52: the Start screen's hover tips by name (MenuFlow.TipNames).</summary>
+        public IReadOnlyDictionary<string, string> Tips { get; }
 
         public string Tagline { get; }
 

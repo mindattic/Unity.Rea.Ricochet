@@ -626,9 +626,9 @@ spread over its own hand-placed grid) keeps the kit's card, on bg_titlescreen. T
 rebuild's, for its remappable bindings) are kept but not drawn, under the keyboard picture as the room had only the picture;
 the credits room's lines stand left of spr_creditsimage. (2) The kit's own back icon is hidden on a taken screen in favour
 of the room's Back button at (128, 1024); the title, the vote's pause menu and the kit's in-game and endgame menus are not
-re-laid (they draw over the game, or their own room). (3) The title's letters stand where the room placed
-them; their drift (obj_letter_parent) and the main menu's letters are U.RICO-T52's. The announcer's portrait and speaker are
-U.RICO-T51's (Announcer voices and portraits).
+re-laid (they draw over the game, or their own room). (3) The title's letters drift as obj_letter_parent moved them and the
+main menu repeats them (U.RICO-T52, below). The announcer's portrait and speaker are U.RICO-T51's (Announcer voices and
+portraits).
 
 Not carried: spr_pausemenu and spr_pausemenu_back (obj_pausemenu's draws of them are commented out), spr_label and
 spr_label_small (only the labels' hover masks; never drawn), the picture labels spr_lbl_* and picture buttons spr_btn_start,
@@ -636,6 +636,31 @@ _quit, _settings, _controls, _howtoplay, _default and _credits (no object or scr
 placed in no room), spr_howtoplay (obj_howtoplayimage is placed in no room), spr_btn_config and spr_btn_add / _remove with
 spr_checkbox_player / _ai (the title's setup panel and the players room's seats: the kit's front end and U.RICO-T52). The items
 in flight (spr_teleporter, spr_shrinkball) and the endgame's spr_flash are U.RICO-T79's (Item flights and endgame flashes).
+
+## Title and main menu (U.RICO-T52)
+
+- **Letters** (Core's `TitleLetters`, `Runtime/Art/TitleBackdrop`): obj_letter_R, _I, _C, _O, _C2, _H, _E and _T, children
+  of obj_letter_parent, start at hspeed 1 and vspeed -1; each step a letter past a room edge (x < 0 or > 1920, y < 0 or >
+  1080) has that speed negated, then moves; moving left it shows its mirror letter (R and T, I and E, C and H, O and the
+  second C swap), moving right its own. The titlescreen and mainmenu rooms ran at 180 steps a second; the title placed letter
+  i at (64 + 64 i, 576 - 32 i), the main menu at (128 + 64 i, 416 - 32 i). Nothing in the original dropped them in: they
+  drift from where the room placed them.
+- **Floor**: both rooms are bg_titlescreen; the main menu's scrolls right a pixel a step (tiled), the title's stands still.
+- **Title** (obj_titlescreen): stops any music as it opens; Esc quits; Start goes on to the Start screen, over the main menu
+  (its Back is the main menu); Quit quits. The original also switched to full screen on Start; not carried (the window
+  setting is the player's).
+- **Music** (obj_jukebox, on the titlescreen and mainmenu rooms): whenever no track plays, play_random_music starts a random
+  one of the five, once through (`GameAudio.Jukebox`, run while the front end is in its menus); the match plays its own.
+- **Start screen** (the titlescreen room's setup panel, `Room.Setup`, `Menus.BuildSetup`): players (the AI opponents),
+  shapes (5 to 40 in fives), type (abstract, triangles, bars, circles, squares, random), rotation (none, 45, 90, 360),
+  overlap, goal, turn time (5 to 30 s) and bounces, Default, and Next to the players room. The control under the pointer
+  shows the original's message on the line at the bottom (menu.json's `tips`). It is the main menu's first button, in
+  place of Players (now its Next). The level settings are saved with the setup, travel in the match vote, and ride in each
+  random round's seed (`LevelSeeds`: a seed of 0 or more is the stock settings, so old seeds lay the same rounds; a
+  negative seed packs the shapes, type, rotation and overlap above its dice), so every peer lays the same round.
+- `Tests/Core.Tests/TitleAndStartTests` holds the letters, the seeds and the setup's level settings to the original;
+  `MenuFlowTests` the room graph; PlayMode `MenuScreenTests` the title's Start and the Start screen, `MenuArtTests` the
+  letters' drift.
 
 ## Music (U.RICO-T27)
 

@@ -65,6 +65,7 @@ namespace Ricochet
         private float _nextTurnsSearch;
         private int _lastRound = -1;
         private int _lastTurn = -1;
+        private float _jukeboxWait;
 
         /// <summary>The menus' sounds, beside this.</summary>
         public UiSounds Ui => GetComponent<UiSounds>();
@@ -278,15 +279,55 @@ namespace Ricochet
         /// play_random_music.gml: picks one of the five tracks at random and starts it (replacing the one playing), at the
         /// mix's music volume (0 when muted or session-muted, when it is chosen all the same and heard by no one).
         /// </summary>
-        public MusicTrack PlayRandomMusic()
+        public MusicTrack PlayRandomMusic(bool loop = true)
         {
             MusicTrack track = MusicBook.Pick(Random.Range(1, MusicBook.Rotation.Count + 1));
-            PlayMusic(track);
+            PlayMusic(track, loop);
             return track;
         }
 
+        /// <summary>True while a track is on the music source (heard or not: a muted track still plays, at volume 0).</summary>
+        public bool MusicPlaying => _music != null && _music.isPlaying;
+
+        /// <summary>Stops the track playing, if any (obj_titlescreen's audio_stop_music as the title opens).</summary>
+        public void StopMusic()
+        {
+            if (_music != null)
+            {
+                _music.Stop();
+            }
+
+            CurrentTrack = null;
+            _jukeboxWait = 0f;
+        }
+
+        /// <summary>
+        /// U.RICO-T52, obj_jukebox on the titlescreen and mainmenu rooms: each step, when no track plays, play_random_music
+        /// starts a random one of the five, once through (audio_play_music(track, 0): unlooped), so the menus run through track
+        /// after track. A track that cannot be heard because its recording is missing is not asked for again for a second.
+        /// </summary>
+        public void Jukebox()
+        {
+            if (_music == null || _music.isPlaying || Time.unscaledTime < _jukeboxWait)
+            {
+                return;
+            }
+
+            PlayRandomMusic(loop: false);
+            if (!_music.isPlaying)
+            {
+                _jukeboxWait = Time.unscaledTime + 1f;
+            }
+        }
+
         /// <summary>Starts <paramref name="track"/> on the music source, looping, at the music volume now in force.</summary>
-        public void PlayMusic(MusicTrack track)
+        public void PlayMusic(MusicTrack track) => PlayMusic(track, true);
+
+        /// <summary>
+        /// Starts <paramref name="track"/> on the music source at the music volume now in force, looping or (the jukebox's)
+        /// once through.
+        /// </summary>
+        public void PlayMusic(MusicTrack track, bool loop)
         {
             float volume = MusicLevel;
             CurrentTrack = track;
@@ -309,7 +350,7 @@ namespace Ricochet
             }
 
             _music.clip = clip;
-            _music.loop = true;
+            _music.loop = loop;
             _music.Play();
         }
 

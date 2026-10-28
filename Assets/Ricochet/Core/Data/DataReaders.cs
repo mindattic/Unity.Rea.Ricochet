@@ -410,8 +410,18 @@ namespace Ricochet.Core.Data
             }
 
             List<string> credits = r.Texts("credits", 1);
+
+            // U.RICO-T52: the Start screen's hover tips, one per MenuFlow.TipNames entry.
+            var tips = new Dictionary<string, string>();
+            SettingsReader tip = r.Section("tips");
+            foreach (string name in MenuFlow.TipNames)
+            {
+                tips[name] = tip.Text(name);
+            }
+
+            tip.Done();
             r.Done();
-            return new MenuData(tagline, titles, off.ToArray(), controls.ToArray(), slides.ToArray(), credits.ToArray());
+            return new MenuData(tagline, titles, off.ToArray(), controls.ToArray(), slides.ToArray(), credits.ToArray(), tips);
         }
 
         public static List<SettingDef> ReadRegistry(SettingsReader r, Dictionary<string, JsonValue> docs, List<string> errors)

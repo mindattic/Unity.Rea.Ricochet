@@ -2,6 +2,8 @@
 // adds them to the kit's front end: Players, Controls, How to play and Credits on the main menu and the in-game menu, the
 // map room one step on from Players, and the game settings (the announcer) under the kit's Settings, beside the name and
 // colour. Each builder only fills a screen it is handed, so a test can build one on a stack of its own.
+//   Start (U.RICO-T52, the titlescreen room's setup panel): players, shapes, type, rotation, overlap, goal, turn time and
+//     bounces, each row's message on the line at the bottom while the pointer is on it, Default, and Next to Players.
 //   Players (names/players rooms): who you play as (the kit's name and colour), how many AI opponents fill the empty
 //     seats, how well they aim and how many aim assists everyone starts with; Next goes on to the map room.
 //   Map (maproom): which map, what it is like, and the goal (one round, or first to 500 ... 10000 points); its button
@@ -117,6 +119,16 @@ namespace Ricochet
             });
             description = s.AddText(Maps.At(setup.Map).Description, TextStyle.Muted);
 
+            AddGoal(s, setup);
+            if (start != null)
+            {
+                s.AddButton(startLabel, start, ButtonVariant.Primary);
+            }
+        }
+
+        // The goal: one round, or first to 500 ... 10000 points (obj_btn_goal_less / more).
+        private static MaSelect AddGoal(MenuScreen s, MatchSetup setup)
+        {
             var goals = new List<string>();
             var values = new List<int>();
             int goal = MatchSetup.OneRound;
@@ -128,11 +140,88 @@ namespace Ricochet
             }
             while (goal != MatchSetup.OneRound);
 
-            s.AddSelect("Goal", goals, Math.Max(0, values.IndexOf(setup.Goal)), v => setup.Goal = values[Mathf.Clamp(v, 0, values.Count - 1)]);
-            if (start != null)
+            return s.AddSelect("Goal", goals, Math.Max(0, values.IndexOf(setup.Goal)), v => setup.Goal = values[Mathf.Clamp(v, 0, values.Count - 1)]);
+        }
+
+        /// <summary>The Start screen's shape types, in <see cref="ShapeKind"/> order.</summary>
+        public static readonly string[] ShapeTypeNames = { "Abstract", "Triangles", "Bars", "Circles", "Squares", "Random" };
+
+        /// <summary>The Start screen's rotations, in <see cref="LevelSeeds.Rotations"/> order.</summary>
+        public static readonly string[] RotationNames = { "None", "45 degrees", "90 degrees", "360 degrees" };
+
+        /// <summary>The name of the Start screen's hover line, for tests.</summary>
+        public const string TipName = "Tip";
+
+        /// <summary>
+        /// U.RICO-T52, the Start screen: the titlescreen room's setup panel (obj_btn_players / polygons / shapes / rotation /
+        /// overlap / goal / turntime / bounces with their less and more arrows, obj_btn_default) as the first setup screen.
+        /// The control under the pointer (or the keyboard's focus) shows its message on the line at the bottom, as the
+        /// original drew it; Next goes on to the players room (<paramref name="next"/>).
+        /// </summary>
+        public static void BuildSetup(MenuScreen s, MatchSetup setup, Action<MenuScreen> next, Action resetSetup = null)
+        {
+            s.Subtitle = "Set up the match: who plays, the arena's shapes and the rules.";
+            MaText tip = null;
+            Action<string> show = name =>
             {
-                s.AddButton(startLabel, start, ButtonVariant.Primary);
+                if (tip != null)
+                {
+                    tip.Text = MenuFlow.Tip(name);
+                }
+            };
+
+            MaButton reset = AddResetButton(s, resetSetup, () => BuildSetup(s, setup, next, resetSetup));
+            Hover(s, reset, "defaults", show);
+            Hover(s, s.AddRange("Players (AI opponents)", 0, MatchRules.MaxSeats - 1, setup.AiCount, v => setup.AiCount = Mathf.RoundToInt(v),
+                wholeNumbers: true), "players", show);
+            var counts = new List<string>();
+            foreach (int count in LevelSeeds.ShapeCounts)
+            {
+                counts.Add(count.ToString());
             }
+
+            Hover(s, s.AddSelect("Shapes", counts, Math.Max(0, Array.IndexOf(LevelSeeds.ShapeCounts, setup.ShapeCount)),
+                v => setup.ShapeCount = LevelSeeds.ShapeCounts[Mathf.Clamp(v, 0, LevelSeeds.ShapeCounts.Length - 1)]), "shapes", show);
+            Hover(s, s.AddSelect("Type", ShapeTypeNames, (int)setup.ShapeType,
+                v => setup.ShapeType = (ShapeKind)Mathf.Clamp(v, 0, ShapeTypeNames.Length - 1)), "type", show);
+            Hover(s, s.AddSelect("Rotation", RotationNames, Math.Max(0, Array.IndexOf(LevelSeeds.Rotations, setup.Rotation)),
+                v => setup.Rotation = LevelSeeds.Rotations[Mathf.Clamp(v, 0, LevelSeeds.Rotations.Length - 1)]), "rotation", show);
+            Hover(s, s.AddToggle("Overlap", setup.Overlap, v => setup.Overlap = v), "overlap", show);
+            Hover(s, AddGoal(s, setup), "goal", show);
+            Hover(s, s.AddRange("Turn time (seconds)", MatchSetup.MinTurnSeconds, MatchSetup.MaxTurnSeconds, setup.TurnSeconds,
+                v => setup.TurnSeconds = Mathf.RoundToInt(v), wholeNumbers: true), "turnTime", show);
+            Hover(s, s.AddRange("Bounces", 1, MatchSetup.MaxBouncesLimit, setup.MaxBounces, v => setup.MaxBounces = Mathf.RoundToInt(v),
+                wholeNumbers: true), "bounces", show);
+            tip = s.AddText(string.Empty, TextStyle.Muted);
+            tip.name = TipName;
+            if (next != null)
+            {
+                Hover(s, s.AddButton("Next: " + MenuFlow.Title(MenuFlow.Next(Room.Setup)), () => next(s), ButtonVariant.Primary), "next", show);
+            }
+        }
+
+        // The hover message of a control: its whole row (label and all) shows it while the pointer or the focus is on it.
+        private static void Hover(MenuScreen s, Component control, string tip, Action<string> show)
+        {
+            if (control == null)
+            {
+                return;
+            }
+
+            Transform row = control.transform;
+            while (row.parent != null && row.parent != s.Items)
+            {
+                row = row.parent;
+            }
+
+            MenuTip hover = row.gameObject.GetComponent<MenuTip>();
+            if (hover == null)
+            {
+                hover = row.gameObject.AddComponent<MenuTip>();
+            }
+
+            hover.Name = tip;
+            hover.Show = show;
         }
 
         /// <summary>The label of the setup screens' Default button (UR-T41, the original's obj_btn_default).</summary>
@@ -140,14 +229,14 @@ namespace Ricochet
 
         // UR-T41: the setup screens' Default button, when the screen is given a reset: it puts every choice of the setup
         // (players, map and settings rooms alike) back to the defaults, then rebuilds the screen so it shows them.
-        private static void AddResetButton(MenuScreen s, Action resetSetup, Action rebuild)
+        private static MaButton AddResetButton(MenuScreen s, Action resetSetup, Action rebuild)
         {
             if (resetSetup == null)
             {
-                return;
+                return null;
             }
 
-            s.AddButton(ResetSetupLabel, () =>
+            return s.AddButton(ResetSetupLabel, () =>
             {
                 resetSetup();
                 s.Clear();

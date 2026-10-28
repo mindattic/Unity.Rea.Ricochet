@@ -43,6 +43,7 @@ namespace Ricochet.Core.Commands
         private readonly List<ItemInFlight> _itemsInFlight = new List<ItemInFlight>();
         private List<GameEvent> _current;
         private int _matchMap;
+        private LevelSettings _matchLevel;
         private bool _firedThisRound;
 
         public GameAuthority(IGameWorld world = null, ShotRules rules = null, MatchRules matchRules = null, ArsenalRules arms = null,
@@ -258,15 +259,18 @@ namespace Ricochet.Core.Commands
 
         /// <summary>
         /// Opens a match on map <paramref name="mapIndex"/> to <paramref name="goal"/> points (its seats are joined to
-        /// <see cref="Match"/> before <see cref="StartMatch"/>): the crates and hazards start afresh on the map's level.
+        /// <see cref="Match"/> before <see cref="StartMatch"/>): the crates and hazards start afresh on the map's level. A
+        /// random map's rounds are laid by <paramref name="level"/> (the Start screen's shapes, type, rotation and overlap,
+        /// U.RICO-T52; null for the stock settings), which each round's seed carries to every peer (<see cref="LevelSeeds"/>).
         /// </summary>
-        public Match BeginMatch(int mapIndex, int goal)
+        public Match BeginMatch(int mapIndex, int goal, LevelSettings level = null)
         {
             Run(() =>
             {
                 Paused = false;
                 _firedThisRound = false;
                 _matchMap = Maps.Clamp(mapIndex);
+                _matchLevel = level;
                 UseMap(_matchMap);
                 Hazards.UseLevel(Layout.Level);
                 NewField();
@@ -1331,7 +1335,7 @@ namespace Ricochet.Core.Commands
         private void RollLayout(int index)
         {
             index = Maps.Clamp(index);
-            int seed = Maps.At(index).IsRandom ? _layoutDice.Next(1, int.MaxValue) : 0;
+            int seed = Maps.At(index).IsRandom ? LevelSeeds.Compose(_layoutDice.Next(1, int.MaxValue), _matchLevel) : 0;
             MapIndex = index;
             LayoutSeed = seed;
             Layout = Maps.At(index).Layout(seed);

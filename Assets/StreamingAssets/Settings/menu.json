@@ -12,10 +12,11 @@
     "Controls": "Controls",
     "HowToPlay": "How to play",
     "Credits": "Credits",
-    "Lobby": "Lobby"
+    "Lobby": "Lobby",
+    "Setup": "Start"
   },
   "offTheMainMenu": [
-    "Players",
+    "Setup",
     "Settings",
     "Controls",
     "HowToPlay",
@@ -102,7 +103,7 @@
       "title": "Weapons",
       "lines": [
         "Q and E cycle your weapon. You carry three of each, and the cannon never runs out.",
-        "Cannon: one shell. Laser: the full range, three times as fast. Shotgun: a fan of five pellets.",
+        "Cannon: one shell. Laser: the full range, at a shell's speed. Shotgun: a fan of five pellets.",
         "Grenade: passes through players and goes off when its fuse runs out (1, 2 and 3 set it). Railgun: straight through the walls, hitting everyone on the line.",
         "Vortex device: press Space again while it flies to set it off; it hurts everyone in its pull, swallows the shield walls, redirectors and grass it reaches and tears a breach in the border."
       ]
@@ -133,7 +134,7 @@
     {
       "title": "Playing together",
       "lines": [
-        "Everyone plays on their own computer. One player hosts: Players, then the map, then Start opens the lobby with a join code to share (or the address to join at).",
+        "Everyone plays on their own computer. One player hosts: Start, then Players, then the map, then Start opens the lobby with a join code to share (or the address to join at).",
         "The others click Join by code and type it in, or Join by IP with the host's address. When everyone is in the lobby, the host presses Start and the match begins.",
         "Someone who joins later plays from the next round; Esc > Invite players shows the code again."
       ]
@@ -153,5 +154,19 @@
     "Menus and HUD cards: MindAttic Components.",
     "Player profiles: Unity.Shared.",
     "Thanks for playing."
-  ]
+  ],
+  "tips": {
+    "start": "Start new game with current settings",
+    "quit": "Quit to desktop",
+    "players": "Choose the number of AI opponents",
+    "shapes": "Choose the number of shapes that appear in the arena",
+    "type": "Choose the type of shapes that appear in the arena",
+    "rotation": "Choose the rotation of shapes that appear in the arena",
+    "overlap": "Choose whether to allow shapes to overlap",
+    "goal": "Choose the total score a player must achieve for victory",
+    "turnTime": "Choose the time allotted to each player per turn",
+    "bounces": "Choose the number of times a projectile will bounce",
+    "defaults": "Restore default game settings",
+    "next": "Choose who plays, then the map"
+  }
 }

@@ -2,8 +2,9 @@
 // round from the setup's polygon count (20), shapes (abstract), rotation (360) and overlap (no) settings via
 // setup_shapes.gml, and randomize_player_position.gml dropped every player at a random spot. Here the same inputs make
 // a Level of mirror walls shaped like the original's sixteen-a-kind sprites and sixteen seat spots from one seed, so every peer rebuilds the identical
-// round from the seed alone (UR-LAW-1). Peers must share the LevelSettings too: today every round uses the defaults, and
-// when the setup screen can change them (UR-T41) they travel with the seed.
+// round from the seed alone (UR-LAW-1). Peers share the LevelSettings through the seed too (U.RICO-T52, LevelSeeds): the
+// Start screen's shapes, type, rotation and overlap are packed into a negative seed, and a positive seed (every seed before
+// U.RICO-T52, and every round played on the stock settings) is the stock settings, so old seeds lay the same rounds.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,6 +64,70 @@ namespace Ricochet.Core.Level
             Rotation = other.Rotation;
             Overlap = other.Overlap;
             Shapes = other.Shapes;
+        }
+
+        /// <summary>True when <paramref name="other"/> lays the same kind of level.</summary>
+        public bool SameAs(LevelSettings other)
+        {
+            return other != null && PolygonCount == other.PolygonCount && Rotation.Equals(other.Rotation) && Overlap == other.Overlap
+                && Shapes == other.Shapes;
+        }
+    }
+
+    /// <summary>
+    /// U.RICO-T52: a random level's seed carries the setup's level settings, so every peer lays the same round from the seed
+    /// alone. A seed of 0 or above is the stock settings (level.json) with that seed as the dice: every seed before this
+    /// existed, and any round on the stock settings. A seed below zero holds the settings in bits 21 to 29 (the shape count's
+    /// place in <see cref="ShapeCounts"/>, the <see cref="ShapeKind"/>, the rotation's place in <see cref="Rotations"/> and
+    /// overlap) and the dice in bits 0 to 20.
+    /// </summary>
+    public static class LevelSeeds
+    {
+        private const int DiceBits = 21;
+        private const int DiceMask = (1 << DiceBits) - 1;
+
+        /// <summary>The Start screen's shape counts (obj_btn_polygons_less / more: 5 to 40 in fives, wrapping).</summary>
+        public static readonly int[] ShapeCounts = { 5, 10, 15, 20, 25, 30, 35, 40 };
+
+        /// <summary>The Start screen's rotations (obj_btn_rotation_last / next: none, 45, 90, 360 degrees).</summary>
+        public static readonly int[] Rotations = { 0, 45, 90, 360 };
+
+        /// <summary>
+        /// The seed for a round laid by <paramref name="settings"/> with <paramref name="dice"/>: <paramref name="dice"/> itself
+        /// for the stock settings (or none, or settings the Start screen cannot set), the packed seed otherwise.
+        /// </summary>
+        public static int Compose(int dice, LevelSettings settings)
+        {
+            int count = Array.IndexOf(ShapeCounts, settings != null ? settings.PolygonCount : -1);
+            int rotation = settings != null ? Array.IndexOf(Rotations, (int)settings.Rotation) : -1;
+            if (settings == null || count < 0 || rotation < 0 || settings.Rotation != (int)settings.Rotation || settings.SameAs(LevelSettings.Default))
+            {
+                return dice;
+            }
+
+            int code = count | (int)settings.Shapes << 3 | rotation << 6 | (settings.Overlap ? 1 : 0) << 8;
+            return int.MinValue | code << DiceBits | (dice & DiceMask);
+        }
+
+        /// <summary>The dice a seed lays its round with.</summary>
+        public static int Dice(int seed) => seed < 0 ? seed & DiceMask : seed;
+
+        /// <summary>The level settings a seed lays its round with (a fresh copy).</summary>
+        public static LevelSettings Settings(int seed)
+        {
+            var settings = LevelSettings.Default;
+            if (seed >= 0)
+            {
+                return settings;
+            }
+
+            int code = seed >> DiceBits & 511;
+            settings.PolygonCount = ShapeCounts[code & 7];
+            int kind = code >> 3 & 7;
+            settings.Shapes = kind <= (int)ShapeKind.Random ? (ShapeKind)kind : ShapeKind.Random;
+            settings.Rotation = Rotations[code >> 6 & 3];
+            settings.Overlap = (code >> 8 & 1) != 0;
+            return settings;
         }
     }
 

@@ -45,13 +45,14 @@ namespace Ricochet.Core.Level
 
         /// <summary>
         /// The arena for one round: a random map's level and seat spots come from <paramref name="seed"/> (randomize_level.gml,
-        /// randomize_player_position.gml); a hand-laid map is always itself with the fixed seat spots.
+        /// randomize_player_position.gml), laid by the settings the seed carries (<see cref="LevelSeeds"/>); a hand-laid map
+        /// is always itself with the fixed seat spots.
         /// </summary>
         public RoundLayout Layout(int seed)
         {
             if (IsRandom)
             {
-                return LevelGenerator.Generate(seed);
+                return LevelGenerator.Generate(LevelSeeds.Dice(seed), LevelSeeds.Settings(seed));
             }
 
             var spots = new Vec2[MatchRules.MaxSeats];

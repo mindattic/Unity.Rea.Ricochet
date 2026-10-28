@@ -112,8 +112,16 @@ namespace Ricochet.Tests
             Assert.That(_title.RoomCanvas, Is.Not.Null);
             Assert.That(_title.RoomCanvas.sortingOrder, Is.LessThan(TitleScreen.TitleSortingOrder), "the card is over the room");
             Assert.That(_title.Letters.Select(l => l.sprite.name.Replace("spr_letter_", string.Empty).Substring(0, 1)), Is.EqualTo("RICOCHET".Select(c => c.ToString())));
-            Assert.That(_title.Letters[0].rectTransform.anchoredPosition, Is.EqualTo(new Vector2(64f, -576f)));
-            Assert.That(_title.Letters[7].rectTransform.anchoredPosition, Is.EqualTo(new Vector2(512f, -352f)));
+
+            // U.RICO-T52: they drift from where the room placed them (R 64,576 ... T 512,352), a pixel right and up a step.
+            TitleBackdrop backdrop = _title.Backdrop;
+            Assert.That(backdrop, Is.Not.Null);
+            long before = backdrop.Model.Steps;
+            yield return new WaitForSecondsRealtime(0.1f);
+            Assert.That(backdrop.Model.Steps, Is.GreaterThan(before), "the letters never moved");
+            long steps = backdrop.Model.Steps;
+            Assert.That(_title.Letters[0].rectTransform.anchoredPosition, Is.EqualTo(new Vector2(64f + steps, -(576f - steps))));
+            Assert.That(_title.Letters[7].rectTransform.anchoredPosition, Is.EqualTo(new Vector2(512f + steps, -(352f - steps))));
         }
 
         [UnityTest]

@@ -33,6 +33,13 @@ namespace Ricochet.Core.Menu
         /// match it will start. It stands where the original's multiplayer_host room did, between the map room and the game.
         /// </summary>
         Lobby,
+
+        /// <summary>
+        /// U.RICO-T52: the Start screen, the titlescreen room's setup panel (players, shapes, type, rotation, overlap, point
+        /// goal, turn time, bounces) as the first setup screen: the title's Start and the main menu open it, its Next goes on to
+        /// the players room.
+        /// </summary>
+        Setup,
     }
 
     /// <summary>A line on the controls screen: the keys, and what they do.</summary>
@@ -75,14 +82,18 @@ namespace Ricochet.Core.Menu
 
         private static Ricochet.Core.Data.GameData Data => Ricochet.Core.Data.GameData.Current;
 
-        /// <summary>The room a room's main button goes on to: the original's titlescreen -> mainmenu -> ... -> endgame -> mainmenu.</summary>
+        /// <summary>
+        /// The room a room's main button goes on to: the title's Start (and the main menu's) opens the Start screen (U.RICO-T52,
+        /// the titlescreen room's setup panel), then players -> maproom -> lobby -> game -> endgame -> mainmenu.
+        /// </summary>
         public static Room Next(Room room)
         {
             switch (room)
             {
                 case Room.Title:
-                    return Room.MainMenu;
                 case Room.MainMenu:
+                    return Room.Setup;
+                case Room.Setup:
                     return Room.Players;
                 case Room.Players:
                     return Room.MapRoom;
@@ -99,8 +110,8 @@ namespace Ricochet.Core.Menu
 
         /// <summary>
         /// Where a room's Back button goes (obj_btn_back_*): the main menu for every room off it, the players room from the
-        /// map room (one step back along the setup), and the title for the main menu itself. Back from the lobby ends the
-        /// game being hosted, so it is the main menu too.
+        /// map room and the Start screen from the players room (one step back along the setup), and the title for the main
+        /// menu itself. Back from the lobby ends the game being hosted, so it is the main menu too.
         /// </summary>
         public static Room Back(Room room)
         {
@@ -110,6 +121,8 @@ namespace Ricochet.Core.Menu
                     return Room.Title;
                 case Room.MapRoom:
                     return Room.Players;
+                case Room.Players:
+                    return Room.Setup;
                 case Room.Title:
                     return Room.Title;
                 default:
@@ -142,6 +155,18 @@ namespace Ricochet.Core.Menu
 
         /// <summary>The credits screen, a line each.</summary>
         public static IReadOnlyList<string> Credits => Data.Menu.Credits;
+
+        /// <summary>
+        /// U.RICO-T52: the names of the hover tips (menu.json's "tips": each control's message, which the original drew at the
+        /// bottom of the room while the pointer was on it).
+        /// </summary>
+        public static readonly string[] TipNames =
+        {
+            "start", "quit", "players", "shapes", "type", "rotation", "overlap", "goal", "turnTime", "bounces", "defaults", "next",
+        };
+
+        /// <summary>The hover tip called <paramref name="name"/> (one of <see cref="TipNames"/>), or empty.</summary>
+        public static string Tip(string name) => name != null && Data.Menu.Tips.TryGetValue(name, out string tip) ? tip : string.Empty;
     }
 
     /// <summary>One line of the endgame recap.</summary>

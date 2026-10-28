@@ -7,6 +7,7 @@
 //     the controls with no slot of their own flowing down the room as the players room's rows did (up to four columns);
 //   the pictures where their rooms put them (the keyboard layout, the credits image, the how-to-play slide with its counter
 //     above, its text below and Last / Next as arrows either side).
+// The main menu's background also carries the title's drifting letters and scrolls (TitleBackdrop, U.RICO-T52).
 // A screen too long even for four columns (the settings) keeps the kit's card, on the new background. The title screen, the
 // pause menu's vote stack and the kit's in-game and endgame menus (over the arena, as the original's pause was) are not
 // taken: they carry a <see cref="GmlNoRoom"/> or are a stack's closable root.
@@ -114,7 +115,25 @@ namespace Ricochet
             layout._background = rect.gameObject.AddComponent<Image>();
             layout._background.sprite = sprite;
             layout._background.raycastTarget = false;
+
+            // U.RICO-T52: the mainmenu room repeats the title's drifting letters over its scrolling floor.
+            if (IsMainMenu(screen))
+            {
+                layout.Backdrop = TitleBackdrop.Create(rect, LetterRoom.MainMenu);
+            }
+
             return layout;
+        }
+
+        /// <summary>The main menu's drifting letters and scrolling floor (null on every other room).</summary>
+        public TitleBackdrop Backdrop { get; private set; }
+
+        /// <summary>True for the kit's main menu screen (the main menu stack's root), the original's mainmenu room.</summary>
+        public static bool IsMainMenu(MenuScreen screen)
+        {
+            Unity.Multiplayer.UI.NetFrontEnd frontEnd = Unity.Multiplayer.UI.NetFrontEnd.Instance;
+            MenuStack stack = screen == null ? null : screen.Stack != null ? screen.Stack : screen.GetComponentInParent<MenuStack>(true);
+            return frontEnd != null && stack != null && frontEnd.MainMenu == stack && stack.Root == screen;
         }
 
         private void LateUpdate()

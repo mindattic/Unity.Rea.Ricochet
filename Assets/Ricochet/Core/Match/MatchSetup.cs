@@ -12,6 +12,9 @@
 // time (turntime, 20 seconds), the bounces a shot makes (bounces, 5), a hit's damage (weapon_damage), each weapon's and item's
 // on/off box and starting count (hasX and countX, 3 apiece, the cannon unlimited), whether weapon, item, health and random
 // drops fall (weapondrops and the like) and pause_redirector (a redirector the item places stops turning, or keeps turning).
+// The Start screen's level settings (U.RICO-T52, the title room's setup panel) ride along with the rules: maxPolygons
+// (Shapes, 5 to 40 in fives), shapetype (Type), rotationtype (Rotation: none, 45, 90, 360) and overlap; Level() hands them
+// to the match, whose every random round carries them in its seed (LevelSeeds).
 // The AI count travels as a vote's number and the rest as its text
 // ("skill=5;assist=3;voice=0;announce=1;goal=500;map=0"). The whole setup is remembered between sessions (UR-T41, the
 // original's config.ini) as ToRecord's named numbers, read back by FromRecord; ResetToDefaults is its Default button.
@@ -86,6 +89,10 @@ namespace Ricochet.Core.Match
         private int _announcements = Announcer.DefaultFrequency;
         private int _goal = DefaultGoal;
         private int _map = Maps.RandomIndex;
+        private int _shapeCount = SnapShapes(LevelSettings.Default.PolygonCount);
+        private ShapeKind _shapeKind = LevelSettings.Default.Shapes;
+        private int _rotation = SnapRotation(LevelSettings.Default.Rotation);
+        private bool _overlap = LevelSettings.Default.Overlap;
 
         /// <summary>AI opponents to add (0 to 15; the server seats fewer when the table is full).</summary>
         public int AiCount
@@ -284,6 +291,65 @@ namespace Ricochet.Core.Match
             set { _map = Maps.Clamp(value); }
         }
 
+        /// <summary>U.RICO-T52, the Start screen's Shapes (maxPolygons): how many shapes a random level lays, 5 to 40 in fives.</summary>
+        public int ShapeCount
+        {
+            get { return _shapeCount; }
+            set { _shapeCount = SnapShapes(value); }
+        }
+
+        /// <summary>The Start screen's Type (shapetype): which shape set a random level's walls come from.</summary>
+        public ShapeKind ShapeType
+        {
+            get { return _shapeKind; }
+            set { _shapeKind = value; }
+        }
+
+        /// <summary>The Start screen's Rotation (rotationtype): 0 (none), 45, 90 or 360 degrees.</summary>
+        public int Rotation
+        {
+            get { return _rotation; }
+            set { _rotation = SnapRotation(value); }
+        }
+
+        /// <summary>The Start screen's Overlap: whether a random level's shapes may overlap.</summary>
+        public bool Overlap
+        {
+            get { return _overlap; }
+            set { _overlap = value; }
+        }
+
+        /// <summary>The level settings a random map's rounds are laid with (they travel in each round's seed, LevelSeeds).</summary>
+        public LevelSettings Level()
+        {
+            var level = LevelSettings.Default;
+            level.PolygonCount = ShapeCount;
+            level.Shapes = ShapeType;
+            level.Rotation = Rotation;
+            level.Overlap = Overlap;
+            return level;
+        }
+
+        /// <summary>The nearest of the Start screen's shape counts (<see cref="LevelSeeds.ShapeCounts"/>).</summary>
+        public static int SnapShapes(int count) => Nearest(LevelSeeds.ShapeCounts, count);
+
+        /// <summary>The nearest of the Start screen's rotations (<see cref="LevelSeeds.Rotations"/>).</summary>
+        public static int SnapRotation(double degrees) => Nearest(LevelSeeds.Rotations, degrees);
+
+        private static int Nearest(int[] values, double value)
+        {
+            int best = values[0];
+            foreach (int candidate in values)
+            {
+                if (Math.Abs(candidate - value) < Math.Abs(best - value))
+                {
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
+
         /// <summary>
         /// A goal the setup screen can show: anything below a step is <see cref="OneRound"/>, anything else rounds to the
         /// nearest step, at most <see cref="MaxGoal"/>.
@@ -359,6 +425,12 @@ namespace Ricochet.Core.Match
             public const string ItemOn = "item";
             public const string ItemCount = "itemct";
             public const string DropOn = "drop";
+
+            /// <summary>U.RICO-T52: the Start screen's level settings (maxPolygons, shapetype, rotationtype, overlap).</summary>
+            public const string Shapes = "polys";
+            public const string ShapeType = "shapes";
+            public const string Rotation = "rot";
+            public const string Overlap = "overlap";
         }
 
         /// <summary>
@@ -415,6 +487,10 @@ namespace Ricochet.Core.Match
                 entries.Add(Entry(Keys.DropOn, i, _dropOn[i] ? 1 : 0));
             }
 
+            entries.Add(new KeyValuePair<string, int>(Keys.Shapes, ShapeCount));
+            entries.Add(new KeyValuePair<string, int>(Keys.ShapeType, (int)ShapeType));
+            entries.Add(new KeyValuePair<string, int>(Keys.Rotation, Rotation));
+            entries.Add(new KeyValuePair<string, int>(Keys.Overlap, Overlap ? 1 : 0));
             return entries;
         }
 
@@ -495,6 +571,10 @@ namespace Ricochet.Core.Match
             _announcements = other._announcements;
             _goal = other._goal;
             _map = other._map;
+            _shapeCount = other._shapeCount;
+            _shapeKind = other._shapeKind;
+            _rotation = other._rotation;
+            _overlap = other._overlap;
         }
 
         /// <summary>The Default button (obj_btn_default, backup.ini): every choice back to the game's own defaults.</summary>
@@ -507,7 +587,8 @@ namespace Ricochet.Core.Match
                 && SameItems(_weaponCount, other._weaponCount) && SameItems(_itemCount, other._itemCount) && SameFlags(_weaponOn, other._weaponOn)
                 && SameFlags(_itemOn, other._itemOn) && SameFlags(_dropOn, other._dropOn) && _turnSeconds == other._turnSeconds
                 && _maxBounces == other._maxBounces && _weaponDamage == other._weaponDamage && _pauseRedirector == other._pauseRedirector && _fogOfWar == other._fogOfWar
-                && _voice == other._voice && _announcements == other._announcements && _goal == other._goal && _map == other._map;
+                && _voice == other._voice && _announcements == other._announcements && _goal == other._goal && _map == other._map
+                && _shapeCount == other._shapeCount && _shapeKind == other._shapeKind && _rotation == other._rotation && _overlap == other._overlap;
         }
 
         private static readonly List<KeyValuePair<string, int>> DefaultRuleEntries = new MatchSetup().RuleEntries();
@@ -591,6 +672,18 @@ namespace Ricochet.Core.Match
                     return true;
                 case Keys.Fog:
                     FogOfWar = value != 0;
+                    return true;
+                case Keys.Shapes:
+                    ShapeCount = value;
+                    return true;
+                case Keys.ShapeType:
+                    ShapeType = value >= 0 && value <= (int)ShapeKind.Random ? (ShapeKind)value : ShapeKind.Random;
+                    return true;
+                case Keys.Rotation:
+                    Rotation = value;
+                    return true;
+                case Keys.Overlap:
+                    Overlap = value != 0;
                     return true;
                 default:
                     int index = IndexAfter(key, Keys.WeaponOn, ArsenalRules.Kinds);

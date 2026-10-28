@@ -191,18 +191,67 @@ namespace Ricochet.Tests
         }
 
         [UnityTest]
-        public IEnumerator TheTitleGoesToTheMainMenu_OnPlay()
+        public IEnumerator TheTitlesStartGoesOnToTheStartScreen()
         {
-            TitleScreen title = TitleScreen.Show(null, "test");
+            bool started = false;
+            TitleScreen title = TitleScreen.Show(null, "test", () => started = true);
             yield return null;
             Assert.That(title.Showing, Is.True);
             Assert.That(title.Screen.Title, Is.EqualTo("RICOCHET"));
             bool dismissed = false;
             title.Dismissed += () => dismissed = true;
-            Button(title.Screen, "Play").Click();
+            Button(title.Screen, TitleScreen.StartLabel).Click();
             yield return null;
             Assert.That(dismissed, Is.True);
+            Assert.That(started, Is.True, "U.RICO-T52: Start opens the Start screen");
             Assert.That(title == null, Is.True, "the title is gone once dismissed");
+        }
+
+        // U.RICO-T52: the Start screen (the titlescreen room's setup panel): players, shapes, type, rotation, overlap, goal,
+        // turn time and bounces on the setup, each row's message on the bottom line under the pointer, and Next to Players.
+        [UnityTest]
+        public IEnumerator TheStartScreenSetsTheMatchAndTheLevel_ShowsEachRowsTip_AndGoesOnToPlayers()
+        {
+            _stack = MenuStack.Create();
+            var setup = new MatchSetup();
+            bool reset = false;
+            MenuScreen start = _stack.Push(MenuFlow.Title(Room.Setup), s => Menus.BuildSetup(s, setup,
+                from => from.Stack.Push(MenuFlow.Title(Room.Players), p => Menus.BuildPlayers(p, setup, "Ann", null, null)), () => reset = true));
+            yield return null;
+            Assert.That(start.Title, Is.EqualTo("Start"));
+
+            MaRange[] ranges = start.GetComponentsInChildren<MaRange>();
+            MaSelect[] selects = start.GetComponentsInChildren<MaSelect>();
+            Assert.That((ranges.Length, selects.Length), Is.EqualTo((3, 4)), "players, turn time, bounces; shapes, type, rotation, goal");
+            ranges[0].Value = 3;
+            selects[0].Value = 6; // 35 shapes
+            selects[1].Value = (int)ShapeKind.Triangles;
+            selects[2].Value = 2; // 90 degrees
+            selects[3].Value = 0; // one round
+            ranges[1].Value = 15;
+            ranges[2].Value = 3;
+            start.GetComponentInChildren<MaToggle>().Value = true;
+            yield return null;
+            Assert.That((setup.AiCount, setup.ShapeCount, setup.ShapeType, setup.Rotation, setup.Goal, setup.TurnSeconds, setup.MaxBounces, setup.Overlap),
+                Is.EqualTo((3, 35, ShapeKind.Triangles, 90, MatchSetup.OneRound, 15, 3, true)));
+
+            MaText tip = start.GetComponentsInChildren<MaText>(true).First(t => t.name == Menus.TipName);
+            MenuTip shapes = start.GetComponentsInChildren<MenuTip>().First(t => t.Name == "shapes");
+            UnityEngine.EventSystems.ExecuteEvents.Execute(shapes.gameObject, new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current),
+                UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+            Assert.That(tip.Text, Is.EqualTo(MenuFlow.Tip("shapes")));
+            UnityEngine.EventSystems.ExecuteEvents.Execute(shapes.gameObject, new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current),
+                UnityEngine.EventSystems.ExecuteEvents.pointerExitHandler);
+            Assert.That(tip.Text, Is.Empty);
+            Assert.That(start.GetComponentsInChildren<MenuTip>().Select(t => t.Name),
+                Is.EquivalentTo(new[] { "defaults", "players", "shapes", "type", "rotation", "overlap", "goal", "turnTime", "bounces", "next" }));
+
+            Button(start, Menus.ResetSetupLabel).Click();
+            Assert.That(reset, Is.True);
+            yield return null;
+            Button(_stack.Current, "Next: " + MenuFlow.Title(Room.Players)).Click();
+            yield return null;
+            Assert.That(_stack.Current.Title, Is.EqualTo(MenuFlow.Title(Room.Players)));
         }
 
         [UnityTest]

@@ -141,7 +141,12 @@ namespace Ricochet.Core.Tests
             Assert.That(MenuFlow.Controls[0].ToString(), Is.EqualTo("Left / Right (A / D): Turn your tank and its aim"));
             Assert.That(MenuFlow.Credits.Count, Is.EqualTo(7));
             Assert.That(MenuFlow.Title(Room.Settings), Is.EqualTo("Game settings"));
-            Assert.That(MenuFlow.OffTheMainMenu, Is.EqualTo(new[] { Room.Players, Room.Settings, Room.Controls, Room.HowToPlay, Room.Credits }));
+            Assert.That(MenuFlow.OffTheMainMenu, Is.EqualTo(new[] { Room.Setup, Room.Settings, Room.Controls, Room.HowToPlay, Room.Credits }));
+            // U.RICO-T52: the Start screen's hover tips, the original's messages.
+            Assert.That(MenuFlow.TipNames.Select(MenuFlow.Tip), Has.All.Not.Empty);
+            Assert.That(MenuFlow.Tip("shapes"), Is.EqualTo("Choose the number of shapes that appear in the arena"));
+            Assert.That(MenuFlow.Tip("nothing"), Is.Empty);
+            Assert.That(MenuFlow.Tip(null), Is.Empty);
 
             // The 80 outlines of UR-T60, spot-checked at their first and last points.
             foreach (ShapeKind kind in new[] { ShapeKind.Abstract, ShapeKind.Triangles, ShapeKind.Bars, ShapeKind.Circles, ShapeKind.Squares })
@@ -239,6 +244,13 @@ namespace Ricochet.Core.Tests
             Assert.That(ex.Errors.Any(e => e.Contains("menu.json") && e.Contains("'Lobby' is missing")), Is.True, string.Join("\n", ex.Errors));
             Assert.That(ex.Errors.Any(e => e.Contains("unknown key 'Lobbi'")), Is.True);
             Assert.That(ex.Errors.Any(e => e.Contains("'Creditz' is not a room")), Is.True, string.Join("\n", ex.Errors));
+        }
+
+        [Test]
+        public void MenuMustGiveEveryHoverTip()
+        {
+            var ex = Fails(s => Patched(s, "menu.json", t => t.Replace("\"overlap\": \"Choose", "\"overlapp\": \"Choose")));
+            Assert.That(ex.Errors.Any(e => e.Contains("menu.json") && e.Contains("'overlap' is missing")), Is.True, string.Join("\n", ex.Errors));
         }
 
         [Test]

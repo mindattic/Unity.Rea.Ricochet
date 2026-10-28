@@ -16,31 +16,35 @@ namespace Ricochet.Core.Tests
     public class MenuFlowTests
     {
         [Test]
-        public void TheRoomGraphRunsTitleToMainMenuToPlayersToMapToLobbyToGameToEndgame_AndBackToTheMainMenu()
+        public void TheRoomGraphRunsTitleToStartToPlayersToMapToLobbyToGameToEndgame_AndBackToTheMainMenu()
         {
             var walked = new List<Room> { Room.Title };
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 8; i++)
             {
                 walked.Add(MenuFlow.Next(walked[walked.Count - 1]));
             }
 
             Assert.That(walked, Is.EqualTo(new[]
             {
-                Room.Title, Room.MainMenu, Room.Players, Room.MapRoom, Room.Lobby, Room.Game, Room.Endgame, Room.MainMenu,
-            }));
+                Room.Title, Room.Setup, Room.Players, Room.MapRoom, Room.Lobby, Room.Game, Room.Endgame, Room.MainMenu, Room.Setup,
+            }), "U.RICO-T52: the title's Start (and the main menu's) opens the Start screen");
+            Assert.That(MenuFlow.Title(Room.Setup), Is.EqualTo("Start"));
+            Assert.That(MenuFlow.OffTheMainMenu.First(), Is.EqualTo(Room.Setup), "the main menu's first button");
+            Assert.That(MenuFlow.OffTheMainMenu, Does.Not.Contain(Room.Players), "the players room is the Start screen's Next");
             Assert.That(MenuFlow.Back(Room.Lobby), Is.EqualTo(Room.MainMenu), "leaving the lobby ends the hosted game");
             Assert.That(MenuFlow.Title(Room.Lobby), Is.EqualTo("Lobby"), "the kit's lobby screen's title");
         }
 
         [Test]
-        public void EveryRoomOffTheMainMenuGoesBackToIt_TheMapRoomBackToPlayers_AndTheMainMenuBackToTheTitle()
+        public void EveryRoomOffTheMainMenuGoesBackToIt_TheMapRoomBackToPlayers_PlayersBackToStart_AndTheMainMenuBackToTheTitle()
         {
-            foreach (Room room in new[] { Room.Players, Room.Settings, Room.Controls, Room.HowToPlay, Room.Credits, Room.Endgame })
+            foreach (Room room in new[] { Room.Setup, Room.Settings, Room.Controls, Room.HowToPlay, Room.Credits, Room.Endgame })
             {
                 Assert.That(MenuFlow.Back(room), Is.EqualTo(Room.MainMenu), room.ToString());
             }
 
             Assert.That(MenuFlow.Back(Room.MapRoom), Is.EqualTo(Room.Players));
+            Assert.That(MenuFlow.Back(Room.Players), Is.EqualTo(Room.Setup));
             Assert.That(MenuFlow.Back(Room.MainMenu), Is.EqualTo(Room.Title));
             Assert.That(MenuFlow.OffTheMainMenu, Does.Not.Contain(Room.Game).And.Not.Contain(Room.Title));
             foreach (Room room in Enum.GetValues(typeof(Room)))

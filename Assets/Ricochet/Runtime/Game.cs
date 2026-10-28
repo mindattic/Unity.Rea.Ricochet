@@ -94,18 +94,16 @@ namespace Ricochet
             // since that package is installed), then the profile's audio settings, saved the moment they change.
             frontEnd.AddSettingsItems(AddAudioSettings);
 
-            // The original's room graph (UR-T9): the title first, then the kit's main menu with the setup rooms (players,
-            // then the map room, then into the game) and the controls, how-to-play and credits rooms off it; the same rooms
+            // The original's room graph (UR-T9): the title first, then the kit's main menu with the setup rooms (the Start
+            // screen, players, then the map room, then into the game) and the controls, how-to-play and credits rooms off it; the same rooms
             // in the in-game menu, where the map room's button asks everyone by the match vote. The settings room's
             // announcer box sits under the kit's Settings, beside the name and colour.
             StartCoroutine(ShowTitle(frontEnd));
 
-            frontEnd.AddScreen(MenuFlow.Title(Room.Players), s =>
-            {
-                RememberOnHide(s);
-                Menus.BuildPlayers(s, _setup, frontEnd.Identity.DisplayName, frontEnd.OpenSettings,
-                    from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), BuildMapRoom), ResetSetup);
-            }, MenuPlacement.Both);
+            // U.RICO-T52: the main menu's Start opens the Start screen (the title room's setup panel), whose Next is the
+            // players room; in a game the players room stands on its own (the match vote follows it).
+            frontEnd.AddScreen(MenuFlow.Title(Room.Setup), BuildSetupRoom, MenuPlacement.MainMenu);
+            frontEnd.AddScreen(MenuFlow.Title(Room.Players), BuildPlayersRoom, MenuPlacement.PauseMenu);
             frontEnd.AddScreen(MenuFlow.Title(Room.Controls), Menus.BuildControls, MenuPlacement.Both);
             // UR-T36: the Input System's RicochetControls asset, rebindable and saved to the Unity.Shared profile.
             frontEnd.AddScreen("Rebind controls", Menus.BuildRebind, MenuPlacement.Both);
@@ -171,13 +169,36 @@ namespace Ricochet
 
         // The title comes up over the kit's main menu once the front end has built its menus (it builds none in a headless
         // process, a bot or a session already running, and then there is no title either).
-        private static IEnumerator ShowTitle(NetFrontEnd frontEnd)
+        // Its Start opens the Start screen over the main menu.
+        private IEnumerator ShowTitle(NetFrontEnd frontEnd)
         {
             yield return null;
             if (frontEnd != null && frontEnd.HasMenus && frontEnd.State == FrontEndState.Menu)
             {
-                TitleScreen.Show(frontEnd, Application.version);
+                TitleScreen.Show(frontEnd, Application.version, () =>
+                {
+                    if (frontEnd.MainMenu != null)
+                    {
+                        frontEnd.MainMenu.Push(MenuFlow.Title(Room.Setup), BuildSetupRoom);
+                    }
+                });
             }
+        }
+
+        // U.RICO-T52: the Start screen, then the players room.
+        private void BuildSetupRoom(MenuScreen s)
+        {
+            RememberOnHide(s);
+            Menus.BuildSetup(s, _setup, from => from.Stack.Push(MenuFlow.Title(Room.Players), BuildPlayersRoom), ResetSetup);
+        }
+
+        // The players room, then the map room.
+        private void BuildPlayersRoom(MenuScreen s)
+        {
+            NetFrontEnd frontEnd = NetFrontEnd.Instance;
+            RememberOnHide(s);
+            Menus.BuildPlayers(s, _setup, frontEnd != null ? frontEnd.Identity.DisplayName : null, frontEnd != null ? (System.Action)frontEnd.OpenSettings : null,
+                from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), BuildMapRoom), ResetSetup);
         }
 
         // The map room, one step on from the players room: its button goes on. From the main menu that hosts a game with
@@ -224,7 +245,7 @@ namespace Ricochet
             }
         }
 
-        // titlescreen -> mainmenu -> players -> maproom -> lobby -> gamescreen: host with the setup; the lobby's Start plays it.
+        // titlescreen -> Start screen -> players -> maproom -> lobby -> gamescreen: host with the setup; the lobby's Start plays it.
         private void HostFromMapRoom()
         {
             RememberSetup();
@@ -238,6 +259,13 @@ namespace Ricochet
         private void Update()
         {
             ClientVoteOverlays.Ensure();
+
+            // U.RICO-T52, obj_jukebox: in the menus, track after track (the match plays its own).
+            NetFrontEnd frontEnd = NetFrontEnd.Instance;
+            if (frontEnd != null && frontEnd.HasMenus && frontEnd.State == FrontEndState.Menu && GameAudio.Instance != null)
+            {
+                GameAudio.Instance.Jukebox();
+            }
         }
 
         private void OnDestroy()
