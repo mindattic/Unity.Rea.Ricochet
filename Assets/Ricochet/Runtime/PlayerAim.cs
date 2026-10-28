@@ -107,8 +107,9 @@ namespace Ricochet
         // and sent from its ShotFired event (Present).
         private void OnFire(float heading) => Run(new Cmd.FireCommand(State.Id, heading));
 
-        // Server: R / PageUp / PageDown in practice: a new random level, everyone to fresh spots. Ignored in a match.
-        private void OnReroll() => Run(new Cmd.RerollCommand(State.Id));
+        // Server: R, or PageUp / PageDown (which step the border first): a new random level, everyone to fresh spots. R is
+        // ignored in a match; a page key rerolls the round before its first shot.
+        private void OnReroll(int borderStep) => Run(new Cmd.RerollCommand(State.Id, borderStep));
 
         // Server: vortex_detonate.gml. Only this player's own vortex, only while it is still in the air, and only once: the
         // authority cuts the volley short where it is now and lands it at once; ShotCut tells every client.
@@ -165,9 +166,14 @@ namespace Ricochet
                 return; // paused (UR-T43): no turning, charging, driving, firing or ending the turn until it resumes
             }
 
-            if (GameInput.Reroll())
+            int borderStep = GameInput.BorderStep();
+            if (borderStep != 0)
             {
-                Reroll(); // R / PageUp / PageDown: the server only obeys it in practice
+                Reroll(borderStep); // PageUp / PageDown: a thinner or thicker border and another level
+            }
+            else if (GameInput.Reroll())
+            {
+                Reroll(0); // R: the server only obeys it in practice
             }
 
             // An aim assist the server just applied: the local aim follows it.

@@ -139,12 +139,19 @@ namespace Ricochet.Core.Commands
         }
     }
 
-    /// <summary>Practice only (UR-T23): roll another random level (randomize_level.gml on R, PageUp or PageDown).</summary>
+    /// <summary>
+    /// Roll another random level (randomize_level.gml on R, PageUp or PageDown). PageUp (-1) and PageDown (+1) first step the
+    /// border (U.RICO-T106); R (0) leaves it. Practice always; a match only before the round's first shot, and only for a step.
+    /// </summary>
     public sealed class RerollCommand : Command
     {
-        public RerollCommand(int playerId) : base(playerId)
+        public RerollCommand(int playerId, int borderStep = 0) : base(playerId)
         {
+            BorderStep = borderStep < 0 ? -1 : borderStep > 0 ? 1 : 0;
         }
+
+        /// <summary>-1 (PageUp: thinner), +1 (PageDown: thicker) or 0 (R).</summary>
+        public int BorderStep { get; }
     }
 
     /// <summary>A vote on an open question (see <see cref="GameAuthority.OpenVote"/>): yes or no, once a player, the last one counts.</summary>

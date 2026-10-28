@@ -204,7 +204,11 @@ namespace Ricochet
             float side = _rules.Border * u, cap = 2f * _rules.Border * u;
             float minX = (float)level.MinX, minY = (float)level.MinY, maxX = (float)level.MaxX, maxY = (float)level.MaxY;
             _roomCentre = new Vector2((minX + maxX) / 2f, (minY + maxY) / 2f);
-            var outer = Rect.MinMaxRect(minX - side, minY - cap, maxX + side, maxY + cap);
+            // A thicker border (U.RICO-T106) pulls the level in, and the frame grows inward to meet it: the frame's outer edge
+            // stays where the stock arena's was.
+            Playfield arena = LevelGenerator.Arena;
+            var outer = Rect.MinMaxRect(Mathf.Min(minX, (float)arena.MinX) - side, Mathf.Min(minY, (float)arena.MinY) - cap,
+                Mathf.Max(maxX, (float)arena.MaxX) + side, Mathf.Max(maxY, (float)arena.MaxY) + cap);
 
             _mask.transform.localPosition = outer.center;
             _mask.transform.localScale = new Vector3(outer.width, outer.height, 1f);

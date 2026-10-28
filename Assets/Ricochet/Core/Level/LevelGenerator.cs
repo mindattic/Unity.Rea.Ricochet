@@ -5,6 +5,7 @@
 // round from the seed alone (UR-LAW-1). Peers share the LevelSettings through the seed too (U.RICO-T52, LevelSeeds): the
 // Start screen's shapes, type, rotation and overlap are packed into a negative seed, and a positive seed (every seed before
 // U.RICO-T52, and every round played on the stock settings) is the stock settings, so old seeds lay the same rounds.
+// The border (U.RICO-T106: obj_game's PageUp and PageDown, 32 to 256 in steps of 32) rides in the same packed seed.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,6 +47,12 @@ namespace Ricochet.Core.Level
         /// <summary>Which shape set the walls come from (the original's "abstract").</summary>
         public ShapeKind Shapes { get; set; }
 
+        /// <summary>
+        /// The original's border (U.RICO-T106): 32 to 256 pixels in steps of 32, the playfield's inset that PageUp and PageDown
+        /// move. 32 is the stock arena; every step above it pulls the walls in (see <see cref="LevelGenerator.Inset"/>).
+        /// </summary>
+        public int Border { get; set; } = LevelSeeds.MinBorder;
+
         /// <summary>The stock setup, from level.json (UR-T35): a new set starts as a copy of it.</summary>
         public LevelSettings()
         {
@@ -64,27 +71,45 @@ namespace Ricochet.Core.Level
             Rotation = other.Rotation;
             Overlap = other.Overlap;
             Shapes = other.Shapes;
+            Border = other.Border;
         }
 
         /// <summary>True when <paramref name="other"/> lays the same kind of level.</summary>
         public bool SameAs(LevelSettings other)
         {
             return other != null && PolygonCount == other.PolygonCount && Rotation.Equals(other.Rotation) && Overlap == other.Overlap
-                && Shapes == other.Shapes;
+                && Shapes == other.Shapes && Border == other.Border;
         }
     }
 
     /// <summary>
     /// U.RICO-T52: a random level's seed carries the setup's level settings, so every peer lays the same round from the seed
-    /// alone. A seed of 0 or above is the stock settings (level.json) with that seed as the dice: every seed before this
-    /// existed, and any round on the stock settings. A seed below zero holds the settings in bits 21 to 29 (the shape count's
-    /// place in <see cref="ShapeCounts"/>, the <see cref="ShapeKind"/>, the rotation's place in <see cref="Rotations"/> and
-    /// overlap) and the dice in bits 0 to 20.
+    /// alone (and the border, U.RICO-T106). A seed of 0 or above is the stock settings (level.json) with that seed as the dice: every seed before this
+    /// existed, and any round on the stock settings. A seed below zero holds the settings in bits 18 to 29 (the shape count's
+    /// place in <see cref="ShapeCounts"/>, the <see cref="ShapeKind"/>, the rotation's place in <see cref="Rotations"/>, overlap
+    /// and the border's step) and the dice in bits 0 to 17.
     /// </summary>
     public static class LevelSeeds
     {
-        private const int DiceBits = 21;
+        private const int DiceBits = 18;
         private const int DiceMask = (1 << DiceBits) - 1;
+
+        /// <summary>The smallest border (draw_borders' border, 32) and the biggest PageDown reaches (256), in steps of 32.</summary>
+        public const int MinBorder = 32, MaxBorder = 256, BorderStep = 32;
+
+        /// <summary>The border one PageUp (-1) or PageDown (+1) from <paramref name="border"/> gives: obj_game's key 33 and 34, which stop at either end.</summary>
+        public static int StepBorder(int border, int step)
+        {
+            border = ClampBorder(border);
+            if (step < 0 && border > MinBorder)
+            {
+                return border - BorderStep;
+            }
+
+            return step > 0 && border < MaxBorder ? border + BorderStep : border;
+        }
+
+        private static int ClampBorder(int border) => Math.Max(MinBorder, Math.Min(MaxBorder, (border + BorderStep / 2) / BorderStep * BorderStep));
 
         /// <summary>The Start screen's shape counts (obj_btn_polygons_less / more: 5 to 40 in fives, wrapping).</summary>
         public static readonly int[] ShapeCounts = { 5, 10, 15, 20, 25, 30, 35, 40 };
@@ -105,7 +130,8 @@ namespace Ricochet.Core.Level
                 return dice;
             }
 
-            int code = count | (int)settings.Shapes << 3 | rotation << 6 | (settings.Overlap ? 1 : 0) << 8;
+            int step = (ClampBorder(settings.Border) - MinBorder) / BorderStep;
+            int code = count | (int)settings.Shapes << 3 | rotation << 6 | (settings.Overlap ? 1 : 0) << 8 | step << 9;
             return int.MinValue | code << DiceBits | (dice & DiceMask);
         }
 
@@ -121,12 +147,13 @@ namespace Ricochet.Core.Level
                 return settings;
             }
 
-            int code = seed >> DiceBits & 511;
+            int code = seed >> DiceBits & 4095;
             settings.PolygonCount = ShapeCounts[code & 7];
             int kind = code >> 3 & 7;
             settings.Shapes = kind <= (int)ShapeKind.Random ? (ShapeKind)kind : ShapeKind.Random;
             settings.Rotation = Rotations[code >> 6 & 3];
             settings.Overlap = (code >> 8 & 1) != 0;
+            settings.Border = MinBorder + BorderStep * (code >> 9 & 7);
             return settings;
         }
     }
@@ -188,9 +215,35 @@ namespace Ricochet.Core.Level
         }
     }
 
+    /// <summary>A playfield's edges.</summary>
+    public readonly struct Playfield
+    {
+        public Playfield(double minX, double minY, double maxX, double maxY)
+        {
+            MinX = minX;
+            MinY = minY;
+            MaxX = maxX;
+            MaxY = maxY;
+        }
+
+        public double MinX { get; }
+
+        public double MinY { get; }
+
+        public double MaxX { get; }
+
+        public double MaxY { get; }
+    }
+
     public static class LevelGenerator
     {
         private const double MinX = -11, MinY = -6, MaxX = 11, MaxY = 6;
+
+        /// <summary>The least height the playfield keeps however thick the border: room to seat every player (U.RICO-T106).</summary>
+        private const double MinPlayHeight = 6;
+
+        /// <summary>The full arena's bounds (the border at its stock 32).</summary>
+        public static Playfield Arena => new Playfield(MinX, MinY, MaxX, MaxY);
 
         /// <summary>The border's inset a polygon's centre keeps (so its walls stay inside).</summary>
         private const double EdgeGap = 0.3;
@@ -219,6 +272,20 @@ namespace Ricochet.Core.Level
         private const int Picks = 12;
 
         /// <summary>
+        /// The playfield for a border of <paramref name="border"/> pixels (U.RICO-T106). The 32 px stock border is the whole arena
+        /// (its frame is drawn outside it); every 32 px more pulls the sides in by that many pixels and the top and bottom by twice
+        /// that, as the original's border did x and y. Deviation: the vertical inset is clamped so the playfield always keeps
+        /// <see cref="MinPlayHeight"/> of height to seat the most players (the arena is only 12 units tall).
+        /// </summary>
+        public static Playfield Inset(int border)
+        {
+            double extra = Math.Max(0, border - LevelSeeds.MinBorder) * ShapeLibrary.UnitsPerPixel;
+            double x = extra;
+            double y = Math.Min(2 * extra, (MaxY - MinY - MinPlayHeight) / 2);
+            return new Playfield(MinX + x, MinY + y, MaxX - x, MaxY - y);
+        }
+
+        /// <summary>
         /// The round for <paramref name="seed"/>: shapes picked and turned the way setup_shapes.gml does and laid per
         /// <paramref name="settings"/> clear of <paramref name="keepClear"/> (the practice dummies), then sixteen seat spots
         /// clear of every shape, the border, the dummies and each other. The same seed and settings always give the same round.
@@ -227,6 +294,7 @@ namespace Ricochet.Core.Level
         {
             settings = settings ?? LevelSettings.Default;
             var dice = new Random(seed);
+            Playfield field = Inset(settings.Border);
             var avoid = new List<Vec2>(keepClear ?? DefaultKeepClear());
             var shapes = new List<PlacedShape>();
             var laid = new List<LaidShape>();
@@ -244,8 +312,8 @@ namespace Ricochet.Core.Level
                     bool found = false;
                     for (int attempt = 0; attempt < Attempts && !found; attempt++)
                     {
-                        placed = PlacedShape.At(outline, RandomOrigin(outline, dice));
-                        found = placed.InsideBorder(MinX, MinY, MaxX, MaxY) && ClearOfPoints(placed, SeatClearance, avoid)
+                        placed = PlacedShape.At(outline, RandomOrigin(outline, dice, field));
+                        found = placed.InsideBorder(field.MinX, field.MinY, field.MaxX, field.MaxY) && ClearOfPoints(placed, SeatClearance, avoid)
                             && (settings.Overlap || !Overlaps(placed, shapes));
                     }
 
@@ -266,8 +334,8 @@ namespace Ricochet.Core.Level
                 }
             }
 
-            var level = new Level(MinX, MinY, MaxX, MaxY, walls);
-            return new RoundLayout(level, PickSpots(dice, shapes, avoid, level), shapes.Count, laid);
+            var level = new Level(field.MinX, field.MinY, field.MaxX, field.MaxY, walls);
+            return new RoundLayout(level, PickSpots(dice, shapes, avoid, level, field), shapes.Count, laid);
         }
 
         /// <summary>setup_shapes.gml's rotation switch: none, one of eight, one of four or any whole angle.</summary>
@@ -317,7 +385,7 @@ namespace Ricochet.Core.Level
         }
 
         /// <summary>A random spot for the shape's origin (its middle) that keeps the whole outline inside the border.</summary>
-        private static Vec2 RandomOrigin(Vec2[] outline, Random dice)
+        private static Vec2 RandomOrigin(Vec2[] outline, Random dice, Playfield field)
         {
             double minX = double.MaxValue, maxX = double.MinValue, minY = double.MaxValue, maxY = double.MinValue;
             foreach (Vec2 v in outline)
@@ -328,8 +396,8 @@ namespace Ricochet.Core.Level
                 maxY = Math.Max(maxY, v.Y);
             }
 
-            double lowX = MinX + EdgeGap - minX, highX = MaxX - EdgeGap - maxX;
-            double lowY = MinY + EdgeGap - minY, highY = MaxY - EdgeGap - maxY;
+            double lowX = field.MinX + EdgeGap - minX, highX = field.MaxX - EdgeGap - maxX;
+            double lowY = field.MinY + EdgeGap - minY, highY = field.MaxY - EdgeGap - maxY;
             // A shape wider than the border cannot fit: aim for the middle and let the border check refuse it.
             return new Vec2(highX > lowX ? Between(dice, lowX, highX) : 0, highY > lowY ? Between(dice, lowY, highY) : 0);
         }
@@ -352,7 +420,7 @@ namespace Ricochet.Core.Level
             return keep;
         }
 
-        private static List<Vec2> PickSpots(Random dice, List<PlacedShape> shapes, List<Vec2> avoid, Level level)
+        private static List<Vec2> PickSpots(Random dice, List<PlacedShape> shapes, List<Vec2> avoid, Level level, Playfield field)
         {
             var spots = new List<Vec2>(MatchRules.MaxSeats);
             double edge = Seating.PlayerRadius + 0.3;
@@ -364,7 +432,7 @@ namespace Ricochet.Core.Level
                 // starts in a level where nobody can hit anybody (U.RICO-T72); a crowded level falls through to the rest.
                 for (int attempt = 0; attempt < ReachAttempts && !found && seat > 0 && seat < ReachSeats; attempt++)
                 {
-                    spot = new Vec2(Between(dice, MinX + edge, MaxX - edge), Between(dice, MinY + edge, MaxY - edge));
+                    spot = new Vec2(Between(dice, field.MinX + edge, field.MaxX - edge), Between(dice, field.MinY + edge, field.MaxY - edge));
                     found = ClearOfAll(spot, SeatGap, spots) && ClearOfAll(spot, DummyClearance, avoid)
                         && ClearOfShapes(spot, SeatClearance, shapes)
                         && CanTradeShots(level, spots[0], spot);
@@ -376,7 +444,7 @@ namespace Ricochet.Core.Level
                     double scale = 1.0 - 0.1 * relax;
                     for (int attempt = 0; attempt < 200 && !found; attempt++)
                     {
-                        spot = new Vec2(Between(dice, MinX + edge, MaxX - edge), Between(dice, MinY + edge, MaxY - edge));
+                        spot = new Vec2(Between(dice, field.MinX + edge, field.MaxX - edge), Between(dice, field.MinY + edge, field.MaxY - edge));
                         found = ClearOfAll(spot, SeatGap * scale, spots) && ClearOfAll(spot, DummyClearance, avoid)
                             && ClearOfShapes(spot, SeatClearance * scale, shapes);
                     }
@@ -385,7 +453,7 @@ namespace Ricochet.Core.Level
                 // Last resort on a crowded level: only the bare minimum room, so a seat never lands inside a polygon.
                 for (int attempt = 0; attempt < 3000 && !found; attempt++)
                 {
-                    spot = new Vec2(Between(dice, MinX + edge, MaxX - edge), Between(dice, MinY + edge, MaxY - edge));
+                    spot = new Vec2(Between(dice, field.MinX + edge, field.MaxX - edge), Between(dice, field.MinY + edge, field.MaxY - edge));
                     found = ClearOfAll(spot, Seating.PlayerRadius * 2 + 0.05, spots) && ClearOfAll(spot, DummyClearance, avoid)
                         && ClearOfShapes(spot, Seating.PlayerRadius + 0.05, shapes);
                 }

@@ -17,12 +17,13 @@ namespace Ricochet.EditorTests
         private const string AssetPath = "Assets/Ricochet/Resources/Input/RicochetControls.inputactions";
 
         // Fullscreen and Reroll are keyboard-only, like the original (no fullscreen toggle or practice reroll on a pad).
-        private static readonly string[] KeyboardOrMouseOnly = { "Fullscreen", "Reroll" };
+        private static readonly string[] KeyboardOrMouseOnly = { "Fullscreen", "Reroll", "BorderThinner", "BorderThicker" };
 
         private static readonly string[] ExpectedActions =
         {
             "Aim", "Fire", "CycleWeapon", "CycleItem", "UseItem",
             "Fuse1", "Fuse2", "Fuse3", "EndTurn", "Drive", "Ping", "Pause", "Fullscreen", "Reroll",
+            "BorderThinner", "BorderThicker",
         };
 
         private static InputActionAsset LoadAsset()

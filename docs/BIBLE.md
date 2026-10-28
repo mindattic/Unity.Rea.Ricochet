@@ -324,6 +324,15 @@ each light's y over `room_width`, putting nearly half of them below the room; th
 gamescreen's `obj_border_top` shows `spr_bottom_border` (a copy-paste slip; draw_borders draws `spr_top_border` there),
 and the top frame here is `spr_top_border`.
 
+Border (U.RICO-T106): obj_game's keys 33 (PageUp) and 34 (PageDown) step `border` down or up by 32 (32 to 256) and call
+`randomize_level` again; R rerolls only. `LevelSettings.Border` carries it, `LevelSeeds` packs its step into the round's seed (so
+every peer lays the same walls from the seed alone; the dice are now the low 18 bits of a packed seed), and the authority keeps it
+between rounds. `LevelGenerator.Inset` pulls the playfield in by the extra border pixels on x and twice that on y, as the original did;
+the 32 px stock border is the whole arena, with its frame outside as before, and `BackdropView` grows the frame inward to meet the
+smaller level. In a match the page keys reroll the round only before its first shot (the pause menu's Randomize rule).
+Deviation: the vertical inset is clamped so the playfield keeps 6 of the arena's 12 units of height to seat every player; the
+laid hazards and practice dummies keep their fixed places, so a thick border can leave one outside the playfield.
+
 Not carried: `obj_ground` (placed nowhere: a surface that would subtract `spr_polygon1` at 0, 0 once for every shape, an
 unfinished idea) and `obj_hex` (a hex sprite placed only in `room0`, the startup room the rebuild does not carry). `bg_redslate` is in no group, and its
 image is missing from the original, so nothing is lost there.

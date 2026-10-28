@@ -120,6 +120,22 @@
                     "interactions": "",
                     "processors": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "BorderThinner",
+                    "id": "44ca96f0-871e-479c-b9c7-2588b702f001",
+                    "type": "Button",
+                    "interactions": "",
+                    "processors": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BorderThicker",
+                    "id": "ab3bcdd7-770e-4359-9579-41fb3311e5a4",
+                    "type": "Button",
+                    "interactions": "",
+                    "processors": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -636,7 +652,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Reroll",
+                    "action": "BorderThinner",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -647,7 +663,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Reroll",
+                    "action": "BorderThicker",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -54,9 +54,10 @@ namespace Ricochet
         [ToServer(RateLimit = 4)]
         public partial void Detonate();
 
-        // client -> server (UR-T23): R, PageUp or PageDown in practice: roll another random level (randomize_level.gml).
+        // client -> server (UR-T23): R (borderStep 0), PageUp (-1) or PageDown (+1): roll another random level (randomize_level.gml),
+        // the page keys first stepping the border (U.RICO-T106). Practice always; a match before the round's first shot.
         [ToServer(RateLimit = 2)]
-        public partial void Reroll();
+        public partial void Reroll(int borderStep);
 
         // client -> server: the owner is holding W (+1, move_forward.gml) or S (-1, move_backward.gml); sent every tenth of a
         // second while held, and the server keeps driving only a moment past the last one, so a dropped stop cannot leave the

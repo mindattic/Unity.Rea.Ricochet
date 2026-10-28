@@ -44,6 +44,9 @@ namespace Ricochet.Core.Commands
         private List<GameEvent> _current;
         private int _matchMap;
         private LevelSettings _matchLevel;
+
+        // obj_game's border (U.RICO-T106): PageUp and PageDown step it, every round's seed carries it.
+        private int _border = LevelSeeds.MinBorder;
         private bool _firedThisRound;
 
         public GameAuthority(IGameWorld world = null, ShotRules rules = null, MatchRules matchRules = null, ArsenalRules arms = null,
@@ -381,7 +384,7 @@ namespace Ricochet.Core.Commands
         /// Practice only (R, PageUp and PageDown in the original): rolls another random level and stands every player at a
         /// fresh spot. Empty during a match, whose rounds roll their own.
         /// </summary>
-        public IReadOnlyList<GameEvent> Reroll(int playerId = -1)
+        public IReadOnlyList<GameEvent> Reroll(int playerId = -1, int borderStep = 0)
         {
             return Run(() =>
             {
@@ -390,6 +393,7 @@ namespace Ricochet.Core.Commands
                     return; // a match, or its recap, keeps its level
                 }
 
+                _border = LevelSeeds.StepBorder(_border, borderStep);
                 RollLayout(Maps.RandomIndex);
                 PlaceEveryone();
                 ResetHazards();
@@ -431,7 +435,7 @@ namespace Ricochet.Core.Commands
         /// crates and hazards start over, every loadout is fresh, and the current seat's turn starts over with its Ready card
         /// and a full clock. Only before the round's first shot (<see cref="MayRerollRound"/>); empty otherwise.
         /// </summary>
-        public IReadOnlyList<GameEvent> RerollRound(int playerId = -1)
+        public IReadOnlyList<GameEvent> RerollRound(int playerId = -1, int borderStep = 0)
         {
             return Run(() =>
             {
@@ -439,6 +443,8 @@ namespace Ricochet.Core.Commands
                 {
                     return;
                 }
+
+                _border = LevelSeeds.StepBorder(_border, borderStep);
 
                 SetPaused(false, playerId);
                 RollLayout(Maps.RandomIndex);
@@ -572,8 +578,17 @@ namespace Ricochet.Core.Commands
                     case EndTurnCommand _:
                         DoEndTurn(state);
                         break;
-                    case RerollCommand _:
-                        Reroll(state.Id);
+                    case RerollCommand reroll:
+                        // R rolls a practice level; PageUp and PageDown also step the border, in a match too (before its first shot)
+                        if (reroll.BorderStep != 0 && MatchRunning)
+                        {
+                            RerollRound(state.Id, reroll.BorderStep);
+                        }
+                        else
+                        {
+                            Reroll(state.Id, reroll.BorderStep);
+                        }
+
                         break;
                     case VoteCommand vote:
                         DoVote(state, vote);
@@ -1331,11 +1346,24 @@ namespace Ricochet.Core.Commands
             Emit(new LayoutChanged(MapIndex, LayoutSeed, LayoutVersion, false));
         }
 
+        // The settings a round is laid by: the match's (or the stock ones) at the border PageUp and PageDown have set.
+        private LevelSettings RoundSettings()
+        {
+            var settings = LevelSettings.Default;
+            if (_matchLevel != null)
+            {
+                settings.CopyFrom(_matchLevel);
+            }
+
+            settings.Border = _border;
+            return settings;
+        }
+
         // Lays map `index`'s next round (a fresh seed for the random map) and tells the hazards which level it is.
         private void RollLayout(int index)
         {
             index = Maps.Clamp(index);
-            int seed = Maps.At(index).IsRandom ? LevelSeeds.Compose(_layoutDice.Next(1, int.MaxValue), _matchLevel) : 0;
+            int seed = Maps.At(index).IsRandom ? LevelSeeds.Compose(_layoutDice.Next(1, int.MaxValue), RoundSettings()) : 0;
             MapIndex = index;
             LayoutSeed = seed;
             Layout = Maps.At(index).Layout(seed);
@@ -1355,6 +1383,7 @@ namespace Ricochet.Core.Commands
             LayoutSeed = seed;
             LayoutVersion = version;
             Layout = Maps.At(map).Layout(seed);
+            _border = LevelSeeds.Settings(seed).Border;
             Hazards.UseLevel(Layout.Level);
         }
 

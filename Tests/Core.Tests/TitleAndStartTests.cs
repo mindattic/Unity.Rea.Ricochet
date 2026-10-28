@@ -60,7 +60,7 @@ namespace Ricochet.Core.Tests
             Assert.That(seed, Is.LessThan(0));
             LevelSettings back = LevelSeeds.Settings(seed);
             Assert.That((back.PolygonCount, back.Shapes, back.Rotation, back.Overlap), Is.EqualTo((35, ShapeKind.Circles, 45.0, true)));
-            Assert.That(LevelSeeds.Dice(seed), Is.EqualTo(987654 & ((1 << 21) - 1)));
+            Assert.That(LevelSeeds.Dice(seed), Is.EqualTo(987654 & ((1 << 18) - 1)));
         }
 
         [Test]

@@ -32,6 +32,9 @@ namespace Ricochet
         /// <summary>True on the frame Reroll is pressed: roll another random level (practice only).</summary>
         public static bool Reroll() => Act("Reroll").WasPressedThisFrame();
 
+        /// <summary>The border step pressed this frame: -1 (PageUp, thinner), +1 (PageDown, thicker) or 0; each rolls the level again.</summary>
+        public static int BorderStep() => Act("BorderThinner").WasPressedThisFrame() ? -1 : Act("BorderThicker").WasPressedThisFrame() ? 1 : 0;
+
         /// <summary>The weapon to cycle to this frame: -1 (previous), +1 (next) or 0.</summary>
         public static int CycleWeapon() => Step(Act("CycleWeapon"));
 
