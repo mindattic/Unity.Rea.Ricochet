@@ -16,6 +16,9 @@ namespace Ricochet.Core.Ai
         // The original's two pools (names_f.ini then names_m.ini), as one list: an index below FemaleCount is a female name.
         private static readonly string[] s_names = Join(AiNamesData.Female, AiNamesData.Male);
 
+        // The pools share some names (Sam, Dana, ...): a draw never gives two seats the same one.
+        private static readonly int s_distinct = new HashSet<string>(s_names, StringComparer.Ordinal).Count;
+
         private static string[] Join(string[] first, string[] second)
         {
             var all = new string[first.Length + second.Length];
@@ -50,11 +53,11 @@ namespace Ricochet.Core.Ai
 
             // get_random_name: a coin picks names_m or names_f, then a line of it; names here are also kept distinct.
             int femaleCount = AiNamesData.Female.Length;
-            var taken = new HashSet<int>();
+            var taken = new HashSet<string>(StringComparer.Ordinal);
             var picks = new int[Math.Max(0, count)];
             for (int i = 0; i < picks.Length; i++)
             {
-                if (taken.Count >= s_names.Length)
+                if (taken.Count >= s_distinct)
                 {
                     picks[i] = Default;
                     continue;
@@ -65,7 +68,7 @@ namespace Ricochet.Core.Ai
                 {
                     pick = random.Next(2) == 0 ? random.Next(femaleCount) : femaleCount + random.Next(AiNamesData.Male.Length);
                 }
-                while (!taken.Add(pick));
+                while (!taken.Add(s_names[pick]));
                 picks[i] = pick;
             }
 

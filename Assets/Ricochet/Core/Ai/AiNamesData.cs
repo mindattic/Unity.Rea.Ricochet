@@ -4078,7 +4078,8 @@ namespace Ricochet.Core.Ai
             "Vanetta",
             "Vania",
             "Vanita",
-            "Vanna",        };
+            "Vanna",
+        };
 
         internal static readonly string[] Male =
         {
@@ -5300,6 +5301,7 @@ namespace Ricochet.Core.Ai
             "Zachery",
             "Zack",
             "Zackary",
-            "Zane",        };
+            "Zane",
+        };
     }
 }
