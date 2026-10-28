@@ -53,7 +53,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void TheMatchRulesPackIntoWordsAndComeBackTheSame()
         {
-            var chosen = new MatchSetup { TurnSeconds = 35, MaxBounces = 9, WeaponDamage = 40, PauseRedirector = false };
+            var chosen = new MatchSetup { TurnSeconds = 25, MaxBounces = 9, WeaponDamage = 40, PauseRedirector = false };
             chosen.SetWeaponOn(Weapon.Grenade, false);
             chosen.SetWeaponCount(Weapon.Laser, 7);
             chosen.SetItemOn(Item.AimAssist, false);
@@ -64,7 +64,7 @@ namespace Ricochet.Core.Tests
             MatchSetup back = MatchSetup.UnpackRules(packed);
             Assert.That(back.PackRules(), Is.EqualTo(packed));
             Assert.That((back.TurnSeconds, back.MaxBounces, back.WeaponDamage, back.PauseRedirector, back.WeaponOn(Weapon.Grenade), back.WeaponCount(Weapon.Laser), back.ItemOn(Item.AimAssist), back.ItemCount(Item.AimAssist), back.DropOn(DropKind.Weapon)),
-                Is.EqualTo((35, 9, 40, false, false, 7, false, 10, false)));
+                Is.EqualTo((25, 9, 40, false, false, 7, false, 10, false)));
             Assert.That(MatchSetup.IsPackedRules(new int[MatchSetup.PackedRuleWords]), Is.False, "an unwritten pack is not rules");
         }
 
@@ -221,7 +221,7 @@ namespace Ricochet.Core.Tests
         private static MatchSetup WithRules()
         {
             MatchSetup setup = Chosen();
-            setup.TurnSeconds = 35;
+            setup.TurnSeconds = 25;
             setup.MaxBounces = 9;
             setup.WeaponDamage = 40;
             setup.PauseRedirector = false;
@@ -239,7 +239,7 @@ namespace Ricochet.Core.Tests
             MatchSetup rules = WithRules();
             MatchSetup back = MatchSetup.FromRecord(rules.ToRecord());
             Assert.That(back.SameAs(rules), Is.True);
-            Assert.That((back.TurnSeconds, back.MaxBounces, back.WeaponDamage, back.PauseRedirector), Is.EqualTo((35, 9, 40, false)));
+            Assert.That((back.TurnSeconds, back.MaxBounces, back.WeaponDamage, back.PauseRedirector), Is.EqualTo((25, 9, 40, false)));
             Assert.That((back.WeaponOn(Weapon.Railgun), back.WeaponCount(Weapon.Laser), back.WeaponCount(Weapon.Cannon)), Is.EqualTo((false, 7, ArsenalRules.Unlimited)));
             Assert.That((back.ItemOn(Item.Teleporter), back.ItemCount(Item.ShieldWall), back.DropOn(DropKind.Health)), Is.EqualTo((false, 0, false)));
             Assert.That(back.DropOn(DropKind.Weapon), Is.True);
