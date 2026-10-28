@@ -463,14 +463,14 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void SixteenBarSlots_FourEachSideOfTheTimer_InTwoRows()
+        public void EightBarSlots_FourEachSideOfTheTimer_InOneRow()
         {
             Seating.BarSlot(3, out int column, out int row);
             Assert.That((column, row), Is.EqualTo((3, 0)));
-            Seating.BarSlot(12, out column, out row);
-            Assert.That((column, row), Is.EqualTo((4, 1)));
+            Seating.BarSlot(4, out column, out row);
+            Assert.That((column, row), Is.EqualTo((4, 0)));
             Seating.BarSlot(99, out column, out row);
-            Assert.That((column, row), Is.EqualTo((7, 1)), "clamped to the sixteenth");
+            Assert.That((column, row), Is.EqualTo((7, 0)), "clamped to the eighth");
         }
 
         private static void PlayTurn(Match match, int seat)
