@@ -51,13 +51,13 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void SixteenSeatsHumanAndAiMixed_NoSeventeenth()
+        public void EightSeatsHumanAndAiMixed_NoNinth()
         {
-            Match match = Table(16);
-            Assert.That(match.SeatCount, Is.EqualTo(16));
-            Assert.That(match.Seats.Count(s => s.Kind == SeatKind.Ai), Is.EqualTo(8));
+            Match match = Table(8);
+            Assert.That(match.SeatCount, Is.EqualTo(8));
+            Assert.That(match.Seats.Count(s => s.Kind == SeatKind.Ai), Is.EqualTo(4));
             Assert.That(match.FreeSeat(), Is.EqualTo(-1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => match.Join(16, SeatKind.Human, "seventeenth"));
+            Assert.Throws<ArgumentOutOfRangeException>(() => match.Join(8, SeatKind.Human, "ninth"));
             Assert.Throws<InvalidOperationException>(() => match.Join(3, SeatKind.Human, "taken"));
         }
 

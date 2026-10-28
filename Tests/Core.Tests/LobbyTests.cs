@@ -11,14 +11,14 @@ namespace Ricochet.Core.Tests
     public class LobbyTests
     {
         [Test]
-        public void PeopleSitFirst_ThenAsManyAiAsFit_UpToSixteen()
+        public void PeopleSitFirst_ThenAsManyAiAsFit_UpToEight()
         {
             Assert.That(Lobby.HumanSeats(3), Is.EqualTo(3));
-            Assert.That(Lobby.HumanSeats(20), Is.EqualTo(MatchRules.MaxSeats), "a seventeenth person watches");
+            Assert.That(Lobby.HumanSeats(20), Is.EqualTo(MatchRules.MaxSeats), "a ninth person watches");
             Assert.That(Lobby.HumanSeats(-1), Is.EqualTo(0));
             Assert.That(Lobby.AiSeats(3, 5), Is.EqualTo(5));
-            Assert.That(Lobby.AiSeats(14, 5), Is.EqualTo(2));
-            Assert.That(Lobby.AiSeats(16, 5), Is.EqualTo(0));
+            Assert.That(Lobby.AiSeats(6, 5), Is.EqualTo(2));
+            Assert.That(Lobby.AiSeats(8, 5), Is.EqualTo(0));
             Assert.That(Lobby.AiSeats(2, -4), Is.EqualTo(0));
         }
 
@@ -35,10 +35,10 @@ namespace Ricochet.Core.Tests
         [Test]
         public void TheSeatLineCountsPeopleAndAi_AndSaysWhatIsMissing()
         {
-            Assert.That(Lobby.SeatLine(2, 3), Is.EqualTo("2 players and 3 AI opponents: 5 of 16 seats"));
-            Assert.That(Lobby.SeatLine(1, 1), Is.EqualTo("1 player and 1 AI opponent: 2 of 16 seats"));
+            Assert.That(Lobby.SeatLine(2, 3), Is.EqualTo("2 players and 3 AI opponents: 5 of 8 seats"));
+            Assert.That(Lobby.SeatLine(1, 1), Is.EqualTo("1 player and 1 AI opponent: 2 of 8 seats"));
             Assert.That(Lobby.SeatLine(1, 0), Does.StartWith("1 player and no AI opponents: a match needs 2"));
-            Assert.That(Lobby.SeatLine(15, 3), Is.EqualTo("15 players and 1 AI opponent: 16 of 16 seats (2 AI left out, the table is full)"));
+            Assert.That(Lobby.SeatLine(7, 3), Is.EqualTo("7 players and 1 AI opponent: 8 of 8 seats (2 AI left out, the table is full)"));
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace Ricochet.Core.Tests
             Assert.That(plan, Is.EqualTo(new[]
             {
                 Maps.At(1).Name + ", first to 1000 points",
-                "1 player and 2 AI opponents: 3 of 16 seats",
+                "1 player and 2 AI opponents: 3 of 8 seats",
                 "AI skill 7 of 10, no aim assist",
                 "No announcer",
             }));
