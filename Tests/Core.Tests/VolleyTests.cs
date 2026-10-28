@@ -69,24 +69,61 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void AGrenadePassesThroughPlayers_AndGoesOffWhenItsFuseRunsOut()
+        public void AGrenadeGoesOffWhenItsFuseRunsOut_HurtingOnlyTheFirstPlayerItsBlastReaches()
         {
             // Half a second at 18 units a second: 9 units from the muzzle (0.6 out), short of the right border.
             Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 0.5, 0, Open(),
-                new[] { T("me", 0, 0), T("inTheWay", 5, 0), T("nearTheBlast", 9, 1), T("far", 0, 4) });
+                new[] { T("me", 0, 0), T("farther", 9.6, -1.2), T("nearTheBlast", 9, 1), T("far", 0, 4) });
 
             Assert.That(grenade.HasBlast, Is.True);
             Assert.That(grenade.Main.End, Is.EqualTo(ShotEndKind.Spent));
             Assert.That(grenade.BlastCenter.X, Is.EqualTo(9.6).Within(1e-9));
             Assert.That(grenade.BlastRadius, Is.EqualTo(ArsenalRules.Default.GrenadeRadius));
-            Assert.That(grenade.Strikes.Select(s => s.TargetId), Is.EqualTo(new[] { "nearTheBlast" }));
+            Assert.That(grenade.Strikes.Select(s => s.TargetId), Is.EqualTo(new[] { "nearTheBlast" }),
+                "check_grenade_intersection hurts the first player the circle touches and no one after");
+        }
+
+        [Test]
+        public void AGrenadesBlastReaches150PixelsAndNoFurther()
+        {
+            Assert.That(ArsenalRules.Default.GrenadeRadius, Is.EqualTo(150 * ShapeLibrary.UnitsPerPixel).Within(1e-9));
+            Volley inside = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 0.5, 0, Open(), new[] { T("in", 9.6, 2.1) });
+            Volley outside = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 0.5, 0, Open(), new[] { T("out", 9.6, 2.2) });
+            Assert.That(inside.Strikes.Select(s => s.TargetId), Is.EqualTo(new[] { "in" }));
+            Assert.That(outside.Strikes, Is.Empty);
+        }
+
+        [Test]
+        public void AGrenadeBouncesOffATank_AwayFromItsCentre_WithoutCountingABounce()
+        {
+            // Out from x 0.6, it meets the tank's edge at 4.55 and is sent back at full speed: 5.05 of its 9 units are left.
+            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 0.5, 0, Open(), new[] { T("inTheWay", 5, 0) });
+
+            Assert.That(grenade.Main.Contacts.Count, Is.EqualTo(1));
+            Contact contact = grenade.Main.Contacts[0];
+            Assert.That(contact.Kind, Is.EqualTo(ContactKind.Tank));
+            Assert.That(contact.Point.X, Is.EqualTo(4.55).Within(1e-9));
+            Assert.That(contact.HeadingOut, Is.EqualTo(180).Within(1e-9));
+            Assert.That(grenade.Main.Bounces, Is.EqualTo(0), "a tank is no bounce");
+            Assert.That(grenade.Main.End, Is.EqualTo(ShotEndKind.Spent));
+            Assert.That(grenade.BlastCenter.X, Is.EqualTo(-0.5).Within(1e-9));
+            Assert.That(grenade.Strikes, Is.Empty, "it was not hit by the tank it bounced off");
+        }
+
+        [Test]
+        public void ATankDoesNotUseUpAGrenadesBounces()
+        {
+            // Between a tank and the border at a bounce limit of 1: the tank turns it back, the border then sets it off.
+            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 6, 0, Open(), new[] { T("inTheWay", 5, 0) }, new ShotRules { MaxBounces = 1 });
+            Assert.That(grenade.Main.Contacts.Select(c => c.Kind), Is.EqualTo(new[] { ContactKind.Tank, ContactKind.Border }));
+            Assert.That(grenade.Main.End, Is.EqualTo(ShotEndKind.BounceLimit));
         }
 
         [Test]
         public void ALongerFuseCarriesTheGrenadeFurther_OffTheBorders()
         {
             // Two seconds: 36 units: right border (9.4), back across (20), and 6.6 more.
-            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 2, 0, Open(), new[] { T("me", 0, 0) });
+            Volley grenade = Arsenal.Fire(Weapon.Grenade, Vec2.Zero, 0, 2, 0, Open(), null);
             Assert.That(grenade.Main.Bounces, Is.EqualTo(2));
             Assert.That(grenade.BlastCenter.X, Is.EqualTo(-3.4).Within(1e-9));
             Assert.That(grenade.Strikes.Count, Is.EqualTo(0));

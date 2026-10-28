@@ -84,7 +84,7 @@ namespace Ricochet.Core.Tests
             }
 
             Assert.That(new double[] { arsenal.DefaultFuse, arsenal.MinFuse, arsenal.MaxFuse, arsenal.FuseStep, arsenal.GrenadeRadius, arsenal.VortexRadius, arsenal.Pellets, arsenal.PelletSpread, arsenal.PelletDamage, arsenal.LaserSpeed, arsenal.RailgunSpeed },
-                Is.EqualTo(new[] { 2, 0.5, 6, 0.5, 2.5, 200 * 22.0 / 1920.0, 5, 4, 0.35, 1, 8 }));
+                Is.EqualTo(new[] { 2, 0.5, 6, 0.5, 150 * 22.0 / 1920.0, 200 * 22.0 / 1920.0, 5, 4, 0.35, 1, 8 }));
             Assert.That(ArsenalRules.Name(Weapon.Vortex), Is.EqualTo("Vortex Device"));
             Assert.That(ArsenalRules.Name(Item.AimAssist), Is.EqualTo("Aim Assist"));
 

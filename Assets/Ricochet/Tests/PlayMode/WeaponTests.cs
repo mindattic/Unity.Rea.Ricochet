@@ -116,7 +116,7 @@ namespace Ricochet.Tests
         public IEnumerator InAMatchAGrenadeSpendsOne_AndItsBlastHurtsWhoeverIsNearIt()
         {
             Arena.ArsenalRules.GrenadeRadius = 6;                 // seat 0 at x 0, seat 1 at x -4: a half-second fuse left
-            Arena arena = null;                                   // goes off at x -9.6, 5.6 from Ann and 9.6 from the host
+            Arena arena = null;                                   // bounces off Ann, then the host, and goes off at x -3.4, nearest Ann (the first player the blast reaches)
             Player host = null, ann = null;
             yield return Begin(a => arena = a, (h, c) => { host = h; ann = c; });
             Assert.That(arena.StartMatch(TestMatches.OnThePracticeRange()), Is.True);

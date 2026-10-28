@@ -4,7 +4,7 @@
   "minFuse": 0.5,
   "maxFuse": 6,
   "fuseStep": 0.5,
-  "grenadeRadius": 2.5,
+  "grenadeRadius": 1.71875,
   "vortexRadius": 2.2916666667,
   "pellets": 5,
   "pelletSpread": 4,

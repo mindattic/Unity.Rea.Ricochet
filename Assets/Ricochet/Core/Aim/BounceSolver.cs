@@ -25,8 +25,10 @@ namespace Ricochet.Core.Aim
         /// <param name="targets">What it can hit; may be null.</param>
         /// <param name="rules">Null for the defaults.</param>
         /// <param name="range">How far it may fly: a shot has no limit; an item's flight is solved for a time (Arsenal).</param>
+        /// <param name="bounceOffTargets">A grenade (obj_grenade's collision with obj_player): a tank it reaches turns it away from the tank's centre
+        /// at full speed instead of being hit, and that is no bounce (it neither counts toward the limit nor adds damage).</param>
         public static ShotPath Solve(Vec2 origin, double heading, Level level, IReadOnlyList<Target> targets = null, ShotRules rules = null,
-            double range = double.PositiveInfinity)
+            double range = double.PositiveInfinity, bool bounceOffTargets = false)
         {
             if (level == null)
             {
@@ -45,17 +47,35 @@ namespace Ricochet.Core.Aim
             var contacts = new List<Contact>();
 
             // A muzzle already inside a target hits it point blank.
-            string pointBlank = TargetAt(position, targets);
+            string pointBlank = bounceOffTargets ? null : TargetAt(position, targets);
             if (pointBlank != null)
             {
                 points.Add(position);
                 return new ShotPath(origin, heading, points, contacts, ShotEndKind.Target, pointBlank);
             }
 
-            for (int guard = 0; guard < maxContacts + 1; guard++)
+            int bounces = 0;
+            string leftTank = null;
+            for (int guard = 0; guard < maxContacts + 1000; guard++)
             {
                 Hit surface = NearestSurface(position, direction, level);
-                Hit target = NearestTarget(position, direction, targets);
+                Hit target = NearestTarget(position, direction, targets, leftTank);
+
+                if (bounceOffTargets && target.Found && target.Distance <= remaining && (!surface.Found || target.Distance <= surface.Distance))
+                {
+                    // obj_grenade vs obj_player: move_towards_point(other.x, other.y, -bulletSpeed), away from the tank's centre.
+                    Vec2 touch = position + direction * target.Distance;
+                    Vec2 away = touch - target.Center;
+                    Vec2 turned = away.LengthSquared > Geometry.Epsilon * Geometry.Epsilon ? away * (1.0 / Math.Sqrt(away.LengthSquared)) : -direction;
+                    travelled += target.Distance;
+                    remaining -= target.Distance;
+                    contacts.Add(new Contact(ContactKind.Tank, touch, travelled, direction.Angle, turned.Angle, true, -1));
+                    points.Add(touch);
+                    position = touch;
+                    direction = turned;
+                    leftTank = target.TargetId;
+                    continue;
+                }
 
                 // A target in front of the next surface (or level with it) and within range: impact.
                 if (target.Found && target.Distance <= remaining && (!surface.Found || target.Distance <= surface.Distance))
@@ -87,7 +107,9 @@ namespace Ricochet.Core.Aim
                 travelled += surface.Distance;
                 remaining -= surface.Distance;
                 double headingIn = direction.Angle;
-                bool last = contacts.Count + 1 >= maxContacts;
+                leftTank = null;
+                bounces++;
+                bool last = bounces >= maxContacts;
                 if (last)
                 {
                     contacts.Add(new Contact(surface.Kind, point, travelled, headingIn, headingIn, false, surface.Index));
@@ -291,7 +313,7 @@ namespace Ricochet.Core.Aim
             };
         }
 
-        private static Hit NearestTarget(Vec2 position, Vec2 direction, IReadOnlyList<Target> targets)
+        private static Hit NearestTarget(Vec2 position, Vec2 direction, IReadOnlyList<Target> targets, string skip = null)
         {
             Hit best = default;
             if (targets == null)
@@ -301,10 +323,10 @@ namespace Ricochet.Core.Aim
 
             foreach (Target target in targets)
             {
-                if (Geometry.RayCircle(position, direction, target.Center, target.Radius, out double distance)
+                if (target.Id != skip && Geometry.RayCircle(position, direction, target.Center, target.Radius, out double distance)
                     && (!best.Found || distance < best.Distance))
                 {
-                    best = new Hit { Found = true, Distance = distance, TargetId = target.Id };
+                    best = new Hit { Found = true, Distance = distance, TargetId = target.Id, Center = target.Center };
                 }
             }
 
@@ -336,6 +358,7 @@ namespace Ricochet.Core.Aim
             public bool FlipX;
             public bool FlipY;
             public string TargetId;
+            public Vec2 Center;
             public bool Barrier;
             public bool Escape;
         }

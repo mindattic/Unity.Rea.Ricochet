@@ -5,8 +5,9 @@
 //   Cannon   one shell along the aim until its bounces run out; it stops in the first player it reaches (hit.gml's damage).
 //   Laser    a beam at a shell's speed (shoot_laser.gml); otherwise a cannon shot.
 //   Shotgun  a fan of pellets (pelletCount, +/- shotgunSpread degrees), each its own bouncing shot doing a share of a hit.
-//   Grenade  bounces like a shell but passes through players, and goes off when its fuse runs out (grenade_countdown.gml)
-//            or on its bounce limit (grenade_step.gml), hurting everyone within its blast (check_grenade_intersection.gml).
+//   Grenade  bounces like a shell, and bounces off players too (obj_grenade's collision with obj_player: away from the tank's
+//            centre, no bounce counted); goes off when its fuse runs out (grenade_countdown.gml) or on its bounce limit
+//            (grenade_step.gml), hurting only the first player its growing blast reaches (check_grenade_intersection.gml).
 //   Railgun  a slug in a straight line through walls and redirectors to the border (shoot_railgun.gml's 2000 px line),
 //            hitting every player on the way.
 //   Vortex   flies like a shell and implodes where it stops, or where its shooter sets it off in mid-flight
@@ -233,7 +234,7 @@ namespace Ricochet.Core.Arsenal
                 {
                     // The fuse is the range: it flies at a shell's speed until the fuse runs out.
                     double range = arsenal.ClampFuse(fuse) * shot.Speed;
-                    ShotPath path = BounceSolver.Solve(origin, heading, level, null, shot, range);
+                    ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot, range, true);
                     paths.Add(path);
                     if (path.End == ShotEndKind.Absorbed)
                     {
@@ -468,6 +469,9 @@ namespace Ricochet.Core.Arsenal
             }
         }
 
+        // obj_grenade_explosion grows 2 px a step; obj_bottom's step calls check_grenade_intersection for each player in turn,
+        // which hurts the first player the circle touches and sets collision so nobody after is hurt. So: the player the circle
+        // reaches in the fewest steps, the lowest in the list among those reaching it in the same step.
         private static void AddBlastStrikes(Vec2 center, double radius, int bounces, IReadOnlyList<Target> targets, List<Strike> strikes)
         {
             if (targets == null)
@@ -475,12 +479,28 @@ namespace Ricochet.Core.Arsenal
                 return;
             }
 
+            double stepUnits = 2 * Ricochet.Core.Level.ShapeLibrary.UnitsPerPixel;
+            Target? first = null;
+            double firstStep = double.PositiveInfinity;
             foreach (Target target in targets)
             {
-                if (Vec2.Distance(center, target.Center) <= radius + target.Radius)
+                double gap = Vec2.Distance(center, target.Center) - target.Radius;
+                if (gap > radius)
                 {
-                    strikes.Add(new Strike(target.Id, bounces, 1));
+                    continue;
                 }
+
+                double step = Math.Ceiling(Math.Max(0, gap) / stepUnits - 1e-9);
+                if (step < firstStep)
+                {
+                    firstStep = step;
+                    first = target;
+                }
+            }
+
+            if (first.HasValue)
+            {
+                strikes.Add(new Strike(first.Value.Id, bounces, 1));
             }
         }
     }

@@ -373,6 +373,10 @@ Source: `scripts/draw_beam.gml`, `draw_dottedline.gml`, `laser_create/step/draw.
   grenade fuse by pressing [1-3]", the rebuild's keys) shows while the owner holds it on their turn. obj_grenade_explosion is
   spr_bigexplosion at three times its size at 0.7 (U.RICO-T44) under a white circle at 0.7 growing 2 px a step; both are gone
   when the circle reaches grenadeRadius (75 steps), so the sprite is cut at its sixteenth frame, as in the original.
+  Grenade rules (U.RICO-T95, T136): it bounces off a living tank (obj_grenade's obj_player collision: move_towards_point at -bulletSpeed, so it leaves
+  away from the tank's centre at full speed; not a bounce, and the tank is not hurt by it). Its blast grows 2 px a step to grenadeRadius = 150 px
+  (1.71875 units, 150 * UnitsPerPixel) and hurts only the first player the circle reaches (check_grenade_intersection sets the explosion's collision
+  after one hit): the player reached in the fewest 2 px steps, the lower seat on a tie. The thrower can be that player.
 - **Vortex** (`Implosion`): spr_vortex_device grows from a quarter of its size 0.01 a step in flight. Where it goes off it
   plays obj_boom (set off, image_speed 0.1) or obj_explosion (spent, 0.5), then vortex_step's modes: spr_vortex at 0.5 growing
   from nothing 0.002 a step to its full size while turning a degree a step backwards, obj_vortex_child at its size over it

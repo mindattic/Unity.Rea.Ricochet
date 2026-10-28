@@ -16,6 +16,9 @@ namespace Ricochet.Core.Aim
 
         /// <summary>A rail redirector: the shot leaves along the redirector's heading.</summary>
         Redirector,
+
+        /// <summary>A tank a grenade reached: it is turned away from the tank's centre at full speed (not a bounce).</summary>
+        Tank,
     }
 
     public enum ShotEndKind
@@ -130,7 +133,7 @@ namespace Ricochet.Core.Aim
                 int count = 0;
                 foreach (Contact contact in _contacts)
                 {
-                    if (contact.Deflected)
+                    if (contact.Deflected && contact.Kind != ContactKind.Tank)
                     {
                         count++;
                     }
