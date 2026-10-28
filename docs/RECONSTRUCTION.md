@@ -131,7 +131,7 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 | Tests and CI | partial: Core and PlayMode tests exist, CI is the nightly smoke only | UR-T40 |
 | Unity.Shared profiles and settings | met: name, colour and audio read from the profile (UR-T10), rebinds (UR-T36) and the match setup (UR-T41) kept in its game block | UR-T41 |
 | Multiplayer-ready seams | met: Unity.Multiplayer kit, server authority, seats | kept |
-| README and BIBLE | gap: README and BIBLE are slice-by-slice history | UR-T59 |
+| README and BIBLE | met: both describe the completed game (what it is, running and testing it, the architecture, the deviations and the laws) and point here for parity | UR-T59 |
 | Built in code | met for UI and level; scene and six prefabs are the kit's spawn templates | kept |
 
 ## 5. Build order
@@ -185,8 +185,8 @@ UR-T22 (Relay) depends on the owner's Unity Cloud account and sits outside the o
 ## 6. Deviations that stay
 
 A networked turn with server authority, real multiplayer in place of the
-hotseat rooms, up to 16 seats (the original had 8 in its setup rooms and 16 bars), votes and reconnect, the kit's menus under
-the original's screens, and pause as a host or vote action. Each is recorded in the BIBLE.
+hotseat rooms, votes and reconnect, the kit's menus under the original's screens, and pause as a host or vote action (the seat
+cap is the original's 8 since U.RICO-T100). Each is recorded in the BIBLE, section 7.
 
 ## 7. Parity verification (U.RICO-T58, 2026-10-28)
 
@@ -210,5 +210,5 @@ How it was checked: the Windows player built clean with `Tools/run.ps1` (0 error
 | Section 3 row UR-T54 | built | closed 2026-10-28 |
 | Section 3 row UR-T58 | this section | play-through still owed, see below |
 | Section 4 rows UR-T36, T37, T38, T39, T40 | built | their tickets are closed; the "gap" wording in section 4 predates them |
-| Section 4 row UR-T59 | open | README and BIBLE final pass |
+| Section 4 row UR-T59 | built | README and BIBLE final pass; the deviations are BIBLE section 7 |
 | Section 3 row UR-T53: "covers the map room's way into the lobby" | stale | the map room is gone (U.RICO-T101) |

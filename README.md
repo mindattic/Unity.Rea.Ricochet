@@ -1,89 +1,41 @@
 # Unity.Ricochet
 
-Turn-based bounce-shot artillery for up to 16 players: pick an angle, bank your shot off walls and
-redirectors, and land it on an opponent before they land one on you. Rebuilt in Unity 6 from a 2013 GameMaker
-original that could only ever pass the keyboard around one machine; this version adds the real networked
-multiplayer GML never could.
+Turn-based bounce-shot artillery for up to eight tanks, human or AI: turn your barrel, bank the shot off the level's
+shapes and the border, and land it on an opponent before they land one on you. A faithful Unity 6 rebuild of the 2013
+GameMaker 8 game *Ricochet*, with the one thing the original could never do: real networked multiplayer in place of
+passing one keyboard around one machine.
 
-![Unity](https://img.shields.io/badge/unity-6000.4-black) ![Netcode for GameObjects](https://img.shields.io/badge/netcode-2.x-blue) ![.NET](https://img.shields.io/badge/dotnet-10-512BD4) ![Status](https://img.shields.io/badge/status-playable%20slice-yellow)
+![Unity](https://img.shields.io/badge/unity-6000.4-black) ![Netcode for GameObjects](https://img.shields.io/badge/netcode-2.x-blue) ![.NET](https://img.shields.io/badge/dotnet-10-512BD4) ![Status](https://img.shields.io/badge/status-complete-brightgreen)
 
-## Why
+## What it is
 
-- The 2013 original (`gmlRicochet`, GameMaker 8) is hotseat-only: one PC, one keyboard, players taking turns at
-  the same screen. GML of that era had no real network layer, so "multiplayer" meant passing the keyboard.
-- The bounce-aiming mechanic — fire at an angle, watch the shot ricochet off borders and redirectors toward a
-  target, same idea as the arcade game *Ricochet* — is the game worth keeping. Everything around it (engine,
-  input, rendering, netcode) is being rebuilt from scratch.
-- Built on the house kit ([Unity.Multiplayer](https://github.com/mindattic/Unity.Multiplayer),
-  [MindAttic.Components](https://github.com/mindattic/MindAttic.Components),
-  [Unity.Shared](https://github.com/mindattic/Unity.Shared)) instead of hand-rolled networking, menus or player
-  profiles, the same way [Unity.Cursory](https://github.com/mindattic/Unity.Cursory) and
-  [Unity.SpaceGod](https://github.com/mindattic/Unity.SpaceGod) are.
+Every room and system of the original is rebuilt and checked against it (the parity record is
+[docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md), section 7):
 
-## What's being rebuilt
+- **The startup and menus**: the studio splash and startup credits, the title with its drifting RICOCHET letters, the main
+  menu, the Start screen (the title room's setup panel: players, shapes, rotation, overlap, goal, turn time, bounces), the
+  players room (names, colours, AI opponents with their own skill and names), settings (the match rules, the announcer,
+  sound), controls, how to play and the credits roll, every screen on the original's art and faded through its black curtain.
+- **A round**: a fresh random level (the original's 80 shapes laid as `setup_shapes` did), every tank at a random spot, a
+  random backdrop and track, fog of war if it is on, then a Ready card and a sonar ping before the clock runs.
+- **A turn**: turn the barrel (a degree a step), drive (forfeiting the shot), set a grenade's fuse, cycle weapon and item, use
+  the item, fire, or end the turn; a dotted preview shows where the shot will bank. There is no power: a shell flies at
+  the original's constant speed until its bounces run out.
+- **Six weapons and six items**: cannon, laser, shotgun, grenade, railgun and vortex; extra bounce, shield wall, shrink ray,
+  teleporter, aim assist and redirector, with crates dropping onto the level during play.
+- **Scoring and the end**: a hit scores 100, 25 a bounce and 5 a tenth of a second in the air; the last tank standing takes
+  the round, and the first to the goal (500 by default, or one round) stands on the endgame podium.
+- **AI opponents** that pick their shot as the original's `check_ai` did, nudged by their skill.
+- **An announcer**: seven on-air personalities with their own recorded welcome, cheer and heckle lines and portraits.
+- **The original's art, music and sound**: every sprite, background, font, track and effect imported from it.
 
-From the original `Ricochet.project.gmx` (`objects/`, `scripts/`, `rooms/`):
-
-- **Turn-based aim-and-fire**: an angle and a bounce-count limit per shot (no power: a shot flies until its bounces run out); a potential-path
-  preview (`draw_potential`, `draw_bounceinfo`) traces the ricochet off level borders and rail redirectors
-  before the player commits.
-- **Up to 16 players**, human or AI, each with a health bar (`obj_bar1`…`obj_bar16`), a turn-order/turn-timer
-  HUD (`draw_turntime`) and a configurable AI count and aim-assist level.
-- **Weapons and items**: a cycling weapon/item loadout (`cycle_weapon`, `cycle_item`), grenades with a fuse
-  timer, a vortex detonation, a destructible shield wall, electricity and laser hazards, random weapon/item/health
-  drops onto the level.
-- **An announcer**: portrait + name box commentary (`obj_announcer`, `obj_announcer_portrait`,
-  `obj_box_announcements`) between turns, with a selectable announcer and announcer-line cycling.
-- **Menus and flow**: splash → title → main menu → player setup (names, colours, AI count) → map/room select →
-  game → endgame recap, plus controls/settings/how-to-play/credits screens.
-
-What is **not** being carried over as-is: the GameMaker hotseat "multiplayer" rooms
-(`multiplayer_host`/`multiplayer_join`/`multiplayer_hostorjoin`). Real network play (host, join by IP, join by
-code, reconnect to your seat) replaces them, from Unity.Multiplayer.
-
-See [docs/BIBLE.md](docs/BIBLE.md) for what this project is and is not, and
-[docs/rfc/0001-architecture.md](docs/rfc/0001-architecture.md) for the design and build order.
-
-## Status
-
-The Unity project is scaffolded from Unity.Multiplayer's New Game wizard and the first slice is playable (UR-T3):
-aim with an angle, see the whole bounce path before firing (off the border, mirror walls and rail
-redirectors, up to the five-contact limit), fire, and watch the server-authoritative shot fly and knock down a
-practice dummy, hosted or joined over the network. Matches are in (UR-T4): up to 16 seats of humans and AI
-opponents taking turns against a 20-second clock, with health bars and the turn order along the top. Weapons and
-items are in (UR-T5): cycle the cannon, laser, shotgun, fused grenade and railgun (Q/E) and the extra bounce,
-teleporter and shrink ray (Z/C, F to use), and shoot across the crates that fall during a match for a random weapon,
-item or health. AI opponents are in (UR-T7): pick how many, how well they aim and how many aim assists everyone
-starts with before voting to start a match; an AI thinks out loud, then takes a straight, bank or railgun shot, and
-the aim-assist item (Z/C, F) turns your aim onto a shot that reaches an opponent. Level hazards are in (UR-T6): an electric arc and a laser gate (on every other turn) that
-stop a shot, tufts of foliage a shot cuts down, a shield wall only its owner's shots pass, a redirector you set
-down, and a vortex you set off in mid-flight with Space that swallows what it reaches and tears breaches in the
-border that shots fly out through. The announcer and HUD are in (UR-T8): pick one of the original's seven on-air
-personalities and how often they speak; their portrait and name box slide in to welcome everyone, cheer a knock-out and
-heckle a shot that hits nobody, a hit on an opponent scores points (100, 25 a bounce, more the longer it flew) that last
-the whole match, and a card shows everyone whose turn it is with their score, weapon, item and the combo in the air.
-Your profile is in (UR-T10): your name, colour and sound settings (effect and music volume, each with a mute) come from
-your MindAttic profile (Unity.Shared), so you set them once under Settings and every later session, and every other
-MindAttic game, keeps them; a shot's fire, bounces and landing play at the profile's effect volume.
-The menu flow is in (UR-T9): a title screen, then the main menu with the original's rooms off it: Players (your name and
-colour, the AI opponents, their skill and the aim assists), then the map room (four maps and the goal: one round, or first
-to 500 to 10000 points) and Start; Game settings (the announcer), Controls, How to play (slides) and Credits. A game ends
-when a round finishes with someone at the goal, and everyone sees the endgame recap: the champion and the leaderboard, with
-a rematch vote. Playing together is in (UR-T11): Host, Join by IP and Join by code on the main menu replace the original's
-hotseat multiplayer rooms; hosting (Host, or the map room's Next: Lobby) opens the lobby with the join code to share (or the
-address to join at), who is in, and what Start will begin: the map, the goal and how the sixteen seats fill as people join.
-The host's Start plays the match with everyone in the lobby. A join code needs the project linked to Unity Relay or a
-rendezvous URL on the NetBootstrap; without one the lobby shows the address and players join by IP. Every shot is the server's
-(UR-T12): it sends every client the bounce it solved and, in a match, the damage it dealt, so every screen shows the same
-path and the same result, floated over whoever was hit. Votes are in (UR-T14): Esc in a game offers Vote to start a match,
-Vote to restart and Vote to kick (pick a player), asked of everyone else on the kit's vote overlay. See
-[docs/USER_STORIES.md](docs/USER_STORIES.md) (generated by `tickets db render --repo Unity.Ricochet`) for the open
-ticket backlog, or `tickets ticket queue --repo Unity.Ricochet`.
+New in this rebuild, because the original had no network layer: **Host**, **Join by IP** and **Join by code**, a lobby, the
+server deciding every shot, votes (start, restart, kick, pause), a reconnect grace that holds a dropped player's seat, and a
+MindAttic profile that keeps your name, colour, sound, key bindings and last match setup.
 
 ## Quick start
 
-Prerequisites: Unity 6000.4.3f1, and the kit's three repos cloned side by side with this one (all siblings under
-`D:\Projects\MindAttic\`):
+Prerequisites: Unity 6000.4.3f1 and the house kit cloned beside this repo (all siblings under `D:\Projects\MindAttic\`):
 
 ```powershell
 git clone https://github.com/mindattic/Unity.Multiplayer
@@ -91,53 +43,99 @@ git clone https://github.com/mindattic/MindAttic.Components
 git clone https://github.com/mindattic/Unity.Shared
 ```
 
-`Packages/manifest.json` already lists the three as local packages. Open the project in Unity Hub; the first
-open regenerates `Library/` (not committed) from `Packages/` and `ProjectSettings/`. Open `Assets/Ricochet/Game.unity`,
-press Play, click Play on the title, then Host (free practice) or Players > Next: Map > Next: Lobby > Start (a match): Left/Right
-aim, Space fires.
+`Packages/manifest.json` lists the three as local packages. Open the project in Unity Hub (the first open rebuilds
+`Library/`), open `Assets/Ricochet/Game.unity` and press Play. From the title: **Start** > the Start screen > **Next** > the
+players room > **Start** hosts the match and opens the lobby; its **Start** plays it. **Host** on the main menu opens a free
+practice room. A second copy (Multiplayer Play Mode, or a build) joins with **Join by IP** (`127.0.0.1`) or **Join by code**
+(a join code needs the project linked to Unity Relay or a rendezvous URL on the NetBootstrap; without one, join by IP).
 
-Tests: `dotnet test Core.slnx` runs the bounce solver's unit tests without Unity; the PlayMode and EditMode suites
-are listed in [Assets/Ricochet/README.md](Assets/Ricochet/README.md).
+### Controls
 
-### Muted launches
+| Keys | Gamepad | Does |
+|---|---|---|
+| A / D, Left / Right | left stick | turn the barrel |
+| W / S | left stick up / down | drive (forfeits the shot) |
+| Space, left mouse | A | fire (and set off a vortex in flight) |
+| Q / E | shoulders | cycle the weapon |
+| Z / C | d-pad left / right | cycle the item |
+| Ctrl, right mouse | B | use the item |
+| 1 / 2 / 3 | X / Y / d-pad up | grenade fuse |
+| F | d-pad down | end the turn |
+| numpad | | snap the aim to one of eight directions |
+| Alt | select | ping everyone |
+| PageUp / PageDown | | thinner or thicker border, and reroll |
+| P, Pause | right stick press | pause (the host at once, anyone else by a vote) |
+| Esc | | the kit's in-game menu: invite, settings, votes |
+| F1 | | fullscreen |
 
-`powershell -File Tools/play.ps1` launches a playable build (`Build/Ricochet/Ricochet.exe`, built first by
-`Tools/run.ps1` when missing or with `-Build`; the Editor must be closed for the build) **muted by default**: it
-passes `-muted` and sets `MINDATTIC_CLI_MUTED=1` for the launch only, so a CLI or agent starting the game never plays
-sound. Add `-Sound` to launch with audio. The mute is Unity.Shared's session mute (`Profiles.SessionMuted`): it lasts
-for that run only, and `GameAudio` keeps the listener and both sources silent while still saving the player's real
-volumes if they change one in Settings, so the profile's `settings.json` never picks up the mute. Any build or Editor
-run started with `-muted` or `MINDATTIC_CLI_MUTED=1` gets the same behaviour.
+Every binding can be changed on the Controls screen; a rebind is kept in your profile.
 
-## Project layout
+### A built player
+
+`powershell -File Tools/run.ps1` builds `Build/Ricochet/Ricochet.exe` in Unity batch mode (the Editor must be closed; the
+log is `Logs/deploy.log`). `powershell -File Tools/play.ps1` launches it, building it first when missing or with `-Build`,
+**muted by default** (`-muted` and `MINDATTIC_CLI_MUTED=1` for that run only, so a CLI or agent never plays sound; the
+player's saved volumes are untouched). Add `-Sound` for audio.
+
+## Tests
+
+- Core (the rules, no Unity): `dotnet test Core.slnx`. CI holds `Ricochet.Core`'s line coverage to a floor
+  (`Tools/coverage-floor.ps1`).
+- EditMode and PlayMode: `powershell -File Tools/unity.ps1 -Log test-editmode -Extra "-runTests -testPlatform EditMode
+  -assemblyNames Ricochet.EditorTests"`, and the same with `-testPlatform PlayMode -assemblyNames Ricochet.Tests`. The
+  PlayMode suite plays real host and client sessions on the kit's `NetSessionTest` / `NetBotTest` fixtures.
+- Bots end to end: `mp-host game smoke` (a server and two bots, as in `mp-host.json`; run nightly by
+  `.github/workflows/nightly.yml`).
+- `.github/workflows/ci.yml` runs Core with its coverage floor, the Unity suites (when the Unity licence secrets are set) and
+  a Windows player build on every push and pull request.
+
+## Architecture
+
+Three layers, one direction ([RFC 0001](docs/rfc/0001-architecture.md) has the design):
+
+- **Core** (`Assets/Ricochet/Core`, assembly `Ricochet.Core`, no engine references): every rule as plain C#, grouped by
+  domain (`Aim`, `Arsenal`, `Level`, `Match`, `Ai`, `Menu`, `Art`, `Net`, `Data`, `Commands`). All play goes through
+  `Commands/GameAuthority`: each input is a command carrying a player id, and it returns ordered events. Tuning and content
+  are validated JSON in `Assets/StreamingAssets/Settings` (match, shot, arsenal, hazards, level, shapes, maps, announcer,
+  menu, backdrop, registry), read by `Data/GameData`.
+- **Runtime** (`Ricochet.Runtime`): the networked entities on Unity.Multiplayer (`Player`, `Turns`, `Crate`, `LevelHazard`,
+  `Dummy`), the server's `Arena` that feeds commands to Core and plays its events, and the presentation, which only reads
+  synced state and the `Presentation` event feed: the level, tanks, shots and effects, the HUD, the menus on MindAttic
+  Components dressed in the original's art (`Runtime/Art`), audio, fades, splash, podium.
+- **The house kit**: [Unity.Multiplayer](https://github.com/mindattic/Unity.Multiplayer) (netcode, front end, lobby, votes,
+  reconnects), [MindAttic.Components](https://github.com/mindattic/MindAttic.Components) (UI widgets) and
+  [Unity.Shared](https://github.com/mindattic/Unity.Shared) (profiles and settings). This project writes no RPC, menu
+  framework or settings file of its own.
 
 ```text
-Assets/Ricochet/     the game (see its README.md)
-  Core/              engine-free rules: geometry, level, bounce solver, shot path and flight, aim, match and turns,
-                     loadout and arsenal, drops, hazards, announcer and scoring, maps, the room graph and the recap
-  Runtime/           networked entities (Player, Dummy, Turns, Crate, LevelHazard), server rules (Arena), scene glue, bot,
-                     HUD (IMGUI bars and clock, MindAttic Components announcer and turn cards, the endgame recap), the
-                     title and the rooms' screens (Menus), presentation
-  Art/, Fonts/       the original's sprites, backgrounds and font atlases (Git LFS) with gml-art.json / gml-fonts.json
-  Resources/Ricochet the ArtCatalogue and the TextMeshPro fonts built from them (U.RICO-T44)
-  Tests/             PlayMode and EditMode tests on the kit's test fixtures
-Tests/               dotnet projects compiling Assets/Ricochet/Core for `dotnet test Core.slnx`
-Packages/            manifest.json: the house kit (Unity.Multiplayer, MindAttic.Components, Unity.Shared) + Unity packages
+Assets/Ricochet/
+  Core/                engine-free rules (above)
+  Runtime/             networked entities, the server's Arena, presentation; Art/ draws from the original's art
+  Editor/              build, art and font importers, validators
+  Art/, Fonts/, Audio/ the original's sprites, backgrounds, fonts and sound descriptions (Git LFS; gml-*.json say where each came from)
+  Resources/Ricochet/  the ArtCatalogue, TextMeshPro fonts, music, effects and announcer recordings
+  Tests/               EditMode and PlayMode suites
+Assets/StreamingAssets/Settings/   the rules and content as data
+Tests/                 dotnet projects compiling Core for `dotnet test Core.slnx`
+Tools/                 run.ps1 (build), play.ps1 (launch muted), unity.ps1 (batch mode), import-gml-*.ps1
 docs/
-  BIBLE.md           what this project is, is not, and its laws
-  rfc/0001-architecture.md   design and build order
-  USER_STORIES.md    generated ticket log (tickets db render)
+  BIBLE.md             what the game is and is not, the laws, the game as built, the deviations
+  RECONSTRUCTION.md    the original's inventory and the parity record
+  rfc/0001-architecture.md   the design
+  USER_STORIES.md      generated from the ticket database (tickets db render)
 ```
+
+## Deviations from the original
+
+The rebuild keeps the original's play and fixes only its bugs. What differs, and why, is in the
+[BIBLE, section 7](docs/BIBLE.md#UR-§7): mostly the network (real multiplayer, server authority, votes, reconnects and a
+lobby instead of the hotseat rooms), the house kit and profile in place of `config.ini`, the modern input system with
+rebinding and gamepads, and defects of the original that are fixed.
 
 ## Source material
 
-The GameMaker original lives outside this repo, at
-`R:\Projects\_PRE_2022\_PRE_2021\_PRE_2020\_PRE_2017\gmlRicochet\09-05-13_2.20am` (last touched 2013-09-05), read
-for design reference only — no GML source is copied into this repo. Its images are: `powershell -File
-Tools/import-gml-art.ps1` and `Tools/import-gml-fonts.ps1` mirror every sprite, background and baked font atlas into
-`Assets/Ricochet/Art` and `Fonts` (described, with each one's original path, in `gml-art.json` / `gml-fonts.json`)
-and build the sprites, atlases, TextMeshPro fonts and `Resources/Ricochet/ArtCatalogue` from them in Unity (see the BIBLE's
-"Art and fonts"). Its sound effects are: `powershell -File Tools/import-gml-sound.ps1` mirrors the 70 non-voice sfx_*
-recordings into `Assets/Ricochet/Resources/Ricochet/Sound` (described in `Assets/Ricochet/Audio/gml-sound.json`; see the
-BIBLE's "Sound effects"). The PNGs and recordings are in Git LFS: run `git lfs install` once, or `git lfs push origin
-HEAD` before pushing.
+The GameMaker original lives outside this repo and is read for reference only: no GML source is copied in
+([UR-LAW-2](docs/BIBLE.md#UR-LAW-2)). Its art, fonts and sound are imported by `Tools/import-gml-art.ps1`,
+`import-gml-fonts.ps1` and `import-gml-sound.ps1`, which record each file's original path; the PNGs and recordings are in Git
+LFS (run `git lfs install` once). The ticket history is [docs/USER_STORIES.md](docs/USER_STORIES.md), or
+`tickets ticket queue --repo Unity.Ricochet`.

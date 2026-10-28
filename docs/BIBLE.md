@@ -4,25 +4,25 @@ project: Unity.Ricochet
 code: UR
 layer: bible
 status: living
-updated: 2026-10-23
+updated: 2026-10-28
 ---
 
 # Unity.Ricochet — Project Bible
 > Single source of truth for what Unity.Ricochet IS, is NOT, and the rules that keep it coherent.
-> README says how to use it; [RFC 0001](rfc/0001-architecture.md) holds the design and build order; this says how to think about the system.
-
-Status legend: ✅ done (verified by a test/build) · 🟡 partial · ⬜ planned · `living`.
+> README says how to use it; [RFC 0001](rfc/0001-architecture.md) holds the design; [RECONSTRUCTION.md](RECONSTRUCTION.md)
+> is the parity record against the original; this says what the game is, its laws, how it is built and where it differs.
 
 ## 1. The one sentence {#UR-§1}
-Unity.Ricochet is a Unity 6 rebuild of the 2013 GameMaker game *Ricochet* — turn-based, bounce-shot artillery for
-up to 16 players, human or AI — with real server-authoritative network multiplayer in place of the original's
+Unity.Ricochet is a faithful Unity 6 rebuild of the 2013 GameMaker game *Ricochet* — turn-based, bounce-shot artillery
+for up to eight tanks, human or AI — with real server-authoritative network multiplayer in place of the original's
 single-machine hotseat.
 
 ## 2. The product promise {#UR-§2}
-- The bounce-aiming mechanic (an angle, the original's constant bullet speed with no power, a shot that flies until
-  its bounces run out, and a preview of its ricochet off borders and redirectors before you commit, U.RICO-T88) is the one thing this project preserves faithfully from the GML original.
-- Everything else the original did on one PC with one keyboard — turn order, AI opponents, weapons, items,
-  hazards, the announcer, menus — is rebuilt as a real Unity game, not ported script-for-script.
+- The game plays as the original did: the bounce-aiming mechanic (an angle, the original's constant shell speed with no
+  power, a shot that flies until its bounces run out, a preview of its ricochet), the turn, the six weapons and six items,
+  the AI, the announcer, the scoring and the rooms, with the original's art, music and sound.
+- Its rules are rebuilt as native Unity and C#, not transliterated script-for-script; the original's bugs are fixed, its
+  gameplay is not changed.
 - Multiplayer is real: host or join by IP or a short code, play from separate machines, reconnect to your seat
   if you drop, exactly what GameMaker 8 of 2013 had no way to do.
 - Built on the house kit — [Unity.Multiplayer](https://github.com/mindattic/Unity.Multiplayer),
@@ -31,8 +31,7 @@ single-machine hotseat.
 
 ## 3. What it is NOT {#UR-§3}
 - NOT a literal GML-to-C# transliteration. The original's `objects/*.gmx` and `scripts/*.gml` are design
-  reference only (read from `R:\Projects\_PRE_2022\_PRE_2021\_PRE_2020\_PRE_2017\gmlRicochet\09-05-13_2.20am`);
-  no GML source is copied into this repo, and the implementation is native Unity (MonoBehaviour/NetEntity,
+  reference only, read from outside this repo; no GML source is copied into this repo, and the implementation is native Unity (MonoBehaviour/NetEntity,
   C#, the house kit), not a transpile.
 - NOT client-authoritative, anywhere shot resolution, damage or turn order is decided. See [UR-LAW-1](#UR-LAW-1).
 - NOT carrying forward the GML hotseat "multiplayer" rooms (`multiplayer_host`/`multiplayer_join`/
@@ -76,96 +75,117 @@ Design and build order live in RFC 0001; laws live here; story and ticket status
 [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see `tickets db render`/`sync`). A second
 copy of any of these is a bug.
 
-## 6. Verified state {#UR-§6}
-- ✅ Repo created (`mindattic/Unity.Ricochet`, tagged `wip`), scaffolded with README, AGENTS/CLAUDE forwarders,
-  `.gitignore`, `Packages/manifest.json` (the house kit as local packages), this Bible and RFC 0001 (UR-T2).
-- ✅ The Unity project and the first playable slice: aim, bounce preview and a server-solved shot (UR-T3).
-- ✅ Matches: up to 16 seats (the connected humans plus AI opponents), turns in seat order with a 20-second turn
-  clock, health and damage per hit.gml, the last one standing wins the round, and a HUD of per-seat health bars,
-  the clock and the turn order (UR-T4; `Core/Match.cs` tested by `dotnet test Core.slnx`, the wire by
-  `Tests/PlayMode/TurnTests.cs`).
-- ✅ Weapons and items: a per-player loadout of six weapons and six items cycled left/right (cycle_weapon/item_*.gml),
-  a count of 10 meaning unlimited, three of every weapon each round, the cannon included (config.ini countcannon = 3; each shot spends one, and a spent cannon cycles right like any weapon; a player with nothing left cannot fire and the clock runs out, as the original; the setup screen sets the cannon like the rest: obj_btn_cannon_more/less, 0 to 10, 10 unlimited); the laser, shotgun, fused grenade
-  (1/2/3 set a 0.5–6 s fuse; it passes through players and blasts everyone near where it goes off) and railgun; the
-  extra bounce, teleporter and shrink ray; and weapon/item/health/powerup crates that fall during a match on
-  obj_drop_emitter's random timers and go to whoever's shot passes over one (UR-T5; `Core/Loadout.cs`, `Volley.cs`,
-  `Drops.cs` tested by `dotnet test Core.slnx`, the wire by `Tests/PlayMode/WeaponTests.cs`).
-- ✅ Shotgun (U.RICO-T94, as shoot_shotgun.gml, pellet_create.gml and hit.gml): `pelletCount` = 12 pellets, each starting 40 + 1..30 px
-  (px x 22/1920 units) out along the aim at a whole-degree random spread of +/- `shotgunSpread` = 4, each with its own bounce
-  limit (0..maxBounces, or 2..maxBounces when that is 2 or more; Extra Bounce adds to it). The first pellet to strike does a
-  full hit and every other pellet is removed where it is that moment, so a volley strikes at most once (the rebuild had five
-  evenly spaced pellets at 0.35 of a hit each; `pelletDamage` is gone from arsenal.json). The dice are `GameAuthority`'s seeded
-  shot stream, drawn only when the shot is fired; the solved paths travel on `ShotWire` unchanged (no version bump), and a
-  preview (no dice) is one pellet along the aim.
-- ✅ AI opponents and aim assist: the start-match vote carries the AI count, one AI skill (0–10) and the aim assists
-  each player starts with (0 = none, 10 = unlimited; obj_btn_ai_*/obj_btn_aimassist_*); on its turn an AI shows one
-  of check_ai's thirty "is thinking..." lines to every peer and decides at once, as the original did (U.RICO-T98):
-  the first whole degree from 0 whose straight line reaches a living opponent before the first shape
-  (find_target_angle), else the whole degree whose tracer (shoot_tracer: a shell off the shapes and the border only)
-  reaches one soonest, else a random whole degree; it nudges that by up to 10 − skill whole degrees (default skill 10,
-  config.ini), turns its barrel onto it at a player's turn rate and fires a cannon shell that spends nothing
-  (obj_check_ai calls shoot_bullet); the aim-assist item turns a human's aim onto the shot a
-  fully skilled AI would take and draws it as a fading beam (UR-T7; `Core/Ai.cs`, `MatchSetup.cs` tested by
-  `dotnet test Core.slnx`, the wire by `Tests/PlayMode/AiOpponentTests.cs`).
-- ✅ Level hazards: an electric arc and a laser gate (on every other turn) that stop a shot, foliage a shot cuts down (U.RICO-T91: none is laid by default, as the original never created obj_tesla, never called draw_electricity or check_source_laser, and had randomize_level's foliage commented out; the code stays and `hazards.json`'s `layHazards: true` lays them every round),
-  the shield wall item (only its owner's shots pass; anyone else's shatters it; it decays after 20–120 s), the
-  redirector item, and the vortex device set off in mid-flight (vortex_detonate.gml). Corrected by U.RICO-T96 to match
-  vortex_step.gml: the vortex hurts no one itself and touches no hazard or border; it pulls the level's shapes within 200 px
-  (2.2917 units) in at 1 px a step and flings them out at 10 px a step, and a tank is hurt (once) only when a flung shape
-  strikes it (`Core/Arsenal/VortexStorm.cs`; shapes are the walls grouped by shared corners; the shapes stay where the storm leaves them, as in
-  the original, which never puts a moved shape back: U.RICO-T134 has `VortexStorm.Play` give every moved shape's pull and fling
-  (`Volley.Storm`, carried by `ShotWire`, version 3 since U.RICO-T141), the server's level keep them when the shot lands (`Level.Apply`), and each
-  peer's `LevelView` walk the shapes along it in step with the implosion (`WalkStorm`, 250 steps in the pull starts, 800 the
-  fling) and keep them in its own level when it ends (`SettleStorm`); U.RICO-T141 turns them as vortex_step.gml did
-  (`image_angle -= 1` each step of the pull and the wait, 550 degrees clockwise in all, none while blowing, about the shape's box
-  centre, `StormShape.Pivot`, which the pull carries along; `Level.Apply` leaves the walls at the turned pose and `ShotWire` version 3
-  carries the pivot); not modelled: a client that joins after a storm lays the round's shapes unmoved until the next round; the flight no longer stops on a tank it meets: obj_vortex has no collision event with a tank, so it flies through to its landing point, U.RICO-T135) (UR-T6;
-  `Core/Hazards.cs` with `Level`'s barriers and breaches tested by `dotnet test Core.slnx`, the wire by
-  `Tests/PlayMode/HazardTests.cs`).
-- ✅ Announcer and HUD: the start-match vote carries one of the original's seven on-air personalities and how often they
-  speak (0 off, 1 every time, 2–4 one time in 3/6/9); their portrait and name box slide in with a welcome at the match's
-  start, a cheer for a knock-out and a heckle for a shot that hits nobody, ten lines a kind drawn without repeats, each
-  played as the personality's own recording with its written line as the caption (U.RICO-T51, below); a hit on an opponent scores the shooter 100 + 25 a bounce + 5 a tenth of a second in
-  the air for the whole match (hit.gml/draw_potential.gml), shown on each seat's bar; a turn card shows everyone whose
-  turn it is with their score, weapon, item and combo (draw_weaponinfo/draw_iteminfo). The cards are MindAttic Components
-  widgets; the per-colour health bars are MatchHud's own uGUI (UR-T8, IMGUI until UR-T38; `Core/Announcer.cs`, `MatchRules.Points` and `Match`'s scores
-  tested by `dotnet test Core.slnx`, the wire and HUD by `Tests/PlayMode/AnnouncerTests.cs`).
-- ✅ Menu flow and rooms: the original's room graph (titlescreen → mainmenu → players → gamescreen → endgame,
-  with settings, controls, howtoplay and credits off the main menu) as a title screen and MindAttic Components screens on the
-  kit's front end: Players (name and colour, AI count, skill, aim assists), (no map room, U.RICO-T101: the goal, one round or first to
-  500–10000 points, check_endgame/obj_btn_goal_*, is on the Start screen), the
-  announcer under Settings, Controls, How to play (obj_slide's slides) and Credits; the match vote carries the map and goal,
-  every peer builds the map's level from its index (synced on `Turns`), and once a round ends with the goal reached the match
-  is over (`GameOver`, nobody fires) and every peer's endgame recap shows the champion and the leaderboard (obj_endgame) with
-  a rematch vote (UR-T9; `Core/MenuFlow.cs`, `Maps.cs`, `Match`'s goal tested by `dotnet test Core.slnx`, the wire and the
-  screens by `Tests/PlayMode/MenuFlowTests.cs`).
-- ✅ Server-authoritative shot sync: the server sends every client the volley it solved (every projectile's points,
-  contacts and end, and whom it strikes; packed exactly, doubles as doubles) and, once it lands in a match, the damage each
-  seat took and who it put out, both as `[ToClients]` calls on the shooter's `Player`; no client solves a shot again, so
-  every peer draws the same bounce and the struck players float the same damage (UR-T12; `Core/ShotWire.cs` tested by
-  `dotnet test Core.slnx`, the wire by `Tests/PlayMode/TurnTests.cs`).
-- ✅ Votes: the original had none (whoever held the one keyboard restarted or quit); the kit's NetVotes runs them and its
-  vote overlay asks everyone else Yes or No with the tally and the clock, passing on two thirds. The in-game menu offers
-  the match vote, **Vote to restart** (the match from round one, a rematch once it is over, the dummies in practice) and
-  **Vote to kick**, a room listing everyone who may be voted out (not yourself, not the host, never an AI); the kick is the
-  kit's own kind with the game's lines, and passing disconnects them, frees their seat at once and drops it out of the
-  round, passing the turn if it was theirs (UR-T14; `Core/VoteMenu.cs` tested by `dotnet test Core.slnx`, the wire by
-  `Tests/PlayMode/KickVoteTests.cs`).
-- 🟡 End-to-end port check (UR-T15, 2026-10-23): the Windows player builds (`-buildWindows64Player`) and launches;
-  title → main menu → Players → Start → lobby → Start plays a match against an AI to its goal, the endgame recap
-  shows the champion and leaderboard, Main menu leads back, and a rematch vote replays it; Settings, Controls, How to
-  play and Credits open and close; a second build joins by IP into practice and plays the vote-started match. hit.gml's
-  damage (default weapon_damage 100, chosen from 5/10/25/33/50/100; U.RICO-T92), check_endgame's goal and the score-ranked recap match the source. Gaps filed as fix tickets: the build's
-  `UR-T3` branding (UR-T16), the HUD at narrow widths and over menus (UR-T17, UR-T18, UR-T19), the vote overlay never
-  showing on a client (UR-T20), identical default names and colours (UR-T21), join by code without Relay (UR-T22),
-  randomised levels and spots (UR-T23), driving and ending a turn (UR-T24), the settings room's match rules (UR-T25),
-  fog of war (UR-T26), music (UR-T27), per-AI skill and names (UR-T28), mouse and numpad controls (UR-T29), and in the
-  kit, bots joining from a player build (UM-T76) and a second copy taking over the host's player (UM-T77). Left out on
-  purpose: the hotseat and multiplayer rooms (§3) and the original's unused rooms (`room0`, the empty `intro`, and the
-  campaign `maproom` no button reached). The studio splash and startup credits, then left out too, are restored by
-  U.RICO-T57 (Splash and startup credits).
-- ⬜ Anything not above is ticketed and unstarted. See
-  [USER_STORIES.md](USER_STORIES.md) or `tickets ticket queue --repo Unity.Ricochet`.
+## 6. The game as built {#UR-§6}
+The rebuild is complete: every room and system of the original is built, and the room-by-room check against it is
+section 7 of [RECONSTRUCTION.md](RECONSTRUCTION.md), the parity record. Each line
+below names where the rule lives and what tests it; the sections after section 8 hold each presentation system in detail
+(the original objects it reads, the numbers, its own deviations). Ticket history is in [USER_STORIES.md](USER_STORIES.md),
+never here ([UR-LAW-4](#UR-LAW-4)).
+
+**Flow.** The splash and startup credits (`Core/Menu/Splash`) lead to the title, whose RICOCHET letters drift as
+obj_letter_parent's did, then the main menu. The room graph (`Core/Menu/MenuFlow`): title or main menu -> the Start screen (the
+title room's setup panel: players, shapes, type, rotation, overlap, goal, turn time, bounces) -> players (names, colours, each AI's
+skill and name; names from the original's `names_f`/`names_m` pools) -> the lobby -> the game -> the endgame podium -> the main
+menu, with settings (every match rule, the announcer, sound), controls (with rebinding), how to play and credits off the main
+menu. There is no map room: every round is the random level, as the original played. Every change of screen fades through one
+black curtain (`Core/Menu/RoomFade`). The last setup is kept in the profile as `config.ini` kept it (`SetupMemory`). Tested by
+`Tests/Core.Tests/MenuFlowTests.cs`, `SplashTests`, `TitleAndStartTests`, `SetupMemoryTests` and PlayMode `MenuFlowTests`,
+`LobbyTests`.
+
+**A round.** A fresh level from the setup's polygon count (20), shape kind, rotation and overlap, built from the original's 80
+shape outlines (`Core/Level/LevelGenerator`, `ShapeLibrary`, `shapes.json`); every tank at a random spot clear of the shapes;
+a random backdrop and track; the fog of war remade; the weapons and items dealt from the settings. Every peer lays the same
+level from the seed (`LevelSeeds`). Each turn opens on the Ready card (obj_ready's hold and fade) and a sonar ping, then a turn
+clock (20 s by default, 5 to 30). PageUp / PageDown change the border (32 to 256 px) and reroll. Tested by `LevelGeneratorTests`,
+`MatchTests`, PlayMode `ReadyCardTests`, `TurnTests`.
+
+**A turn and a shot.** The barrel turns a degree a step (60 a second), the tank drives a pixel a step and forfeits the shot,
+1/2/3 set a grenade's fuse, numpad snaps the aim, Alt pings. A shell flies at the original's constant speed, with no power,
+until its bounce limit (5 by default) runs out, reflecting off the shapes and the border (`Core/Aim/BounceSolver`, `ShotPath`,
+`ProjectileFlight`, `Geometry`); the dotted preview shows its path. After a shot lands the next turn waits obj_endturn's 50
+steps, longer while the announcer is still speaking. Tested by `BounceSolverTests`, `GeometryTests`, `FlightAndAimTests`,
+`DrivingTests`.
+
+**Damage, score and the end.** A hit does the weapon damage (100 by default, chosen from 5/10/25/33/50/100) to a 100-health
+tank and scores the shooter 100 + 25 a bounce + 5 a tenth of a second in flight (hit.gml, draw_potential.gml). The last tank
+standing takes the round; when a round ends with a seat at the goal (500 by default, 500 to 10000, or one round) the game is
+over and the podium shows the first three (`Core/Match/Match`, `MatchRules`, `Core/Menu/Podium`). Up to eight seats, as the
+original's players room. Tested by `MatchTests`, `SeatingTests`, `PodiumTests`.
+
+**Weapons and items** (`Core/Arsenal/Loadout`, `Volley`, `Arsenal`, `VortexStorm`; `arsenal.json`). Counts per round from the
+settings, 10 meaning unlimited; the cannon starts at 3 and each shot spends one. The laser flies at a shell's speed. The shotgun
+fires 12 pellets at a whole-degree spread of +/-4, each with its own bounce limit; the first to strike does a full hit and the
+rest vanish. The grenade bounces off tanks and its blast (150 px) hurts the first tank it reaches, on a 0.5 to 6 s fuse.  The vortex, set off in flight, hurts no one itself: it pulls the level's shapes within 200 px in and
+flings them out, turning them as it pulls, and a tank is hurt only when a flung shape strikes it; the shapes stay where they
+land. Items take effect when their flight arrives: the extra bounce, the shield wall (128 px, 60 px ahead, only its owner's shots
+pass), the shrink ray (shrinks away the first shape it strikes), the teleporter (moves its shooter to where it first touches),
+aim assist (a straight line along the aim to the first wall) and the redirector (flies until its owner presses again, then
+stands and spins). Crates (weapon, item, health) drop from 10 to 30 s in and go to whatever tank or shot reaches them
+(`Drops`). Tested by `LoadoutTests`, `VolleyTests`, `DropTests`, PlayMode `WeaponTests`, `ItemFlightTests`, `HazardTests`.
+
+**Hazards** (`Core/Level/Hazards`, `hazards.json`). Electric arcs, laser gates and foliage are built but laid only when
+`layHazards` is true; it is false, because the original never placed them. Tested by `HazardTests` (Core and PlayMode).
+
+**AI** (`Core/Ai/Ai`). As check_ai: it decides as its turn starts, shows one of the thirty "is thinking..." lines, takes the
+first whole degree from 0 whose straight line reaches a living opponent before any shape, else the degree whose tracer reaches
+one soonest, else a random degree; nudges it by up to 10 - skill degrees (skill 10 by default, per AI); turns at a player's
+rate and fires a cannon shell that spends nothing. Tested by `AiTests`, PlayMode `AiOpponentTests`.
+
+**Announcer** (`Core/Match/Announcer`, `announcer.json`). Seven personalities (Matt Baxter on the air by default), how often
+they speak (off, every time, or one time in 3/6/9), welcome, cheer and heckle lines drawn without repeats, each played as the
+personality's own recording with its portrait and the written line as the caption. Tested by `AnnouncerTests` (Core and
+PlayMode).
+
+**Presentation.** The original's sprites, backgrounds, fonts, music, 70 effects and 210 announcer lines are imported whole and
+catalogued by original path (`Tools/import-gml-*.ps1`, `ArtCatalogue`); tanks, the backdrop, weapons and hazards, hits and
+knock-outs, items in flight, the HUD, menus, credits, podium and fog of war draw from them as detailed in the sections below.
+Tested by `ArtCatalogueTests`, the `*LooksTests`, `SoundTests` and the PlayMode art, HUD and sound suites.
+
+**Network** (new). Unity.Multiplayer's front end: Host, Join by IP, Join by code, the lobby with its match box (`Core/Menu/Lobby`,
+`LobbyRoom`). The server decides every shot through `Core/Commands/GameAuthority` and sends every client the solved volley and
+its result (`Core/Net/ShotWire`), so every peer draws the same bounce; a client that joins late is sent the round's vortex
+storms so its walls match. The kit's votes start a match, restart it, kick a player (never the host or an AI) and pause it for a
+non-host; a dropped player keeps their seat for the kit's reconnect grace. Tested by `ShotWireTests`, `CommandTests`,
+`VoteMenuTests`, `LobbyTests` and PlayMode `TurnTests`, `KickVoteTests`, `ReconnectTests`, `ClientVoteOverlayTests`,
+`PauseMenuTests`.
+
+**Standards.** Engine-free Core held by `CoreBoundaryTests`; content and tuning as validated data (`GameDataTests` loads every
+shipped file); the Input System with one actions asset and rebinding kept in the profile; URP behind `IRenderStyle`; no IMGUI
+(`HudNoImguiTests`); CI on every push (`.github/workflows/ci.yml`) and the nightly bot smoke.
+
+## 7. Deviations from the original {#UR-§7}
+The rule is to rebuild the original faithfully and fix only its bugs. These are the places the rebuild differs, and why. Each
+presentation section below records its own smaller deviations.
+
+1. **Real multiplayer instead of the hotseat rooms.** GameMaker 8 had no network layer, so the original passed one keyboard
+   around. The multiplayer_hostorjoin/_host/_join rooms are replaced by the kit's Host, Join by IP, Join by code and lobby
+   (section 3).
+2. **The server owns the shot** ([UR-LAW-1](#UR-LAW-1)). Every input is a command to one authority that returns events, so
+   peers cannot disagree; the dice (shotgun pellets, levels) come from the server's seeded streams.
+3. **Votes and reconnects.** With no single keyboard holder, restarting, kicking and a non-host's pause are votes on the kit's
+   overlay, and a dropped player's seat is held for the reconnect grace. The original had neither.
+4. **Pause on P, Pause or the right stick.** Esc stays the kit's in-game menu (invite, settings, votes). The host pauses at once;
+   anyone else asks by a vote.
+5. **The profile instead of `config.ini`.** Name, colour, sound, key bindings and the last match setup live in the player's
+   Unity.Shared profile, so they follow the player to every MindAttic game.
+6. **Modern input.** The Input System with rebinding, gamepad and on-screen controls, where the original read fixed keys; using
+   an item is Ctrl / right mouse and F ends the turn.
+7. **The kit's menus under the original's screens.** Screens are MindAttic Components dressed in the original's art at the rooms'
+   places; a screen too long for its room (settings) keeps the kit's card on the room's background.
+8. **Hazards built but off.** Arcs, laser gates and foliage were planned in the original but never placed; the rebuild keeps
+   them as data (`layHazards`) and lays none by default.
+9. **Left out on purpose.** The campaign map room no button reached, room0, the empty intro, obj_typewriter_intro, the debug keys,
+   the sheep, the laser sight item, the unshipped powerup HUD stubs and `take_screenshot` (RECONSTRUCTION section 1.2).
+10. **Defects of the original fixed**, not carried: the fog of war's blend mode that never revealed anything, the splash no room
+    reached, a shotgun bounce sound naming no file, unplayed and missing announcer recordings, the shield wall's missing glass
+    frame, obj_lights never placed, sfx_woot never played, the redirector's double charge. Each is noted in its section below.
+11. **Credits in this project's own words**, crediting the original's people and the house kit, since no GML or its text is
+    copied ([UR-LAW-2](#UR-LAW-2)).
+
+## 8. Running and testing {#UR-§8}
+How to open, play, build and test the game is in the [README](../README.md#quick-start); in short `dotnet test Core.slnx` for
+the rules, the Unity EditMode (`Ricochet.EditorTests`) and PlayMode (`Ricochet.Tests`) suites through `Tools/unity.ps1`,
+`Tools/run.ps1` to build the player and `Tools/play.ps1` to launch it muted.
 
 ## Fog of war (UR-T26, ported exactly in UR-T77)
 
