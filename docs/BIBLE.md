@@ -90,6 +90,13 @@ copy of any of these is a bug.
   extra bounce, teleporter and shrink ray; and weapon/item/health/powerup crates that fall during a match on
   obj_drop_emitter's random timers and go to whoever's shot passes over one (UR-T5; `Core/Loadout.cs`, `Volley.cs`,
   `Drops.cs` tested by `dotnet test Core.slnx`, the wire by `Tests/PlayMode/WeaponTests.cs`).
+- ✅ Shotgun (U.RICO-T94, as shoot_shotgun.gml, pellet_create.gml and hit.gml): `pelletCount` = 12 pellets, each starting 40 + 1..30 px
+  (px x 22/1920 units) out along the aim at a whole-degree random spread of +/- `shotgunSpread` = 4, each with its own bounce
+  limit (0..maxBounces, or 2..maxBounces when that is 2 or more; Extra Bounce adds to it). The first pellet to strike does a
+  full hit and every other pellet is removed where it is that moment, so a volley strikes at most once (the rebuild had five
+  evenly spaced pellets at 0.35 of a hit each; `pelletDamage` is gone from arsenal.json). The dice are `GameAuthority`'s seeded
+  shot stream, drawn only when the shot is fired; the solved paths travel on `ShotWire` unchanged (no version bump), and a
+  preview (no dice) is one pellet along the aim.
 - ✅ AI opponents and aim assist: the start-match vote carries the AI count, one AI skill (0–10) and the aim assists
   each player starts with (0 = none, 10 = unlimited; obj_btn_ai_*/obj_btn_aimassist_*); on its turn an AI shows one
   of check_ai's thirty "is thinking..." lines to every peer and decides at once, as the original did (U.RICO-T98):

@@ -39,6 +39,7 @@ namespace Ricochet.Core.Commands
         private readonly Random _dropDice;
         private readonly Random _layoutDice;
         private readonly Random _matchDice;
+        private readonly Random _shotDice;
         private readonly Dictionary<string, VoteTally> _votes = new Dictionary<string, VoteTally>();
         private readonly List<ItemInFlight> _itemsInFlight = new List<ItemInFlight>();
         private List<GameEvent> _current;
@@ -60,6 +61,7 @@ namespace Ricochet.Core.Commands
             _dropDice = seed == 0 ? new Random() : new Random(seed);
             _layoutDice = seed == 0 ? new Random() : new Random(seed + 1);
             _matchDice = seed == 0 ? new Random() : new Random(seed + 2);
+            _shotDice = seed == 0 ? new Random() : new Random(seed + 4);
             Layout = Maps.At(0).Layout(0);
             Hazards = new HazardField(Layout.Level, hazards ?? HazardRules.Default, seed == 0 ? new Random() : new Random(seed + 3));
             Hazards.Removed += hazard =>
@@ -253,9 +255,9 @@ namespace Ricochet.Core.Commands
         public Level LevelFor(int seat) => Hazards.LevelFor(seat);
 
         /// <summary>Solves what <paramref name="weapon"/> would do from the player's spot, as things stand (a preview; nothing changes).</summary>
-        public Volley Solve(PlayerState state, Weapon weapon, double heading, double fuse, int extraBounces)
+        public Volley Solve(PlayerState state, Weapon weapon, double heading, double fuse, int extraBounces, bool fire = false)
         {
-            return Arsenal.Fire(weapon, state.Position, heading, fuse, extraBounces, LevelFor(state.Seat), Targets(), Rules, Arms);
+            return Arsenal.Fire(weapon, state.Position, heading, fuse, extraBounces, LevelFor(state.Seat), Targets(), Rules, Arms, fire ? _shotDice : null);
         }
 
         // ------------------------------------------------------------------ the match
@@ -741,7 +743,7 @@ namespace Ricochet.Core.Commands
             state.ShotDetonation = 0;
             state.ExtraBounces = 0;
             state.Shots++;
-            Volley volley = Solve(state, weapon, state.ShotHeading, state.ShotFuse, state.ShotExtraBounces);
+            Volley volley = Solve(state, weapon, state.ShotHeading, state.ShotFuse, state.ShotExtraBounces, true);
             state.Flight = new VolleyFlight(volley);
             state.LastVolley = volley;
             Emit(new LoadoutChanged(state.Id));

@@ -69,14 +69,11 @@ namespace Ricochet.Core.Arsenal
         /// <summary>The vortex's pull radius (vortexRadius = 200 px).</summary>
         public double VortexRadius { get; set; }
 
-        /// <summary>Shotgun pellets, fanned evenly (pelletCount was 12 at random angles; five, one along the aim, read better).</summary>
+        /// <summary>Shotgun pellets a shot fires (pelletCount = 12).</summary>
         public int Pellets { get; set; }
 
-        /// <summary>Degrees either side of the aim the pellets fan across (shotgunSpread = 4).</summary>
+        /// <summary>Whole degrees either side of the aim a pellet may stray (shotgunSpread = 4).</summary>
         public double PelletSpread { get; set; }
-
-        /// <summary>The share of a hit's damage one pellet does.</summary>
-        public double PelletDamage { get; set; }
 
         /// <summary>The laser flies this many times a shell's speed (1 in the original).</summary>
         public double LaserSpeed { get; set; }
@@ -106,7 +103,6 @@ namespace Ricochet.Core.Arsenal
             VortexRadius = other.VortexRadius;
             Pellets = other.Pellets;
             PelletSpread = other.PelletSpread;
-            PelletDamage = other.PelletDamage;
             LaserSpeed = other.LaserSpeed;
             RailgunSpeed = other.RailgunSpeed;
             Array.Copy(other._startWeapons, _startWeapons, Kinds);

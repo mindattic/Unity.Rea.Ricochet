@@ -6,15 +6,14 @@
   "fuseStep": 0.5,
   "grenadeRadius": 1.71875,
   "vortexRadius": 2.2916666667,
-  "pellets": 5,
+  "pellets": 12,
   "pelletSpread": 4,
-  "pelletDamage": 0.35,
   "laserSpeed": 1,
   "railgunSpeed": 8,
   "weapons": [
     { "id": "Cannon", "name": "Cannon", "start": 3, "inPlay": true, "about": "Fires a shell that ricochets off the walls and shapes until its bounces run out." },
     { "id": "Laser", "name": "Laser", "start": 3, "inPlay": true, "about": "A fast beam that ricochets like a shell and hits whoever it reaches." },
-    { "id": "Shotgun", "name": "Shotgun", "start": 3, "inPlay": true, "about": "Fans pellets around your aim; each pellet that hits does a share of the damage." },
+    { "id": "Shotgun", "name": "Shotgun", "start": 3, "inPlay": true, "about": "Fires a spray of pellets around your aim; the first pellet to hit does a full hit." },
     { "id": "Grenade", "name": "Grenade", "start": 3, "inPlay": true, "about": "Bounces until its fuse runs out, then blasts everyone near it. Set the fuse with 1-3." },
     { "id": "Railgun", "name": "Railgun", "start": 3, "inPlay": true, "about": "A slug that flies near enough instantly along your aim." },
     { "id": "Vortex", "name": "Vortex Device", "start": 3, "inPlay": true, "about": "Fire it, then press Space again to set it off: it flings the shapes near it, and one that hits you hurts." }

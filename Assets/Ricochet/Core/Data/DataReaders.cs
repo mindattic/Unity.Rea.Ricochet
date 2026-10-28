@@ -94,7 +94,6 @@ namespace Ricochet.Core.Data
                 VortexRadius = r.Number("vortexRadius", 0.1, 50),
                 Pellets = r.Integer("pellets", 1, 100),
                 PelletSpread = r.Number("pelletSpread", 0, 90),
-                PelletDamage = r.Number("pelletDamage", 0.01, 10),
                 LaserSpeed = r.Number("laserSpeed", 0.1, 100),
                 RailgunSpeed = r.Number("railgunSpeed", 0.1, 100),
             };

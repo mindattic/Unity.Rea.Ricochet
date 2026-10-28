@@ -4,7 +4,7 @@
 // pixel at a time (design reference only, UR-LAW-2); here each is one or more solved ShotPaths plus what they strike:
 //   Cannon   one shell along the aim until its bounces run out; it stops in the first player it reaches (hit.gml's damage).
 //   Laser    a beam at a shell's speed (shoot_laser.gml); otherwise a cannon shot.
-//   Shotgun  a fan of pellets (pelletCount, +/- shotgunSpread degrees), each its own bouncing shot doing a share of a hit.
+//   Shotgun  pelletCount pellets at a random +/- shotgunSpread degrees, each its own random bounce limit; the first to strike does a full hit and removes the rest.
 //   Grenade  bounces like a shell, and bounces off players too (obj_grenade's collision with obj_player: away from the tank's
 //            centre, no bounce counted); goes off when its fuse runs out (grenade_countdown.gml) or on its bounce limit
 //            (grenade_step.gml), hurting only the first player its growing blast reaches (check_grenade_intersection.gml).
@@ -191,8 +191,9 @@ namespace Ricochet.Core.Arsenal
         /// </summary>
         /// <param name="fuse">A grenade's fuse in seconds (ignored by the others).</param>
         /// <param name="extraBounces">Extra Bounce items used this turn: each lets the shot survive one more contact.</param>
+        /// <param name="dice">The shotgun's random spread, muzzle and bounce limits, from the authority's seeded stream; null for a preview (one aimed pellet).</param>
         public static Volley Fire(Weapon weapon, Vec2 origin, double heading, double fuse, int extraBounces,
-            Level level, IReadOnlyList<Target> targets, ShotRules rules = null, ArsenalRules arsenal = null)
+            Level level, IReadOnlyList<Target> targets, ShotRules rules = null, ArsenalRules arsenal = null, Random dice = null)
         {
             if (level == null)
             {
@@ -201,6 +202,7 @@ namespace Ricochet.Core.Arsenal
 
             arsenal = arsenal ?? ArsenalRules.Default;
             ShotRules shot = (rules ?? ShotRules.Default).Clone();
+            int baseBounces = shot.MaxBounces;
             shot.MaxBounces = Math.Max(1, shot.MaxBounces + Math.Max(0, extraBounces));
             var paths = new List<ShotPath>();
             var strikes = new List<Strike>();
@@ -217,20 +219,53 @@ namespace Ricochet.Core.Arsenal
 
                 case Weapon.Shotgun:
                 {
-                    int pellets = Math.Max(1, arsenal.Pellets);
+                    // shoot_shotgun.gml: pelletCount pellets, each 40 + 1..30 px out along the aim at a whole-degree random
+                    // spread of +/- shotgunSpread, and pellet_create.gml gives each its own bounce limit (0..max, or 2..max when
+                    // the limit is 2 or more; extra bounces add to it). The dice are the authority's, so every peer gets the
+                    // solved paths; with no dice (a preview) one pellet flies along the aim at the full limit.
+                    int pellets = dice == null ? 1 : Math.Max(1, arsenal.Pellets);
+                    int spread = (int)Math.Round(arsenal.PelletSpread);
                     for (int i = 0; i < pellets; i++)
                     {
-                        double offset = pellets == 1 ? 0 : arsenal.PelletSpread * (2.0 * i / (pellets - 1) - 1);
-                        ShotPath path = BounceSolver.Solve(origin, heading + offset, level, targets, shot);
-                        paths.Add(path);
-                        AddTargetStrike(path, arsenal.PelletDamage, strikes);
+                        double offset = 0;
+                        ShotRules pellet = shot;
+                        if (dice != null)
+                        {
+                            pellet = shot.Clone();
+                            pellet.MuzzleOffset = (40 + dice.Next(1, 31)) * Ricochet.Core.Level.ShapeLibrary.UnitsPerPixel;
+                            offset = dice.Next(-spread, spread + 1);
+                            int limit = baseBounces < 2 ? dice.Next(0, baseBounces + 1) : dice.Next(2, baseBounces + 1);
+                            pellet.MaxBounces = Math.Max(1, limit + Math.Max(0, extraBounces));
+                        }
+
+                        paths.Add(BounceSolver.Solve(origin, heading + offset, level, targets, pellet));
                     }
 
-                    // The middle pellet first, so Main is the one along the aim.
-                    int middle = pellets / 2;
-                    ShotPath centre = paths[middle];
-                    paths.RemoveAt(middle);
-                    paths.Insert(0, centre);
+                    // hit.gml: the first pellet to strike does a full hit and destroys every other pellet where it stands.
+                    int winner = -1;
+                    for (int i = 0; i < paths.Count; i++)
+                    {
+                        if (paths[i].End == ShotEndKind.Target && paths[i].TargetId != null
+                            && (winner < 0 || paths[i].Length < paths[winner].Length))
+                        {
+                            winner = i;
+                        }
+                    }
+
+                    if (winner >= 0)
+                    {
+                        double at = paths[winner].Length;
+                        for (int i = 0; i < paths.Count; i++)
+                        {
+                            if (i != winner)
+                            {
+                                paths[i] = paths[i].Truncate(at);
+                            }
+                        }
+
+                        AddTargetStrike(paths[winner], 1, strikes);
+                    }
+
                     return new Volley(weapon, paths, shot.Speed, strikes, false, default, 0);
                 }
 

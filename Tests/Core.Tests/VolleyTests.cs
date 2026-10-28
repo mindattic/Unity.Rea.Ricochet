@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 
@@ -54,18 +55,24 @@ namespace Ricochet.Core.Tests
         }
 
         [Test]
-        public void TheShotgunFansFivePellets_EachStrikingForAShare()
+        public void TheShotgunFiresTwelveRandomPellets_TheFirstToStrikeDoesAFullHitAndRemovesTheRest()
         {
-            Volley close = Fire(Weapon.Shotgun, 0, Open(), T("me", 0, 0), T("ann", 4, 0));
-            Assert.That(close.Paths.Count, Is.EqualTo(5));
-            Assert.That(close.Main.Heading, Is.EqualTo(0).Within(1e-9), "the middle pellet flies along the aim");
-            Assert.That(close.Paths.Select(p => p.Heading > 180 ? p.Heading - 360 : p.Heading).OrderBy(h => h).ToArray(),
-                Is.EqualTo(new[] { -4.0, -2.0, 0.0, 2.0, 4.0 }).Within(1e-9));
-            Assert.That(close.Strikes.Count, Is.EqualTo(5), "point blank, every pellet hits");
-            Assert.That(close.Strikes.All(s => s.TargetId == "ann" && s.Scale == ArsenalRules.Default.PelletDamage), Is.True);
+            Volley close = Arsenal.Fire(Weapon.Shotgun, Vec2.Zero, 0, 2, 0, Open(), new[] { T("me", 0, 0), T("ann", 4, 0) }, null, null, new Random(7));
+            Assert.That(close.Paths.Count, Is.EqualTo(12));
+            Assert.That(close.Paths.All(p => { double h = p.Heading > 180 ? p.Heading - 360 : p.Heading; return Math.Abs(h) <= 4 + 1e-9; }), Is.True, "within the spread");
+            Assert.That(close.Paths.All(p => { double m = Vec2.Distance(Vec2.Zero, p.Start); return m >= 41 * 22.0 / 1920 - 1e-9 && m <= 70 * 22.0 / 1920 + 1e-9; }), Is.True, "40 + 1..30 px out");
+            Assert.That(close.Strikes.Count, Is.EqualTo(1), "the first pellet to strike removes the rest");
+            Assert.That(close.Strikes[0].TargetId, Is.EqualTo("ann"));
+            Assert.That(close.Strikes[0].Scale, Is.EqualTo(1));
+            double hitAt = close.Paths.Where(p => p.End == ShotEndKind.Target).Min(p => p.Length);
+            Assert.That(close.Paths.All(p => p.Length <= hitAt + 1e-9), Is.True, "none flies past the strike");
 
-            Volley far = Fire(Weapon.Shotgun, 0, Open(), T("ann", 9.5, 0));
-            Assert.That(far.Strikes.Count, Is.EqualTo(3), "at range the outer pellets spread past");
+            Volley again = Arsenal.Fire(Weapon.Shotgun, Vec2.Zero, 0, 2, 0, Open(), new[] { T("me", 0, 0), T("ann", 4, 0) }, null, null, new Random(7));
+            Assert.That(again.Paths.Select(p => p.Heading).ToArray(), Is.EqualTo(close.Paths.Select(p => p.Heading).ToArray()), "the same seed, the same spray");
+
+            Volley preview = Fire(Weapon.Shotgun, 0, Open(), T("ann", 9.5, 0));
+            Assert.That(preview.Paths.Count, Is.EqualTo(1), "a preview is one pellet along the aim");
+            Assert.That(preview.Main.Heading, Is.EqualTo(0).Within(1e-9));
         }
 
         [Test]
@@ -166,9 +173,9 @@ namespace Ricochet.Core.Tests
         [Test]
         public void AVolleyLandsWhenItsLastProjectileDoes()
         {
-            Volley volley = Fire(Weapon.Shotgun, 30, Open());
+            Volley volley = Arsenal.Fire(Weapon.Shotgun, Vec2.Zero, 30, 2, 0, Open(), new Target[0], null, null, new Random(3));
             var flight = new VolleyFlight(volley);
-            Assert.That(flight.Flights.Count, Is.EqualTo(5));
+            Assert.That(flight.Flights.Count, Is.EqualTo(12));
             double longest = volley.Paths.Max(p => p.Length);
             double shortest = volley.Paths.Min(p => p.Length);
             flight.Advance(shortest / volley.Speed + 1e-6);
