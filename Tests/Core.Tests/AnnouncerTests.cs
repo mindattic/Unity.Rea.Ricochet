@@ -179,7 +179,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void TheShooterScoresForHittingAnOpponent_NotForHittingThemselves_AndScoresLastTheMatch()
         {
-            var match = new Match(seed: 3);
+            var match = new Match(NoReadyCard.Rules(), seed: 3); // the stock 100-point hit is a knock-out; this fixture needs Bob to survive several
             match.Join(0, SeatKind.Human, "Ann");
             match.Join(1, SeatKind.Ai, "Bob");
             var scored = new List<(int, int)>();
@@ -194,8 +194,8 @@ namespace Ricochet.Core.Tests
             match.Strike(0, 0, 1);
             Assert.That(match.Seat(0).Score, Is.EqualTo(175), "hurting yourself scores nothing");
 
-            match.Strike(0, 1, 0, 0.2);
-            Assert.That(match.Seat(0).Score, Is.EqualTo(175 + 20), "a pellet scores its share");
+            match.Strike(0, 1, 0);
+            Assert.That(match.Seat(0).Score, Is.EqualTo(175 + 100), "a shotgun pellet's first strike is a full hit and scores in full");
 
             // Knock Bob out: the round is over, and the score carries into the next.
             while (match.Seat(1).Alive)
