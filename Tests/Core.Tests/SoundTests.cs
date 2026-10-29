@@ -251,7 +251,7 @@ namespace Ricochet.Core.Tests
         [Test]
         public void EveryTrackIsTheOriginalsRecording_ImportedIntoTheMusicFolder()
         {
-            string folder = FindUp("Assets/Ricochet/Resources/" + MusicBook.ResourceFolder);
+            string folder = FindUp("Assets/Rea.Ricochet/Resources/" + MusicBook.ResourceFolder);
             foreach (MusicTrack track in MusicBook.All)
             {
                 Assert.That(MusicBook.Recording(track), Does.StartWith("music_"));

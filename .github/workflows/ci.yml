@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # The fast job: Core.slnx (Ricochet.Core + its NUnit tests), no Unity, with Ricochet.Core's line coverage held to a floor.
+  # The fast job: Core.slnx (Rea.Ricochet.Core + its NUnit tests), no Unity, with Rea.Ricochet.Core's line coverage held to a floor.
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -29,7 +29,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet test Core.slnx --nologo --collect:"XPlat Code Coverage" --results-directory TestResults
-      - name: Coverage floor for Ricochet.Core
+      - name: Coverage floor for Rea.Ricochet.Core
         shell: pwsh
         run: ./Tools/coverage-floor.ps1 -Report TestResults -Floor 92
       - uses: actions/upload-artifact@v4
@@ -77,7 +77,7 @@ jobs:
       # as Unity.Multiplayer's game-smoke.yml lays it out. MINDATTIC_REPOS_TOKEN is only needed while they are private.
       - uses: actions/checkout@v4
         with:
-          path: Unity.Ricochet
+          path: Unity.Rea.Ricochet
           lfs: true
       - name: Check out sibling repos
         env:
@@ -88,21 +88,21 @@ jobs:
           done
       - uses: actions/cache@v4
         with:
-          path: Unity.Ricochet/Library
-          key: Library-${{ hashFiles('Unity.Ricochet/Packages/manifest.json', 'Unity.Ricochet/Packages/packages-lock.json', 'Unity.Ricochet/ProjectSettings/ProjectVersion.txt') }}
+          path: Unity.Rea.Ricochet/Library
+          key: Library-${{ hashFiles('Unity.Rea.Ricochet/Packages/manifest.json', 'Unity.Rea.Ricochet/Packages/packages-lock.json', 'Unity.Rea.Ricochet/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-
 
       # Not hidden behind continue-on-error: the known-flaky PlayMode tests (U.RICO-T73) fail the run until they are fixed.
       - uses: game-ci/unity-test-runner@v4
         with:
-          projectPath: Unity.Ricochet
+          projectPath: Unity.Rea.Ricochet
           testMode: EditMode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: EditMode results
           artifactsPath: editmode-results
       - uses: game-ci/unity-test-runner@v4
         with:
-          projectPath: Unity.Ricochet
+          projectPath: Unity.Rea.Ricochet
           testMode: PlayMode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: PlayMode results
@@ -122,16 +122,16 @@ jobs:
       - uses: game-ci/unity-builder@v4
         if: ${{ !cancelled() }}
         with:
-          projectPath: Unity.Ricochet
+          projectPath: Unity.Rea.Ricochet
           targetPlatform: StandaloneWindows64
           buildMethod: Ricochet.Tooling.RicochetBuild.BuildWindows
           allowDirtyBuild: true
       - name: Check the player was produced
         if: ${{ !cancelled() }}
-        run: test -f Unity.Ricochet/Build/Ricochet/Ricochet.exe
+        run: test -f Unity.Rea.Ricochet/Build/Ricochet/Ricochet.exe
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: Ricochet-Windows
-          path: Unity.Ricochet/Build/Ricochet
+          path: Unity.Rea.Ricochet/Build/Ricochet
           retention-days: 7

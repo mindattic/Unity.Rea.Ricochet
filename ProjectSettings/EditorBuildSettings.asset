@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Ricochet/Game.unity
+    path: Assets/Rea.Ricochet/Game.unity
     guid: f647e10b516e43e4af8a1dbc72bf4ad9
   m_configObjects: {}

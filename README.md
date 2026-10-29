@@ -1,4 +1,4 @@
-# Unity.Ricochet
+# Unity.Rea.Ricochet
 
 Turn-based bounce-shot artillery for up to eight tanks, human or AI: turn your barrel, bank the shot off the level's
 shapes and the border, and land it on an opponent before they land one on you. A faithful Unity 6 rebuild of the 2013
@@ -44,7 +44,7 @@ git clone https://github.com/mindattic/Unity.Shared
 ```
 
 `Packages/manifest.json` lists the three as local packages. Open the project in Unity Hub (the first open rebuilds
-`Library/`), open `Assets/Ricochet/Game.unity` and press Play. From the title: **Start** > the Start screen > **Next** > the
+`Library/`), open `Assets/Rea.Ricochet/Game.unity` and press Play. From the title: **Start** > the Start screen > **Next** > the
 players room > **Start** hosts the match and opens the lobby; its **Start** plays it. **Host** on the main menu opens a free
 practice room. A second copy (Multiplayer Play Mode, or a build) joins with **Join by IP** (`127.0.0.1`) or **Join by code**
 (a join code needs the project linked to Unity Relay or a rendezvous URL on the NetBootstrap; without one, join by IP).
@@ -79,10 +79,10 @@ player's saved volumes are untouched). Add `-Sound` for audio.
 
 ## Tests
 
-- Core (the rules, no Unity): `dotnet test Core.slnx`. CI holds `Ricochet.Core`'s line coverage to a floor
+- Core (the rules, no Unity): `dotnet test Core.slnx`. CI holds `Rea.Ricochet.Core`'s line coverage to a floor
   (`Tools/coverage-floor.ps1`).
 - EditMode and PlayMode: `powershell -File Tools/unity.ps1 -Log test-editmode -Extra "-runTests -testPlatform EditMode
-  -assemblyNames Ricochet.EditorTests"`, and the same with `-testPlatform PlayMode -assemblyNames Ricochet.Tests`. The
+  -assemblyNames Rea.Ricochet.EditorTests"`, and the same with `-testPlatform PlayMode -assemblyNames Rea.Ricochet.Tests`. The
   PlayMode suite plays real host and client sessions on the kit's `NetSessionTest` / `NetBotTest` fixtures.
 - Bots end to end: `mp-host game smoke` (a server and two bots, as in `mp-host.json`; run nightly by
   `.github/workflows/nightly.yml`).
@@ -93,12 +93,12 @@ player's saved volumes are untouched). Add `-Sound` for audio.
 
 Three layers, one direction ([RFC 0001](docs/rfc/0001-architecture.md) has the design):
 
-- **Core** (`Assets/Ricochet/Core`, assembly `Ricochet.Core`, no engine references): every rule as plain C#, grouped by
+- **Core** (`Assets/Rea.Ricochet/Core`, assembly `Rea.Ricochet.Core`, no engine references): every rule as plain C#, grouped by
   domain (`Aim`, `Arsenal`, `Level`, `Match`, `Ai`, `Menu`, `Art`, `Net`, `Data`, `Commands`). All play goes through
   `Commands/GameAuthority`: each input is a command carrying a player id, and it returns ordered events. Tuning and content
   are validated JSON in `Assets/StreamingAssets/Settings` (match, shot, arsenal, hazards, level, shapes, maps, announcer,
   menu, backdrop, registry), read by `Data/GameData`.
-- **Runtime** (`Ricochet.Runtime`): the networked entities on Unity.Multiplayer (`Player`, `Turns`, `Crate`, `LevelHazard`,
+- **Runtime** (`Rea.Ricochet.Runtime`): the networked entities on Unity.Multiplayer (`Player`, `Turns`, `Crate`, `LevelHazard`,
   `Dummy`), the server's `Arena` that feeds commands to Core and plays its events, and the presentation, which only reads
   synced state and the `Presentation` event feed: the level, tanks, shots and effects, the HUD, the menus on MindAttic
   Components dressed in the original's art (`Runtime/Art`), audio, fades, splash, podium.
@@ -108,7 +108,7 @@ Three layers, one direction ([RFC 0001](docs/rfc/0001-architecture.md) has the d
   framework or settings file of its own.
 
 ```text
-Assets/Ricochet/
+Assets/Rea.Ricochet/
   Core/                engine-free rules (above)
   Runtime/             networked entities, the server's Arena, presentation; Art/ draws from the original's art
   Editor/              build, art and font importers, validators
@@ -138,4 +138,4 @@ The GameMaker original lives outside this repo and is read for reference only: n
 ([UR-LAW-2](docs/BIBLE.md#UR-LAW-2)). Its art, fonts and sound are imported by `Tools/import-gml-art.ps1`,
 `import-gml-fonts.ps1` and `import-gml-sound.ps1`, which record each file's original path; the PNGs and recordings are in Git
 LFS (run `git lfs install` once). The ticket history is [docs/USER_STORIES.md](docs/USER_STORIES.md), or
-`tickets ticket queue --repo Unity.Ricochet`.
+`tickets ticket queue --repo Unity.Rea.Ricochet`.

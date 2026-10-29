@@ -1,4 +1,4 @@
-# Fails when line coverage of Ricochet.Core (a Cobertura report from `dotnet test --collect:"XPlat Code Coverage"`)
+# Fails when line coverage of Rea.Ricochet.Core (a Cobertura report from `dotnet test --collect:"XPlat Code Coverage"`)
 # is under the floor, and lists the least-covered types so the next tests have a target (U.RICO-T40).
 #   dotnet test Core.slnx --collect:"XPlat Code Coverage" --results-directory TestResults
 #   pwsh Tools/coverage-floor.ps1 -Report TestResults -Floor 92
@@ -23,5 +23,5 @@ $covered = [int]$xml.coverage.'lines-covered'
 $total = [math]::Round(100.0 * $covered / $valid, 2)
 Write-Host "Least covered types:"
 $rows | Sort-Object Percent, @{ Expression = 'Missed'; Descending = $true } | Select-Object -First 10 | Format-Table -AutoSize | Out-String | Write-Host
-Write-Host "Ricochet.Core line coverage: $total% ($covered of $valid lines), floor $Floor%"
+Write-Host "Rea.Ricochet.Core line coverage: $total% ($covered of $valid lines), floor $Floor%"
 if ($total -lt $Floor) { Write-Error "Coverage $total% is under the $Floor% floor."; exit 1 }

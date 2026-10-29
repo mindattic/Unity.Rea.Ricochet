@@ -3,18 +3,18 @@
 # files, gml-art.json, gml-fonts.json and the font and catalogue .asset files stay plain text.
 # Pushing them needs the LFS objects uploaded too: run `git lfs install` once (hooks), or `git lfs push origin HEAD`
 # before `git push`.
-Assets/Ricochet/Art/**/*.png filter=lfs diff=lfs merge=lfs -text
-Assets/Ricochet/Fonts/**/*.png filter=lfs diff=lfs merge=lfs -text
-Assets/Ricochet/Resources/Ricochet/Fonts/**/*.png filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Art/**/*.png filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Fonts/**/*.png filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Fonts/**/*.png filter=lfs diff=lfs merge=lfs -text
 
 # U.RICO-T50: the original's sound effects Tools/import-gml-sound.ps1 mirrors (their .meta files and gml-sound.json stay text).
-Assets/Ricochet/Resources/Ricochet/Sound/*.wav filter=lfs diff=lfs merge=lfs -text
-Assets/Ricochet/Resources/Ricochet/Sound/*.mp3 filter=lfs diff=lfs merge=lfs -text
-Assets/Ricochet/Resources/Ricochet/Sound/*.ogg filter=lfs diff=lfs merge=lfs -text
-Assets/Ricochet/Resources/Ricochet/Music/*.mp3 filter=lfs diff=lfs merge=lfs -text
-Assets/Ricochet/Resources/Ricochet/Music/*.ogg filter=lfs diff=lfs merge=lfs -text
-Assets/Ricochet/Resources/Ricochet/Music/*.wav filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Sound/*.wav filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Sound/*.mp3 filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Sound/*.ogg filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Music/*.mp3 filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Music/*.ogg filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Music/*.wav filter=lfs diff=lfs merge=lfs -text
 
 # U.RICO-T51: the announcers' voice lines (the seven personalities' sfx_<key>_{welcome,win,lose}1..10, Vorbis).
-Assets/Ricochet/Resources/Ricochet/Voice/*.ogg filter=lfs diff=lfs merge=lfs -text
-Assets/Ricochet/Resources/Ricochet/Voice/*.wav filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Voice/*.ogg filter=lfs diff=lfs merge=lfs -text
+Assets/Rea.Ricochet/Resources/Ricochet/Voice/*.wav filter=lfs diff=lfs merge=lfs -text

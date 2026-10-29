@@ -1,0 +1,44 @@
+{
+    "name": "Rea.Ricochet.EditorTests",
+    "rootNamespace": "Ricochet.EditorTests",
+    "references": [
+        "Rea.Ricochet.Runtime",
+        "Rea.Ricochet.Core",
+        "Rea.Ricochet.Editor",
+        "Unity.TextMeshPro",
+        "Unity.Multiplayer",
+        "Unity.Multiplayer.Core",
+        "Unity.Multiplayer.Editor",
+        "Unity.Multiplayer.UI",
+        "Unity.Netcode.Runtime",
+        "Unity.InputSystem",
+        "Unity.Shared.Core",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "MINDATTIC_COMPONENTS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.mindattic.components.unity",
+            "expression": "1.0.0",
+            "define": "MINDATTIC_COMPONENTS"
+        }
+    ],
+    "noEngineReferences": false
+}

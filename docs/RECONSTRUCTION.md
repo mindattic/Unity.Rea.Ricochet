@@ -1,13 +1,13 @@
 ---
 codex: 1
-project: Unity.Ricochet
+project: Unity.Rea.Ricochet
 code: UR
 layer: reconstruction
 status: living
 updated: 2026-10-23
 ---
 
-# Unity.Ricochet: Reconstruction record (the REA of the original)
+# Unity.Rea.Ricochet: Reconstruction record (the REA of the original)
 > What the 2013 GameMaker original contains, what the rebuild has of it, and the ordered list of tickets that closes the
 > difference. Written by UR-T30 (the parity and standards audit, owner 2026-10-23). No GML is copied here
 > ([UR-LAW-2](BIBLE.md#UR-LAW-2)); everything is described in this project's own words.
@@ -120,8 +120,8 @@ Each row is its own story and ticket. Rows marked (open) were filed before this 
 
 | Standard | State on main | Ticket |
 |---|---|---|
-| Engine-free Core, `noEngineReferences`, tested outside Unity | met: `Ricochet.Core` asmdef, `dotnet test Core.slnx`, 18 test files | kept |
-| Assembly names and one-way boundaries, an Editor assembly | met: `Ricochet.Runtime`, `Ricochet.Editor` (menus and validators), `Ricochet.Tests`, `Ricochet.EditorTests`; Core grouped by domain (Aim, Arsenal, Match, Level, Ai, Menu, Net) with `Ricochet.Core.*` sub-namespaces; `CoreBoundaryTests` fails if Core references anything beyond the BCL | kept |
+| Engine-free Core, `noEngineReferences`, tested outside Unity | met: `Rea.Ricochet.Core` asmdef, `dotnet test Core.slnx`, 18 test files | kept |
+| Assembly names and one-way boundaries, an Editor assembly | met: `Rea.Ricochet.Runtime`, `Rea.Ricochet.Editor` (menus and validators), `Rea.Ricochet.Tests`, `Rea.Ricochet.EditorTests`; Core grouped by domain (Aim, Arsenal, Match, Level, Ai, Menu, Net) with `Ricochet.Core.*` sub-namespaces; `CoreBoundaryTests` fails if Core references anything beyond the BCL | kept |
 | State changes only through commands that produce events | met: `Core/Commands/` (`GameAuthority` applies `AimCommand`, `FireCommand`, `CycleWeaponCommand`, `CycleItemCommand`, `FuseCommand`, `UseItemCommand`, `DetonateCommand`, `DriveCommand`, `EndTurnCommand`, `RerollCommand`, `VoteCommand`, and the seat lifecycle `JoinSeatCommand`, `DropSeatCommand`, `RejoinSeatCommand`, `LeaveSeatCommand`, each carrying a player id, and returns ordered events); `Player`'s `[ToServer]` calls are those commands and `Arena` plays the events and joins, drops, rejoins and removes seats only by command; the kit counts the restart, match and kick ballots (its overlay is the kit's, UM-T78) and `Arena` replays them as `VoteCommand`s so Core's `VotePassed` carries the effect out; `ShotView` and `GameAudio` subscribe to the `Presentation` feed of those events, and `MatchHud` draws only the synced `Turns` and `Player` copies, so presentation never reads or changes Core state | UR-T34, UR-T65 |
 | Content and tuning as validated data | met: `Assets/StreamingAssets/Settings/*.json` (match, shot, hazards, arsenal, level, shapes, maps, announcer, menu, registry) loaded by `Core/Data/GameData` through an engine-free JSON parser and `ISettingsSource`, every problem reported with file, key and line; `Tests/Core.Tests/GameDataTests.cs` loads every shipped file | UR-T35 |
 | Input System | gap: Active Input Handling is the legacy manager, no actions asset, no rebinding | UR-T36 |

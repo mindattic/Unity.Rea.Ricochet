@@ -1,6 +1,6 @@
 ---
 codex: 1
-project: Unity.Ricochet
+project: Unity.Rea.Ricochet
 code: UR
 layer: rfc
 status: draft
@@ -51,17 +51,17 @@ specifics as the starting hypothesis each ticket verifies against, not settled f
 Three layers, server-authoritative per UR-LAW-1:
 
 ```
-Assets/Ricochet/Core/        Engine-adjacent game/turn/physics state: TurnOrder, Shot (angle, power, bounce path),
+Assets/Rea.Ricochet/Core/        Engine-adjacent game/turn/physics state: TurnOrder, Shot (angle, power, bounce path),
                               BounceSolver (ports LineLineIntersection + rail/redirector checks), Loadout, Hazards.
                               Plain C#, no UnityEngine where practical, so the bounce solver and turn rules are
                               unit-testable (dotnet test) the way Unity.Shared's core is.
                                   ▲
-Assets/Ricochet/Net/          NetEntity subclasses wrapping Core state for the wire: PlayerEntity ([Synced] health,
+Assets/Rea.Ricochet/Net/          NetEntity subclasses wrapping Core state for the wire: PlayerEntity ([Synced] health,
                               seat, loadout), ShotEntity ([ToServer] Aim/Fire, [ToClients] ShotResolved), ArenaEntity
                               (hazards, drops). Only this layer imports Unity.Multiplayer, per UM-LAW-2's own rule
                               applied one level up: Core never imports Unity.Netcode either.
                                   ▲
-Assets/Ricochet/Presentation/  MonoBehaviours reading Core/Net state: sprites, bounce-path line renderer, HUD
+Assets/Rea.Ricochet/Presentation/  MonoBehaviours reading Core/Net state: sprites, bounce-path line renderer, HUD
                               (MindAttic Components widgets), announcer, menus/rooms as scenes, AI's visual
                               aim-assist overlay. No gameplay decisions live here.
 ```
@@ -77,7 +77,7 @@ is no `MultiplayerHostOrJoin` scene; `NetFrontEnd`'s Host/Join screens cover tha
    `NetFrontEnd`, `NetVotes`, one networked player), then build the Core bounce solver and aim/fire loop on top
    of it, single-player-against-nothing first (no AI, no turns yet) so the physics is provably right
    (unit tests on BounceSolver) before anything else depends on it.
-   As built: Core lives in `Assets/Ricochet/Core` (`Ricochet.Core`, tested by `dotnet test Core.slnx`); the
+   As built: Core lives in `Assets/Rea.Ricochet/Core` (`Rea.Ricochet.Core`, tested by `dotnet test Core.slnx`); the
    template's crates became keyed practice dummies to shoot at; there is no power, as the original had a fixed
    bullet speed and no power meter (U.RICO-T88 took out the range-by-power the rebuild once added); a shot detonates on its fifth contact, as `bullet_step.gml` did.
    The server solves and flies every shot and lands the impact; clients replay the same path from the synced aim.

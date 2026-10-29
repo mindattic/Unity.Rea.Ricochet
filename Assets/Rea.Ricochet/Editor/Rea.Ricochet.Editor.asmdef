@@ -1,0 +1,23 @@
+{
+    "name": "Rea.Ricochet.Editor",
+    "rootNamespace": "Ricochet.Tooling",
+    "references": [
+        "Rea.Ricochet.Core",
+        "Rea.Ricochet.Runtime",
+        "Unity.TextMeshPro",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

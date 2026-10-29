@@ -4,11 +4,11 @@
 .DESCRIPTION
   Reads every sound/sfx_*.sound.gmx except the announcers' voice lines (sfx_{announce,baxter,doctor,rye,scottish,sid,
   sly,vlad}_*, U.RICO-T51) and mirrors the recording each one names (its <data>, under sound/audio) into
-  Assets/Ricochet/Resources/Ricochet/Sound/<sound>.<ext>, where GameAudio loads it by name (Core's SoundBook maps every
+  Assets/Rea.Ricochet/Resources/Ricochet/Sound/<sound>.<ext>, where GameAudio loads it by name (Core's SoundBook maps every
   SoundCue to that name). Files are copied only when their bytes changed; a recording the original no longer has is
   deleted.
 
-  Assets/Ricochet/Audio/gml-sound.json records one entry per GML sound: its definition and recording (paths relative to
+  Assets/Rea.Ricochet/Audio/gml-sound.json records one entry per GML sound: its definition and recording (paths relative to
   the source folder), its GameMaker volume, kind and preload, and the Unity asset it becomes. Definitions without a
   recording are listed under "skipped" with the reason (the original's sfx_bounce_shotgun3 names no file, so a third
   of its shotgun pellets bounced in silence; see docs/BIBLE.md).
@@ -45,13 +45,13 @@ Set-StrictMode -Version 2
 $inv = [Globalization.CultureInfo]::InvariantCulture
 
 $root = Split-Path -Parent $PSScriptRoot
-$soundAssets = 'Assets/Ricochet/Resources/Ricochet/Sound'
+$soundAssets = 'Assets/Rea.Ricochet/Resources/Ricochet/Sound'
 $soundDir = Join-Path $root $soundAssets
-$musicAssets = 'Assets/Ricochet/Resources/Ricochet/Music'
+$musicAssets = 'Assets/Rea.Ricochet/Resources/Ricochet/Music'
 $musicDir = Join-Path $root $musicAssets
-$voiceAssets = 'Assets/Ricochet/Resources/Ricochet/Voice'
+$voiceAssets = 'Assets/Rea.Ricochet/Resources/Ricochet/Voice'
 $voiceDir = Join-Path $root $voiceAssets
-$manifestDir = Join-Path $root 'Assets/Ricochet/Audio'
+$manifestDir = Join-Path $root 'Assets/Rea.Ricochet/Audio'
 $manifestPath = Join-Path $manifestDir 'gml-sound.json'
 $voice = '^sfx_(announce|baxter|doctor|rye|scottish|sid|sly|vlad)_'
 

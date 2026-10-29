@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Imports the original's art (gmlRicochet's sprites and backgrounds) into Assets/Ricochet/Art (U.RICO-T44).
+  Imports the original's art (gmlRicochet's sprites and backgrounds) into Assets/Rea.Ricochet/Art (U.RICO-T44).
 .DESCRIPTION
   Reads Ricochet.project.gmx (the resource tree, so every sprite keeps its GameMaker group), every
   sprites/*.sprite.gmx (frames, origin, bounding box, collision-mask shape) and background/*.background.gmx (image,
@@ -11,9 +11,9 @@
   that are not go under the "Unlisted" group. Nothing the original shipped is lost, and the game only ever asks the
   catalogue for the resources it draws.
 
-  The frame images are mirrored into Assets/Ricochet/Art/Sprites/<group>/<sprite>/<sprite>_<frame>.png and the
-  backgrounds into Assets/Ricochet/Art/Backgrounds/<group>/<background>.png (copying only files whose bytes changed,
-  deleting any the original no longer has), and Assets/Ricochet/Art/gml-art.json records one entry per GML sprite and
+  The frame images are mirrored into Assets/Rea.Ricochet/Art/Sprites/<group>/<sprite>/<sprite>_<frame>.png and the
+  backgrounds into Assets/Rea.Ricochet/Art/Backgrounds/<group>/<background>.png (copying only files whose bytes changed,
+  deleting any the original no longer has), and Assets/Rea.Ricochet/Art/gml-art.json records one entry per GML sprite and
   background: its source data, the original files it came from (relative to the source folder) and the Unity assets
   it becomes.
 
@@ -41,7 +41,7 @@ Set-StrictMode -Version 2
 $inv = [Globalization.CultureInfo]::InvariantCulture
 
 $root = Split-Path -Parent $PSScriptRoot
-$artAssets = 'Assets/Ricochet/Art'
+$artAssets = 'Assets/Rea.Ricochet/Art'
 $artDir = Join-Path $root $artAssets
 $manifestPath = Join-Path $artDir 'gml-art.json'
 

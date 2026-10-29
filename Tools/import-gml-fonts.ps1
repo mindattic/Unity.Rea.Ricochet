@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
   Imports the original's nine fonts and its sprite font (gmlRicochet's font resources and spr_spritefont) into
-  Assets/Ricochet/Fonts (U.RICO-T44).
+  Assets/Rea.Ricochet/Fonts (U.RICO-T44).
 .DESCRIPTION
   GameMaker never ships a font file: at build time it rasterises each font resource once, at its size and style,
   into a glyph atlas (fonts/<name>.png, white glyphs on transparency) and a glyph table (fonts/<name>.font.gmx: each
@@ -11,8 +11,8 @@
 
   It reads Ricochet.project.gmx (which fonts are in the resource tree), every fonts/*.font.gmx (face name, size, bold,
   italic, anti-aliasing, glyphs, atlas image) and every object and script for its draw_set_font calls (outside
-  comments), mirrors each atlas to Assets/Ricochet/Fonts/Atlases/<name>.png (copying only changed bytes, deleting
-  atlases the original no longer has), and writes Assets/Ricochet/Fonts/gml-fonts.json: one entry per font with its
+  comments), mirrors each atlas to Assets/Rea.Ricochet/Fonts/Atlases/<name>.png (copying only changed bytes, deleting
+  atlases the original no longer has), and writes Assets/Rea.Ricochet/Fonts/gml-fonts.json: one entry per font with its
   fields, glyphs, atlas, original path, the objects that draw with it and any notes, the sprite font's grid, the
   outline draw_text_outline draws, the licence of each typeface, and a skipped list.
 
@@ -39,7 +39,7 @@ Set-StrictMode -Version 2
 . (Join-Path $PSScriptRoot 'gml-json.ps1')
 
 $root = Split-Path -Parent $PSScriptRoot
-$fontAssets = 'Assets/Ricochet/Fonts'
+$fontAssets = 'Assets/Rea.Ricochet/Fonts'
 $fontDir = Join-Path $root $fontAssets
 $atlasDir = Join-Path $fontDir 'Atlases'
 $manifestPath = Join-Path $fontDir 'gml-fonts.json'

@@ -1,19 +1,19 @@
 ---
 codex: 1
-project: Unity.Ricochet
+project: Unity.Rea.Ricochet
 code: UR
 layer: bible
 status: living
 updated: 2026-10-28
 ---
 
-# Unity.Ricochet — Project Bible
-> Single source of truth for what Unity.Ricochet IS, is NOT, and the rules that keep it coherent.
+# Unity.Rea.Ricochet — Project Bible
+> Single source of truth for what Unity.Rea.Ricochet IS, is NOT, and the rules that keep it coherent.
 > README says how to use it; [RFC 0001](rfc/0001-architecture.md) holds the design; [RECONSTRUCTION.md](RECONSTRUCTION.md)
 > is the parity record against the original; this says what the game is, its laws, how it is built and where it differs.
 
 ## 1. The one sentence {#UR-§1}
-Unity.Ricochet is a faithful Unity 6 rebuild of the 2013 GameMaker game *Ricochet* — turn-based, bounce-shot artillery
+Unity.Rea.Ricochet is a faithful Unity 6 rebuild of the 2013 GameMaker game *Ricochet* — turn-based, bounce-shot artillery
 for up to eight tanks, human or AI — with real server-authoritative network multiplayer in place of the original's
 single-machine hotseat.
 
@@ -47,7 +47,7 @@ menu or settings-file code.
 
 ## 5. The Laws {#UR-§5}
 
-Unity.Ricochet **inherits the org-wide house rules** in `../../MindAttic.HouseRules.md`. Of note here:
+Unity.Rea.Ricochet **inherits the org-wide house rules** in `../../MindAttic.HouseRules.md`. Of note here:
 HOUSE-LAW-1 (whole-number versioning), HOUSE-LAW-8 (done is verified, not asserted), HOUSE-LAW-15 (don't wait on
 a full local test run before landing — the orchestrator's background run catches the rest).
 
@@ -184,7 +184,7 @@ presentation section below records its own smaller deviations.
 
 ## 8. Running and testing {#UR-§8}
 How to open, play, build and test the game is in the [README](../README.md#quick-start); in short `dotnet test Core.slnx` for
-the rules, the Unity EditMode (`Ricochet.EditorTests`) and PlayMode (`Ricochet.Tests`) suites through `Tools/unity.ps1`,
+the rules, the Unity EditMode (`Rea.Ricochet.EditorTests`) and PlayMode (`Rea.Ricochet.Tests`) suites through `Tools/unity.ps1`,
 `Tools/run.ps1` to build the player and `Tools/play.ps1` to launch it muted.
 
 ## Fog of war (UR-T26, ported exactly in UR-T77)
@@ -241,7 +241,7 @@ Source: every `sprites/*.sprite.gmx`, `background/*.background.gmx` and `fonts/*
 docs/RECONSTRUCTION.md was read from; the 2018 re-save's images are byte-identical), `scripts/draw_text_outline.gml`.
 
 - `Tools/import-gml-art.ps1` mirrors all 314 sprites (473 frames) and the 62 backgrounds that have an image into
-  `Assets/Ricochet/Art`, each in its GameMaker group (`Unlisted` for the 39 sprites and 12 backgrounds the project file
+  `Assets/Rea.Ricochet/Art`, each in its GameMaker group (`Unlisted` for the 39 sprites and 12 backgrounds the project file
   no longer lists), and writes `Art/gml-art.json`: the source data, the original files (`originalPath`, relative to the
   project folder), whether the project lists it, and the image_speed its object's Create sets. `bg_redslate` is skipped:
   its image is missing from the original.
@@ -250,7 +250,7 @@ docs/RECONSTRUCTION.md was read from; the 2018 re-save's images are byte-identic
   backgrounds pivot top left, tile where they tiled, and are compressed at high quality. `GmlArtBuilder` adds a Sprite
   Atlas V2 per top group and fills `Resources/Ricochet/ArtCatalogue`, which records every asset with its original path.
 - `Tools/import-gml-fonts.ps1` mirrors the nine fonts' baked glyph atlases and the sprite font sheet (`spr_spritefont`,
-  coloured ASCII 33-126 on a ruled 40x51 grid) into `Assets/Ricochet/Fonts` with `gml-fonts.json`. Only GameMaker's
+  coloured ASCII 33-126 on a ruled 40x51 grid) into `Assets/Rea.Ricochet/Fonts` with `gml-fonts.json`. Only GameMaker's
   rasterised glyphs are imported, never Impact, Verdana, Monotype Corsiva or Arial themselves (not redistributable).
 - `Editor/Fonts/GmlFontBuilder` makes each a TextMeshPro font: the glyph cells repacked with clear gaps, sampled up to
   about 64 texels a line (`GmlFontMetrics.SamplingScale`), turned into a signed distance field (Core's
@@ -875,8 +875,8 @@ lines are U.RICO-T51's, the music_* tracks U.RICO-T27's, below), and every `audi
 `audio_stop_sound` in its scripts and objects.
 
 - `Tools/import-gml-sound.ps1` mirrors each definition's recording (its `<data>`, a .wav for all but sfx_tech's .mp3) into
-  `Assets/Ricochet/Resources/Ricochet/Sound/<name>`, in Git LFS, and records each one's definition, recording, bytes,
-  GameMaker volume, kind and preload in `Assets/Ricochet/Audio/gml-sound.json`. 70 recordings; sfx_bounce_shotgun3 names
+  `Assets/Rea.Ricochet/Resources/Ricochet/Sound/<name>`, in Git LFS, and records each one's definition, recording, bytes,
+  GameMaker volume, kind and preload in `Assets/Rea.Ricochet/Audio/gml-sound.json`. 70 recordings; sfx_bounce_shotgun3 names
   no file and is listed as skipped. Every definition's volume is 1, so none is scaled.
 - Core's `SoundCue` is one cue per recording (70) and `SoundBook` maps each to its recording and says which moment plays
   which, at the profile's effect volume, 0 when the player muted effects or the session is muted (U.RICO-T71).
@@ -948,7 +948,7 @@ obj_announcer, obj_announcer_portrait, obj_speaker and the spr_profile_* sprites
 - The match starts with Matt Baxter on the air, as the shipped config.ini and the Default button set it (globals.gml's
   "sly" never survived read_config; U.RICO-T108).
 - The 210 voice lines (seven personalities x three kinds x ten) are imported by `Tools/import-gml-sound.ps1` into
-  `Resources/Ricochet/Voice/<name>` (Git LFS) and listed under `voices` in `Assets/Ricochet/Audio/gml-sound.json`. Each is
+  `Resources/Ricochet/Voice/<name>` (Git LFS) and listed under `voices` in `Assets/Rea.Ricochet/Audio/gml-sound.json`. Each is
   the .ogg the original's `sound/audio` holds beside the definition's .wav (the same take: the .wavs are 162 MB that Unity
   would re-encode to Vorbis on import anyway, the .oggs 6 MB).
 - The line Core's `Announcer` draws (the existing no-repeat deck) picks the recording: `Announcer.Recording` gives

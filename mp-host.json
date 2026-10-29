@@ -1,6 +1,6 @@
 {
   "name": "ricochet",
-  "scene": "Assets/Ricochet/Game.unity",
+  "scene": "Assets/Rea.Ricochet/Game.unity",
   "bots": "A,B",
   "scenario": "dummies"
 }

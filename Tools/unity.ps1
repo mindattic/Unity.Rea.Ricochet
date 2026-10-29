@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Runs Unity.Ricochet in Unity batch mode and surfaces compile/test errors -- the helper run.ps1 calls (same
+  Runs Unity.Rea.Ricochet in Unity batch mode and surfaces compile/test errors -- the helper run.ps1 calls (same
   pattern as Unity.Hare and Unity.Chain's tools/unity.ps1).
 .EXAMPLE
   powershell -File Tools/unity.ps1 -Log compile
@@ -25,7 +25,7 @@ if (-not (Test-Path $unity)) { throw "Unity $version not found at $unity" }
 if (Test-Path "$root/Temp/UnityLockfile") {
     $locked = $false
     try { [IO.File]::Open("$root/Temp/UnityLockfile", 'Open', 'ReadWrite', 'None').Close() } catch { $locked = $true }
-    if ($locked) { Write-Error "Unity.Ricochet is open in the Unity Editor. Close it (File > Quit) and re-run."; exit 3 }
+    if ($locked) { Write-Error "Unity.Rea.Ricochet is open in the Unity Editor. Close it (File > Quit) and re-run."; exit 3 }
 }
 
 New-Item -ItemType Directory -Force "$root/Logs" | Out-Null
