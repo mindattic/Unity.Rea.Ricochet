@@ -94,13 +94,13 @@ namespace Ricochet.Core.Tests
         [Test]
         public void EveryCuesRecordingIsImported_AndNothingElseIs()
         {
-            string folder = FindUp(Path.Combine("Assets", "Ricochet", "Resources", "Ricochet", "Sound"));
+            string folder = FindUp(Path.Combine("Assets", "Rea.Ricochet", "Resources", "Ricochet", "Sound"));
             string[] imported = Directory.GetFiles(folder).Where(f => !f.EndsWith(".meta", StringComparison.Ordinal))
                 .Select(Path.GetFileNameWithoutExtension).OrderBy(n => n, StringComparer.Ordinal).ToArray();
             string[] cues = SoundBook.All.Select(SoundBook.Recording).OrderBy(n => n, StringComparer.Ordinal).ToArray();
             Assert.That(imported, Is.EqualTo(cues));
 
-            string manifest = File.ReadAllText(FindUp(Path.Combine("Assets", "Ricochet", "Audio", "gml-sound.json")));
+            string manifest = File.ReadAllText(FindUp(Path.Combine("Assets", "Rea.Ricochet", "Audio", "gml-sound.json")));
             foreach (string name in cues)
             {
                 Assert.That(manifest, Does.Contain("\"originalPath\": \"sound\\\\" + name + ".sound.gmx\""), name + " records where it came from");
