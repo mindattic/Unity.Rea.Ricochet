@@ -1,103 +1,96 @@
 # Ricochet: the game's Unity folder
 
-Scaffolded by **MindAttic ▸ Multiplayer ▸ New Game…** (Unity.Multiplayer's game template, UR-T3), then built into the
-first playable slice of Ricochet: aim, preview the bounce path, fire, and watch the shot bank off the border, the
-mirror walls and the rail redirectors onto a practice dummy; then matches (UR-T4): up to 16 seats, humans and AI,
-taking turns against a 20-second clock until one is left standing; weapons, items and crates (UR-T5); and AI
-opponents that think, aim (straight, bank or railgun shots, as well as their skill allows) and fire, with the
-aim-assist item turning a human's aim onto the shot they would take (UR-T7).
+Scaffolded by **MindAttic ▸ Multiplayer ▸ New Game…** (Unity.Multiplayer's game template, UR-T2/UR-T3), then built
+into the finished game: turn-based, bounce-shot artillery for up to eight tanks, human or AI, turning the barrel and
+banking the shot off the level's shapes and the border onto an opponent before they land one on you — a faithful
+Unity 6 rebuild of the 2013 GameMaker 8 game *Ricochet*, with real networked multiplayer in place of passing one
+keyboard around one machine. The parity record against the original is [docs/RECONSTRUCTION.md](../../docs/RECONSTRUCTION.md)
+(section 7); the design is [RFC 0001](../../docs/rfc/0001-architecture.md); what the game is, its laws and its
+deviations are [docs/BIBLE.md](../../docs/BIBLE.md).
 
-Open `Game.unity`, press **Play**, click **Play** on the title screen and **Host** on the main menu, then **Start** in the lobby
-(or **Players** > **Next: Map** > **Next: Lobby** > **Start** to host a match). A second copy (Multiplayer Play Mode, or a build) clicks **Join by
-IP** (`127.0.0.1`) or **Join by code**. **Left/Right** (or A/D) turn your aim, **Up/Down** (or W/S) set the power,
-**Space** fires (and, while your vortex device is in the air, sets it off); **Q/E** cycle the weapon, **Z/C** the item,
-**F** uses the item and **1/2/3** set a grenade's fuse. The faint line is the whole path the shot will fly; the bottom-left line reads the angle, the power
-and `Bounces: n/5`. **Esc** opens the in-game menu: **Invite players**, **Settings** (name and colour, and the announcer),
-**Players** (**AI opponents** 0-15, **AI skill** 0-10, **Aim assists each** 0 none to 10 unlimited, then **Next: Map**: the map
-and the goal, and **Vote to start a match**), **Controls**, **How to play**, **Vote to start a match**, **Vote to restart** (the
-match from round one, a rematch once a game is over, or every dummy back up in practice) and **Vote to kick** (UR-T14: a button
-for each player you may vote out, never yourself, the host or an AI).
+Open `Game.unity`, press **Play**, click **Play** at the title, then **Start** on the Start screen (players, shapes,
+rotation, overlap, goal, turn time, bounces) and **Next** through the players room (names, colours, each AI's own
+skill and name) into the lobby, whose **Start** hosts the match (or **Host** on the main menu opens a free practice
+lobby instead). A second copy (Multiplayer Play Mode, or a build) clicks **Join by IP** (`127.0.0.1`) or **Join by
+code**. **A/D** (or Left/Right) turn the barrel, **W/S** drive (forfeiting the shot), **Space** (or left mouse) fires
+— and, while a vortex device is in flight, sets it off there — **Q/E** cycle the weapon, **Z/C** the item, **Ctrl**
+(or right mouse) uses the item, **1/2/3** set a grenade's fuse and **F** ends the turn. The numpad snaps the aim to
+one of eight directions, **Alt** pings everyone, **PageUp/PageDown** thin or thicken the border and reroll the level
+(**R** rerolls alone). The dotted line is the whole path the shot will bank through. There is no power: a shot flies
+at the original's constant speed until its bounce limit runs out. **P**/**Pause** (or the right stick's press) pauses
+the match (the host at once, anyone else by a vote); **Esc** opens the kit's in-game menu: **Invite players**,
+**Settings** (every match rule, the announcer, sound), **Controls** (every binding can be rebound, kept in your
+profile), **How to play**, **Credits**, and the votes to start, restart, pause (a non-host) and kick (never yourself,
+the host or an AI). **F1** toggles fullscreen.
 
-Votes (UR-T14) are the kit's NetVotes: starting one closes the menu, and the kit's vote overlay at the top of every other
-player's screen asks Yes or No with the tally, a bar towards the quorum (two thirds of the voters) and the time left; a toast
-says how it ended, or why a start was refused. A kick vote is voted on by everyone but its target; passing removes them with
-"The other players voted to remove you from the game.", and the kit frees their seat at once (no reconnect grace), so in a
-match their seat drops out of the round and the turn passes if it was theirs.
+## A round and a match
 
-In a match the dummies go, everyone takes a seat (the humans in join order, then the AI) and plays in seat order: only
-the seat whose turn it is may fire, the yellow clock at the top gives them 20 seconds, and the turn passes when their
-shot lands or the clock runs out. A hit costs 10 health plus 2 a bounce (+/-1), or 10 a bounce if your own shot comes
-back to you; at 0 you are out. The bars along the top (two rows of eight around the clock) are every seat's health,
-the outlined one has the turn, and the line under the clock is the order the players still standing play in. The
-last one standing wins the round and opens the next. Someone who joins mid-round plays from the next one.
+Every round lays a fresh random level from the Start screen's shape count, kind, rotation and overlap (the original's
+80 shape outlines), a random backdrop and track, and the fog of war if the host turned it on; every tank starts at a
+random spot clear of the shapes. Up to eight tanks — humans in join order, then the AI — take seat order on a turn
+clock (20 seconds by default, 5 to 30); only the seated tank whose turn it is may aim, drive and fire, and the turn
+passes when its shot lands, it drives, or the clock runs out. A hit does the weapon's damage (100 by default,
+configurable from 5/10/25/33/50/100) to a 100-health tank and scores the shooter 100 points, 25 a bounce and 5 a
+tenth of a second the shot was in the air; the bars along the top are every seat's health, the outlined one has the
+turn, and the line under the clock is the turn order of who's still standing. The last tank standing takes the round
+and opens the next; a round that ends with a seat at the goal (500 points by default, 500 to 10000, or one round)
+ends the match, and the endgame podium shows the top three with a vote for a rematch.
 
-Level hazards (UR-T6): the level is laid, in practice and at the start of every round, with a blue electric arc (top left)
-and a red laser gate (top right) that stop any shot touching them, the gate only on every other turn, and a few tufts of
-grass a shot cuts down and stops in. The shield wall item stands a wall a unit in front of you, across your aim: your own
-shots pass through it, anyone else's shatters it (it decays by itself after 20-120 seconds). The redirector item flies like
-a shell and becomes a redirector where it stops, sending shots on the way it flew. The vortex device flies like a shell;
-press Space again while it is in the air to set it off there: it hurts everyone in its pull, swallows the shield walls,
-redirectors and grass it reaches, and tears a breach in any border side it reaches, which shots fly out through for the
-rest of the round.
+## Weapons, items and hazards
 
-The announcer and HUD (UR-T8): **Settings** also picks the **Announcer** (Kurt Sly, Rye Wheatley, Sid Steinburger, Vlad, Matt
-Baxter, Doctor or Haggis McKnight) and **Announcements** (0 off, 1 every time, 2/3/4 one time in 3/6/9) that the start-match
-vote carries. Their portrait and name box slide in at the bottom left with a line: a welcome when the match starts, a cheer
-naming both players when a shot knocks someone out, a heckle naming the shooter when a shot hits nobody (each of the ten
-lines of a kind once before any repeats). A hit on an opponent scores the shooter 100 points, 25 a bounce and 5 for every
-tenth of a second the shot was in the air (a pellet its share); scores last the whole match and show on each seat's bar.
-The card at the bottom right shows everyone whose turn it is, their score, weapon (and a grenade's fuse), item and the
-combo the shot in the air would score (in practice, your own loadout).
+Six weapons (cannon, laser, shotgun, grenade, railgun, vortex) and six items (extra bounce, shield wall, shrink ray,
+teleporter, aim assist, redirector) are cycled with Q/E and Z/C; weapon, item and health crates fall onto the level
+during a round and go to whatever tank or shot reaches them. The vortex, set off in flight, pulls the level's shapes
+in and flings them out hurting whatever they strike, swallowing shield walls, redirectors and foliage it reaches and
+breaching any border side it reaches, which shots then fly out through for the rest of the round. An electric arc, a
+laser gate that switches every other turn, and foliage a shot cuts down and stops in are built but laid only when the
+scene asks for them (off by default, since the original never placed them). The aim-assist item turns a human's aim
+onto the shot a fully skilled AI would take, drawn as a fading beam.
 
-The profile (UR-T10): the name and colour you play as, and your sound settings, are your MindAttic profile's
-(Unity.Shared, `Profiles.Current.Settings.Common`: `displayName`, `color`, `sfxVolume`, `musicVolume`, `muteSfx`,
-`muteMusic`). The kit's front end reads the name and colour from it and sends them with the connection; **Settings** shows
-them, saved back to the profile, with the game's **Sound effects volume**, **Mute sound effects**, **Music volume** and
-**Mute music** below, heard at once and written to the profile's `settings.json` when the screen closes. `GameAudio` plays
-a shot's fire, bounces and landing (and a blast) at the effect volume, synthesised by Core's `Tones` (no audio files),
-and re-reads the profile when the game window regains focus.
+## AI, the announcer and your profile
 
-The menu flow (UR-T9) follows the original's rooms: the title screen (**Play**, **Quit**), then the kit's main menu (**Host**,
-**Join by IP**, **Join by code**, **Settings**) with **Players**, **Controls**, **How to play** (slides, **Last**/**Next**) and
-**Credits** off it. **Players** goes on to the map room: **Map** (Practice Range, Crossfire, Pillars or Funnel: the same border,
-seats and laid hazards, different walls and redirectors) and **Goal** (one round, or first to 500 ... 10000 points; 500 by
-default), whose **Next: Lobby** hosts a game and opens the lobby. In a game the map room's button is the match vote, which
-carries the map and the goal. When a round ends with someone at the goal (after the round's result), the game is over: nobody
-fires, and every peer's endgame recap shows "<champion> wins!" over the leaderboard (every seat by score, 1st, 2nd ...), with
-**Vote for a rematch**, **Main menu** and **Close**; a new match or a rematch takes it away.
+AI opponents pick their shot as the original's `check_ai` did: the first whole degree whose straight line reaches an
+opponent, else the soonest bank or railgun line, else a random degree, nudged by its own skill (0-10, set per AI with
+its name on the players room). **Settings** also picks one of seven announcer personalities and how often they speak;
+their portrait and name box slide in with a welcome, a cheer naming both tanks on a knock-out, and a heckle when a
+shot hits nobody. Your name, colour, key bindings and sound (effects and music volume, each mutable) are your
+MindAttic profile's (`Unity.Shared`, `Profiles.Current.Settings.Common`), read by the kit's front end and written
+back when a screen that changes them closes; `GameAudio` plays the original's own sound effects (no synthesised
+cues) at the profile's volume and re-reads it when the game window regains focus.
 
-Playing together (UR-T11) replaces the original's hotseat `multiplayer_hostorjoin`/`multiplayer_host`/`multiplayer_join` rooms
-with the kit's front end: **Host**, **Join by IP** (an address, `:port` optional) and **Join by code** on the main menu. Hosting
-(**Host**, or the map room's **Next: Lobby**) opens the kit's lobby: the join code with Copy (or, with no join-code service, the
-address to join at), the players in it (name, colour, Host tag, remove), **Leave** and **Start**. `LobbyRoom` adds the game's
-**Match** box: the map and the goal, how the sixteen seats fill as people join ("2 players and 3 AI opponents: 5 of 16 seats",
-Core's `Lobby`), the AI and the announcer, and how the others get in; from the map room **Start** waits until the match could seat
-two, and then plays it with everyone in the lobby. Hosting from **Host** opens the same lobby for free practice. A client goes
-straight into the game when it joins (a later joiner plays from the next round), and **Esc** > **Invite players** shows the code
-again. A join code needs the project linked to Unity Relay (Edit > Project Settings > Services), or a rendezvous URL on the
-NetBootstrap (`server/Rendezvous` in Unity.Multiplayer); without either the host is told so and players join by IP.
+## Playing together
 
-Reconnects (UR-T13): a player whose connection drops keeps their seat for the kit's reconnect grace (`NetConfig.ReconnectGraceSeconds`,
-60 seconds by default). Their player stays where it stood, marked away (nobody plays it, not the host either), and in a match their
-seat keeps its health and score and stays in the turn order; when it is their turn the clock stops and the line under it reads
-"Waiting for <name> to reconnect (Ns)". Back in time, with the same profile, they get the same player and seat and resume the same
-turn with the time it had left. Not back in time, they leave: out of the round, and the turn passes.
+**Host**, **Join by IP** and **Join by code** on the main menu replace the original's hotseat rooms outright. Hosting
+opens the kit's lobby: the join code (or, with no join-code service, the address to join at), the roster, and
+**Start**, which waits until the lobby could seat two before playing the match everyone in it set up on the Start and
+players screens. A dropped player keeps their seat for the kit's reconnect grace (60 seconds by default): their tank
+stays put, marked away, their health, score and turn order held, and the turn waits with "Waiting for <name> to
+reconnect (Ns)"; back in time with the same profile they resume the same turn, not back in time they drop out of the
+round and the turn passes. A join code needs the project linked to Unity Relay (Edit > Project Settings > Services)
+or a rendezvous URL on the NetBootstrap; without either, players join by IP.
 
-## Layers (docs/rfc/0001-architecture.md)
+## Layers (docs/rfc/0001-architecture.md, docs/BIBLE.md §6)
 
 | Folder | What lives there |
 |---|---|
-| `Core/` (`Rea.Ricochet.Core`, no engine references) | The rules as plain C#: `Geometry` (the original's `LineLineIntersection_X/_Y` and `lines_intersect`, the reflection rule from `bullet_step`), `Level` (border, mirror walls, redirectors), `BounceSolver` (the shot's whole path, and `FindHeading`, the original's `find_target_angle`), `ShotPath`, `ProjectileFlight`, `AimState`, `ShotRules`; and the match: `Match` (seats, turn order, turn clock, health, rounds; the original's `next_player`, `turn_countdown`, `hit` and `check_endgame`), `MatchRules`, `Seating` (sixteen spots, the HUD's bar slots, the `SS.FF` clock), `MatchSetup` (AI count, AI skill, aim assists: the start-match vote's payload); the AI (UR-T7): `Ai` (the targeting sweep, the original's `check_ai` and `find_target_angle(_from_bounce)`: straight, bank, then railgun shots, nudged by skill; and aim assist) and `AiTurn` (think, plan, turn the barrel, fire); and the arsenal (UR-T5): `ArsenalRules` and `Loadout` (counts, selection, fuse; the original's `cycle_weapon/item_left/right`), `Arsenal`/`Volley` (what each weapon and item does), `Drops` (`DropField`, `Pickups`: the random crates); and the hazards (UR-T6): `Hazards` (`HazardField`, `HazardRules`: the shield wall, electric arc, laser gate, foliage, breach and placed redirector, the level a shot sees with them on it, a vortex's implosion), with `Level`'s barriers and breaches and `BounceSolver` stopping at the one and escaping through the other; and the announcer (UR-T8): `Announcer` (the seven personalities, the announcements setting's odds, the welcome/win/lose lines drawn without repeats) with `MatchSetup` carrying the choice, and `MatchRules.Points`/`Match`'s per-seat score; and the menu flow (UR-T9): `Maps` (the map room's four levels), `MenuFlow` (the room graph, the controls, the how-to-play slides, the credits), `Recap` (the endgame leaderboard), `MatchSetup`'s goal and map, and `Match`'s goal, `GameOver` phase and champion; and sound (UR-T10): `Sound` (`AudioMix`, the profile's volumes and mutes; `Tones`, the synthesised effects); and the lobby (UR-T11): `Lobby` (how the seats fill, whether a match can start, the lobby's match box), with `MenuFlow`'s `Lobby` room between the map room and the game; and the shot on the wire (UR-T12): `ShotWire` (a solved volley packed exactly for a `[ToClients]` call, and unpacked) and `ShotOutcome` (the damage a landed volley did to each seat); and reconnects (UR-T13): `Match.Drop`/`Rejoin`, a seat `Away` whose turn waits for it; and votes (UR-T14): `VoteMenu` (who may be voted out, the kick room's and the restart and kick votes' lines). Tested without Unity: `dotnet test Core.slnx`. |
-| `Runtime/` (`Ricochet`) | The networked game and its drawing. `Player` (a `NetEntity`: `[ToServer] Aim` and `Fire`, `[Synced]` aim, last shot, seat, health and whether still in the round; the server solves and flies the shot, refuses one out of turn, and lands it, and sends every client the volley it solved and, in a match, the damage it dealt (`[ToClients] ShotResolved` and `ShotResult`), so every peer draws the server's bounce and floats the same damage; an AI seat is the same entity from the `Opponent` prefab), `Turns` (the keyed match state every peer reads: phase, whose turn, the clock, the round), `Dummy` (keyed practice targets), `Crate` (a keyed falling crate), `LevelHazard` (a keyed hazard every peer rebuilds the shot's level from, drawing its arc, beam, wall, tuft, breach or redirector), `Arena` (the server's rules: the level, the match and its AI turns, the start-match, restart and kick votes, a dropped player's held seat), `Game` (scene glue), `GameBot` (the bot), and presentation: `MatchHud` (IMGUI bars, scores, clock, turn order) with `HudOverlay` (MindAttic Components: the announcer's card and the turn card) and `EndgameRecap` (the endgame room), the rooms (`TitleScreen`, and `Menus`: players, map, game settings, controls, how-to-play, credits and kick screens on the kit's front end), `LobbyRoom` (the match box on the kit's host lobby, and the map room's setup carried through it to Start), `LevelView` (redrawn when a match is on another map), `ShotView`, `Lines`, `Shapes`, `GameInput`. |
-| `Tests/` | PlayMode tests on the kit's `NetSessionTest`/`NetBotTest` (aim round trip and clamping, a shot landing on a dummy with the client flying the server's path, one shot in the air at a time, dummies by key, the restart vote, two bots each banking a shot onto their dummy; and in `TurnTests` a match seating two players and an AI, a shot out of turn refused, the turn passing on a landed shot and on the clock, a hit's damage seen by everyone, the client flying the server's own bounce and getting the server's damage for it, the AI taking its turn; and in `WeaponTests` cycling the weapon and item and setting the fuse, an extra bounce and a teleport, a grenade spent and its blast seen by everyone, a crate collected by a shot; and in `AiOpponentTests` a fully skilled AI's "is thinking..." line on the client and its hit on an opponent, a client's aim assist turning her aim onto the host and her shot landing, and a match with no aim assist; and in `HazardTests` a shield wall stopping another player's shot and shattering, a placed redirector, a vortex set off in mid-flight swallowing a wall and breaching the border a later shot escapes through, and a laid level's arc stopping a shot while its laser gate switches every turn; and in `AnnouncerTests` the welcome in the chosen voice on the client with its HUD's announcer and turn cards, a heckle for a shot at nobody, a cheer and the shooter's score for a knock-out, and silence with the announcer off; and in `ProfileTests` a profile's name and colour reaching every peer's player, and its volumes applied and a change saved to its settings.json; and in `MenuFlowTests` a one-round game ending for everyone with the champion and the recap on the client and nobody firing until a rematch, a match on another map played there by every peer, and the title, players, map room and how-to-play screens' buttons; and in `LobbyTests` two of the kit's front ends: hosting from the map room into the lobby with the join code, the roster and the match box holding Start back, a client joining by that code and the match starting on the chosen map with both seated, and Host's practice lobby joined by IP; and in `ReconnectTests` a client dropping on her own turn, the turn waiting with her seat and health held, and her reconnecting to the same turn and firing, and a seat given up after the grace; and in `KickVoteTests` a passed kick vote removing a client with the game's line and dropping her seat out of the match, and a vote to kick the host refused) and EditMode checks of the scene and prefabs. |
+| `Core/` (`Rea.Ricochet.Core`, no engine references) | Every rule as plain C#, grouped by domain: `Aim/` (`BounceSolver`, `ShotPath`, `ProjectileFlight`, `Geometry`, `AimState`: the original's `LineLineIntersection_X/_Y`, `lines_intersect` and `bullet_step`'s reflection, with no power since U.RICO-T88 — a shot flies at a constant speed until its bounce limit runs out); `Level/` (`LevelGenerator`, `ShapeLibrary`, `Hazards`/`HazardField`, the border and its breaches); `Match/` (`Match`, `MatchRules`, `Seating`, `MatchSetup`, `Announcer`); `Ai/` (`Ai`, `AiTurn`: the targeting sweep and its turn); `Arsenal/` (`Loadout`, `Arsenal`/`Volley`, `Drops`/`DropField`, `VortexStorm`); `Menu/` (`MenuFlow`, `Splash`, `RoomFade`, `Lobby`, `Podium`, `SetupMemory`, `CreditsRoll`); `Art/` (`WeaponLooks`, `HitLooks`, `ItemLooks`, `Backdrop`, `TankMotion`, `HudLooks`, the fonts' `SignedDistanceField`); `Net/` (`ShotWire`, `ShotOutcome`: a solved volley packed for the wire and unpacked, and the damage it dealt); `Commands/` (`GameAuthority`: every input is a command carrying a player id, returning ordered events — the one door every other layer calls through, plus `Commands`, `GameEvents`, `PlayerState`); `Data/` (`GameData`, `SettingsReader`: loads and validates the JSON in `Assets/StreamingAssets/Settings`). Tested without Unity: `dotnet test Core.slnx`. |
+| `Runtime/` (`Rea.Ricochet.Runtime`) | The networked game and its drawing. `Player` (a `NetEntity`: `[ToServer]` aim/fire/drive/item calls, `[Synced]` aim, seat, health; the server runs every call through `GameAuthority` and plays its events; an AI seat is the same entity from the `Opponent` prefab), `Turns` (the keyed match state every peer reads: phase, whose turn, the clock, the round), `Dummy`/`Crate`/`LevelHazard` (keyed practice targets, falling crates and hazards every peer rebuilds the level from), `Arena`/`ArenaMatch`/`ArenaLevel`/`ArenaCrates`/`ArenaPause` (the server's rules: the level, the match and AI turns, drops, hazards, pause, and the start/restart/kick/pause votes), `Game`/`GameBot` (scene glue and the bot); presentation reads only synced state: `MatchHud` (its own uGUI, built in code — no IMGUI) with `HudOverlay`/`HudIcons`/`HudParts`/`TurnGuide` (the announcer's and turn cards), `EndgameRecap`/`EndgameFlashes` (the podium), `TankView`/`PlayerView`/`PlayerLabels`, `BackdropView`/`LevelView`/`ShotView`/`FieldEffects`/`ItemFlights`/`WeaponEffects`/`FogOfWar`, the rooms (`SplashScreen`, `TitleScreen`, `Menus`, `LobbyRoom`, `PauseMenu`), `SetupMemory`, `GameAudio`/`UiSounds`, `GameInput`/`InputBindings`/`ControlPad`/`OnScreenControls`/`GameCursor`, `RenderStyle`, `ScreenFade`, `Lines`/`Shapes`/`WorldText`/`MenuTip`. |
+| `Editor/` | `RicochetBuild` (the Windows player build, `Tools/run.ps1`), `CoreBoundaryValidator` (keeps `Rea.Ricochet.Core` engine-free), `RenderSettingsSetup`, and the `Art`/`Fonts` importer presets and builders that read `gml-art.json`/`gml-fonts.json`. |
+| `Art/`, `Fonts/`, `Audio/` | The original's sprites, backgrounds, fonts and sound descriptions imported by `Tools/import-gml-*.ps1` (Git LFS; each `gml-*.json` records every file's original path). |
+| `Resources/Ricochet/` | `ArtCatalogue` (every imported asset by original name), the baked TextMeshPro fonts, music, the original's own sound effects and the announcers' recordings. |
+| `Settings/` | The URP render pipeline assets (`Ricochet_High`/`Ricochet_Low` and their 2D renderers) `RenderSettingsSetup` wires up — not the game's rules and content, which are the validated JSON in `Assets/StreamingAssets/Settings/` (match, shot, arsenal, hazards, level, shapes, backdrop, announcer, menu), read by `Core/Data/GameData`. |
+| `Tests/` | EditMode and PlayMode suites on the kit's `NetSessionTest`/`NetBotTest`: a full turn and shot round trip, every weapon and item, the AI's targeting and aim assist, every hazard, the announcer, the menu flow and endgame, the lobby and reconnects, the kick, pause and restart votes, the art and sound catalogues, and `HudNoImguiTests`/`CoreBoundaryTests` holding the two house rules (no IMGUI, Core stays engine-free). |
 
-`Resources/Game/*.prefab` and `GamePrefabs.asset` are the player, AI opponent, turn-state, dummy, crate and hazard prefabs and the
-`NetPrefabList` the NetBootstrap registers. The wizard also wrote `mp-host.json` and `.github/workflows/nightly.yml` at the project root,
-put `Game.unity` first in Build Settings and turned on Run In Background.
+`GamePrefabs.asset` (this folder) and the `NetPrefabList` it holds are the player, AI opponent, turn-state, dummy,
+crate and hazard prefabs the NetBootstrap registers. The wizard also wrote `mp-host.json` and
+`.github/workflows/nightly.yml` at the project root, put `Game.unity` first in Build Settings and turned on Run In
+Background.
 
 ## Tests
 
-- Core: `dotnet test Core.slnx` from the project root.
-- PlayMode: `Unity -batchmode -projectPath . -runTests -testPlatform PlayMode -assemblyNames Rea.Ricochet.Tests`.
-- EditMode: `Unity -batchmode -projectPath . -runTests -testPlatform EditMode -assemblyNames Rea.Ricochet.EditorTests`.
-- Bots end to end: `mp-host game smoke` (a Linux server and two bots under Docker Compose).
+- Core: `dotnet test Core.slnx` from the project root. CI holds `Rea.Ricochet.Core`'s line coverage to a floor
+  (`Tools/coverage-floor.ps1`).
+- PlayMode: `powershell -File Tools/unity.ps1 -Log test-playmode -Extra "-runTests -testPlatform PlayMode -assemblyNames Rea.Ricochet.Tests"`.
+- EditMode: `powershell -File Tools/unity.ps1 -Log test-editmode -Extra "-runTests -testPlatform EditMode -assemblyNames Rea.Ricochet.EditorTests"`.
+- Bots end to end: `mp-host game smoke` (a Linux server and two bots under Docker Compose, run nightly by
+  `.github/workflows/nightly.yml`).

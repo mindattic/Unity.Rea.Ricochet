@@ -1,6 +1,6 @@
 ---
 codex: 1
-project: Unity.Ricochet
+project: Unity.Rea.Ricochet
 code: U.RICO
 layer: stories
 status: living
@@ -8,7 +8,7 @@ updated: 2026-10-21
 ---
 <!-- GENERATED from MindAttic.Tickets/data/Tickets.db by `tickets db render`. Do not edit: this file is rewritten from the database; change stories and tickets with the tickets CLI. -->
 
-# Unity.Ricochet — User Stories
+# Unity.Rea.Ricochet — User Stories
 > ✅ done (shipped & tested) · 🟡 partial · ⬜ planned. Every ✅ cites the test.
 
 ## Priority backlog
@@ -220,3 +220,6 @@ _Nothing recorded yet._
 | U.RICO-T146 | 2026-10-28 | chore | open | Parity play-through still owed: add a player-side autowalk hook (-autowalk: scripted input, a screenshot per room) and a seeded Core replay of one full match with every weapon and item, then compare with gmlRicochet rooms (follow-up to U.RICO-T58) | — |
 | U.RICO-T147 | 2026-10-28 | docs | open | Assets/Ricochet/README.md is stale (power meter, map room, 16 seats, IMGUI): bring it in line with the finished game and the top-level README from U.RICO-T59 (dd3af9f); also re-render and commit docs/USER_STORIES.md from the ticket database | — |
 | U.RICO-T148 | 2026-10-28 | chore | closed | Update ProjectSettings.asset, USER_STORIES.md | — |
+| U.RICO-T149 | 2026-10-29 | chore | open | Rename Unity.Ricochet to Unity.Rea.Ricochet everywhere: folder, GitHub, namespaces, docs, deployments (identifies it as reverse-engineered) | — |
+| U.RICO-T150 | 2026-10-29 | chore | closed | Rename repo to Unity.Rea.Ricochet: GitHub, local folder, in-repo asmdef/asset tree, ticket DB key | cc0bb23 |
+| U.RICO-T151 | 2026-10-29 | fix | closed | Fails on main: Ricochet.Core.Tests.SoundTests.EveryCuesRecordingIsImported_AndNothingElseIs — Assets\Ricochet\Resources\Ricochet\Sound not found above D:\Projects\MindAttic.worktrees\Unity.Ricochet\main-tests\Tests\Core.Tests\bin\Debug\net10.0 (landed on main since the last green run: tickets U.RICO-T150 in cc0bb23 Rename in-repo Unity.Ricochet asset/asmdef tree to Unity.Rea.Ricochet (U.RICO-T150)) | 203651e |
