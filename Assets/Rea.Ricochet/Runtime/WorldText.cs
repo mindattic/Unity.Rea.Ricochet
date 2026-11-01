@@ -5,7 +5,7 @@ using MindAttic.Components.Unity; // MaTheme
 using TMPro;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     internal static class WorldText
     {

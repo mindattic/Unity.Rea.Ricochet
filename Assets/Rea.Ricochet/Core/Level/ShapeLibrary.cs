@@ -4,9 +4,9 @@
 // choose() among the five.
 using System;
 
-namespace Ricochet.Core.Level
+namespace Rea.Ricochet.Core.Level
 {
-    using Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Aim;
 
     /// <summary>One shape picked from the library: which kind and which of its sixteen.</summary>
     public readonly struct ShapeId
@@ -64,7 +64,7 @@ namespace Ricochet.Core.Level
             return outline;
         }
 
-        private static int[][] Table(ShapeKind kind) => Ricochet.Core.Data.GameData.Current.Shapes.Table(kind);
+        private static int[][] Table(ShapeKind kind) => Rea.Ricochet.Core.Data.GameData.Current.Shapes.Table(kind);
     }
 
     /// <summary>A shape's outline laid at a spot in the arena.</summary>

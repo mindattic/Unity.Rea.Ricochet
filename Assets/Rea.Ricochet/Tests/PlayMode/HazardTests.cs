@@ -6,17 +6,17 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Level;
-using Ricochet.Core.Match;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class HazardTests : NetSessionTest
     {

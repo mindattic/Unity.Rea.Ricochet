@@ -5,15 +5,15 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class WeaponLookTests : NetSessionTest
     {

@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class ControlPadTests : NetSessionTest
     {
@@ -62,7 +62,7 @@ namespace Ricochet.Tests
                 if (GameArt.Frame("spr_tinybutton") != null)
                 {
                     // U.RICO-T78: the original's spr_tinybutton / spr_tinyarrow* over their _back sprites.
-                    Assert.That(_hud.Pad.PlateFor(control).FaceName, Is.EqualTo(Ricochet.Core.Art.MenuLooks.Face(ControlPad.PlateOf(control))));
+                    Assert.That(_hud.Pad.PlateFor(control).FaceName, Is.EqualTo(Rea.Ricochet.Core.Art.MenuLooks.Face(ControlPad.PlateOf(control))));
                     Assert.That(_hud.Pad.PlateFor(control).BackName, Does.EndWith("_back"));
                 }
             }

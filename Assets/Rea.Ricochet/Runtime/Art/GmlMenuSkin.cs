@@ -14,13 +14,13 @@
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MaButton, MaToggle, MaTextbox, MaFormRow, MaRange, MaSelect, MenuScreen, MaText
 using MindAttic.Components.Unity.Core; // ControlState
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class GmlMenuSkin : MonoBehaviour
     {

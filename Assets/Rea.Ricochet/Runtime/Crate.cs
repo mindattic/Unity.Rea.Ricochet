@@ -13,15 +13,15 @@
 // ef_firework in brown 10 px under itself and plays sfx_crash; obj_powerup, landed, throws ef_spark in white or orange 30 px
 // over itself (less its hover) every step. Where it goes (taken: a ring; burst: obj_powerup_explosion) is FieldEffects',
 // from the server's CrateGone.
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer;      // NetEntity, NetKey
 using Unity.Multiplayer.Core; // [Synced]
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public partial class Crate : NetEntity
     {

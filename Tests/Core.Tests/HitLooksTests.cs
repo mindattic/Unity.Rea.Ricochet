@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Art;
 
     // U.RICO-T48: obj_float_text's colour cycle and fade, obj_scorchmark's fade, spawn_glass's shards and the GameMaker
     // effects as the rebuild draws them.

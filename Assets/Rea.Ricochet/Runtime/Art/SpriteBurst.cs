@@ -3,7 +3,7 @@
 // such as obj_boom_normal's spr_smallexplosion where a hit lands (hit.gml) and obj_boom's where a vortex is set off.
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class SpriteBurst : MonoBehaviour
     {

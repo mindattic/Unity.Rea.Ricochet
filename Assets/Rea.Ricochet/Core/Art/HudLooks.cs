@@ -25,10 +25,10 @@
 using System;
 using System.Globalization;
 
-namespace Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
 
     /// <summary>Which of its three sprites an inventory icon shows (setup_weapons / setup_items).</summary>
     public enum IconState

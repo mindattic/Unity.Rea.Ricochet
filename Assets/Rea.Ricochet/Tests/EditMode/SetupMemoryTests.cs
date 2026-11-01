@@ -1,10 +1,10 @@
 // UR-T41: the remembered setup's place in a Unity.Shared profile: the game block's "matchSetup" object, written and read
 // back through the profile's own JSON (JsonObject), beside whatever else the game block holds. No real profile is touched.
 using NUnit.Framework;
-using Ricochet.Core.Match;
+using Rea.Ricochet.Core.Match;
 using Unity.Shared.Core.Json;
 
-namespace Ricochet.EditorTests
+namespace Rea.Ricochet.EditorTests
 {
     public class SetupMemoryTests
     {

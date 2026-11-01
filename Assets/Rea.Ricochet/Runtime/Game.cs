@@ -4,15 +4,15 @@
 // menus, Host / Join by IP / Join by code, the lobby's join code and roster, reconnect and the vote overlay are the kit's. Runs on every peer: a dedicated server and a bot run this scene too.
 using System.Collections;
 using MindAttic.Components.Unity; // MenuScreen
-using Ricochet.Core.Level;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer;    // NetBootstrap, NetVotes, NetSession
 using Unity.Multiplayer.UI; // NetFrontEnd, MenuPlacement
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     [DefaultExecutionOrder(-800)] // before NetBootstrap.Start, which may start a headless server at once
     public sealed class Game : MonoBehaviour

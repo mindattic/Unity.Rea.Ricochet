@@ -11,7 +11,7 @@ using Unity.Shared.Core.Json;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     internal static class InputBindings
     {

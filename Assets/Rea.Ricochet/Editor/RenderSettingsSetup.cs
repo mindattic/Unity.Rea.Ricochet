@@ -1,13 +1,13 @@
 // Creates the URP pipeline assets and 2D Renderer for the Low/Medium/High quality levels under Assets/Rea.Ricochet/Settings
 // and assigns them in Graphics and Quality settings (U.RICO-T37). Idempotent: reruns reuse the assets.
-// Unity -batchmode -quit -projectPath . -executeMethod Ricochet.Tooling.RenderSettingsSetup.Apply
+// Unity -batchmode -quit -projectPath . -executeMethod Rea.Ricochet.Tooling.RenderSettingsSetup.Apply
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-namespace Ricochet.Tooling
+namespace Rea.Ricochet.Tooling
 {
     public static class RenderSettingsSetup
     {

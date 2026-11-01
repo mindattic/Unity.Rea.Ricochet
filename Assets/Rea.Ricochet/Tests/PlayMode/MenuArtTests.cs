@@ -8,15 +8,15 @@ using System.Collections;
 using System.Linq;
 using MindAttic.Components.Unity;
 using NUnit.Framework;
-using Ricochet.Core.Art;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class MenuArtTests
     {

@@ -14,11 +14,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Ai
+namespace Rea.Ricochet.Core.Ai
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Arsenal;
-    using Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Level;
     /// <summary>How an AI's planned shot reaches its target.</summary>
     public enum AiShotKind
     {

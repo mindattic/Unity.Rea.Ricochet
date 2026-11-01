@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class GameCursor : MonoBehaviour
     {

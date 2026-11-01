@@ -12,9 +12,9 @@
 using System.Collections.Generic;
 using MindAttic.Components.Unity;       // MaCanvas, MaButton
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Ricochet.Core.Art;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using TMPro;
 using Unity.Multiplayer;                // NetSession, NetVotes
 using Unity.Multiplayer.UI;             // NetFrontEnd
@@ -22,7 +22,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class EndgameRecap : MonoBehaviour
     {

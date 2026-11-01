@@ -7,10 +7,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Level
+namespace Rea.Ricochet.Core.Level
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Match;
     /// <summary>One map: a name and a line for the map room, and the level it builds.</summary>
     public sealed class MapInfo
     {
@@ -75,7 +75,7 @@ namespace Ricochet.Core.Level
 
         public static int Count => Data.Maps.Count;
 
-        private static Ricochet.Core.Data.GameData Data => Ricochet.Core.Data.GameData.Current;
+        private static Rea.Ricochet.Core.Data.GameData Data => Rea.Ricochet.Core.Data.GameData.Current;
 
         /// <summary>A map index the map room can show: anything out of range is the first map.</summary>
         public static int Clamp(int index) => index >= 0 && index < Count ? index : 0;

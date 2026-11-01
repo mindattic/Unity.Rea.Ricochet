@@ -3,7 +3,7 @@ using MindAttic.Components.Unity; // MaTheme, ThemeTokens
 using TMPro;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     /// <summary>
     /// Keeps a themed label (a MindAttic Components MaText, which restyles itself from the theme on enable and on every

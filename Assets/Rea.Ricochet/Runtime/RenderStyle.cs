@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public interface IRenderStyle
     {

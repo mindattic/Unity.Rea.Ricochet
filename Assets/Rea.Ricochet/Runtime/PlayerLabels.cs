@@ -5,7 +5,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     internal sealed class PlayerLabels
     {

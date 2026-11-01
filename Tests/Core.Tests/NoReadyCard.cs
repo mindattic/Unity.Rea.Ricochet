@@ -1,6 +1,6 @@
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Match;
 
     // UR-T42: every turn opens with obj_ready's Ready card, a hold before the clock runs (MatchRules.ReadySeconds). Tests
     // about the turn loop past it (firing, driving, damage, the clock, drops) play on rules without the hold, so each

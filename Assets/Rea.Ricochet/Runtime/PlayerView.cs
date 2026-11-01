@@ -2,20 +2,20 @@
 // and the aim readout and vortex hint MatchHud reads. (U.RICO-T39: split out of Player.cs, no behaviour change.) U.RICO-T48: the
 // figures are obj_float_text's (FloatText), and a shot's result also floats its points and blows up whoever it knocked out.
 using System.Collections.Generic;
-using Ricochet.Core.Ai;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
-using Ricochet.Core.Net;
+using Rea.Ricochet.Core.Ai;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Net;
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
 using Unity.Multiplayer.Core; // [ToServer], [Synced]
 using UnityEngine;
-using Cmd = Ricochet.Core.Commands;
+using Cmd = Rea.Ricochet.Core.Commands;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public partial class Player : NetEntity
     {

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Art;
-    using Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Level;
 
     // U.RICO-T46: setup_backgrounds' floor pick, obj_lights' lights, obj_cloud_parent's drift and obj_spotlight's pulse, and
     // the shapes a random level lays for their sprites.

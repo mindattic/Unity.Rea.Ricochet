@@ -18,16 +18,16 @@ using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MenuScreen, MaText, MaSelect, TextStyle
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Ricochet.Core.Ai;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Ai;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public static class Menus
     {

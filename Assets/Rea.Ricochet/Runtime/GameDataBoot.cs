@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using Ricochet.Core.Data;
+using Rea.Ricochet.Core.Data;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     /// <summary>
     /// Points Core at the game's data files (UR-T35): StreamingAssets/Settings, which ships with the build as plain files.

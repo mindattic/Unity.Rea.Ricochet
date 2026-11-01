@@ -5,10 +5,10 @@
 // the level and out of its walls, sliding along one axis when the other is blocked.
 using System;
 
-namespace Ricochet.Core.Aim
+namespace Rea.Ricochet.Core.Aim
 {
-    using Ricochet.Core.Level;
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
     public static class Driving
     {
         /// <summary>

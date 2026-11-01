@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Aim
+namespace Rea.Ricochet.Core.Aim
 {
-    using Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Level;
     public enum ContactKind
     {
         /// <summary>The level's border: the shot's x or y speed flips (both, in a corner).</summary>

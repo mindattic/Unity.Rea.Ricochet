@@ -8,13 +8,13 @@
 // LineRenderers. It sorts above the match HUD and under the announcer cards and every menu.
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MaCanvas, MaText, TextStyle
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using TMPro;
 using Unity.Multiplayer;          // NetSession
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class ReadyCard : MonoBehaviour
     {

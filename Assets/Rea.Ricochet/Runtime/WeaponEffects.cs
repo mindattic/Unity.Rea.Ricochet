@@ -9,12 +9,12 @@
 //   Implosion   a vortex set off: vortex_step.gml's modes (spr_vortex at 0.5 growing, waiting, shrinking while its
 //               burst circle spreads) with obj_vortex_child turning over it, run at the shot's step rate.
 using System.Collections.Generic;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     /// <summary>Steps of GameMaker time: fractions of a step for the linear rules, whole steps for the stepped ones.</summary>
     internal static class Steps

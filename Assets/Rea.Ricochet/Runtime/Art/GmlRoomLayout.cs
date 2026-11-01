@@ -14,11 +14,11 @@
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MenuScreen, MenuStack, MaButton, MaFormRow, MaToggle, MaTextbox, MaText, MaRow
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     /// <summary>Put on a menu stack's object to keep the room look off its screens.</summary>
     public sealed class GmlNoRoom : MonoBehaviour

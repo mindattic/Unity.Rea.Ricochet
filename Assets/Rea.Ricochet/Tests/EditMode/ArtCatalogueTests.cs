@@ -2,14 +2,14 @@
 // names all resolve to it; the fonts draw at the original's metrics with draw_text_outline's outline.
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
-using Ricochet.Tooling;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Tooling;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 
-namespace Ricochet.EditorTests
+namespace Rea.Ricochet.EditorTests
 {
     public class ArtCatalogueTests
     {
@@ -179,13 +179,13 @@ namespace Ricochet.EditorTests
                 Assert.That(GameArt.Frame(sprite), Is.Not.Null, sprite);
             }
 
-            foreach (Ricochet.Core.Level.ShapeKind kind in new[]
+            foreach (Rea.Ricochet.Core.Level.ShapeKind kind in new[]
             {
-                Ricochet.Core.Level.ShapeKind.Abstract, Ricochet.Core.Level.ShapeKind.Triangles, Ricochet.Core.Level.ShapeKind.Bars,
-                Ricochet.Core.Level.ShapeKind.Circles, Ricochet.Core.Level.ShapeKind.Squares,
+                Rea.Ricochet.Core.Level.ShapeKind.Abstract, Rea.Ricochet.Core.Level.ShapeKind.Triangles, Rea.Ricochet.Core.Level.ShapeKind.Bars,
+                Rea.Ricochet.Core.Level.ShapeKind.Circles, Rea.Ricochet.Core.Level.ShapeKind.Squares,
             })
             {
-                for (int i = 0; i < Ricochet.Core.Level.ShapeLibrary.PerKind; i++)
+                for (int i = 0; i < Rea.Ricochet.Core.Level.ShapeLibrary.PerKind; i++)
                 {
                     Assert.That(GameArt.Frame(GmlSprites.Shape(kind, i)), Is.Not.Null, GmlSprites.Shape(kind, i));
                 }

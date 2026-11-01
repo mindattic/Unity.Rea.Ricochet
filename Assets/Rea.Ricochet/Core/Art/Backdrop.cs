@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     /// <summary>One of the room's clouds as gamescreen placed it: its sprite and its top-left corner in room pixels.</summary>
     public readonly struct CloudSpot
@@ -55,7 +55,7 @@ namespace Ricochet.Core.Art
     public sealed class BackdropRules
     {
         /// <summary>The stock rules (backdrop.json).</summary>
-        public static BackdropRules Default => Ricochet.Core.Data.GameData.Current.Backdrop;
+        public static BackdropRules Default => Rea.Ricochet.Core.Data.GameData.Current.Backdrop;
 
         /// <summary>The original's room in pixels (1920 x 1080): what the room-pixel numbers below are measured in.</summary>
         public int RoomWidth { get; internal set; }

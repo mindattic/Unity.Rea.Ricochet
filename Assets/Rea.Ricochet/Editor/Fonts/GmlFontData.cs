@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using UnityEngine;
 
-namespace Ricochet.Tooling
+namespace Rea.Ricochet.Tooling
 {
     /// <summary>
     /// Fonts/gml-fonts.json, the file Tools/import-gml-fonts.ps1 writes from the original project (U.RICO-T44): the nine

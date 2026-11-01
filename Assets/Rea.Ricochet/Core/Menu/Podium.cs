@@ -11,7 +11,7 @@
 // presentation's EndgameRecap draws what this says.
 using System;
 
-namespace Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
     /// <summary>A spot in the endgame room, in room pixels (y growing downward).</summary>
     public readonly struct RoomSpot

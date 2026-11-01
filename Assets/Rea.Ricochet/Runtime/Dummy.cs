@@ -6,7 +6,7 @@ using Unity.Multiplayer;      // NetEntity, NetKey
 using Unity.Multiplayer.Core; // [Synced]
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public partial class Dummy : NetEntity
     {

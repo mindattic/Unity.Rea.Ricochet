@@ -2,11 +2,11 @@
 // presentation (the shot view, the HUD, the announcer, the audio, the crate and hazard objects) reads these and plays
 // them; it never changes the game itself. Events are immutable and carry everything a listener needs, so none has to
 // ask the authority "what was that?" afterwards.
-namespace Ricochet.Core.Commands
+namespace Rea.Ricochet.Core.Commands
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Arsenal;
-    using Ricochet.Core.Net;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Net;
 
     /// <summary>Something that happened in the game.</summary>
     public abstract class GameEvent

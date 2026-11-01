@@ -6,18 +6,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Level;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Menu;
 using Unity.Shared;
 using Unity.Shared.Core;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
-using Cmd = Ricochet.Core.Commands;
+using Cmd = Rea.Ricochet.Core.Commands;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     /// <summary>
     /// Lifts the session mute (a CLI's MINDATTIC_CLI_MUTED=1 included) for a test that checks the profile's own volumes,

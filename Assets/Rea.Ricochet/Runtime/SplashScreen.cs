@@ -8,15 +8,15 @@
 using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MaCanvas
-using Ricochet.Core.Art;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Menu;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class SplashScreen : MonoBehaviour
     {

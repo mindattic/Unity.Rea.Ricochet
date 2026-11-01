@@ -3,11 +3,11 @@
 // draw_dottedline call, so the dashes start afresh at every corner. Drawn as one mesh of quads (draw_line_width_color's
 // flat-ended lines), the black ones first so the white ones lie over them; the dashes are WeaponLooks.Dashes.
 using System.Collections.Generic;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class DottedBeam : MonoBehaviour
     {

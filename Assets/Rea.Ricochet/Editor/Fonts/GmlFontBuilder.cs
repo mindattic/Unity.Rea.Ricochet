@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TextCore;
 using UnityEngine.TextCore.LowLevel;
 
-namespace Ricochet.Tooling
+namespace Rea.Ricochet.Tooling
 {
     /// <summary>
     /// Turns Fonts/gml-fonts.json (written by Tools/import-gml-fonts.ps1) into the rebuild's fonts (U.RICO-T44): one static
@@ -33,7 +33,7 @@ namespace Ricochet.Tooling
     ///
     /// A rebuild rewrites the existing assets in place, so their GUIDs hold and the same data writes the same bytes.
     ///
-    /// Batch: Tools/unity.ps1 -Method Ricochet.Tooling.GmlFontBuilder.BuildAll (Tools/import-gml-fonts.ps1 runs it).
+    /// Batch: Tools/unity.ps1 -Method Rea.Ricochet.Tooling.GmlFontBuilder.BuildAll (Tools/import-gml-fonts.ps1 runs it).
     /// </summary>
     public static class GmlFontBuilder
     {

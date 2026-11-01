@@ -7,9 +7,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Match;
     public static class Lobby
     {
         /// <summary>The fewest seats a match plays with.</summary>

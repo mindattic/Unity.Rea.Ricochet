@@ -4,7 +4,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     /// <summary>The GML names of the sprites the views draw.</summary>
     public static class GmlSprites
@@ -66,16 +66,16 @@ namespace Ricochet
         /// The sprite of the level shape <paramref name="kind"/> number <paramref name="index"/> (0 to 15): obj_polygon1..16,
         /// obj_triangle1..16, obj_bar1..16, obj_circle1..16 and obj_square1..16 draw spr_polygon1..16 and so on (U.RICO-T46).
         /// </summary>
-        public static string Shape(Ricochet.Core.Level.ShapeKind kind, int index)
+        public static string Shape(Rea.Ricochet.Core.Level.ShapeKind kind, int index)
         {
             string stem;
             switch (kind)
             {
-                case Ricochet.Core.Level.ShapeKind.Abstract: stem = "spr_polygon"; break;
-                case Ricochet.Core.Level.ShapeKind.Triangles: stem = "spr_triangle"; break;
-                case Ricochet.Core.Level.ShapeKind.Bars: stem = "spr_bar"; break;
-                case Ricochet.Core.Level.ShapeKind.Circles: stem = "spr_circle"; break;
-                case Ricochet.Core.Level.ShapeKind.Squares: stem = "spr_square"; break;
+                case Rea.Ricochet.Core.Level.ShapeKind.Abstract: stem = "spr_polygon"; break;
+                case Rea.Ricochet.Core.Level.ShapeKind.Triangles: stem = "spr_triangle"; break;
+                case Rea.Ricochet.Core.Level.ShapeKind.Bars: stem = "spr_bar"; break;
+                case Rea.Ricochet.Core.Level.ShapeKind.Circles: stem = "spr_circle"; break;
+                case Rea.Ricochet.Core.Level.ShapeKind.Squares: stem = "spr_square"; break;
                 default: return null;
             }
 

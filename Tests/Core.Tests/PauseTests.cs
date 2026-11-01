@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Commands;
-    using Ricochet.Core.Level;
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Commands;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
 
     // UR-T43: the pause menu (obj_pausemenu, isPaused, obj_btn_randomize, obj_btn_quit_round) on the one authority. Paused,
     // the turn clock, the Ready card's hold, every shot and tank in motion wait, and nobody acts but to vote; Randomize

@@ -8,10 +8,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Net
+namespace Rea.Ricochet.Core.Net
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
     public static class ShotWire
     {
         /// <summary>The format's version, the first number; Decode refuses any other.</summary>

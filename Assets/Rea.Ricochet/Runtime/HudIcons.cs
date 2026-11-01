@@ -8,17 +8,17 @@
 // mouseover_message_draw's white fnt_score, from arsenal.json's about). Read from the synced state only. A canvas of its own
 // that takes the pointer (the match HUD's never does), sorting with the HUD under the announcer cards and every menu.
 using MindAttic.Components.Unity; // MaCanvas, MaText, TextStyle
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using TMPro;
 using Unity.Multiplayer;          // NetSession
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class HudIcons : MonoBehaviour
     {

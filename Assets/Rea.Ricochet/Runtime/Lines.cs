@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     internal static class Lines
     {

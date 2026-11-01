@@ -12,13 +12,13 @@
 // The items take effect when they arrive, on the server at the same speed (GameAuthority.AdvanceItems, U.RICO-T80); what is
 // drawn here is presentation only. A new turn (ItemFlightsCleared: next_player) or a new level sweeps every flight away.
 using System.Collections.Generic;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
 using UnityEngine;
-using Cmd = Ricochet.Core.Commands;
+using Cmd = Rea.Ricochet.Core.Commands;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class ItemFlights : MonoBehaviour
     {
@@ -321,7 +321,7 @@ namespace Ricochet
                 {
                     // teleport_player: the shooter is moved Len = 40 px back along the flight; the rings and the firework
                     // go off where they land (the server's AdvanceItems puts the tank there at the same moment).
-                    double clearance = flight.Who != null ? flight.Who.Radius : Ricochet.Core.Match.Seating.PlayerRadius;
+                    double clearance = flight.Who != null ? flight.Who.Radius : Rea.Ricochet.Core.Match.Seating.PlayerRadius;
                     Vector2 landed = Arena.ToUnity(Arsenal.TeleportSpot(flight.Path, Arena.Level, Arena.Rules, clearance));
                     GmlParticles.Play(GmEffect.Ring, landed, ItemLooks.TeleportArriveRingSize, Color.white);
                     GmlParticles.Play(GmEffect.Ring, landed, ItemLooks.TeleportArriveRingSize, flight.Color);

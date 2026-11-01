@@ -4,7 +4,7 @@
 // solved here, so a step only has to move along it.
 using System;
 
-namespace Ricochet.Core.Aim
+namespace Rea.Ricochet.Core.Aim
 {
     public sealed class ProjectileFlight
     {

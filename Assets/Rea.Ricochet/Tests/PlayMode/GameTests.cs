@@ -1,20 +1,20 @@
 // The game's own PlayMode tests, on the kit's test fixtures (Unity.Multiplayer.Testing): every test gets a real host or
 // dedicated server and real clients over Unity Transport on a free loopback port, and the waits fail saying what never
 // happened. Run them from Window > General > Test Runner > PlayMode, or in batch mode:
-//   Unity -batchmode -projectPath . -runTests -testPlatform PlayMode -assemblyNames Ricochet.Tests
+//   Unity -batchmode -projectPath . -runTests -testPlatform PlayMode -assemblyNames Rea.Ricochet.Tests
 // The bounce math itself is tested without Unity: dotnet test Core.slnx (Tests/Core.Tests).
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Level;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Level;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     internal static class GamePrefabs
     {

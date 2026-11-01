@@ -1,10 +1,10 @@
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Level;
     public class BounceSolverTests
     {
         // A plain 20 x 10 box; the bounce limit ends a shot (there is no range, U.RICO-T88).

@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity;      // MaCanvas, MaPanel, MaText, PanelStyle, TextStyle
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Match;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Match;
 using TMPro;                           // TextAlignmentOptions
 using Unity.Multiplayer;               // NetSession
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class HudOverlay : MonoBehaviour
     {

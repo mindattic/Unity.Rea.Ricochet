@@ -5,11 +5,11 @@
 // struck; the crates float what they gave (white, or green for health) and use_item floats "Bounce +1" (flashing). Every
 // peer makes its own from what the server sent; it holds no game state and goes with the round (clear_objects).
 using System.Collections.Generic;
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using TMPro;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class FloatText : MonoBehaviour
     {

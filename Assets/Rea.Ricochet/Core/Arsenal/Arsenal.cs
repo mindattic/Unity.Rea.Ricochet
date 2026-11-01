@@ -9,10 +9,10 @@
 // vortex, the shield wall and the redirector came into play with the level hazards (UR-T6).
 using System;
 
-namespace Ricochet.Core.Arsenal
+namespace Rea.Ricochet.Core.Arsenal
 {
-    using Ricochet.Core.Level;
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
     /// <summary>The six weapons, in the original's order (the order cycling walks).</summary>
     public enum Weapon
     {
@@ -84,7 +84,7 @@ namespace Ricochet.Core.Arsenal
         /// <summary>The stock rules, from arsenal.json (UR-T35): a new set starts as a copy of them.</summary>
         public ArsenalRules()
         {
-            CopyFrom(Ricochet.Core.Data.GameData.Current.Arsenal);
+            CopyFrom(Rea.Ricochet.Core.Data.GameData.Current.Arsenal);
         }
 
         internal ArsenalRules(bool blank)
@@ -146,7 +146,7 @@ namespace Ricochet.Core.Arsenal
         public static string Name(Weapon weapon)
         {
             int index = (int)weapon;
-            var names = Ricochet.Core.Data.GameData.Current.WeaponNames;
+            var names = Rea.Ricochet.Core.Data.GameData.Current.WeaponNames;
             return index >= 0 && index < names.Count ? names[index] : weapon.ToString();
         }
 
@@ -154,7 +154,7 @@ namespace Ricochet.Core.Arsenal
         public static string Name(Item item)
         {
             int index = (int)item;
-            var names = Ricochet.Core.Data.GameData.Current.ItemNames;
+            var names = Rea.Ricochet.Core.Data.GameData.Current.ItemNames;
             return index >= 0 && index < names.Count ? names[index] : item.ToString();
         }
 
@@ -162,7 +162,7 @@ namespace Ricochet.Core.Arsenal
         public static string About(Weapon weapon)
         {
             int index = (int)weapon;
-            var about = Ricochet.Core.Data.GameData.Current.WeaponAbout;
+            var about = Rea.Ricochet.Core.Data.GameData.Current.WeaponAbout;
             return about != null && index >= 0 && index < about.Count ? about[index] : string.Empty;
         }
 
@@ -170,7 +170,7 @@ namespace Ricochet.Core.Arsenal
         public static string About(Item item)
         {
             int index = (int)item;
-            var about = Ricochet.Core.Data.GameData.Current.ItemAbout;
+            var about = Rea.Ricochet.Core.Data.GameData.Current.ItemAbout;
             return about != null && index >= 0 && index < about.Count ? about[index] : string.Empty;
         }
 

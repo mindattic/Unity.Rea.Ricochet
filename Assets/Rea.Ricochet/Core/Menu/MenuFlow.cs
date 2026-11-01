@@ -11,9 +11,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
-    using Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Level;
     /// <summary>The original's rooms that this game keeps.</summary>
     public enum Room
     {
@@ -88,7 +88,7 @@ namespace Ricochet.Core.Menu
         /// <summary>What the title screen says under the name.</summary>
         public static string Tagline => Data.Menu.Tagline;
 
-        private static Ricochet.Core.Data.GameData Data => Ricochet.Core.Data.GameData.Current;
+        private static Rea.Ricochet.Core.Data.GameData Data => Rea.Ricochet.Core.Data.GameData.Current;
 
         /// <summary>
         /// The room a room's main button goes on to: the title's Start (and the main menu's) opens the Start screen (U.RICO-T52,

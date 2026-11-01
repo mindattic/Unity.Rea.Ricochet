@@ -1,8 +1,8 @@
 // U.RICO-T56: the endgame room's podium as obj_endgame laid it out.
 using NUnit.Framework;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Menu;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
     public sealed class PodiumTests
     {

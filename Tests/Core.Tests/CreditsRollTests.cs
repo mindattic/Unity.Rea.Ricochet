@@ -1,9 +1,9 @@
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Menu;
+    using Rea.Ricochet.Core.Menu;
 
     // U.RICO-T55: the credits roll climbs over spr_creditsimage from just under its bottom edge until the last line has left
     // its top, a pixel a step at 60 steps a second by default, then starts over.

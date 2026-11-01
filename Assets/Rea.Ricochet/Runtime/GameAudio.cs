@@ -27,15 +27,15 @@
 // any line still playing, and says how long it is heard so the card holds while it plays (obj_announcer). Muted, nothing is
 // heard and the written caption carries the line alone. Tests read the choice (AnnouncementRequests).
 using System.Collections.Generic;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using Unity.Shared;
 using Unity.Shared.Core;
 using UnityEngine;
-using Cmd = Ricochet.Core.Commands;
+using Cmd = Rea.Ricochet.Core.Commands;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class GameAudio : MonoBehaviour
     {

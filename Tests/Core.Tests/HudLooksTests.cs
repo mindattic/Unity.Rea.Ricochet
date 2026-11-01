@@ -1,10 +1,10 @@
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Arsenal;
-    using Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Art;
 
     // U.RICO-T49: the HUD details as the original drew them (obj_icon_weapon_*, obj_item_*, setup_weapons / setup_items,
     // draw_angle and obj_degree, obj_guide, obj_healthbar) and the icons' hover text from arsenal.json.

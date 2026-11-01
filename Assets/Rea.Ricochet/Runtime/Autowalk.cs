@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public static class Autowalk
     {

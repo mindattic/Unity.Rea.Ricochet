@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using Ricochet.Core.Data;
+using Rea.Ricochet.Core.Data;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
     // U.RICO-T40: the validating reader of the data files. Each accessor gives a fallback and records a message, never throws.
     public class SettingsReaderTests

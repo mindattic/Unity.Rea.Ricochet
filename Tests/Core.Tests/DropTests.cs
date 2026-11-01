@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Arsenal;
-    using Ricochet.Core.Level;
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
     public class DropTests
     {
         private static Level Open() => new Level(-10, -5, 10, 5);

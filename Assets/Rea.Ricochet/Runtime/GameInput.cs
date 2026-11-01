@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     internal static class GameInput
     {

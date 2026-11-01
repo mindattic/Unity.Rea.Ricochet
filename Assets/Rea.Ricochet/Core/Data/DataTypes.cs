@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Data
+namespace Rea.Ricochet.Core.Data
 {
-    using Ricochet.Core.Level;
-    using Ricochet.Core.Match;
-    using Ricochet.Core.Menu;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Menu;
 
     /// <summary>The announcer's personalities, how often each frequency setting speaks, and the lines (announcer.json).</summary>
     public sealed class AnnouncerData

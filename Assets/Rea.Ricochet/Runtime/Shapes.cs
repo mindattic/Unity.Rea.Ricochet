@@ -2,7 +2,7 @@
 // Replace them with your own sprites or models.
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     internal static class Shapes
     {

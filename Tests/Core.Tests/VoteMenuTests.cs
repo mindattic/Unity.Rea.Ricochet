@@ -1,10 +1,10 @@
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Match;
-    using Ricochet.Core.Menu;
+    using Rea.Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Menu;
     // UR-T14: the in-game votes: who a player may start a kick vote against (never themselves, the host or someone whose
     // seat only waits for them), what the kick room and the kick vote say, and the restart vote's line in each phase.
     public class VoteMenuTests

@@ -1,19 +1,19 @@
 // Player, the network side: the [ToServer]/[ToClients] calls, every [Synced] value, the authority copy (SyncFromAuthority) and the
 // events the authority publishes, played here as the volley and result sent to every peer. (U.RICO-T39: split out of Player.cs, no behaviour change.)
 using System.Collections.Generic;
-using Ricochet.Core.Ai;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Level;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
-using Ricochet.Core.Net;
+using Rea.Ricochet.Core.Ai;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Net;
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
 using Unity.Multiplayer.Core; // [ToServer], [Synced]
 using UnityEngine;
-using Cmd = Ricochet.Core.Commands;
+using Cmd = Rea.Ricochet.Core.Commands;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public partial class Player : NetEntity
     {
@@ -435,7 +435,7 @@ namespace Ricochet
         // Server: a client asked for the storms the round's level has kept.
         private void OnRequestStorms(NetSender sender)
         {
-            Ricochet.Core.Level.Level level = Arena.Level;
+            Rea.Ricochet.Core.Level.Level level = Arena.Level;
             if (level != null && level.Storms.Count > 0)
             {
                 LevelStorms(sender, Arena.LevelVersion, ShotWire.EncodeStorms(level.Storms));
@@ -446,7 +446,7 @@ namespace Ricochet
         private void OnLevelStorms(int version, double[] numbers)
         {
             List<StormResult> storms = ShotWire.DecodeStorms(numbers);
-            Ricochet.Core.Level.Level level = Arena.Level;
+            Rea.Ricochet.Core.Level.Level level = Arena.Level;
             if (storms == null || level == null || version != Arena.LevelVersion)
             {
                 return;
@@ -616,7 +616,7 @@ namespace Ricochet
         // Every peer (the host's included): the server's result for shot number `shot`.
         private void OnShotResult(int shot, int[] seats, int[] damage, int[] knockedOut, int points)
         {
-            ShotOutcome outcome = ShotOutcome.Decode(seats, damage, knockedOut, points, global::Ricochet.Core.Match.MatchRules.MaxSeats);
+            ShotOutcome outcome = ShotOutcome.Decode(seats, damage, knockedOut, points, global::Rea.Ricochet.Core.Match.MatchRules.MaxSeats);
             if (outcome == null)
             {
                 Debug.LogWarning("[Ricochet] " + name + ": the result of shot " + shot + " came over unreadable.");

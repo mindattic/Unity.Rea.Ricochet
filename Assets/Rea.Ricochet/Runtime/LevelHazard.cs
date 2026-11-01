@@ -16,14 +16,14 @@
 //                step (U.RICO-T47); without the art a rail redirector with a tick, as LevelView draws the level's own.
 //                It stands (and plays sfx_redirector_grow) only once its flight (ItemFlights) lands (U.RICO-T79).
 using System.Collections.Generic;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using Unity.Multiplayer;      // NetEntity, NetSession
 using Unity.Multiplayer.Core; // [Synced]
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public partial class LevelHazard : NetEntity
     {
@@ -148,7 +148,7 @@ namespace Ricochet
             _growHeard = false;
             if (HazardKind == HazardKind.Redirector && !ItemFlights.RedirectorInFlight(-1))
             {
-                GameAudio.Play(Ricochet.Core.Menu.SoundCue.RedirectorGrow); // redirector_detonate.gml: it stops and opens out
+                GameAudio.Play(Rea.Ricochet.Core.Menu.SoundCue.RedirectorGrow); // redirector_detonate.gml: it stops and opens out
                 _growHeard = true;
             }
         }
@@ -357,7 +357,7 @@ namespace Ricochet
                     else if (!_growHeard)
                     {
                         _growHeard = true;
-                        GameAudio.Play(Ricochet.Core.Menu.SoundCue.RedirectorGrow);
+                        GameAudio.Play(Rea.Ricochet.Core.Menu.SoundCue.RedirectorGrow);
                     }
 
                     Show(!flying);

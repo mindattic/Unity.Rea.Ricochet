@@ -2,19 +2,19 @@
 // (U.RICO-T39: split out of Arena.cs, no behaviour change.)
 using System;
 using System.Collections.Generic;
-using Ricochet.Core.Ai;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Level;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
-using Ricochet.Core.Net;
+using Rea.Ricochet.Core.Ai;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Net;
 using Unity.Multiplayer;      // NetSession, NetKey
 using Unity.Multiplayer.Core; // VoteKind
 using UnityEngine;
-using Cmd = Ricochet.Core.Commands;
+using Cmd = Rea.Ricochet.Core.Commands;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed partial class Arena
     {

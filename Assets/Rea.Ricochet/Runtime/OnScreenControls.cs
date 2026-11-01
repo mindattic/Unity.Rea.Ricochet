@@ -5,7 +5,7 @@
 // lands after the owner's input has already been read this frame is still seen, once.
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     internal static class OnScreenControls
     {

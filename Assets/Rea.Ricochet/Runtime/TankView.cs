@@ -4,10 +4,10 @@
 // hull every five steps of driving that hold at 0.7 and then fade. The step rules are Core's TankMotion; this only draws
 // them, on every peer, from what the player has synced (its spot, its aim and whether it is driving).
 using System.Collections.Generic;
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class TankView : MonoBehaviour
     {

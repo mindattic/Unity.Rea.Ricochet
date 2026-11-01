@@ -1,6 +1,6 @@
 // EditMode checks that the game's scene and prefabs are wired the way the kit needs them, so a broken reference or an
 // unregistered network prefab fails here instead of in a build. Run from Test Runner > EditMode, or:
-//   Unity -batchmode -projectPath . -runTests -testPlatform EditMode -assemblyNames Ricochet.EditorTests
+//   Unity -batchmode -projectPath . -runTests -testPlatform EditMode -assemblyNames Rea.Ricochet.EditorTests
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -13,7 +13,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Ricochet.EditorTests
+namespace Rea.Ricochet.EditorTests
 {
     public class GameSetupTests
     {

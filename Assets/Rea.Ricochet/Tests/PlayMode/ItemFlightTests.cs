@@ -5,16 +5,16 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class ItemFlightTests : NetSessionTest
     {
@@ -72,7 +72,7 @@ namespace Ricochet.Tests
             Assert.That(GmlParticles.Thrown(GmEffect.Spark), Is.GreaterThan(sparks), "an ef_spark every step");
 
             // Wherever it strikes (a shape, or here the border of an open level) it bursts in a lime firework (U.RICO-T90).
-            Arsenal.ShrinkRay(Ricochet.Core.Aim.Vec2.Zero, 0, new Level(-10, -5, 10, 5), Arena.Rules, out Ricochet.Core.Aim.ShotPath struck);
+            Arsenal.ShrinkRay(Rea.Ricochet.Core.Aim.Vec2.Zero, 0, new Level(-10, -5, 10, 5), Arena.Rules, out Rea.Ricochet.Core.Aim.ShotPath struck);
             fireworks = GmlParticles.Thrown(GmEffect.Firework);
             ItemFlights.Launch(null, Item.ShrinkRay, struck);
             yield return WaitUntil(() => ItemFlights.Count(Item.ShrinkRay) == 0, "that shrink ray never landed", 5f);

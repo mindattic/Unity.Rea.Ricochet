@@ -7,9 +7,9 @@
 // anyone connected but yourself and the host, and never an AI (it is no connection; set the AI count on Players instead).
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Match;
     /// <summary>One player in the roster, as the kick room sees them.</summary>
     public readonly struct VoteMember
     {

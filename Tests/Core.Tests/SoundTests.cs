@@ -3,13 +3,13 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Arsenal;
-    using Ricochet.Core.Commands;
-    using Ricochet.Core.Level;
-    using Ricochet.Core.Menu;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Commands;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Menu;
 
     // UR-T10: the profile's audio mix. U.RICO-T50: the original's recordings, one cue each, and which cue each moment plays.
     public class SoundTests

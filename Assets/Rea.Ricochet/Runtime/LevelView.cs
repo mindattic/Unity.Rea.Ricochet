@@ -4,13 +4,13 @@
 // (UR-T9) or a new round is laid, the drawing is rebuilt from the new level. The floor, clouds, lights and border
 // sprites under and around it are BackdropView's.
 using System.Collections.Generic;
-using Ricochet.Core.Aim;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class LevelView : MonoBehaviour
     {

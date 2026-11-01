@@ -7,7 +7,7 @@
 // placed letter i at (64 + 64 i, 576 - 32 i), the main menu at (128 + 64 i, 416 - 32 i). Nothing in the original made the
 // letters drop in: they drift from where the room placed them (docs/BIBLE.md "Title and main menu").
 // The main menu's floor also scrolled: mainmenu's bg_titlescreen, tiled, moving 1 px right a step; the title's stood still.
-namespace Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     /// <summary>Which room the letters are in: where they start.</summary>
     public enum LetterRoom

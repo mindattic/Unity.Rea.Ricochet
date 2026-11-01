@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Ai;
-    using Ricochet.Core.Arsenal;
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Ai;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Match;
     // UR-T8: the announcer (random_announcement_welcome/win/lose, random_win_number) and the scores (hit.gml's pScore,
     // draw_potential.gml's point_combo).
     public class AnnouncerTests

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Arsenal;
-    using Ricochet.Core.Commands;
-    using Ricochet.Core.Level;
-    using Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Commands;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
 
     // U.RICO-T146 (follow-up to U.RICO-T58's by-hand pass): a deterministic, seeded Core-only replay of one full match
     // that fires every weapon and uses every item once, in a fixed order, with no engine and no Runtime. Every weapon and

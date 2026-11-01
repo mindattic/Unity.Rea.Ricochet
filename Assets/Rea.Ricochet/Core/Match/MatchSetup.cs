@@ -22,12 +22,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Ricochet.Core.Match
+namespace Rea.Ricochet.Core.Match
 {
-    using Ricochet.Core.Ai;
-    using Ricochet.Core.Aim;
-    using Ricochet.Core.Arsenal;
-    using Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Ai;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Level;
     public sealed class MatchSetup
     {
         /// <summary>Aim assists each player starts with unless set (count_AimAssist = 3).</summary>

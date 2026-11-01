@@ -19,7 +19,7 @@
 //                         the controls, how-to-play and credits rooms, every menu room on bg_titlescreen.
 using System;
 
-namespace Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     /// <summary>The original's menu and game-screen controls that draw a back sprite under a face sprite.</summary>
     public enum Plate

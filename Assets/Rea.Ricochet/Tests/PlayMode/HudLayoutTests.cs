@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Match;
+using Rea.Ricochet.Core.Match;
 using TMPro;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
@@ -12,7 +12,7 @@ using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class HudLayoutTests : NetSessionTest
     {

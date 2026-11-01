@@ -5,13 +5,13 @@
 // (uGUI Selectables), so one watcher beside GameAudio hears them all, whichever screen built them, instead of every
 // AddButton call site playing its own. The HUD's weapon and item icons are not Selectables and play their own (HudIcons).
 using System.Collections.Generic;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Menu;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class UiSounds : MonoBehaviour
     {

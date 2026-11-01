@@ -12,14 +12,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MindAttic.Components.Unity; // MenuScreen, MaText, MaButton, MaRow
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer;          // NetSession
 using Unity.Multiplayer.Core;     // NetPlayer, JoinCode, Disconnection
 using Unity.Multiplayer.UI;       // NetFrontEnd, FrontEndState
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class LobbyRoom : IDisposable
     {

@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     /// <summary>A rectangle in a picture's pixels, y down.</summary>
     public readonly struct PictureRect

@@ -5,15 +5,15 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class HitEffectTests : NetSessionTest
     {
@@ -107,7 +107,7 @@ namespace Ricochet.Tests
             annOnHerClient.CycleItem(1);
             yield return WaitUntil(() => ann.Loadout.Item == Item.ShieldWall, "the shield wall was never selected");
             ann.ServerUseItem(0f);
-            yield return WaitUntil(() => LevelHazard.In(Client).Any(h => h.Ready && h.HazardKind == Ricochet.Core.Level.HazardKind.ShieldWall), "the wall never stood", 5f);
+            yield return WaitUntil(() => LevelHazard.In(Client).Any(h => h.Ready && h.HazardKind == Rea.Ricochet.Core.Level.HazardKind.ShieldWall), "the wall never stood", 5f);
             int rings = GmlParticles.Thrown(GmEffect.Ring);
             host.ServerFire(180f);
             yield return WaitUntil(() => FieldEffects.Shards > 0, "the wall's glass never flew", 10f);

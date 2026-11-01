@@ -1,8 +1,8 @@
 using NUnit.Framework;
 
-namespace Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Art;
 
     // U.RICO-T45: align_bottom_to_top's hull turn, spawn_tracks' every-five-steps prints and obj_tracks' fade.
     public class TankMotionTests

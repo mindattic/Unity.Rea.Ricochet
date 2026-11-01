@@ -13,13 +13,13 @@
 // What to draw comes from the Presentation feed (ShieldWallShattered and CrateGone, which the server sends every peer) and
 // from the views that see a shot land (ShotView) or a player knocked out (Player), so every peer draws the same thing.
 using System.Collections.Generic;
-using Ricochet.Core.Arsenal;
-using Ricochet.Core.Art;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Menu;
 using UnityEngine;
-using Cmd = Ricochet.Core.Commands;
+using Cmd = Rea.Ricochet.Core.Commands;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class FieldEffects : MonoBehaviour
     {

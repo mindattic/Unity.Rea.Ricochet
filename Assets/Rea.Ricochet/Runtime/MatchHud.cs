@@ -18,16 +18,16 @@
 using System.Collections.Generic;
 using System.Text;
 using MindAttic.Components.Unity; // MaCanvas, MaText, TextStyle
-using Ricochet.Core.Ai;
-using Ricochet.Core.Art;
-using Ricochet.Core.Match;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Ai;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using TMPro;                      // TextAlignmentOptions
 using Unity.Multiplayer;          // NetBootstrap, NetSession
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class MatchHud : MonoBehaviour
     {

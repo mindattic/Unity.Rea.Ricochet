@@ -8,7 +8,7 @@
 using System.Collections;
 using System.IO;
 using NUnit.Framework;
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
@@ -18,7 +18,7 @@ using Unity.Shared.Core;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     internal static class TempProfiles
     {

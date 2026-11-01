@@ -7,11 +7,11 @@
 // see the same backdrop and nothing new is sent. Presentation only.
 using System;
 using System.Collections.Generic;
-using Ricochet.Core.Art;
-using Ricochet.Core.Level;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using UnityEngine;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class BackdropView : MonoBehaviour
     {

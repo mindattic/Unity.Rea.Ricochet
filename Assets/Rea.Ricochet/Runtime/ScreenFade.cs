@@ -9,12 +9,12 @@
 using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MenuStack, MaCanvas
-using Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer.UI;       // NetFrontEnd, FrontEndState
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     public sealed class ScreenFade : MonoBehaviour
     {

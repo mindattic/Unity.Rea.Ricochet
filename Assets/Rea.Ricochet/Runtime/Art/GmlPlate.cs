@@ -2,11 +2,11 @@
 // obj_btn_*, arrow, checkbox, input box and tiny game-screen button drew itself (Core's MenuLooks names them). A plate sits
 // behind whatever control it dresses, never takes the pointer itself (unless asked to), and its owner says when the pointer
 // is over it and whether a checkbox is ticked.
-using Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Ricochet
+namespace Rea.Ricochet
 {
     [DisallowMultipleComponent]
     public sealed class GmlPlate : MonoBehaviour
