@@ -107,6 +107,12 @@ namespace Ricochet
             // announcer box sits under the kit's Settings, beside the name and colour.
             StartCoroutine(ShowTitle(frontEnd));
 
+            // U.RICO-T146: -autowalk scripts the same rooms U.RICO-T58 checked by hand and screenshots each one.
+            if (Autowalk.Requested)
+            {
+                StartCoroutine(RunAutowalk(frontEnd));
+            }
+
             // U.RICO-T52: the main menu's Start opens the Start screen (the title room's setup panel), whose Next is the
             // players room; in a game the players room stands on its own (the match vote follows it).
             frontEnd.AddScreen(MenuFlow.Title(Room.Setup), BuildSetupRoom, MenuPlacement.MainMenu);
@@ -332,6 +338,113 @@ namespace Ricochet
             if (frontEnd != null && frontEnd.PauseMenu != null)
             {
                 frontEnd.PauseMenu.Close();
+            }
+        }
+
+        // U.RICO-T146: scripted input that walks every room once, in the same order U.RICO-T58 checked by hand, and has
+        // Autowalk screenshot each one. Only runs behind -autowalk; every wait has a timeout so a stuck session logs a
+        // warning and moves on instead of hanging the player.
+        private IEnumerator RunAutowalk(NetFrontEnd frontEnd)
+        {
+            yield return WaitFor(() => SplashScreen.Showing, 10f, "the splash");
+            Autowalk.Capture("splash");
+            yield return WaitFor(() => !SplashScreen.Showing, 15f, "the splash to finish");
+            yield return null;
+            Autowalk.Capture("title");
+
+            frontEnd.MainMenu.Push(MenuFlow.Title(Room.Setup), BuildSetupRoom);
+            yield return null;
+            Autowalk.Capture("setup");
+            frontEnd.MainMenu.Push(MenuFlow.Title(Room.Players), BuildPlayersRoom);
+            yield return null;
+            Autowalk.Capture("players");
+            frontEnd.MainMenu.Pop(); // players
+            frontEnd.MainMenu.Pop(); // setup
+            yield return null;
+
+            yield return CaptureOffMenuRoom(frontEnd, MenuFlow.Title(Room.Controls), Menus.BuildControls, "controls");
+            yield return CaptureOffMenuRoom(frontEnd, "Rebind controls", Menus.BuildRebind, "rebind-controls");
+            yield return CaptureOffMenuRoom(frontEnd, MenuFlow.Title(Room.HowToPlay), s => Menus.BuildHowToPlay(s), "how-to-play");
+            yield return CaptureOffMenuRoom(frontEnd, MenuFlow.Title(Room.Credits), Menus.BuildCredits, "credits");
+
+            frontEnd.OpenSettings();
+            yield return null;
+            Autowalk.Capture("settings");
+            frontEnd.MainMenu.Pop();
+            yield return null;
+
+            while (frontEnd.MainMenu.Current != null && frontEnd.MainMenu.Current != frontEnd.MainMenu.Root)
+            {
+                frontEnd.MainMenu.Pop();
+                yield return null;
+            }
+
+            Autowalk.Capture("main-menu");
+
+            // A short, host-alone practice match (enough AI to finish without a second player) for the lobby, match,
+            // pause and endgame rooms U.RICO-T58's manual pass also checked. A throwaway clone of _setup, so this never
+            // writes the inflated AI count or goal back to the player's saved profile (RememberSetup only fires from a
+            // screen's own Hidden event, which this skips on purpose).
+            if (_lobby != null)
+            {
+                MatchSetup practice = _setup.Clone();
+                practice.AiCount = System.Math.Max(practice.AiCount, 3);
+                practice.Goal = MatchSetup.OneRound;
+                _ = _lobby.HostMatch(practice);
+            }
+
+            yield return WaitFor(() => frontEnd.State == FrontEndState.Lobby, 20f, "the lobby");
+            yield return null;
+            Autowalk.Capture("lobby");
+
+            if (_arena != null && _lobby != null && _lobby.Pending != null)
+            {
+                yield return WaitFor(() => _lobby.CanStart, 10f, "enough seats to start");
+                _arena.StartMatch(_lobby.Pending);
+            }
+
+            NetSession session = frontEnd.Session;
+            yield return WaitFor(() => Turns.For(session) != null && Turns.For(session).MatchPhase == MatchPhase.Aiming, 45f, "the match to begin");
+            Autowalk.Capture("match");
+
+            if (Turns.For(session) != null)
+            {
+                PauseMenu.TogglePause(session);
+                yield return WaitFor(() => Turns.PausedIn(session), 10f, "the pause");
+                Autowalk.Capture("pause");
+                PauseMenu.TogglePause(session);
+            }
+
+            yield return WaitFor(() => Turns.For(session) != null && Turns.For(session).MatchPhase == MatchPhase.GameOver, 180f, "the match to end");
+            Autowalk.Capture("endgame");
+
+            Debug.Log("[Autowalk] Done: screenshots in " + Autowalk.Folder);
+        }
+
+        // Opens an off-menu room (controls, rebind, how to play, credits), screenshots it and pops it, the way a user
+        // visiting it from the main menu and backing out would.
+        private static IEnumerator CaptureOffMenuRoom(NetFrontEnd frontEnd, string title, System.Action<MenuScreen> build, string room)
+        {
+            frontEnd.MainMenu.Push(title, build);
+            yield return null;
+            Autowalk.Capture(room);
+            frontEnd.MainMenu.Pop();
+            yield return null;
+        }
+
+        // Waits for <paramref name="condition"/>, up to <paramref name="timeoutSeconds"/>; logs and moves on instead of
+        // hanging the walk when it is never met (a build without the expected flow, or a match that never starts).
+        private static IEnumerator WaitFor(System.Func<bool> condition, float timeoutSeconds, string what)
+        {
+            float deadline = Time.realtimeSinceStartup + timeoutSeconds;
+            while (!condition() && Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+            }
+
+            if (!condition())
+            {
+                Debug.LogWarning("[Autowalk] Timed out waiting for " + what + ".");
             }
         }
 

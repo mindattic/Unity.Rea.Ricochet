@@ -212,3 +212,24 @@ How it was checked: the Windows player built clean with `Tools/run.ps1` (0 error
 | Section 4 rows UR-T36, T37, T38, T39, T40 | built | their tickets are closed; the "gap" wording in section 4 predates them |
 | Section 4 row UR-T59 | built | README and BIBLE final pass; the deviations are BIBLE section 7 |
 | Section 3 row UR-T53: "covers the map room's way into the lobby" | stale | the map room is gone (U.RICO-T101) |
+
+## 7.1 Autowalk and the seeded Core replay (U.RICO-T146, follow-up to U.RICO-T58)
+
+Section 7's manual pass was missing the two things it said it needed: a player-side scripted-input hook, and the seeded
+Core replay. Both exist now.
+
+- **`-autowalk`** (`Game.RunAutowalk`, `Assets/Rea.Ricochet/Runtime/Autowalk.cs`): launched with `Tools/play.ps1 -autowalk`
+  (or any player built by `Tools/run.ps1` with `-autowalk` on its own command line), the game scripts itself through
+  splash, title, setup, players, controls, rebind controls, how to play, credits, settings, the main menu, then hosts a
+  short AI-filled practice match for the lobby, a shot in flight, pause and the endgame recap — the same rooms section 7
+  checked by eye — saving a numbered screenshot of each to `Logs/autowalk/`. Every wait has a timeout, so a build that
+  cannot reach a room logs a warning there instead of hanging. Running it and diffing `Logs/autowalk/*.png` against the
+  original's rooms (`R:\...\gmlRicochet`) needs an actual Unity Editor or player; that run is still owed and is the one
+  remaining step to close this out, since no agent working this ticket had a Unity install to run it with.
+- **The seeded Core replay** (`Tests/Core.Tests/SeededReplayTests.cs`,
+  `FullMatch_SeededReplay_FiresEveryWeaponAndUsesEveryItemOnce`): a deterministic, engine-free match (seed 7, two seats,
+  health raised so nobody is knocked out partway through) that fires all six weapons and uses all six items, one each, in
+  a single continuous game, then asserts every one landed or finished and the set fired matches `Weapon`/`Item` exactly.
+  This **has** run (`dotnet test Core.slnx`, 492 passed, 0 failed): every weapon and item the original's `globals.gml`
+  numbered still fires and resolves in one game, the same ground section 3's per-weapon and per-item tests already cover
+  individually, now also proven to chain through one seeded playthrough the way U.RICO-T58's manual match would have.
