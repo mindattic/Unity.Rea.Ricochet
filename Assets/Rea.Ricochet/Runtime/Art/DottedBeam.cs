@@ -3,8 +3,8 @@
 // draw_dottedline call, so the dashes start afresh at every corner. Drawn as one mesh of quads (draw_line_width_color's
 // flat-ended lines), the black ones first so the white ones lie over them; the dashes are WeaponLooks.Dashes.
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using UnityEngine;
 
 namespace Rea.Ricochet

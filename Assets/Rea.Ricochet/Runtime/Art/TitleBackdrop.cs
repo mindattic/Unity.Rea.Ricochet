@@ -3,7 +3,7 @@
 // and shows its mirror letter while it moves left). The main menu's floor scrolls right a pixel a step, tiled; the title's
 // stands still. It draws in room pixels (1920 x 1080, y down from the top left) inside the rect it is given.
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using UnityEngine;
 using UnityEngine.UI;
 

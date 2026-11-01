@@ -1,8 +1,8 @@
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Menu;
+    using Rea.Ricochet.Core.Menu;
     // UR-T21: two default profiles were both "Default" in teal everywhere.
     public class PlayerLooksTests
     {

@@ -6,10 +6,10 @@
 using System;
 using System.Globalization;
 
-namespace Rea.Rea.Ricochet.Core.Match
+namespace Rea.Ricochet.Core.Match
 {
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Level;
     public static class Seating
     {
         /// <summary>A player's hit radius (their square is drawn 0.8 wide).</summary>

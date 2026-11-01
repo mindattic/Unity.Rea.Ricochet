@@ -7,8 +7,8 @@
 using System;
 using MindAttic.Components.Unity; // MenuStack, MenuScreen, MaIcon
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer.UI;       // NetFrontEnd
 using UnityEngine;
 using UnityEngine.InputSystem;

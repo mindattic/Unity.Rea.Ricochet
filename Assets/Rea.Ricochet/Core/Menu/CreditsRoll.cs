@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
     /// <summary>One block of the credits: a heading and the lines under it (menu.json's "credits").</summary>
     public sealed class CreditsSection
@@ -40,7 +40,7 @@ namespace Rea.Rea.Ricochet.Core.Menu
         {
             get
             {
-                Rea.Rea.Ricochet.Core.Data.GameData data = Rea.Rea.Ricochet.Core.Data.GameData.Current;
+                Rea.Ricochet.Core.Data.GameData data = Rea.Ricochet.Core.Data.GameData.Current;
                 double speed = data != null && data.Menu != null ? data.Menu.CreditsScrollSpeed : 0;
                 return speed > 0 ? speed : DefaultSpeed;
             }

@@ -1,6 +1,6 @@
 {
     "name": "Rea.Ricochet.Runtime",
-    "rootNamespace": "Ricochet",
+    "rootNamespace": "Rea.Ricochet",
     "references": [
         "Rea.Ricochet.Core",
         "Unity.Multiplayer.Core",

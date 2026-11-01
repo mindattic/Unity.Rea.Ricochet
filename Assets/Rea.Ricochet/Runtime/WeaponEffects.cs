@@ -9,9 +9,9 @@
 //   Implosion   a vortex set off: vortex_step.gml's modes (spr_vortex at 0.5 growing, waiting, shrinking while its
 //               burst circle spreads) with obj_vortex_child turning over it, run at the shot's step rate.
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Aim;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using UnityEngine;
 
 namespace Rea.Ricochet

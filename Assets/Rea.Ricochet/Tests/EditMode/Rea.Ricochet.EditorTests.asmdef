@@ -1,6 +1,6 @@
 {
     "name": "Rea.Ricochet.EditorTests",
-    "rootNamespace": "Ricochet.EditorTests",
+    "rootNamespace": "Rea.Ricochet.EditorTests",
     "references": [
         "Rea.Ricochet.Runtime",
         "Rea.Ricochet.Core",

@@ -269,6 +269,6 @@ Write-Host "[Ricochet] GML art: $($sprites.Count) sprites ($listedSprites in the
 foreach ($s in $skipped) { Write-Host "  skipped $($s.kind) $($s.name): $($s.reason)" }
 
 if (-not $NoUnity) {
-    & powershell -NoProfile -File (Join-Path $PSScriptRoot 'unity.ps1') -Method Ricochet.Tooling.GmlArtBuilder.BuildAll -Log art
+    & powershell -NoProfile -File (Join-Path $PSScriptRoot 'unity.ps1') -Method Rea.Ricochet.Tooling.GmlArtBuilder.BuildAll -Log art
     exit $LASTEXITCODE
 }

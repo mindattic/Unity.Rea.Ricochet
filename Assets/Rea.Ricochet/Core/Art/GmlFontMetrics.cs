@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     /// <summary>
     /// One glyph of a GameMaker font.gmx: its cell in the baked atlas (x right and y down from the atlas's top left,

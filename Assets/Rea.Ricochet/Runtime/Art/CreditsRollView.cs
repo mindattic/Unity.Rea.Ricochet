@@ -4,7 +4,7 @@
 // until the last line has left its top, then again. The picture is dimmed under the roll so the painted names it already
 // carries do not fight the moving text. Each time the screen is shown the roll starts over; it runs on unscaled time.
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Menu;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

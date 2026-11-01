@@ -12,9 +12,9 @@
 using System.Collections.Generic;
 using MindAttic.Components.Unity;       // MaCanvas, MaButton
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Match;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using TMPro;
 using Unity.Multiplayer;                // NetSession, NetVotes
 using Unity.Multiplayer.UI;             // NetFrontEnd

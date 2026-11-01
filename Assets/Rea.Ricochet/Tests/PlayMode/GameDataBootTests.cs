@@ -5,13 +5,13 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
-using Rea.Rea.Ricochet.Core.Data;
-using Rea.Rea.Ricochet.Core.Level;
-using Rea.Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Data;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Rea.Rea.Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class GameDataBootTests
     {

@@ -5,8 +5,8 @@
 // knocked the dummy down. Keep the shape: wait for what you need, play like a player would (the same [ToServer]
 // calls), and Pass or Fail.
 using System.Threading.Tasks;
-using Rea.Rea.Ricochet.Core.Aim;
-using Rea.Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Level;
 using Unity.Multiplayer; // IBotDriver, NetBot, [NetBotDriver]
 using UnityEngine.Scripting;
 

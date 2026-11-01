@@ -3,7 +3,7 @@
 // material property instead of nine draws of the same string. Engine-free so the Core tests can check it.
 using System;
 
-namespace Rea.Rea.Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     public static class SignedDistanceField
     {

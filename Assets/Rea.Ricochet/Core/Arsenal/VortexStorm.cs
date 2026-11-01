@@ -13,10 +13,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Arsenal
+namespace Rea.Ricochet.Core.Arsenal
 {
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Level;
 
     /// <summary>Plays out a set-off vortex's pull and blow over a level's shapes and says which tank a flung shape strikes.</summary>
     public static class VortexStorm

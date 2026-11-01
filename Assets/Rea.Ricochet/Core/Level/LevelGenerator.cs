@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Rea.Rea.Ricochet.Core.Level
+namespace Rea.Ricochet.Core.Level
 {
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Match;
     /// <summary>Which of the original's five shape sets the walls are drawn from (its shapetype setting), or a mix.</summary>
     public enum ShapeKind
     {
@@ -56,7 +56,7 @@ namespace Rea.Rea.Ricochet.Core.Level
         /// <summary>The stock setup, from level.json (UR-T35): a new set starts as a copy of it.</summary>
         public LevelSettings()
         {
-            CopyFrom(Rea.Rea.Ricochet.Core.Data.GameData.Current.Level);
+            CopyFrom(Rea.Ricochet.Core.Data.GameData.Current.Level);
         }
 
         internal LevelSettings(bool blank)

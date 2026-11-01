@@ -18,10 +18,10 @@
 using System.Collections.Generic;
 using System.Text;
 using MindAttic.Components.Unity; // MaCanvas, MaText, TextStyle
-using Rea.Rea.Ricochet.Core.Ai;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Match;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Ai;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using TMPro;                      // TextAlignmentOptions
 using Unity.Multiplayer;          // NetBootstrap, NetSession
 using UnityEngine;

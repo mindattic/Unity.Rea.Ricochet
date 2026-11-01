@@ -9,7 +9,7 @@
 // (menu.json's fadeSeconds: 100 steps of 0.01 at the 60 steps a second of the rooms that carry one).
 using System;
 
-namespace Rea.Rea.Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
     /// <summary>What the curtain is doing (obj_fade's mode).</summary>
     public enum FadeMode
@@ -43,7 +43,7 @@ namespace Rea.Rea.Ricochet.Core.Menu
         {
             get
             {
-                Rea.Rea.Ricochet.Core.Data.GameData data = Rea.Rea.Ricochet.Core.Data.GameData.Current;
+                Rea.Ricochet.Core.Data.GameData data = Rea.Ricochet.Core.Data.GameData.Current;
                 double seconds = data != null && data.Menu != null ? data.Menu.FadeSeconds : 0;
                 return seconds > 0 ? seconds : DefaultSeconds;
             }

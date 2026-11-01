@@ -4,15 +4,15 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Rea.Rea.Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class BackdropTests : NetSessionTest
     {

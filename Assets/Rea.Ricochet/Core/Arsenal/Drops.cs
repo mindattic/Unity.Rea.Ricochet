@@ -17,10 +17,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Arsenal
+namespace Rea.Ricochet.Core.Arsenal
 {
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Level;
     public enum DropKind
     {
         /// <summary>obj_weapondrop: a random weapon.</summary>

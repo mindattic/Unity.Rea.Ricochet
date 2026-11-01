@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MenuScreen, MaText, MaSelect, TextStyle
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Rea.Rea.Ricochet.Core.Ai;
-using Rea.Rea.Ricochet.Core.Arsenal;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Level;
-using Rea.Rea.Ricochet.Core.Match;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Ai;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Match
+namespace Rea.Ricochet.Core.Match
 {
     public enum AnnouncementKind
     {
@@ -142,7 +142,7 @@ namespace Rea.Rea.Ricochet.Core.Match
         /// <summary>Every personality, in the settings screen's order (obj_btn_announcer_next).</summary>
         public static IReadOnlyList<AnnouncerVoice> Voices => Data.Announcer.Voices;
 
-        private static Rea.Rea.Ricochet.Core.Data.GameData Data => Rea.Rea.Ricochet.Core.Data.GameData.Current;
+        private static Rea.Ricochet.Core.Data.GameData Data => Rea.Ricochet.Core.Data.GameData.Current;
 
         /// <summary>The personality on the air (an index into <see cref="Voices"/>).</summary>
         public int Voice { get; }

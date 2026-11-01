@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
     /// <summary>A player's name and colour (0xRRGGBB).</summary>
     public readonly struct PlayerLook

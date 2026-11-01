@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace Rea.Rea.Ricochet.Tooling
+namespace Rea.Ricochet.Tooling
 {
     /// <summary>
     /// Art/gml-art.json, the file Tools/import-gml-art.ps1 writes from the original project (U.RICO-T44): every GML

@@ -14,9 +14,9 @@
 //   obj_flashemitter   the endgame room: an obj_flash every step at a random spot in the 1920x1080 room, gone at once when
 //                      it falls in the lower half's middle third; each plays spr_flash's six frames once (image_speed 1).
 using System;
-using Rea.Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Arsenal;
 
-namespace Rea.Rea.Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     public static class ItemLooks
     {

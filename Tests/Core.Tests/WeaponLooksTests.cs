@@ -1,9 +1,9 @@
 using System;
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Art;
 
     // U.RICO-T47: draw_dottedline's dashes, the rail's fade and swirls, obj_laser's pulse timing, obj_grenade_explosion's
     // circle, obj_shieldwall's and obj_redirector's growth and vortex_step's modes.
@@ -39,9 +39,9 @@ namespace Rea.Rea.Ricochet.Core.Tests
         public void ASliceOfThePathRunsFromEndToEndThroughEveryCornerBetween()
         {
             // From the centre of a 20 x 10 box straight right: the muzzle at 0.5, the wall 9.5 on, then 20 per crossing.
-            var rules = new Rea.Rea.Ricochet.Core.Aim.ShotRules { MuzzleOffset = 0.5, MaxBounces = 3 };
-            var path = Rea.Rea.Ricochet.Core.Aim.BounceSolver.Solve(Rea.Rea.Ricochet.Core.Aim.Vec2.Zero, 0, new Rea.Rea.Ricochet.Core.Level.Level(-10, -5, 10, 5), null, rules);
-            var slice = new System.Collections.Generic.List<Rea.Rea.Ricochet.Core.Aim.Vec2>();
+            var rules = new Rea.Ricochet.Core.Aim.ShotRules { MuzzleOffset = 0.5, MaxBounces = 3 };
+            var path = Rea.Ricochet.Core.Aim.BounceSolver.Solve(Rea.Ricochet.Core.Aim.Vec2.Zero, 0, new Rea.Ricochet.Core.Level.Level(-10, -5, 10, 5), null, rules);
+            var slice = new System.Collections.Generic.List<Rea.Ricochet.Core.Aim.Vec2>();
 
             path.Slice(5, 15, slice);
             Assert.That(slice, Has.Count.EqualTo(3));

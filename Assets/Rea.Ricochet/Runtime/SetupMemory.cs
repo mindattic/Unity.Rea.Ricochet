@@ -6,7 +6,7 @@
 // Only the game block is written, so a session mute (Profiles.SessionMuted) never touches the stored audio settings.
 using System;
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Match;
 using Unity.Shared;
 using Unity.Shared.Core;
 using Unity.Shared.Core.Json;

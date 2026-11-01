@@ -8,18 +8,18 @@ using System.Collections;
 using System.Linq;
 using MindAttic.Components.Unity;
 using NUnit.Framework;
-using Rea.Rea.Ricochet.Core.Aim;
-using Rea.Rea.Ricochet.Core.Arsenal;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Level;
-using Rea.Rea.Ricochet.Core.Match;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Rea.Rea.Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class MenuFlowTests : NetSessionTest
     {

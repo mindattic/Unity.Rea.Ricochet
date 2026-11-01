@@ -4,10 +4,10 @@
 // (UR-T9) or a new round is laid, the drawing is rebuilt from the new level. The floor, clouds, lights and border
 // sprites under and around it are BackdropView's.
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Aim;
-using Rea.Rea.Ricochet.Core.Arsenal;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using UnityEngine;
 
 namespace Rea.Ricochet

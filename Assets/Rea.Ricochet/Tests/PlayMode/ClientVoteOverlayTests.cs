@@ -9,7 +9,7 @@ using Unity.Multiplayer.Testing;
 using Unity.Multiplayer.UI;
 using UnityEngine.TestTools;
 
-namespace Rea.Rea.Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class ClientVoteOverlayTests : NetSessionTest
     {

@@ -1,6 +1,6 @@
 // The original's name pools, as data (U.RICO-T110): names_f.ini then names_m.ini from the GameMaker datafiles, one first name each,
 // verbatim and in file order. Generated; AiNames reads them.
-namespace Rea.Rea.Ricochet.Core.Ai
+namespace Rea.Ricochet.Core.Ai
 {
     internal static class AiNamesData
     {

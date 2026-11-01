@@ -5,7 +5,7 @@
 // (which sorts at 90) and take no clicks. Presentation only, on every peer.
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MaCanvas
-using Rea.Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using UnityEngine;
 using UnityEngine.UI;
 

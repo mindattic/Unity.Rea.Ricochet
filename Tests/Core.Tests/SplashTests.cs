@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Menu;
+    using Rea.Ricochet.Core.Menu;
 
     // U.RICO-T57: the splash and the startup credits rooms' step logic.
     public class SplashTests

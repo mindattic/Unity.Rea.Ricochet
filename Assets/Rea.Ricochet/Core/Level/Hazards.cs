@@ -24,10 +24,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Level
+namespace Rea.Ricochet.Core.Level
 {
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
     public enum HazardKind
     {
         /// <summary>A player's hologram wall (the shield wall item).</summary>
@@ -124,7 +124,7 @@ namespace Rea.Rea.Ricochet.Core.Level
         /// <summary>The stock rules, from hazards.json (UR-T35): a new set starts as a copy of them.</summary>
         public HazardRules()
         {
-            CopyFrom(Rea.Rea.Ricochet.Core.Data.GameData.Current.Hazards);
+            CopyFrom(Rea.Ricochet.Core.Data.GameData.Current.Hazards);
         }
 
         internal HazardRules(bool blank)

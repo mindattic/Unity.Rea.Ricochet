@@ -2,14 +2,14 @@ using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Rea.Rea.Ricochet.Core.Aim;
-using Rea.Rea.Ricochet.Core.Arsenal;
-using Rea.Rea.Ricochet.Core.Data;
-using Rea.Rea.Ricochet.Core.Level;
-using Rea.Rea.Ricochet.Core.Match;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Data;
+using Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
     // UR-T35: the rules and content are data files, loaded and validated by Core.
     public class GameDataTests

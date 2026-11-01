@@ -1,6 +1,6 @@
 {
     "name": "Rea.Ricochet.Core",
-    "rootNamespace": "Ricochet.Core",
+    "rootNamespace": "Rea.Ricochet.Core",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

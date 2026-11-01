@@ -10,8 +10,8 @@
 // screen over the HUD, under the endgame recap, the kit's menus and the vote overlay (so a vote can be answered from it).
 using MindAttic.Components.Unity;       // MenuStack, MenuScreen
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Rea.Rea.Ricochet.Core.Match;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer;                // NetSession, VoteBoard, NetBots
 using Unity.Multiplayer.UI;             // NetFrontEnd, FrontEndState
 using UnityEngine;
@@ -194,7 +194,7 @@ namespace Rea.Ricochet
                 TMPro.TMP_Text title = GmlMenuSkin.TitleOf(_screen);
                 if (title != null)
                 {
-                    GmlFontLabel.Attach(title, Rea.Rea.Ricochet.Core.Art.MenuLooks.ButtonFont, Rea.Rea.Ricochet.Core.Art.MenuLooks.ButtonOutline);
+                    GmlFontLabel.Attach(title, Rea.Ricochet.Core.Art.MenuLooks.ButtonFont, Rea.Ricochet.Core.Art.MenuLooks.ButtonOutline);
                 }
             }
 

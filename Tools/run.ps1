@@ -11,7 +11,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $exe = Join-Path $root 'Build/Ricochet/Ricochet.exe'
 if (Test-Path $exe) { Remove-Item $exe -Force }
 
-& (Join-Path $PSScriptRoot 'unity.ps1') -Method Ricochet.Tooling.RicochetBuild.BuildWindows -Log deploy
+& (Join-Path $PSScriptRoot 'unity.ps1') -Method Rea.Ricochet.Tooling.RicochetBuild.BuildWindows -Log deploy
 $exitCode = $LASTEXITCODE
 if ($exitCode -ne 0) { exit $exitCode }
 if (-not (Test-Path $exe)) {

@@ -1,8 +1,8 @@
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Art;
 
     // U.RICO-T78: the menus' and the game screen's buttons as the original drew them (obj_btn_*, the less / more arrows,
     // obj_checkbox_*, obj_inputbox*, the tiny buttons and arrows) and the steppers' wrap.

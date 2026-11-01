@@ -23,7 +23,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     /// <summary>One shard of spawn_glass: where it starts from the wall, its sprite, its turn and its speed (pixels and degrees a step).</summary>
     public readonly struct GlassShard

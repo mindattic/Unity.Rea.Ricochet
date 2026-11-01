@@ -1,8 +1,8 @@
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Aim;
     public class GeometryTests
     {
         // LineLineIntersection_X.gml and _Y.gml, verbatim, as the reference the port must match.

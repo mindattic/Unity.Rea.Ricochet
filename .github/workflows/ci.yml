@@ -124,7 +124,7 @@ jobs:
         with:
           projectPath: Unity.Rea.Ricochet
           targetPlatform: StandaloneWindows64
-          buildMethod: Ricochet.Tooling.RicochetBuild.BuildWindows
+          buildMethod: Rea.Ricochet.Tooling.RicochetBuild.BuildWindows
           allowDirtyBuild: true
       - name: Check the player was produced
         if: ${{ !cancelled() }}

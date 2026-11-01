@@ -7,8 +7,8 @@
 // see the same backdrop and nothing new is sent. Presentation only.
 using System;
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Level;
 using UnityEngine;
 
 namespace Rea.Ricochet

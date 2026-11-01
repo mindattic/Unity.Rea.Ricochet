@@ -4,8 +4,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Ricochet.Core.Tests</AssemblyName>
-    <RootNamespace>Ricochet.Core.Tests</RootNamespace>
+    <AssemblyName>Rea.Ricochet.Core.Tests</AssemblyName>
+    <RootNamespace>Rea.Ricochet.Core.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

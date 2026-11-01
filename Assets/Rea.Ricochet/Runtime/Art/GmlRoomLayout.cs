@@ -14,7 +14,7 @@
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MenuScreen, MenuStack, MaButton, MaFormRow, MaToggle, MaTextbox, MaText, MaRow
 using MindAttic.Components.Unity.Core; // ButtonVariant
-using Rea.Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Art;
 using UnityEngine;
 using UnityEngine.UI;
 

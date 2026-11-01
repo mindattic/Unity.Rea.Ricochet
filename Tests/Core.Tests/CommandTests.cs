@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Arsenal;
-    using Rea.Rea.Ricochet.Core.Art;
-    using Rea.Rea.Ricochet.Core.Commands;
-    using Rea.Rea.Ricochet.Core.Level;
-    using Rea.Rea.Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Commands;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
 
     // UR-T34: every command goes through the one authority, which answers with the ordered events it caused. Each test
     // gives one command and reads the events and the state it left, with no engine and no Runtime.

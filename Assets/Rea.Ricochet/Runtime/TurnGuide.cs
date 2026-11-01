@@ -9,8 +9,8 @@
 //                     (never created in the original: a fixed defect).
 // The turn arrow over the tank is the Player's own marker (spr_turnarrow since U.RICO-T49).
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Art;
-using Rea.Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Art;
+using Rea.Ricochet.Core.Match;
 using TMPro;
 using Unity.Multiplayer;          // NetSession
 using UnityEngine;

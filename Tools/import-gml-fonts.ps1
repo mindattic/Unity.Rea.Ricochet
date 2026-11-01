@@ -278,6 +278,6 @@ Write-Host "  draw_text_outline sizes: $(($sizes | ForEach-Object { "$($_.size) 
 foreach ($s in $skipped) { Write-Host "  skipped $($s.kind) $($s.name): $($s.reason)" }
 
 if (-not $NoUnity) {
-    & powershell -NoProfile -File (Join-Path $PSScriptRoot 'unity.ps1') -Method Ricochet.Tooling.GmlFontBuilder.BuildAll -Log fonts
+    & powershell -NoProfile -File (Join-Path $PSScriptRoot 'unity.ps1') -Method Rea.Ricochet.Tooling.GmlFontBuilder.BuildAll -Log fonts
     exit $LASTEXITCODE
 }

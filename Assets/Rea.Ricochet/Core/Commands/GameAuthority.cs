@@ -11,15 +11,15 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Commands
+namespace Rea.Ricochet.Core.Commands
 {
-    using Rea.Rea.Ricochet.Core.Ai;
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Arsenal;
-    using Rea.Rea.Ricochet.Core.Art;
-    using Rea.Rea.Ricochet.Core.Level;
-    using Rea.Rea.Ricochet.Core.Match;
-    using Rea.Rea.Ricochet.Core.Net;
+    using Rea.Ricochet.Core.Ai;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Net;
 
     /// <summary>What the authority cannot know on its own: where the practice dummies stand.</summary>
     public interface IGameWorld

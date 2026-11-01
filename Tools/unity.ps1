@@ -4,8 +4,8 @@
   pattern as Unity.Hare and Unity.Chain's tools/unity.ps1).
 .EXAMPLE
   powershell -File Tools/unity.ps1 -Log compile
-  powershell -File Tools/unity.ps1 -Method Ricochet.Tooling.RicochetBuild.BuildWindows -Log deploy
-  powershell -File Tools/unity.ps1 -Log test-playmode -Extra "-runTests -testPlatform PlayMode -testFilter Ricochet.Tests.SessionMuteAudioTests -testResults Logs/TestResults-PlayMode.xml"
+  powershell -File Tools/unity.ps1 -Method Rea.Ricochet.Tooling.RicochetBuild.BuildWindows -Log deploy
+  powershell -File Tools/unity.ps1 -Log test-playmode -Extra "-runTests -testPlatform PlayMode -testFilter Rea.Ricochet.Tests.SessionMuteAudioTests -testResults Logs/TestResults-PlayMode.xml"
 .NOTES
   Unity batch mode needs the Editor closed on this project. This script refuses to run if it is open.
   Every run's full Unity log is captured to Logs/<Log>.log.

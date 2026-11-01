@@ -1,8 +1,8 @@
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Art;
+    using Rea.Ricochet.Core.Art;
 
     // U.RICO-T44: the font pipeline's engine-free half (the glyph table, the SDF atlas, draw_text_outline's outline).
     public class GmlFontTests

@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Rea.Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
     /// <summary>The original's music_* recordings, one per track.</summary>
     public enum MusicTrack

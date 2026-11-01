@@ -9,11 +9,11 @@
 // played at this same effect volume) and the music U.RICO-T27's.
 using System;
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Aim;
-using Rea.Rea.Ricochet.Core.Arsenal;
-using Rea.Rea.Ricochet.Core.Commands;
+using Rea.Ricochet.Core.Aim;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Commands;
 
-namespace Rea.Rea.Ricochet.Core.Menu
+namespace Rea.Ricochet.Core.Menu
 {
     /// <summary>
     /// The original's sound effects, one per recording (sfx_&lt;name&gt; in its sound folder; <see cref="SoundBook.Recording"/>

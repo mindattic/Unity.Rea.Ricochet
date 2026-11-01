@@ -8,12 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Rea.Rea.Ricochet.Core.Data
+namespace Rea.Ricochet.Core.Data
 {
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Arsenal;
-    using Rea.Rea.Ricochet.Core.Level;
-    using Rea.Rea.Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
 
     public sealed class GameData
     {
@@ -82,7 +82,7 @@ namespace Rea.Rea.Ricochet.Core.Data
         public ShapeTable Shapes { get; internal set; }
 
         /// <summary>The level backdrop (U.RICO-T46): floors, clouds, spotlight, lights and border sprites.</summary>
-        public Rea.Rea.Ricochet.Core.Art.BackdropRules Backdrop { get; internal set; }
+        public Rea.Ricochet.Core.Art.BackdropRules Backdrop { get; internal set; }
 
         /// <summary>The Settings screen's registry, in screen order.</summary>
         public IReadOnlyList<SettingDef> Registry { get; internal set; }

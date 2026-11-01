@@ -1,6 +1,6 @@
 {
     "name": "Rea.Ricochet.Editor",
-    "rootNamespace": "Ricochet.Tooling",
+    "rootNamespace": "Rea.Ricochet.Tooling",
     "references": [
         "Rea.Ricochet.Core",
         "Rea.Ricochet.Runtime",

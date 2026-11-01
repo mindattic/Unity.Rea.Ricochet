@@ -21,9 +21,9 @@
 //   obj_redirector               spr_redirector_arrow from 0.3 of its size growing 0.01 a step once it stops.
 using System;
 using System.Collections.Generic;
-using Rea.Rea.Ricochet.Core.Level;
+using Rea.Ricochet.Core.Level;
 
-namespace Rea.Rea.Ricochet.Core.Art
+namespace Rea.Ricochet.Core.Art
 {
     /// <summary>An opaque colour, as GameMaker's make_color_rgb.</summary>
     public readonly struct GmlColor

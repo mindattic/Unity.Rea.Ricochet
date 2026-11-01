@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace Rea.Rea.Ricochet.Core.Data
+namespace Rea.Ricochet.Core.Data
 {
     /// <summary>The kinds of value a JSON document holds.</summary>
     public enum JsonKind

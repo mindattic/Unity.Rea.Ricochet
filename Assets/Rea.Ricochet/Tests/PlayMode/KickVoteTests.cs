@@ -5,14 +5,14 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Rea.Rea.Ricochet.Core.Match;
-using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine.TestTools;
 
-namespace Rea.Rea.Ricochet.Tests
+namespace Rea.Ricochet.Tests
 {
     public class KickVoteTests : NetSessionTest
     {

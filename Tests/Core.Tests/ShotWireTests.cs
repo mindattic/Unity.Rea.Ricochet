@@ -1,13 +1,13 @@
 using System.Linq;
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Aim;
-    using Rea.Rea.Ricochet.Core.Arsenal;
-    using Rea.Rea.Ricochet.Core.Level;
-    using Rea.Rea.Ricochet.Core.Menu;
-    using Rea.Rea.Ricochet.Core.Net;
+    using Rea.Ricochet.Core.Aim;
+    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Menu;
+    using Rea.Ricochet.Core.Net;
     public class ShotWireTests
     {
         // A room with a mirror wall and a redirector, so a shot makes every kind of contact.

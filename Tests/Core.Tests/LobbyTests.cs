@@ -1,11 +1,11 @@
 using System.Linq;
 using NUnit.Framework;
 
-namespace Rea.Rea.Ricochet.Core.Tests
+namespace Rea.Ricochet.Core.Tests
 {
-    using Rea.Rea.Ricochet.Core.Level;
-    using Rea.Rea.Ricochet.Core.Match;
-    using Rea.Rea.Ricochet.Core.Menu;
+    using Rea.Ricochet.Core.Level;
+    using Rea.Ricochet.Core.Match;
+    using Rea.Ricochet.Core.Menu;
     // UR-T11: the host's lobby: how the sixteen seats fill as people join (everyone in the lobby, then as many of the AI
     // opponents asked for as still fit), whether Start can begin a match, and what the lobby's match box says.
     public class LobbyTests

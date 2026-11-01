@@ -7,7 +7,7 @@ using UnityEditor.U2D;
 using UnityEngine;
 using UnityEngine.U2D;
 
-namespace Rea.Rea.Ricochet.Tooling
+namespace Rea.Ricochet.Tooling
 {
     /// <summary>
     /// Turns Art/gml-art.json (written by Tools/import-gml-art.ps1) into the Unity side of the original's art (U.RICO-T44):
@@ -16,7 +16,7 @@ namespace Rea.Rea.Ricochet.Tooling
     /// mapping every GML sprite and background name to its sprites and the original file it came from. Stale atlases are
     /// deleted. Rerunning it on the same data rewrites the same files.
     ///
-    /// Batch: Tools/unity.ps1 -Method Rea.Rea.Ricochet.Tooling.GmlArtBuilder.BuildAll (Tools/import-gml-art.ps1 runs it).
+    /// Batch: Tools/unity.ps1 -Method Rea.Ricochet.Tooling.GmlArtBuilder.BuildAll (Tools/import-gml-art.ps1 runs it).
     /// </summary>
     public static class GmlArtBuilder
     {

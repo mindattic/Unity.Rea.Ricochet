@@ -15,8 +15,8 @@
 using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity;      // MaCanvas, MaPanel, MaText, PanelStyle, TextStyle
-using Rea.Rea.Ricochet.Core.Arsenal;
-using Rea.Rea.Ricochet.Core.Match;
+using Rea.Ricochet.Core.Arsenal;
+using Rea.Ricochet.Core.Match;
 using TMPro;                           // TextAlignmentOptions
 using Unity.Multiplayer;               // NetSession
 using UnityEngine;

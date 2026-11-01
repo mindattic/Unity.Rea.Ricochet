@@ -1,4 +1,4 @@
-// Editor-only validator for the Core boundary: Rea.Rea.Ricochet.Core is the engine-free rules assembly (it also builds as a plain
+// Editor-only validator for the Core boundary: Rea.Ricochet.Core is the engine-free rules assembly (it also builds as a plain
 // .NET library for Tests/Core.Tests), so it may reference nothing but the BCL. Run from Ricochet > Validate Core Boundary,
 // or let the EditMode test CoreBoundaryTests fail on the same list.
 using System;
@@ -8,11 +8,11 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Rea.Rea.Ricochet.Tooling
+namespace Rea.Ricochet.Tooling
 {
     public static class CoreBoundaryValidator
     {
-        public const string CoreAssemblyName = "Rea.Rea.Ricochet.Core";
+        public const string CoreAssemblyName = "Rea.Ricochet.Core";
 
         // Assembly names the engine-free Core may reference: the .NET base class library only.
         private static bool IsBaseLibrary(string name) =>
