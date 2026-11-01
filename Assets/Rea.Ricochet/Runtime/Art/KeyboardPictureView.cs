@@ -5,7 +5,7 @@
 // line from each action's leftmost key to its name, and the mouse with each bound button coloured. It draws itself again
 // whenever a binding changes (the rebind screen, Reset to defaults) and each time the screen shows.
 using System.Collections.Generic;
-using Rea.Ricochet.Core.Art;
+using Rea.Rea.Ricochet.Core.Art;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;

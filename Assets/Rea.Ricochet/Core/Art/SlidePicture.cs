@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Ricochet.Core.Art
+namespace Rea.Rea.Ricochet.Core.Art
 {
     public static class SlidePicture
     {

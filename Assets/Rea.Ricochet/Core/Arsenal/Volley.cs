@@ -17,11 +17,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Ricochet.Core.Arsenal
+namespace Rea.Rea.Ricochet.Core.Arsenal
 {
-    using Rea.Ricochet.Core.Aim;
-    using Rea.Ricochet.Core.Art;
-    using Rea.Ricochet.Core.Level;
+    using Rea.Rea.Ricochet.Core.Aim;
+    using Rea.Rea.Ricochet.Core.Art;
+    using Rea.Rea.Ricochet.Core.Level;
     /// <summary>One player struck by a volley.</summary>
     public readonly struct Strike
     {
@@ -232,7 +232,7 @@ namespace Rea.Ricochet.Core.Arsenal
                         if (dice != null)
                         {
                             pellet = shot.Clone();
-                            pellet.MuzzleOffset = (40 + dice.Next(1, 31)) * Rea.Ricochet.Core.Level.ShapeLibrary.UnitsPerPixel;
+                            pellet.MuzzleOffset = (40 + dice.Next(1, 31)) * Rea.Rea.Ricochet.Core.Level.ShapeLibrary.UnitsPerPixel;
                             offset = dice.Next(-spread, spread + 1);
                             int limit = baseBounces < 2 ? dice.Next(0, baseBounces + 1) : dice.Next(2, baseBounces + 1);
                             pellet.MaxBounces = Math.Max(1, limit + Math.Max(0, extraBounces));
@@ -518,7 +518,7 @@ namespace Rea.Ricochet.Core.Arsenal
                 return;
             }
 
-            double stepUnits = 2 * Rea.Ricochet.Core.Level.ShapeLibrary.UnitsPerPixel;
+            double stepUnits = 2 * Rea.Rea.Ricochet.Core.Level.ShapeLibrary.UnitsPerPixel;
             Target? first = null;
             double firstStep = double.PositiveInfinity;
             foreach (Target target in targets)

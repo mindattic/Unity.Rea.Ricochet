@@ -1,10 +1,10 @@
 using System;
 using NUnit.Framework;
 
-namespace Rea.Ricochet.Core.Tests
+namespace Rea.Rea.Ricochet.Core.Tests
 {
-    using Rea.Ricochet.Core.Arsenal;
-    using Rea.Ricochet.Core.Art;
+    using Rea.Rea.Ricochet.Core.Arsenal;
+    using Rea.Rea.Ricochet.Core.Art;
 
     // U.RICO-T79: the items in flight and the endgame room's camera flashes, held to the original's numbers.
     public class ItemLooksTests

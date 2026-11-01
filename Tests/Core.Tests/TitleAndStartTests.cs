@@ -1,11 +1,11 @@
 using System.Linq;
 using NUnit.Framework;
 
-namespace Rea.Ricochet.Core.Tests
+namespace Rea.Rea.Ricochet.Core.Tests
 {
-    using Rea.Ricochet.Core.Art;
-    using Rea.Ricochet.Core.Level;
-    using Rea.Ricochet.Core.Match;
+    using Rea.Rea.Ricochet.Core.Art;
+    using Rea.Rea.Ricochet.Core.Level;
+    using Rea.Rea.Ricochet.Core.Match;
 
     // U.RICO-T52: the title's and the main menu's drifting letters (obj_letter_parent) and the Start screen's level settings
     // (the titlescreen room's setup panel), which every random round's seed carries to every peer.

@@ -19,10 +19,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Ricochet.Core.Match
+namespace Rea.Rea.Ricochet.Core.Match
 {
-    using Rea.Ricochet.Core.Ai;
-    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Rea.Ricochet.Core.Ai;
+    using Rea.Rea.Ricochet.Core.Arsenal;
     public enum SeatKind
     {
         Human,

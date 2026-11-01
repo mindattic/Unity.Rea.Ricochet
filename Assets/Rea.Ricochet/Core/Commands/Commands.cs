@@ -6,7 +6,7 @@
 // match, the loadouts, the crates or the hazards any other way; there is no "current player", the command says who.
 // A command is a request, never a fact: the authority clamps garbage (a NaN heading) and ignores what the
 // player may not do now (out of turn, a shot already in the air), answering with no events at all.
-namespace Rea.Ricochet.Core.Commands
+namespace Rea.Rea.Ricochet.Core.Commands
 {
     /// <summary>Something a player asks the game to do.</summary>
     public abstract class Command
@@ -67,23 +67,23 @@ namespace Rea.Ricochet.Core.Commands
     /// <summary>Select this weapon (a click on its HUD icon, obj_icon_weapon_*, U.RICO-T49); refused when the player has none.</summary>
     public sealed class SelectWeaponCommand : Command
     {
-        public SelectWeaponCommand(int playerId, Rea.Ricochet.Core.Arsenal.Weapon weapon) : base(playerId)
+        public SelectWeaponCommand(int playerId, Rea.Rea.Ricochet.Core.Arsenal.Weapon weapon) : base(playerId)
         {
             Weapon = weapon;
         }
 
-        public Rea.Ricochet.Core.Arsenal.Weapon Weapon { get; }
+        public Rea.Rea.Ricochet.Core.Arsenal.Weapon Weapon { get; }
     }
 
     /// <summary>Select this item (a click on its HUD icon, obj_item_*, U.RICO-T49); refused when the player has none.</summary>
     public sealed class SelectItemCommand : Command
     {
-        public SelectItemCommand(int playerId, Rea.Ricochet.Core.Arsenal.Item item) : base(playerId)
+        public SelectItemCommand(int playerId, Rea.Rea.Ricochet.Core.Arsenal.Item item) : base(playerId)
         {
             Item = item;
         }
 
-        public Rea.Ricochet.Core.Arsenal.Item Item { get; }
+        public Rea.Rea.Ricochet.Core.Arsenal.Item Item { get; }
     }
 
     /// <summary>The grenade fuse keys: negative shortens, +1 lengthens, +2 or more sets the longest.</summary>

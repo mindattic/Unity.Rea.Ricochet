@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-namespace Rea.Ricochet.EditorTests
+namespace Rea.Rea.Ricochet.EditorTests
 {
     public class RenderSettingsTests
     {

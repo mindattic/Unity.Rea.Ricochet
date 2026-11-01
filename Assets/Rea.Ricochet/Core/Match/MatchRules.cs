@@ -7,9 +7,9 @@
 // (points_flighttime on obj_bullet's alarm); scores carry over from round to round for the whole match.
 using System;
 
-namespace Rea.Ricochet.Core.Match
+namespace Rea.Rea.Ricochet.Core.Match
 {
-    using Rea.Ricochet.Core.Arsenal;
+    using Rea.Rea.Ricochet.Core.Arsenal;
     public sealed class MatchRules
     {
         /// <summary>The most seats a match has, humans and AI together (the original's eight: obj_btn_players_more and obj_btn_ai_more stop at 8).</summary>
@@ -63,7 +63,7 @@ namespace Rea.Ricochet.Core.Match
         /// <summary>The stock rules, from match.json (UR-T35): a new set starts as a copy of them.</summary>
         public MatchRules()
         {
-            CopyFrom(Rea.Ricochet.Core.Data.GameData.Current.Match);
+            CopyFrom(Rea.Rea.Ricochet.Core.Data.GameData.Current.Match);
         }
 
         internal MatchRules(bool blank)

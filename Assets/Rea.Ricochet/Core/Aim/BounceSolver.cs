@@ -7,9 +7,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rea.Ricochet.Core.Aim
+namespace Rea.Rea.Ricochet.Core.Aim
 {
-    using Rea.Ricochet.Core.Level;
+    using Rea.Rea.Ricochet.Core.Level;
     public static class BounceSolver
     {
         // A ray starting on a surface it just left would hit it again at distance ~0; anything closer than this is that.

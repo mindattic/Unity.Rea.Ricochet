@@ -6,17 +6,17 @@
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using Rea.Ricochet.Core.Aim;
-using Rea.Ricochet.Core.Arsenal;
-using Rea.Ricochet.Core.Level;
-using Rea.Ricochet.Core.Match;
+using Rea.Rea.Ricochet.Core.Aim;
+using Rea.Rea.Ricochet.Core.Arsenal;
+using Rea.Rea.Ricochet.Core.Level;
+using Rea.Rea.Ricochet.Core.Match;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Rea.Ricochet.Tests
+namespace Rea.Rea.Ricochet.Tests
 {
     public class AnnouncerTests : NetSessionTest
     {
@@ -126,7 +126,7 @@ namespace Rea.Ricochet.Tests
             yield return WaitUntil(() => (turns = Turns.For(Client)) != null && turns.Announced == 1, "the client never heard the welcome");
 
             float miss = 0f; // a shot flies all its bounces (U.RICO-T88): one that reaches nobody
-            while (host.Solve(miss).End == Rea.Ricochet.Core.Aim.ShotEndKind.Target)
+            while (host.Solve(miss).End == Rea.Rea.Ricochet.Core.Aim.ShotEndKind.Target)
             {
                 miss += 1f;
             }

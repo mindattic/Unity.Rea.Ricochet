@@ -5,7 +5,7 @@
 // The buttons only feed OnScreenControls; GameInput merges them with the keys, so every rule (your turn, a shot in the air,
 // no shooting after driving) is PlayerAim's and the server's, same as for a key. It shows whenever the local human has a tank.
 using MindAttic.Components.Unity; // MaCanvas, MaText, TextStyle
-using Rea.Ricochet.Core.Art;
+using Rea.Rea.Ricochet.Core.Art;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;

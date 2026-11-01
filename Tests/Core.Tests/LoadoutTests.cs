@@ -1,9 +1,9 @@
 using NUnit.Framework;
 
-namespace Rea.Ricochet.Core.Tests
+namespace Rea.Rea.Ricochet.Core.Tests
 {
-    using Rea.Ricochet.Core.Arsenal;
-    using Rea.Ricochet.Core.Level;
+    using Rea.Rea.Ricochet.Core.Arsenal;
+    using Rea.Rea.Ricochet.Core.Level;
     public class LoadoutTests
     {
         [Test]

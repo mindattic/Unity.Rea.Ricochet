@@ -4,7 +4,7 @@
 // colour the original passed, fading out over its life, above everything else on the level (effect_create_above), at the
 // room speed. One pooled component draws them all; nothing here touches the game.
 using System.Collections.Generic;
-using Rea.Ricochet.Core.Art;
+using Rea.Rea.Ricochet.Core.Art;
 using UnityEngine;
 
 namespace Rea.Ricochet

@@ -25,14 +25,14 @@
 // U.RICO-T48: each of those blasts leaves its scorch mark on the level (FieldEffects): obj_scorchmark_small under a hit's
 // obj_boom_normal, a spent shell's obj_explosion and a vortex's obj_boom or obj_explosion, obj_scorchmark under a grenade's.
 using System.Collections.Generic;
-using Rea.Ricochet.Core.Aim;
-using Rea.Ricochet.Core.Arsenal;
-using Rea.Ricochet.Core.Art;
-using Rea.Ricochet.Core.Level;
-using Rea.Ricochet.Core.Menu;
-using Rea.Ricochet.Core.Net;
+using Rea.Rea.Ricochet.Core.Aim;
+using Rea.Rea.Ricochet.Core.Arsenal;
+using Rea.Rea.Ricochet.Core.Art;
+using Rea.Rea.Ricochet.Core.Level;
+using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Rea.Ricochet.Core.Net;
 using UnityEngine;
-using Cmd = Rea.Ricochet.Core.Commands;
+using Cmd = Rea.Rea.Ricochet.Core.Commands;
 
 namespace Rea.Ricochet
 {

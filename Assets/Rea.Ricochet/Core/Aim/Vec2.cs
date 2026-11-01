@@ -3,7 +3,7 @@
 // convention (0 = right, 90 = up), which is what the 2013 original's aim angles mean.
 using System;
 
-namespace Rea.Ricochet.Core.Aim
+namespace Rea.Rea.Ricochet.Core.Aim
 {
     public readonly struct Vec2 : IEquatable<Vec2>
     {

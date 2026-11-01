@@ -1,10 +1,10 @@
 using NUnit.Framework;
 
-namespace Rea.Ricochet.Core.Tests
+namespace Rea.Rea.Ricochet.Core.Tests
 {
-    using Rea.Ricochet.Core.Aim;
-    using Rea.Ricochet.Core.Level;
-    using Rea.Ricochet.Core.Match;
+    using Rea.Rea.Ricochet.Core.Aim;
+    using Rea.Rea.Ricochet.Core.Level;
+    using Rea.Rea.Ricochet.Core.Match;
     public class DrivingTests
     {
         private static readonly Level Open = new Level(-10, -5, 10, 5);

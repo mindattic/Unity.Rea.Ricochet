@@ -4,7 +4,7 @@
 // each new level).
 using System;
 
-namespace Rea.Ricochet.Core.Level
+namespace Rea.Rea.Ricochet.Core.Level
 {
     public sealed class FogSurface
     {

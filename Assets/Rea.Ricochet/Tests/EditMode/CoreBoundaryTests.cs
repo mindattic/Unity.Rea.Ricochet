@@ -1,10 +1,10 @@
 using System.IO;
 using NUnit.Framework;
-using Rea.Ricochet.Tooling;
+using Rea.Rea.Ricochet.Tooling;
 
-namespace Rea.Ricochet.ToolingTests
+namespace Rea.Rea.Ricochet.ToolingTests
 {
-    // Rea.Ricochet.Core is the engine-free rules assembly: it must not reference UnityEngine or any assembly beyond the base
+    // Rea.Rea.Ricochet.Core is the engine-free rules assembly: it must not reference UnityEngine or any assembly beyond the base
     // class library (it is also compiled as plain .NET for Tests/Core.Tests).
     public class CoreBoundaryTests
     {
@@ -12,7 +12,7 @@ namespace Rea.Ricochet.ToolingTests
         public void CoreReferencesNoUnityOrOtherAssembly()
         {
             Assert.That(CoreBoundaryValidator.Violations(), Is.Empty,
-                "Rea.Ricochet.Core must stay engine-free: no UnityEngine and no other game assembly");
+                "Rea.Rea.Ricochet.Core must stay engine-free: no UnityEngine and no other game assembly");
         }
 
         [System.Serializable]
@@ -27,7 +27,7 @@ namespace Rea.Ricochet.ToolingTests
         [Test]
         public void CoreAsmdefDeclaresNoReferencesAndNoEngine()
         {
-            string path = Path.Combine(UnityEngine.Application.dataPath, "Ricochet", "Core", "Rea.Ricochet.Core.asmdef");
+            string path = Path.Combine(UnityEngine.Application.dataPath, "Ricochet", "Core", "Rea.Rea.Ricochet.Core.asmdef");
             var data = UnityEngine.JsonUtility.FromJson<AsmdefData>(File.ReadAllText(path));
             Assert.That(data.references, Is.Empty);
             Assert.That(data.precompiledReferences, Is.Empty);

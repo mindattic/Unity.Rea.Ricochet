@@ -1,8 +1,8 @@
 using System;
 using NUnit.Framework;
-using Rea.Ricochet.Core.Data;
+using Rea.Rea.Ricochet.Core.Data;
 
-namespace Rea.Ricochet.Core.Tests
+namespace Rea.Rea.Ricochet.Core.Tests
 {
     // U.RICO-T40: Core's own JSON parser, covering every value kind and every way text can fail to be JSON.
     public class JsonTests

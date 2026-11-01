@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Rea.Ricochet.Core.Data
+namespace Rea.Rea.Ricochet.Core.Data
 {
     /// <summary>
     /// Reads one JSON object of a data file and validates it as it goes. Every key must be present, of the right type

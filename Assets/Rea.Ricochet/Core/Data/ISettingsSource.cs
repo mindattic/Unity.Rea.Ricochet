@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Rea.Ricochet.Core.Data
+namespace Rea.Rea.Ricochet.Core.Data
 {
     /// <summary>
     /// Where Core reads its data files from. Core only ever asks for a file by name ("chain.json") and

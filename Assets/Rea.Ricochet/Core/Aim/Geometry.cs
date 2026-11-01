@@ -6,7 +6,7 @@
 // Plus the ray/circle test the solver uses to find a target on the path.
 using System;
 
-namespace Rea.Ricochet.Core.Aim
+namespace Rea.Rea.Ricochet.Core.Aim
 {
     public static class Geometry
     {

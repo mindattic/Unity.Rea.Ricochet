@@ -4,25 +4,25 @@
 // one driving and leaving tracks (U.RICO-T45), and the level backdrop with a random level's shapes (U.RICO-T46); and the
 // weapons and hazards (U.RICO-T47, TheWeaponsAndHazards), the hit and knock-out effects (U.RICO-T48,
 // TheHitAndKnockOutEffects), and the HUD details (U.RICO-T49, TheHudDetails). Explicit: it needs graphics (Tools/unity.ps1 -Graphics), so it runs only when asked for by name:
-//   powershell -File Tools/unity.ps1 -Graphics -Log art-showcase -Extra "-runTests -testPlatform PlayMode -testFilter Rea.Ricochet.Tests.ArtShowcaseTests -testResults Logs/TestResults-ArtShowcase.xml"
+//   powershell -File Tools/unity.ps1 -Graphics -Log art-showcase -Extra "-runTests -testPlatform PlayMode -testFilter Rea.Rea.Ricochet.Tests.ArtShowcaseTests -testResults Logs/TestResults-ArtShowcase.xml"
 using System.Collections;
 using System.IO;
 using System.Linq;
 using MindAttic.Components.Unity;
 using NUnit.Framework;
-using Rea.Ricochet.Core.Menu;
-using Rea.Ricochet.Core.Aim;
-using Rea.Ricochet.Core.Arsenal;
-using Rea.Ricochet.Core.Art;
-using Rea.Ricochet.Core.Level;
-using Rea.Ricochet.Core.Match;
+using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Rea.Ricochet.Core.Aim;
+using Rea.Rea.Ricochet.Core.Arsenal;
+using Rea.Rea.Ricochet.Core.Art;
+using Rea.Rea.Ricochet.Core.Level;
+using Rea.Rea.Ricochet.Core.Match;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Rea.Ricochet.Tests
+namespace Rea.Rea.Ricochet.Tests
 {
     [Explicit("Needs graphics; saves screenshots of the imported art in a match (U.RICO-T44)")]
     public class ArtShowcaseTests : NetSessionTest

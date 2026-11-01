@@ -4,11 +4,11 @@
 // what the server solves from is exactly what it sent.
 using System;
 
-namespace Rea.Ricochet.Core.Commands
+namespace Rea.Rea.Ricochet.Core.Commands
 {
-    using Rea.Ricochet.Core.Aim;
-    using Rea.Ricochet.Core.Arsenal;
-    using Rea.Ricochet.Core.Match;
+    using Rea.Rea.Ricochet.Core.Aim;
+    using Rea.Rea.Ricochet.Core.Arsenal;
+    using Rea.Rea.Ricochet.Core.Match;
 
     public sealed class PlayerState
     {

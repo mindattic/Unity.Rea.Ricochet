@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 
-namespace Rea.Ricochet.EditorTests
+namespace Rea.Rea.Ricochet.EditorTests
 {
     public class HudNoImguiTests
     {

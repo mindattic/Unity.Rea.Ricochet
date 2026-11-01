@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MenuStack, MaCanvas
-using Rea.Ricochet.Core.Menu;
+using Rea.Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer.UI;       // NetFrontEnd, FrontEndState
 using UnityEngine;
 using UnityEngine.UI;

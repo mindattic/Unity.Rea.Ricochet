@@ -6,8 +6,8 @@
 // air (bullet, pellet, laser, grenade, rail swirl, vortex), and every landed crate. A new level (or round) makes a new,
 // fully black surface, as reset_fogofwar's new obj_fogscreen did. Every peer draws its own; nothing about it is sent.
 using System.Collections.Generic;
-using Rea.Ricochet.Core.Level;
-using Rea.Ricochet.Core.Match;
+using Rea.Rea.Ricochet.Core.Level;
+using Rea.Rea.Ricochet.Core.Match;
 using Unity.Multiplayer; // NetSession
 using UnityEngine;
 
@@ -161,7 +161,7 @@ namespace Rea.Ricochet
 
             foreach (Crate crate in FindObjectsByType<Crate>(FindObjectsSortMode.None))
             {
-                if (crate.Landed && crate.DropKind != Rea.Ricochet.Core.Arsenal.DropKind.Powerup)
+                if (crate.Landed && crate.DropKind != Rea.Rea.Ricochet.Core.Arsenal.DropKind.Powerup)
                 {
                     _surface.Light(crate.Shown.x, crate.Shown.y, 1.0);
                 }

@@ -2,14 +2,14 @@
 // the player; these checks make sure the asset itself carries every action the ticket asks for, with a keyboard (or
 // mouse) and a gamepad binding each, and that real key and gamepad presses read through GameInput the way the
 // original's obj_game keys did. Run from Test Runner > EditMode, or:
-//   Unity -batchmode -projectPath . -runTests -testPlatform EditMode -assemblyNames Rea.Ricochet.EditorTests
+//   Unity -batchmode -projectPath . -runTests -testPlatform EditMode -assemblyNames Rea.Rea.Ricochet.EditorTests
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 
-namespace Rea.Ricochet.EditorTests
+namespace Rea.Rea.Ricochet.EditorTests
 {
     /// <summary>The asset's shape: every action UR-T36 asks for, bound on both a keyboard/mouse and a gamepad.</summary>
     public class GameInputActionMapTests

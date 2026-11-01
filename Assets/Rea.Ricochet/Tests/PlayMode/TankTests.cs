@@ -3,14 +3,14 @@
 // only by the tank that drives (the original's global isMoving had every tank lay them).
 using System.Collections;
 using NUnit.Framework;
-using Rea.Ricochet.Core.Art;
+using Rea.Rea.Ricochet.Core.Art;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Rea.Ricochet.Tests
+namespace Rea.Rea.Ricochet.Tests
 {
     public class TankTests : NetSessionTest
     {

@@ -3,7 +3,7 @@
 // clock, Ready card, AI and shot waits. The host pauses, resumes and randomizes at once (it runs this Arena); anyone else asks
 // everyone by the pause and resume votes, and quitting the round is always a vote. Randomize lays the round again on a fresh
 // random level (the level generator's) before its first shot; Quit round stops the match and goes back to practice.
-using Rea.Ricochet.Core.Menu;
+using Rea.Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer;      // NetSession
 using Unity.Multiplayer.Core; // VoteKind
 

@@ -38,17 +38,17 @@
 // copy of it (SyncFromAuthority). The authority answers with events, which Present plays: the shot drawn and sent, the result
 // sent. A Player never changes the game another way, and never asks who "the current player" is.
 using System.Collections.Generic;
-using Rea.Ricochet.Core.Ai;
-using Rea.Ricochet.Core.Aim;
-using Rea.Ricochet.Core.Arsenal;
-using Rea.Ricochet.Core.Level;
-using Rea.Ricochet.Core.Match;
-using Rea.Ricochet.Core.Menu;
-using Rea.Ricochet.Core.Net;
+using Rea.Rea.Ricochet.Core.Ai;
+using Rea.Rea.Ricochet.Core.Aim;
+using Rea.Rea.Ricochet.Core.Arsenal;
+using Rea.Rea.Ricochet.Core.Level;
+using Rea.Rea.Ricochet.Core.Match;
+using Rea.Rea.Ricochet.Core.Menu;
+using Rea.Rea.Ricochet.Core.Net;
 using Unity.Multiplayer;      // NetEntity, NetPlayer, NetRoster, NetBots
 using Unity.Multiplayer.Core; // [ToServer], [Synced]
 using UnityEngine;
-using Cmd = Rea.Ricochet.Core.Commands;
+using Cmd = Rea.Rea.Ricochet.Core.Commands;
 
 namespace Rea.Ricochet
 {

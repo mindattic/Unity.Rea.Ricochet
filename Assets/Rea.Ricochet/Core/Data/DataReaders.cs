@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Rea.Ricochet.Core.Data
+namespace Rea.Rea.Ricochet.Core.Data
 {
-    using Rea.Ricochet.Core.Aim;
-    using Rea.Ricochet.Core.Arsenal;
-    using Rea.Ricochet.Core.Level;
-    using Rea.Ricochet.Core.Match;
-    using Rea.Ricochet.Core.Menu;
+    using Rea.Rea.Ricochet.Core.Aim;
+    using Rea.Rea.Ricochet.Core.Arsenal;
+    using Rea.Rea.Ricochet.Core.Level;
+    using Rea.Rea.Ricochet.Core.Match;
+    using Rea.Rea.Ricochet.Core.Menu;
 
     /// <summary>Reads and validates each data file into the objects Core plays with. Every problem is added to the load's error list.</summary>
     internal static class DataReaders
@@ -277,7 +277,7 @@ namespace Rea.Ricochet.Core.Data
 
         private static MapInfo Build(int index, string id, string name, string description, bool isRandom, double[] border, List<double[]> walls, List<double[]> redirectors)
         {
-            Func<Rea.Ricochet.Core.Level.Level> build = () =>
+            Func<Rea.Rea.Ricochet.Core.Level.Level> build = () =>
             {
                 var w = new List<Wall>();
                 foreach (double[] wall in walls)
@@ -291,7 +291,7 @@ namespace Rea.Ricochet.Core.Data
                     d.Add(new Redirector(new Vec2(redirector[0], redirector[1]), new Vec2(redirector[2], redirector[3]), redirector[4]));
                 }
 
-                return new Rea.Ricochet.Core.Level.Level(border[0], border[1], border[2], border[3], w, d);
+                return new Rea.Rea.Ricochet.Core.Level.Level(border[0], border[1], border[2], border[3], w, d);
             };
             return new MapInfo(index, id, name, description, build, isRandom);
         }
@@ -514,9 +514,9 @@ namespace Rea.Ricochet.Core.Data
 
         // U.RICO-T46: the level backdrop. Room numbers are the original's pixels; GML names are checked against the art
         // catalogue by the editor tests (Core has no art), so here they only need to be there and not repeat within a group.
-        public static Rea.Ricochet.Core.Art.BackdropRules ReadBackdrop(SettingsReader r)
+        public static Rea.Rea.Ricochet.Core.Art.BackdropRules ReadBackdrop(SettingsReader r)
         {
-            var rules = new Rea.Ricochet.Core.Art.BackdropRules
+            var rules = new Rea.Rea.Ricochet.Core.Art.BackdropRules
             {
                 RoomWidth = r.Integer("roomWidth", 1, 10000),
                 RoomHeight = r.Integer("roomHeight", 1, 10000),
@@ -537,10 +537,10 @@ namespace Rea.Ricochet.Core.Data
 
             rules.Groups = groups;
 
-            var clouds = new List<Rea.Ricochet.Core.Art.CloudSpot>();
+            var clouds = new List<Rea.Rea.Ricochet.Core.Art.CloudSpot>();
             foreach (SettingsReader c in r.Objects("clouds"))
             {
-                clouds.Add(new Rea.Ricochet.Core.Art.CloudSpot(c.Text("sprite"), c.Number("x", -10000, 10000), c.Number("y", -10000, 10000)));
+                clouds.Add(new Rea.Rea.Ricochet.Core.Art.CloudSpot(c.Text("sprite"), c.Number("x", -10000, 10000), c.Number("y", -10000, 10000)));
                 c.Done();
             }
 

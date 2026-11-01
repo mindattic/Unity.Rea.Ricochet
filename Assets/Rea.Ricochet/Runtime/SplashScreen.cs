@@ -8,8 +8,8 @@
 using System;
 using System.Collections.Generic;
 using MindAttic.Components.Unity; // MaCanvas
-using Rea.Ricochet.Core.Art;
-using Rea.Ricochet.Core.Menu;
+using Rea.Rea.Ricochet.Core.Art;
+using Rea.Rea.Ricochet.Core.Menu;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;

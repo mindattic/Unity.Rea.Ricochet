@@ -4,7 +4,7 @@
 // subscribe and play them: neither reads or changes Core's match, loadouts or shots, and a peer that is only a client
 // sees exactly what the host does. MatchHud draws the synced Turns and Player copies, which is also no Core state.
 using System;
-using Rea.Ricochet.Core.Commands;
+using Rea.Rea.Ricochet.Core.Commands;
 
 namespace Rea.Ricochet
 {

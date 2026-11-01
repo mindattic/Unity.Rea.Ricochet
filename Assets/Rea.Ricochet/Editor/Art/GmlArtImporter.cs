@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Rea.Ricochet.Tooling
+namespace Rea.Rea.Ricochet.Tooling
 {
     /// <summary>
     /// The importer preset for the art Tools/import-gml-art.ps1 mirrors into Assets/Rea.Ricochet/Art (U.RICO-T44), read from

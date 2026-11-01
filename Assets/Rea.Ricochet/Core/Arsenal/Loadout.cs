@@ -7,7 +7,7 @@
 // player; it travels to every peer packed into two ints (Pack/Unpack), since a [Synced] field cannot be an array.
 using System;
 
-namespace Rea.Ricochet.Core.Arsenal
+namespace Rea.Rea.Ricochet.Core.Arsenal
 {
     public sealed class Loadout
     {

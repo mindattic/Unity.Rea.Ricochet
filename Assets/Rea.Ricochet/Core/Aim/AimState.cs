@@ -1,6 +1,6 @@
 // A player's aim: the barrel's angle, turned while a key is held. aim.gml swapped the player into an "aim" action and
 // rotated image_angle; there is no power (U.RICO-T88). Plain so the input rules are testable.
-namespace Rea.Ricochet.Core.Aim
+namespace Rea.Rea.Ricochet.Core.Aim
 {
     public sealed class AimState
     {

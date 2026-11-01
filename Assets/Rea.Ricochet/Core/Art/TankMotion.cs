@@ -5,7 +5,7 @@
 // obj_tracks print holds at alpha 0.7 for its 400-step alarm, then loses 0.003 a step until it is gone.
 using System;
 
-namespace Rea.Ricochet.Core.Art
+namespace Rea.Rea.Ricochet.Core.Art
 {
     public static class TankMotion
     {

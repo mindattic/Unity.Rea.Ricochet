@@ -224,3 +224,4 @@ _Nothing recorded yet._
 | U.RICO-T150 | 2026-10-29 | chore | closed | Rename repo to Unity.Rea.Ricochet: GitHub, local folder, in-repo asmdef/asset tree, ticket DB key | cc0bb23 |
 | U.RICO-T151 | 2026-10-29 | fix | closed | Fails on main: Ricochet.Core.Tests.SoundTests.EveryCuesRecordingIsImported_AndNothingElseIs — Assets\Ricochet\Resources\Ricochet\Sound not found above D:\Projects\MindAttic.worktrees\Unity.Ricochet\main-tests\Tests\Core.Tests\bin\Debug\net10.0 (landed on main since the last green run: tickets U.RICO-T150 in cc0bb23 Rename in-repo Unity.Ricochet asset/asmdef tree to Unity.Rea.Ricochet (U.RICO-T150)) | 203651e |
 | U.RICO-T152 | 2026-10-31 | chore | closed | Update 215 file(s) | — |
+| U.RICO-T153 | 2026-10-31 | chore | closed | Update 199 file(s) | — |

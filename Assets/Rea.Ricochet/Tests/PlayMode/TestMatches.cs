@@ -3,10 +3,10 @@
 // practice range, whose seats are always at Seating.SpawnPoint.
 // UR-T42: every turn opens with the Ready card's hold before anyone may act; tests about what comes after it (firing,
 // the clock, the AI) take the hold out in their SetUp and put the stock one back in their TearDown. ReadyCardTests plays it.
-using Rea.Ricochet.Core.Level;
-using Rea.Ricochet.Core.Match;
+using Rea.Rea.Ricochet.Core.Level;
+using Rea.Rea.Ricochet.Core.Match;
 
-namespace Rea.Ricochet.Tests
+namespace Rea.Rea.Ricochet.Tests
 {
     public static class TestMatches
     {

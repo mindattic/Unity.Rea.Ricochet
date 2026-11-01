@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using Rea.Ricochet.Core.Data;
+using Rea.Rea.Ricochet.Core.Data;
 using UnityEngine;
 
 namespace Rea.Ricochet

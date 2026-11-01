@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace Rea.Ricochet.Core.Tests
+namespace Rea.Rea.Ricochet.Core.Tests
 {
-    using Rea.Ricochet.Core.Aim;
-    using Rea.Ricochet.Core.Ai;
-    using Rea.Ricochet.Core.Arsenal;
-    using Rea.Ricochet.Core.Data;
-    using Rea.Ricochet.Core.Level;
-    using Rea.Ricochet.Core.Match;
-    using Rea.Ricochet.Core.Menu;
+    using Rea.Rea.Ricochet.Core.Aim;
+    using Rea.Rea.Ricochet.Core.Ai;
+    using Rea.Rea.Ricochet.Core.Arsenal;
+    using Rea.Rea.Ricochet.Core.Data;
+    using Rea.Rea.Ricochet.Core.Level;
+    using Rea.Rea.Ricochet.Core.Match;
+    using Rea.Rea.Ricochet.Core.Menu;
     // UR-T41: the setup is remembered from session to session, as the original's config.ini was (write_config on every
     // change, read_config on start, the Default button restoring backup.ini). The profile keeps MatchSetup's record as
     // named whole numbers in the game block; these tests take it out and back, through JSON text, and reset it.

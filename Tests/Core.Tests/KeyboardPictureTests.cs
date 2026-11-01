@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Rea.Ricochet.Core.Tests
+namespace Rea.Rea.Ricochet.Core.Tests
 {
-    using Rea.Ricochet.Core.Art;
-    using Rea.Ricochet.Core.Menu;
+    using Rea.Rea.Ricochet.Core.Art;
+    using Rea.Rea.Ricochet.Core.Menu;
 
     // U.RICO-T54: the controls room's keyboard and mouse redrawn from the bindings (obj_keyboardlayout's spr_keyboardlayout,
     // obj_mouse's spr_mouse), and the how-to-play slides' pictures on their frame (obj_slide's spr_howtoplay1).

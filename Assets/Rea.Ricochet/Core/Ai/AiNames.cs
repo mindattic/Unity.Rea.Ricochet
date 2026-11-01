@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Rea.Ricochet.Core.Ai
+namespace Rea.Rea.Ricochet.Core.Ai
 {
     public static class AiNames
     {

@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using MindAttic.Components.Unity;
 using NUnit.Framework;
-using Rea.Ricochet.Core.Level;
-using Rea.Ricochet.Core.Match;
-using Rea.Ricochet.Core.Menu;
+using Rea.Rea.Ricochet.Core.Level;
+using Rea.Rea.Ricochet.Core.Match;
+using Rea.Rea.Ricochet.Core.Menu;
 using Unity.Multiplayer;
 using Unity.Multiplayer.Core;
 using Unity.Multiplayer.Testing;
@@ -21,7 +21,7 @@ using Unity.Multiplayer.UI.Testing;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Rea.Ricochet.Tests
+namespace Rea.Rea.Ricochet.Tests
 {
     public class LobbyTests : NetSessionTest
     {

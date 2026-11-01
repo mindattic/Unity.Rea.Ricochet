@@ -3,7 +3,7 @@
 // player along the aim (shoot_bullet.gml's Len = 40 px). There is no power: bulletSpeed was a constant and a shot flies
 // until its bounces run out, however far that is (U.RICO-T88).
 
-namespace Rea.Ricochet.Core.Aim
+namespace Rea.Rea.Ricochet.Core.Aim
 {
     public sealed class ShotRules
     {
@@ -25,7 +25,7 @@ namespace Rea.Ricochet.Core.Aim
         /// <summary>The stock rules, from shot.json (UR-T35): a new set starts as a copy of them.</summary>
         public ShotRules()
         {
-            CopyFrom(Rea.Ricochet.Core.Data.GameData.Current.Shot);
+            CopyFrom(Rea.Rea.Ricochet.Core.Data.GameData.Current.Shot);
         }
 
         internal ShotRules(bool blank)

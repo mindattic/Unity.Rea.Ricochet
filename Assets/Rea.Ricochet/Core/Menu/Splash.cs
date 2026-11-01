@@ -20,9 +20,9 @@
 // on every second one). See docs/BIBLE.md, "Splash and startup credits", for what was fixed and what is not carried.
 using System;
 using System.Collections.Generic;
-using Rea.Ricochet.Core.Art;
+using Rea.Rea.Ricochet.Core.Art;
 
-namespace Rea.Ricochet.Core.Menu
+namespace Rea.Rea.Ricochet.Core.Menu
 {
     /// <summary>The splash and startup credits rooms' places, art, words and timings, as the original had them.</summary>
     public static class SplashRoom
