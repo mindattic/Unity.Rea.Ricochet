@@ -1,10 +1,11 @@
 {
-  "_source": "ArsenalRules: the weapons and items and the numbers they play by (2013 original globals.gml; see Arsenal.cs). start 10 is unlimited. Ids are the Weapon and Item enum names, in the original's order. about is the hover text of its HUD icon (U.RICO-T49: the rebuild's own words; the original's icons had none). aimAssistTargets (U.RICO-T115 spike, never the default) makes the aim assist item turn the aim onto a shot that hits someone, as an AI would aim it; false is the original's straight line along the current aim.",
+  "_source": "ArsenalRules: the weapons and items and the numbers they play by (2013 original globals.gml; see Arsenal.cs). start 10 is unlimited. Ids are the Weapon and Item enum names, in the original's order. about is the hover text of its HUD icon (U.RICO-T49: the rebuild's own words; the original's icons had none). grenadeBlastsAll (U.RICO-T113 spike, never the default) makes a grenade fly through tanks and blast everyone within grenadeRadius; false is the original's grenade, which bounces off tanks and hurts only the first player its blast reaches. aimAssistTargets (U.RICO-T115 spike, never the default) makes the aim assist item turn the aim onto a shot that hits someone, as an AI would aim it; false is the original's straight line along the current aim.",
   "defaultFuse": 2,
   "minFuse": 0.5,
   "maxFuse": 6,
   "fuseStep": 0.5,
   "grenadeRadius": 1.71875,
+  "grenadeBlastsAll": false,
   "vortexRadius": 2.2916666667,
   "pellets": 12,
   "pelletSpread": 4,

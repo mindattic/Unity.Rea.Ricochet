@@ -8,6 +8,8 @@
 //   Grenade  bounces like a shell, and bounces off players too (obj_grenade's collision with obj_player: away from the tank's
 //            centre, no bounce counted); goes off when its fuse runs out (grenade_countdown.gml) or on its bounce limit
 //            (grenade_step.gml), hurting only the first player its growing blast reaches (check_grenade_intersection.gml).
+//            U.RICO-T113 spike (arsenal.json's grenadeBlastsAll, never the default): it flies through tanks instead and
+//            its blast hurts everyone within its radius.
 //   Railgun  a slug in a straight line through walls and redirectors to the border (shoot_railgun.gml's 2000 px line),
 //            hitting every player on the way.
 //   Vortex   flies like a shell and implodes where it stops, or where its shooter sets it off in mid-flight
@@ -273,14 +275,23 @@ namespace Rea.Ricochet.Core.Arsenal
                 {
                     // The fuse is the range: it flies at a shell's speed until the fuse runs out.
                     double range = arsenal.ClampFuse(fuse) * shot.Speed;
-                    ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot, range, true);
+                    // U.RICO-T113 spike: with grenadeBlastsAll it sees no tanks in flight (it passes through them).
+                    bool blastsAll = arsenal.GrenadeBlastsAll;
+                    ShotPath path = BounceSolver.Solve(origin, heading, level, blastsAll ? null : targets, shot, range, !blastsAll);
                     paths.Add(path);
                     if (path.End == ShotEndKind.Absorbed)
                     {
                         return new Volley(weapon, paths, shot.Speed, strikes, false, default, 0);
                     }
 
-                    AddBlastStrikes(path.Impact, arsenal.GrenadeRadius, path.Bounces, targets, strikes);
+                    if (blastsAll)
+                    {
+                        AddBlastAllStrikes(path.Impact, arsenal.GrenadeRadius, path.Bounces, targets, strikes);
+                    }
+                    else
+                    {
+                        AddBlastStrikes(path.Impact, arsenal.GrenadeRadius, path.Bounces, targets, strikes);
+                    }
                     return new Volley(weapon, paths, shot.Speed, strikes, true, path.Impact, arsenal.GrenadeRadius);
                 }
 
@@ -505,6 +516,23 @@ namespace Rea.Ricochet.Core.Arsenal
             if (path.End == ShotEndKind.Target && path.TargetId != null)
             {
                 strikes.Add(new Strike(path.TargetId, path.Bounces, scale));
+            }
+        }
+
+        // U.RICO-T113 spike (grenadeBlastsAll): the blast hurts every player its circle touches, not just the first.
+        private static void AddBlastAllStrikes(Vec2 center, double radius, int bounces, IReadOnlyList<Target> targets, List<Strike> strikes)
+        {
+            if (targets == null)
+            {
+                return;
+            }
+
+            foreach (Target target in targets)
+            {
+                if (Vec2.Distance(center, target.Center) - target.Radius <= radius)
+                {
+                    strikes.Add(new Strike(target.Id, bounces, 1));
+                }
             }
         }
 

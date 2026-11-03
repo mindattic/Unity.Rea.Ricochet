@@ -66,6 +66,13 @@ namespace Rea.Ricochet.Core.Arsenal
         /// <summary>A grenade's blast radius (grenadeRadius = 150 px; the original's room was about 58 px a unit).</summary>
         public double GrenadeRadius { get; set; }
 
+        /// <summary>
+        /// U.RICO-T113 spike, off as shipped (arsenal.json's grenadeBlastsAll): a grenade flies through tanks instead of
+        /// turning away from them, and its blast hurts everyone within <see cref="GrenadeRadius"/>. Off, it is the original's
+        /// obj_grenade: it bounces off tanks and hurts only the first player its growing blast reaches.
+        /// </summary>
+        public bool GrenadeBlastsAll { get; set; }
+
         /// <summary>The vortex's pull radius (vortexRadius = 200 px).</summary>
         public double VortexRadius { get; set; }
 
@@ -107,6 +114,7 @@ namespace Rea.Ricochet.Core.Arsenal
             MaxFuse = other.MaxFuse;
             FuseStep = other.FuseStep;
             GrenadeRadius = other.GrenadeRadius;
+            GrenadeBlastsAll = other.GrenadeBlastsAll;
             VortexRadius = other.VortexRadius;
             Pellets = other.Pellets;
             PelletSpread = other.PelletSpread;

@@ -94,6 +94,7 @@ namespace Rea.Ricochet.Core.Data
                 MaxFuse = r.Number("maxFuse", 0.1, 600),
                 FuseStep = r.Number("fuseStep", 0, 600),
                 GrenadeRadius = r.Number("grenadeRadius", 0.1, 50),
+                GrenadeBlastsAll = r.Flag("grenadeBlastsAll"), // U.RICO-T113 spike: never the default
                 VortexRadius = r.Number("vortexRadius", 0.1, 50),
                 Pellets = r.Integer("pellets", 1, 100),
                 PelletSpread = r.Number("pelletSpread", 0, 90),
