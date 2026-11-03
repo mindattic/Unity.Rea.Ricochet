@@ -275,7 +275,7 @@ namespace Rea.Ricochet
                 return line + "   Fuse " + fuseLeft.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " s";
             }
 
-            return line + (loadout.Weapon == Weapon.Grenade ? "   Fuse " + loadout.Fuse.ToString("0.0") + " s" : string.Empty);
+            return line + (loadout.Weapon == Weapon.Grenade ? "   Fuse " + loadout.Fuse.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " s" : string.Empty);
         }
 
         /// <summary>draw_iteminfo: "Item: Teleporter x2   +1 bounce", or "Item: none".</summary>
