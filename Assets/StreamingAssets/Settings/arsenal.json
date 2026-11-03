@@ -15,6 +15,8 @@
   "evenPelletDamage": 0.35,
   "laserSpeed": 1,
   "railgunSpeed": 8,
+  "redirectorToRange": false,
+  "redirectorRange": 22,
   "teleporterBounces": false,
   "aimAssistTargets": false,
   "itemEffectFirst": false,

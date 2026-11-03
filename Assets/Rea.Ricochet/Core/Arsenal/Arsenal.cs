@@ -110,6 +110,16 @@ namespace Rea.Ricochet.Core.Arsenal
         public double RailgunSpeed { get; set; }
 
         /// <summary>
+        /// U.RICO-T82 spike, off as shipped (arsenal.json's redirectorToRange): a redirector flies <see cref="RedirectorRange"/>
+        /// and sets itself down where that runs out; its owner's second press does nothing. Off, it is the original's
+        /// redirector_detonate: it flies on until its owner presses the item key again (U.RICO-T80).
+        /// </summary>
+        public bool RedirectorToRange { get; set; }
+
+        /// <summary>How far (units along its bouncing path) the U.RICO-T82 spike's redirector flies before it stops.</summary>
+        public double RedirectorRange { get; set; }
+
+        /// <summary>
         /// U.RICO-T81 spike, off as shipped (arsenal.json's teleporterBounces): a teleporter bounces along its path like a
         /// shell (off the shapes and the border, through tanks and hazards, turned by a standing redirector) and puts its
         /// shooter down where its bounces run out, on the contact that reaches the shot's bounce limit. Off, it is the
@@ -167,6 +177,8 @@ namespace Rea.Ricochet.Core.Arsenal
             Array.Copy(other._startItems, _startItems, Kinds);
             Array.Copy(other._weaponsInPlay, _weaponsInPlay, Kinds);
             Array.Copy(other._itemsInPlay, _itemsInPlay, Kinds);
+            RedirectorToRange = other.RedirectorToRange;
+            RedirectorRange = other.RedirectorRange;
         }
 
         public int StartCount(Weapon weapon) => _startWeapons[(int)weapon];

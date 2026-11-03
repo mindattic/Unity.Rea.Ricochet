@@ -800,7 +800,13 @@ namespace Rea.Ricochet.Core.Commands
             // was spent, so the last redirector could never be stopped: a fixed defect, the press is free and always obeyed.
             if (item == Item.Redirector && state.RedirectorFired)
             {
-                StopRedirector(state);
+                // U.RICO-T82 spike (arsenal.json redirectorToRange, never the default): the redirector flies to the end of
+                // its range and stops there by itself; the second press does nothing.
+                if (!Arms.RedirectorToRange)
+                {
+                    StopRedirector(state);
+                }
+
                 return;
             }
 
@@ -831,7 +837,9 @@ namespace Rea.Ricochet.Core.Commands
                     Arsenal.Teleport(state.Position, state.Heading, LevelFor(state.Seat), Rules, state.Radius, out flight, Arms.TeleporterBounces);
                     break;
                 case Item.Redirector:
-                    flight = Arsenal.FlyRedirector(state.Position, state.Heading, LevelFor(state.Seat), Rules);
+                    flight = Arms.RedirectorToRange
+                        ? Arsenal.FlyRedirector(state.Position, state.Heading, LevelFor(state.Seat), Rules, Arms.RedirectorRange)
+                        : Arsenal.FlyRedirector(state.Position, state.Heading, LevelFor(state.Seat), Rules);
                     state.RedirectorFired = true; // hasFiredRedirector
                     break;
                 case Item.ShrinkRay:
@@ -952,6 +960,15 @@ namespace Rea.Ricochet.Core.Commands
                 case Item.ShrinkRay:
                     Emit(new Shrunk(state.Seat, ShrinkShape(flying.Hit), flying.Flight.Impact));
                     break;
+                case Item.Redirector:
+                    // U.RICO-T82 spike: the redirector that flew to the end of its range sets itself down there. The
+                    // original's (off) is gone with nothing placed when its flight runs out unstopped.
+                    if (Arms.RedirectorToRange)
+                    {
+                        PlaceFlyingRedirector(flying, flying.Flight.Length);
+                    }
+
+                    break;
             }
         }
 
@@ -1013,13 +1030,20 @@ namespace Rea.Ricochet.Core.Commands
                 }
 
                 _itemsInFlight.RemoveAt(i);
-                double distance = Quantize(Math.Max(0, Math.Min(flying.Flight.Length, flying.Travelled)));
-                Vec2 placed = Arsenal.PlaceRedirector(flying.Flight, distance, LevelFor(state.Seat), Rules, out double heading);
-                Emit(new RedirectorStopped(state.Id, distance));
-                // redirector_step negates its spin at each bounce in flight: an odd count leaves it turning the other way.
-                Hazards.AddRedirector(state.Seat, placed, heading, flying.Flight.ContactsBefore(distance) % 2 == 1);
+                PlaceFlyingRedirector(flying, flying.Travelled);
                 return;
             }
+        }
+
+        // The redirector `flying` stops `travelled` along its flight and becomes a standing redirector there.
+        private void PlaceFlyingRedirector(ItemInFlight flying, double travelled)
+        {
+            PlayerState state = flying.Owner;
+            double distance = Quantize(Math.Max(0, Math.Min(flying.Flight.Length, travelled)));
+            Vec2 placed = Arsenal.PlaceRedirector(flying.Flight, distance, LevelFor(state.Seat), Rules, out double heading);
+            Emit(new RedirectorStopped(state.Id, distance));
+            // redirector_step negates its spin at each bounce in flight: an odd count leaves it turning the other way.
+            Hazards.AddRedirector(state.Seat, placed, heading, flying.Flight.ContactsBefore(distance) % 2 == 1);
         }
 
         // next_player and randomize_level: every item still in the air is destroyed, its effect never landing, and a new

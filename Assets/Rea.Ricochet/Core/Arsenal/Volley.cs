@@ -381,6 +381,23 @@ namespace Rea.Ricochet.Core.Arsenal
             return FlyItem(origin, aim, Bare(level, false), rules, ItemLooks.SpeedFactor(Item.Redirector) * ItemLooks.RedirectorMaxSeconds);
         }
 
+        /// <summary>
+        /// U.RICO-T82 spike (arsenal.json redirectorToRange, never the default): the redirector flies only
+        /// <paramref name="range"/> along its bouncing path, the same way as <see cref="FlyRedirector(Vec2, double, Level, ShotRules)"/>,
+        /// and sets itself down where that runs out (the authority places it when the flight arrives).
+        /// </summary>
+        public static ShotPath FlyRedirector(Vec2 origin, double aim, Level level, ShotRules rules, double range)
+        {
+            if (level == null)
+            {
+                throw new ArgumentNullException(nameof(level));
+            }
+
+            ShotRules flying = (rules ?? ShotRules.Default).Clone();
+            flying.MaxBounces = RedirectorMaxBounces;
+            return BounceSolver.Solve(origin, aim, Bare(level, false), null, flying, Math.Max(0, range));
+        }
+
         /// <summary>The most contacts an item's flight is solved through.</summary>
         public const int RedirectorMaxBounces = 1000;
 

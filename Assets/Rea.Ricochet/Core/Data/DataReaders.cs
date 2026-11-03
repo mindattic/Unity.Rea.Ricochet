@@ -111,6 +111,8 @@ namespace Rea.Ricochet.Core.Data
                 EvenPelletDamage = r.Number("evenPelletDamage", 0.01, 10),
                 LaserSpeed = r.Number("laserSpeed", 0.1, 100),
                 RailgunSpeed = r.Number("railgunSpeed", 0.1, 100),
+                RedirectorToRange = r.Flag("redirectorToRange"), // U.RICO-T82 spike: never the default
+                RedirectorRange = r.Number("redirectorRange", 0.5, 1000),
                 TeleporterBounces = r.Flag("teleporterBounces"), // U.RICO-T81 spike: never the default
                 AimAssistTargets = r.Flag("aimAssistTargets"), // U.RICO-T115 spike: never the default
                 ItemEffectFirst = r.Flag("itemEffectFirst"), // U.RICO-T83 spike: never the default
