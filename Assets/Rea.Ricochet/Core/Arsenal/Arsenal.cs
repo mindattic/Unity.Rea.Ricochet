@@ -89,6 +89,20 @@ namespace Rea.Ricochet.Core.Arsenal
         /// <summary>Whole degrees either side of the aim a pellet may stray (shotgunSpread = 4).</summary>
         public double PelletSpread { get; set; }
 
+        /// <summary>
+        /// U.RICO-T112 spike, off as shipped (arsenal.json's evenShotgun): the rebuild's old shotgun, <see cref="EvenPellets"/>
+        /// pellets fanned evenly across +/- <see cref="PelletSpread"/> (one along the aim), each at the shot's full bounce limit,
+        /// and every pellet that strikes does <see cref="EvenPelletDamage"/> of a hit. Off, it is the original's shoot_shotgun.gml:
+        /// <see cref="Pellets"/> random pellets, the first to strike doing a full hit and removing the rest.
+        /// </summary>
+        public bool EvenShotgun { get; set; }
+
+        /// <summary>The even shotgun's pellets (5; U.RICO-T112 spike, used only with <see cref="EvenShotgun"/>).</summary>
+        public int EvenPellets { get; set; }
+
+        /// <summary>The share of a hit each even-shotgun pellet does (0.35; U.RICO-T112 spike, used only with <see cref="EvenShotgun"/>).</summary>
+        public double EvenPelletDamage { get; set; }
+
         /// <summary>The laser flies this many times a shell's speed (1 in the original).</summary>
         public double LaserSpeed { get; set; }
 
@@ -141,6 +155,9 @@ namespace Rea.Ricochet.Core.Arsenal
             VortexWild = other.VortexWild;
             Pellets = other.Pellets;
             PelletSpread = other.PelletSpread;
+            EvenShotgun = other.EvenShotgun;
+            EvenPellets = other.EvenPellets;
+            EvenPelletDamage = other.EvenPelletDamage;
             LaserSpeed = other.LaserSpeed;
             RailgunSpeed = other.RailgunSpeed;
             TeleporterBounces = other.TeleporterBounces;

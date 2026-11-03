@@ -5,6 +5,8 @@
 //   Cannon   one shell along the aim until its bounces run out; it stops in the first player it reaches (hit.gml's damage).
 //   Laser    a beam at a shell's speed (shoot_laser.gml); otherwise a cannon shot.
 //   Shotgun  pelletCount pellets at a random +/- shotgunSpread degrees, each its own random bounce limit; the first to strike does a full hit and removes the rest.
+//            U.RICO-T112 spike (arsenal.json's evenShotgun, never the default): the rebuild's old even fan of evenPellets
+//            pellets, each that strikes doing evenPelletDamage of a hit.
 //   Grenade  bounces like a shell, and bounces off players too (obj_grenade's collision with obj_player: away from the tank's
 //            centre, no bounce counted); goes off when its fuse runs out (grenade_countdown.gml) or on its bounce limit
 //            (grenade_step.gml), hurting only the first player its growing blast reaches (check_grenade_intersection.gml).
@@ -228,6 +230,11 @@ namespace Rea.Ricochet.Core.Arsenal
 
                 case Weapon.Shotgun:
                 {
+                    if (arsenal.EvenShotgun)
+                    {
+                        return FireEvenShotgun(origin, heading, level, targets, shot, arsenal);
+                    }
+
                     // shoot_shotgun.gml: pelletCount pellets, each 40 + 1..30 px out along the aim at a whole-degree random
                     // spread of +/- shotgunSpread, and pellet_create.gml gives each its own bounce limit (0..max, or 2..max when
                     // the limit is 2 or more; extra bounces add to it). The dice are the authority's, so every peer gets the
@@ -540,6 +547,30 @@ namespace Rea.Ricochet.Core.Arsenal
             }
 
             return new Volley(Weapon.Vortex, paths, speed, strikes, true, path.Impact, arsenal.VortexRadius, storm);
+        }
+
+        // U.RICO-T112 spike (evenShotgun): the rebuild's old shotgun, a fan of evenPellets pellets spaced evenly across
+        // +/- pelletSpread, each at the shot's own bounce limit and every one that strikes doing evenPelletDamage of a hit.
+        // It needs no dice (the fan is the same every time), so the preview shows the whole fan; the middle pellet comes
+        // first, so Main is the one along the aim.
+        private static Volley FireEvenShotgun(Vec2 origin, double heading, Level level, IReadOnlyList<Target> targets, ShotRules shot, ArsenalRules arsenal)
+        {
+            int pellets = Math.Max(1, arsenal.EvenPellets);
+            var paths = new List<ShotPath>();
+            var strikes = new List<Strike>();
+            for (int i = 0; i < pellets; i++)
+            {
+                double offset = pellets == 1 ? 0 : arsenal.PelletSpread * (2.0 * i / (pellets - 1) - 1);
+                ShotPath path = BounceSolver.Solve(origin, heading + offset, level, targets, shot);
+                paths.Add(path);
+                AddTargetStrike(path, arsenal.EvenPelletDamage, strikes);
+            }
+
+            int middle = pellets / 2;
+            ShotPath centre = paths[middle];
+            paths.RemoveAt(middle);
+            paths.Insert(0, centre);
+            return new Volley(Weapon.Shotgun, paths, shot.Speed, strikes, false, default, 0);
         }
 
         private static void AddTargetStrike(ShotPath path, double scale, List<Strike> strikes)

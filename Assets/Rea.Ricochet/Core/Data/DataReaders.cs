@@ -102,6 +102,9 @@ namespace Rea.Ricochet.Core.Data
                 VortexWild = r.Flag("vortexWild"), // U.RICO-T114 spike: never the default
                 Pellets = r.Integer("pellets", 1, 100),
                 PelletSpread = r.Number("pelletSpread", 0, 90),
+                EvenShotgun = r.Flag("evenShotgun"), // U.RICO-T112 spike: never the default
+                EvenPellets = r.Integer("evenPellets", 1, 100),
+                EvenPelletDamage = r.Number("evenPelletDamage", 0.01, 10),
                 LaserSpeed = r.Number("laserSpeed", 0.1, 100),
                 RailgunSpeed = r.Number("railgunSpeed", 0.1, 100),
                 TeleporterBounces = r.Flag("teleporterBounces"), // U.RICO-T81 spike: never the default
