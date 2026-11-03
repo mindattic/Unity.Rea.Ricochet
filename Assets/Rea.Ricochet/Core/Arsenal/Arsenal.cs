@@ -81,6 +81,13 @@ namespace Rea.Ricochet.Core.Arsenal
         /// <summary>The railgun's slug flies this many times a shell's speed (near enough instant).</summary>
         public double RailgunSpeed { get; set; }
 
+        /// <summary>
+        /// U.RICO-T115 spike, off as shipped (arsenal.json's aimAssistTargets): the aim assist item also turns the aim onto
+        /// the shot a fully skilled AI would take at an opponent (Ai.Assist), if any reaches one, and its beam follows that
+        /// whole path. Off, it is the original's obj_aimassist: a straight line along the current aim to the first wall.
+        /// </summary>
+        public bool AimAssistTargets { get; set; }
+
         /// <summary>The stock rules, from arsenal.json (UR-T35): a new set starts as a copy of them.</summary>
         public ArsenalRules()
         {
@@ -105,6 +112,7 @@ namespace Rea.Ricochet.Core.Arsenal
             PelletSpread = other.PelletSpread;
             LaserSpeed = other.LaserSpeed;
             RailgunSpeed = other.RailgunSpeed;
+            AimAssistTargets = other.AimAssistTargets;
             Array.Copy(other._startWeapons, _startWeapons, Kinds);
             Array.Copy(other._startItems, _startItems, Kinds);
             Array.Copy(other._weaponsInPlay, _weaponsInPlay, Kinds);

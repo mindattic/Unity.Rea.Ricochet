@@ -111,7 +111,9 @@ namespace Rea.Ricochet
                 _assistShownUntil = Time.time + AssistSeconds;
                 ShotPath path = SolveVolley(Weapon.Cannon, AssistHeading, Arena.ArsenalRules.DefaultFuse, ExtraBounces).Main;
                 _assistPoints.Clear();
-                for (int i = 0; i < path.Points.Count && i < 2; i++) // a straight line to the first wall (U.RICO-T97)
+                // A straight line to the first wall (U.RICO-T97); the whole assisted path with the U.RICO-T115 spike on.
+                int shown = Arena.ArsenalRules.AimAssistTargets ? path.Points.Count : 2;
+                for (int i = 0; i < path.Points.Count && i < shown; i++)
                 {
                     _assistPoints.Add(Arena.ToUnity(path.Points[i]));
                 }

@@ -852,9 +852,22 @@ namespace Rea.Ricochet.Core.Commands
                     break;
                 case Item.AimAssist:
                     // obj_aimassist (U.RICO-T97): it only draws a line along the current aim; it never turns the aim.
+                    // U.RICO-T115 spike, off unless arsenal.json sets aimAssistTargets: it turns the aim onto the shot a
+                    // fully skilled AI would take at an opponent, if any reaches one.
+                    bool found = false;
+                    if (Arms.AimAssistTargets)
+                    {
+                        AiPlan assist = global::Rea.Ricochet.Core.Ai.Ai.Assist(state.Position, TargetIds.Seat(state.Seat), LevelFor(state.Seat), Targets(), Rules);
+                        if (assist != null)
+                        {
+                            SetAim(state, assist.Heading);
+                            found = true;
+                        }
+                    }
+
                     state.AssistHeading = state.Heading;
                     state.Assists++;
-                    Emit(new AssistApplied(state.Id, state.Heading, false));
+                    Emit(new AssistApplied(state.Id, state.Heading, found));
                     break;
             }
 
