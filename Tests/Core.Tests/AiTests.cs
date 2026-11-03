@@ -175,6 +175,7 @@ namespace Rea.Ricochet.Core.Tests
             Level level = Box(Cage(6, 0));
             var targets = new List<Target> { Me, new Target("seat:1", new Vec2(6, 0), 0.45) };
             var arsenal = new ArsenalRules();
+            arsenal.SetStartCount(Weapon.Railgun, 0); // the shipped arsenal starts everyone with railguns
             var loadout = new Loadout(arsenal);
             Assert.That(Ai.PlanSmart(Vec2.Zero, "seat:0", level, targets, Ai.MaxSkill, new Random(1), null, arsenal, loadout).Kind,
                 Is.EqualTo(AiShotKind.Blind), "no railgun: nothing reaches the caged opponent");
