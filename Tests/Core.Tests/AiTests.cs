@@ -152,6 +152,55 @@ namespace Rea.Ricochet.Core.Tests
         }
 
         [Test]
+        public void TheSmartAiIsOffAsShipped()
+        {
+            // U.RICO-T116: the smarter AI is a data option (match.json "smartAi") that is never the default.
+            Assert.That(MatchRules.Default.SmartAi, Is.False);
+        }
+
+        [Test]
+        public void TheSmartAiTakesTheNearestOpponentAndAimsAtTheMiddleOfTheRun()
+        {
+            var targets = new List<Target> { Me, new Target("seat:1", new Vec2(0, 3), 0.45), new Target("seat:2", new Vec2(-6, 0), 0.45) };
+            AiPlan plan = Ai.PlanSmart(Vec2.Zero, "seat:0", Box(), targets, Ai.MaxSkill, new Random(1));
+
+            Assert.That(plan.Kind, Is.EqualTo(AiShotKind.Direct));
+            Assert.That(plan.TargetId, Is.EqualTo("seat:1"), "the nearer opponent");
+            Assert.That(plan.Heading, Is.EqualTo(90).Within(0.5), "the middle of the run of headings that reach it");
+        }
+
+        [Test]
+        public void TheSmartAiFiresTheRailgunThroughTheWallsOnlyWhenItCarriesOne()
+        {
+            Level level = Box(Cage(6, 0));
+            var targets = new List<Target> { Me, new Target("seat:1", new Vec2(6, 0), 0.45) };
+            var arsenal = new ArsenalRules();
+            var loadout = new Loadout(arsenal);
+            Assert.That(Ai.PlanSmart(Vec2.Zero, "seat:0", level, targets, Ai.MaxSkill, new Random(1), null, arsenal, loadout).Kind,
+                Is.EqualTo(AiShotKind.Blind), "no railgun: nothing reaches the caged opponent");
+
+            loadout.Add(Weapon.Railgun);
+            AiPlan rail = Ai.PlanSmart(Vec2.Zero, "seat:0", level, targets, Ai.MaxSkill, new Random(1), null, arsenal, loadout);
+            Assert.That(rail.Kind, Is.EqualTo(AiShotKind.Railgun));
+            Assert.That(rail.Weapon, Is.EqualTo(Weapon.Railgun));
+            Assert.That(rail.TargetId, Is.EqualTo("seat:1"));
+        }
+
+        [Test]
+        public void TheSmartAiTurnThinksFirst_ThenTurnsFastEnoughToBeatTheClock()
+        {
+            var turn = new AiTurn(1, 3, 1.5, 60);
+            Assert.That(turn.Step(1, 0, 20, out _), Is.EqualTo(AiStep.Think));
+            Assert.That(turn.Step(0.5, 0, 20, out _), Is.EqualTo(AiStep.Plan));
+            turn.SetPlan(new AiPlan(AiShotKind.Direct, Weapon.Cannon, 180, 180, "seat:0"));
+
+            double heading = 0;
+            Assert.That(turn.Step(0.5, heading, 2, out heading), Is.EqualTo(AiStep.Turn));
+            Assert.That(heading, Is.EqualTo(90).Within(1e-9), "180 degrees to go with 2 seconds left: it turns at 180 a second");
+            Assert.That(turn.Step(0.1, heading, 0, out heading), Is.EqualTo(AiStep.Fire), "out of time: it fires");
+        }
+
+        [Test]
         public void ThereAreThirtyThinkingLines()
         {
             Assert.That(Ai.ThinkingLineCount, Is.EqualTo(30));

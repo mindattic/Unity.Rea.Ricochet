@@ -12,5 +12,8 @@
   "pointsHit": 100,
   "pointsBounce": 25,
   "pointsFlightTime": 5,
-  "flightBonusSeconds": 0.09803921568627451
+  "flightBonusSeconds": 0.09803921568627451,
+  "smartAi": false,
+  "aiThinkSeconds": 1.5,
+  "aiDegreesPerSecond": 180
 }

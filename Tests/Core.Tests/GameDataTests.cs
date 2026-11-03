@@ -57,6 +57,9 @@ namespace Rea.Ricochet.Core.Tests
             Assert.That(match.PointsBounce, Is.EqualTo(25));
             Assert.That(match.PointsFlightTime, Is.EqualTo(5));
             Assert.That(match.FlightBonusSeconds, Is.EqualTo(100.0 / 1020.0));
+            Assert.That(match.SmartAi, Is.False, "U.RICO-T116: the smarter AI is never the default");
+            Assert.That(match.AiThinkSeconds, Is.EqualTo(1.5));
+            Assert.That(match.AiDegreesPerSecond, Is.EqualTo(180));
 
             var shot = ShotRules.Default;
             Assert.That(new double[] { shot.MaxBounces, shot.MuzzleOffset, shot.Speed, shot.DegreesPerSecond, shot.DriveSpeed },

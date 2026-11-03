@@ -278,8 +278,11 @@ namespace Rea.Ricochet
         // obj_check_ai: a new turn; an AI seat decides as its turn starts, with one of check_ai's thirty lines.
         private void BeginAiTurn(int seat)
         {
+            // U.RICO-T116 (spike, never the default): match.json's smartAi thinks first and turns at its own rate.
             _aiTurn = _match.TryGetSeat(seat, out MatchSeat sitting) && sitting.Kind == SeatKind.Ai
-                ? new AiTurn(seat, _aiDice.Next(Ai.ThinkingLineCount), Rules.DegreesPerSecond)
+                ? MatchRules.SmartAi
+                    ? new AiTurn(seat, _aiDice.Next(Ai.ThinkingLineCount), MatchRules.AiThinkSeconds, MatchRules.AiDegreesPerSecond)
+                    : new AiTurn(seat, _aiDice.Next(Ai.ThinkingLineCount), Rules.DegreesPerSecond)
                 : null;
         }
 
@@ -304,11 +307,22 @@ namespace Rea.Ricochet
                 return;
             }
 
-            switch (_aiTurn.Step(seconds, ai.Heading, out double next))
+            bool smart = MatchRules.SmartAi;
+            double next;
+            AiStep step = smart ? _aiTurn.Step(seconds, ai.Heading, _match.TimeLeft, out next) : _aiTurn.Step(seconds, ai.Heading, out next);
+            switch (step)
             {
                 case AiStep.Plan:
-                    AiPlan plan = Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), SkillOfAi(ai), _aiDice, Rules);
+                    AiPlan plan = smart
+                        ? Ai.PlanSmart(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), SkillOfAi(ai), _aiDice,
+                            Rules, ArsenalRules, ai.Loadout)
+                        : Ai.Plan(ToCore(ai.Position), SeatTarget(_aiTurn.Seat), LevelFor(_session, _aiTurn.Seat), Targets(_session), SkillOfAi(ai), _aiDice, Rules);
                     _aiTurn.SetPlan(plan);
+                    if (smart)
+                    {
+                        ai.ServerSelectWeapon(plan.Weapon); // U.RICO-T116: the cannon, or the railgun for a railgun shot
+                    }
+
                     break;
                 case AiStep.Turn:
                     ai.ServerAim((float)next);

@@ -74,6 +74,19 @@ namespace Rea.Ricochet.Core.Match
         /// </summary>
         public double FlightBonusSeconds { get; set; }
 
+        /// <summary>
+        /// U.RICO-T116 (spike, never the default): AI seats play the rebuild's smarter AI (Ai.PlanSmart: railgun shots,
+        /// the nearest target, the middle of the widest run of headings, think time) instead of the original's check_ai.
+        /// False as shipped (match.json "smartAi").
+        /// </summary>
+        public bool SmartAi { get; set; }
+
+        /// <summary>U.RICO-T116: seconds the smart AI "thinks" before it decides (unused while <see cref="SmartAi"/> is off).</summary>
+        public double AiThinkSeconds { get; set; }
+
+        /// <summary>U.RICO-T116: degrees a second the smart AI turns its barrel, faster when the clock is short (unused while <see cref="SmartAi"/> is off).</summary>
+        public double AiDegreesPerSecond { get; set; }
+
         /// <summary>The stock rules, from match.json (UR-T35): a new set starts as a copy of them.</summary>
         public MatchRules()
         {
@@ -100,6 +113,9 @@ namespace Rea.Ricochet.Core.Match
             PointsBounce = other.PointsBounce;
             PointsFlightTime = other.PointsFlightTime;
             FlightBonusSeconds = other.FlightBonusSeconds;
+            SmartAi = other.SmartAi;
+            AiThinkSeconds = other.AiThinkSeconds;
+            AiDegreesPerSecond = other.AiDegreesPerSecond;
         }
 
         /// <summary>

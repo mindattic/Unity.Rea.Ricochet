@@ -34,6 +34,9 @@ namespace Rea.Ricochet.Core.Data
                 PointsBounce = r.Integer("pointsBounce", 0, 1000000),
                 PointsFlightTime = r.Integer("pointsFlightTime", 0, 1000000),
                 FlightBonusSeconds = r.Number("flightBonusSeconds", 0.001, 60),
+                SmartAi = r.Flag("smartAi"), // U.RICO-T116: the optional smarter AI, off as shipped
+                AiThinkSeconds = r.Number("aiThinkSeconds", 0, 60),
+                AiDegreesPerSecond = r.Number("aiDegreesPerSecond", 1, 3600),
             };
             r.Done();
             return rules;

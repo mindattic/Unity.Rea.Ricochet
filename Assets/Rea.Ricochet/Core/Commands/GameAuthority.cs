@@ -710,7 +710,7 @@ namespace Rea.Ricochet.Core.Commands
 
             Loadout loadout = state.Loadout;
             Weapon weapon;
-            if (state.IsAi)
+            if (state.IsAi && !MatchRules.SmartAi)
             {
                 weapon = Weapon.Cannon; // obj_check_ai calls shoot_bullet itself: a cannon shell that spends nothing (U.RICO-T98)
             }

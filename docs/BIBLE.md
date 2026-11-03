@@ -130,7 +130,11 @@ stands and spins). Crates (weapon, item, health) drop from 10 to 30 s in and go 
 **AI** (`Core/Ai/Ai`). As check_ai: it decides as its turn starts, shows one of the thirty "is thinking..." lines, takes the
 first whole degree from 0 whose straight line reaches a living opponent before any shape, else the degree whose tracer reaches
 one soonest, else a random degree; nudges it by up to 10 - skill degrees (skill 10 by default, per AI); turns at a player's
-rate and fires a cannon shell that spends nothing. Tested by `AiTests`, PlayMode `AiOpponentTests`.
+rate and fires a cannon shell that spends nothing. Tested by `AiTests`, PlayMode `AiOpponentTests`. Spike, never the default
+(U.RICO-T116): `match.json`'s `smartAi` (false as shipped) swaps in the rebuild's smarter AI (`Ai.PlanSmart`): one sweep at
+half degrees, a straight shot before a bank shot before a railgun slug through the walls (when it carries one, fired and
+spent like a player's), the nearest opponent, the middle of the widest run of headings that reach them; it thinks for
+`aiThinkSeconds` before it decides and turns at `aiDegreesPerSecond`, faster when the clock is short.
 
 **Announcer** (`Core/Match/Announcer`, `announcer.json`). Seven personalities (Matt Baxter on the air by default), how often
 they speak (off, every time, or one time in 3/6/9), welcome, cheer and heckle lines drawn without repeats, each played as the
