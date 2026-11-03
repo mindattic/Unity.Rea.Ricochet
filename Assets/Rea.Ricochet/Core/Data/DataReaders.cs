@@ -454,6 +454,9 @@ namespace Rea.Ricochet.Core.Data
 
             double creditsScrollSpeed = r.Number("creditsScrollSpeed", 1, 1000);
 
+            // U.RICO-T85 spike: the kit's menu layout over the live arena in place of the original's rooms, never the default.
+            bool kitMenuLayout = r.Flag("kitMenuLayout");
+
             // U.RICO-T52: the Start screen's hover tips, one per MenuFlow.TipNames entry.
             var tips = new Dictionary<string, string>();
             SettingsReader tip = r.Section("tips");
@@ -464,7 +467,7 @@ namespace Rea.Ricochet.Core.Data
 
             tip.Done();
             r.Done();
-            return new MenuData(tagline, titles, off.ToArray(), controls.ToArray(), slides.ToArray(), credits.ToArray(), tips, fadeSeconds, creditsScrollSpeed);
+            return new MenuData(tagline, titles, off.ToArray(), controls.ToArray(), slides.ToArray(), credits.ToArray(), tips, fadeSeconds, creditsScrollSpeed, kitMenuLayout);
         }
 
         public static List<SettingDef> ReadRegistry(SettingsReader r, Dictionary<string, JsonValue> docs, List<string> errors)

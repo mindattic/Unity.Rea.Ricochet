@@ -58,10 +58,30 @@ namespace Rea.Ricochet
         /// <summary>The background image.</summary>
         public Image Background => _background;
 
+        /// <summary>
+        /// U.RICO-T85 (spike, never the default): menu.json's "kitMenuLayout". While it is on no screen takes the room look, so every
+        /// menu keeps the kit's card over the live arena (the look before U.RICO-T84); the controls are still dressed in the
+        /// original's art. Off as shipped, and when the data cannot be read.
+        /// </summary>
+        public static bool KitMenuLayout
+        {
+            get
+            {
+                try
+                {
+                    return Rea.Ricochet.Core.Data.GameData.Current.Menu.KitMenuLayout;
+                }
+                catch (System.Exception)
+                {
+                    return false; // bad data is reported where it is loaded; the original's rooms stay
+                }
+            }
+        }
+
         /// <summary>True when the room look applies to <paramref name="screen"/>.</summary>
         public static bool Eligible(MenuScreen screen)
         {
-            if (screen == null)
+            if (screen == null || KitMenuLayout)
             {
                 return false;
             }

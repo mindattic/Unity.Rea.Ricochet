@@ -1004,3 +1004,18 @@ AI range, the lobby's seat count, `MatchSetup`'s AI skills and names, the author
 the HUD's slots and the shot outcome's wire all read; `MatchRules.OriginalSeats` and `MatchRules.SeatCapacity` (16) bound it.
 The wire already fits sixteen (Turns packs fifteen AI names; Seating has sixteen spots and two HUD rows of eight). Every peer
 reads its own match.json, so every peer must ship the same value, as with level.json (the random level's spots depend on it).
+
+U.RICO-T85 (spike, a future enhancement that is never the default): the kit's menu layout over the live arena against the
+original's rooms. menu.json's `kitMenuLayout` (false as shipped; `MenuData.KitMenuLayout`) turns U.RICO-T84's room look off:
+`GmlRoomLayout.Eligible` takes no screen, so every menu keeps the MindAttic Components card (title, items and the kit's Back
+in one centred column) over the live arena behind it, as the menus were before U.RICO-T84, and the main menu loses
+bg_titlescreen's drifting letters. Everything else stays the original's: `GmlMenuSkin` still dresses every button, switch,
+text field and row in obj_btn_* art and fnt_mono, the title screen still draws its own room, and the pause and endgame menus
+are over the game either way. Judgement: the original's rooms read better and stay the default. On bg_titlescreen the
+fnt_mono labels and spr_button plates sit on the backdrop they were drawn for, the way on is always at the bottom right and
+Back at the bottom left, and the screens are recognisably Ricochet's; over the live arena the dressed plates fight the moving
+tanks, clouds and fog behind the kit's dimmed card, and the centred column puts Back and the way on in a different place on
+every screen. What the kit's look does better is long screens: the settings (which keep the kit's card even in the room look,
+deviation (1) above) and the screens with controls the rooms had no object for, which read as one tidy list instead of rows
+flowing into columns. So the kit's layout is worth keeping only as this option; if the owner wants it anywhere by default it
+should be the settings screen alone. Tested by Core `GameDataTests.TheKitMenuLayoutIsOffAsShipped_AndTheFlagTurnsItOn`.

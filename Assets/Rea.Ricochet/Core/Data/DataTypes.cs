@@ -50,8 +50,9 @@ namespace Rea.Ricochet.Core.Data
     public sealed class MenuData
     {
         internal MenuData(string tagline, Dictionary<Room, string> titles, Room[] offTheMainMenu, ControlBinding[] controls, Slide[] slides, CreditsSection[] credits,
-            Dictionary<string, string> tips = null, double fadeSeconds = 0, double creditsScrollSpeed = 0)
+            Dictionary<string, string> tips = null, double fadeSeconds = 0, double creditsScrollSpeed = 0, bool kitMenuLayout = false)
         {
+            KitMenuLayout = kitMenuLayout;
             FadeSeconds = fadeSeconds;
             CreditsScrollSpeed = creditsScrollSpeed;
             Tagline = tagline;
@@ -84,6 +85,13 @@ namespace Rea.Ricochet.Core.Data
 
         /// <summary>U.RICO-T55: how fast the credits roll, in room pixels a second (0: CreditsRoll.DefaultSpeed).</summary>
         public double CreditsScrollSpeed { get; }
+
+        /// <summary>
+        /// U.RICO-T85 (spike, never the default): true lays the menu screens out as the MindAttic Components kit does (its card,
+        /// over the live arena) instead of as the original's rooms did on bg_titlescreen (U.RICO-T84). menu.json "kitMenuLayout",
+        /// false as shipped.
+        /// </summary>
+        public bool KitMenuLayout { get; }
     }
 
     /// <summary>The original's 80 level-shape outlines, by kind (shapes.json).</summary>

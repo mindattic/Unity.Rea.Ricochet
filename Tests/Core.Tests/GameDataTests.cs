@@ -96,6 +96,15 @@ namespace Rea.Ricochet.Core.Tests
         }
 
         [Test]
+        public void TheKitMenuLayoutIsOffAsShipped_AndTheFlagTurnsItOn()
+        {
+            // U.RICO-T85 (spike): the original's rooms are the default; menu.json's kitMenuLayout is the data option.
+            Assert.That(GameData.Load(Stock).Menu.KitMenuLayout, Is.False);
+            GameData on = GameData.Load(Patched(Stock, "menu.json", t => t.Replace("\"kitMenuLayout\": false", "\"kitMenuLayout\": true")));
+            Assert.That(on.Menu.KitMenuLayout, Is.True);
+        }
+
+        [Test]
         public void ChangingOneSetOfRulesLeavesTheStockAlone()
         {
             var rules = new MatchRules { MaxHealth = 7 };
