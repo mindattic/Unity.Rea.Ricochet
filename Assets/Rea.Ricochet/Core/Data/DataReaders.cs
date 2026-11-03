@@ -16,8 +16,10 @@ namespace Rea.Ricochet.Core.Data
         // The arena the maps and hazards live in is fixed (Seating's spots, the camera): coordinates outside it are mistakes.
         private const double Reach = 50;
 
-        public static MatchRules ReadMatch(SettingsReader r)
+        public static MatchRules ReadMatch(SettingsReader r, out int maxSeats)
         {
+            // U.RICO-T117 spike: up to 16 seats for a networked match; 8, the original's, as shipped.
+            maxSeats = r.Integer("maxSeats", MatchRules.OriginalSeats, MatchRules.SeatCapacity);
             var rules = new MatchRules(true)
             {
                 MaxHealth = r.Integer("maxHealth", 1, 100000),

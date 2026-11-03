@@ -50,6 +50,9 @@ namespace Rea.Ricochet.Core.Data
         /// <summary>The prototypes the rules classes copy their defaults from.</summary>
         internal MatchRules Match { get; set; }
 
+        /// <summary>U.RICO-T117: the most seats a match has (match.json "maxSeats": 8 as shipped, up to 16); see MatchRules.MaxSeats.</summary>
+        public int MaxSeats { get; internal set; } = Rea.Ricochet.Core.Match.MatchRules.OriginalSeats;
+
         internal ShotRules Shot { get; set; }
 
         internal HazardRules Hazards { get; set; }
@@ -194,7 +197,8 @@ namespace Rea.Ricochet.Core.Data
             var data = new GameData();
             SettingsReader Root(string file) => new SettingsReader(docs.TryGetValue(file, out JsonValue doc) ? doc : null, file, errors);
 
-            data.Match = DataReaders.ReadMatch(Root(MatchFile));
+            data.Match = DataReaders.ReadMatch(Root(MatchFile), out int maxSeats);
+            data.MaxSeats = maxSeats;
             data.Shot = DataReaders.ReadShot(Root(ShotFile));
             data.Hazards = DataReaders.ReadHazards(Root(HazardsFile));
             DataReaders.ReadArsenal(Root(ArsenalFile), data);

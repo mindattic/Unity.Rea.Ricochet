@@ -1,5 +1,6 @@
 {
   "_source": "MatchRules: the numbers a match plays by (2013 original globals.gml, hit.gml, turn_countdown.gml; see MatchRules.cs).",
+  "maxSeats": 8,
   "maxHealth": 100,
   "turnSeconds": 20,
   "countdownBeeps": 4,

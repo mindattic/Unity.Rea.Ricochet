@@ -989,3 +989,10 @@ those maps: `Maps.Playable` turns a map-room-only pick (an old profile, a peer's
 `BeginMatch`, and `Game` drops a remembered one on load, so the default flow is exactly the original's. Tested by Core
 `MenuFlowTests.TheMapRoomIsOffAsShipped_SoPlayersGoesToTheLobby_AndNoHandLaidMapIsPlayed` and the map tests in
 `MenuFlowTests` and `GameDataTests`.
+
+U.RICO-T117 (spike, a future enhancement that is never the default): up to 16 seats for a networked match. match.json's
+`maxSeats` (8, the original's, as shipped; 8 to 16) is `MatchRules.MaxSeats` (`GameData.MaxSeats`), which the players room's
+AI range, the lobby's seat count, `MatchSetup`'s AI skills and names, the authority's seat checks, the random level's spots,
+the HUD's slots and the shot outcome's wire all read; `MatchRules.OriginalSeats` and `MatchRules.SeatCapacity` (16) bound it.
+The wire already fits sixteen (Turns packs fifteen AI names; Seating has sixteen spots and two HUD rows of eight). Every peer
+reads its own match.json, so every peer must ship the same value, as with level.json (the random level's spots depend on it).

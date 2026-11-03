@@ -12,8 +12,22 @@ namespace Rea.Ricochet.Core.Match
     using Rea.Ricochet.Core.Arsenal;
     public sealed class MatchRules
     {
-        /// <summary>The most seats a match has, humans and AI together (the original's eight: obj_btn_players_more and obj_btn_ai_more stop at 8).</summary>
-        public const int MaxSeats = 8;
+        /// <summary>The original's seats, humans and AI together: obj_btn_players_more and obj_btn_ai_more stop at 8.</summary>
+        public const int OriginalSeats = 8;
+
+        /// <summary>
+        /// U.RICO-T117 spike: the most seats match.json's "maxSeats" may open a networked match to. The wire already fits
+        /// it (Turns packs fifteen AI names, ShotOutcome takes any seat count) and Seating has sixteen spots and two HUD rows
+        /// of eight.
+        /// </summary>
+        public const int SeatCapacity = 16;
+
+        /// <summary>
+        /// The most seats a match has, humans and AI together: match.json's "maxSeats", which ships as the original's
+        /// <see cref="OriginalSeats"/> and may be raised to <see cref="SeatCapacity"/> (U.RICO-T117, never the default).
+        /// Every peer reads its own match.json, so every peer must ship the same value (as with level.json).
+        /// </summary>
+        public static int MaxSeats => Rea.Ricochet.Core.Data.GameData.Current.MaxSeats;
 
         /// <summary>Health a player starts each round with (maxhp).</summary>
         public int MaxHealth { get; set; }
