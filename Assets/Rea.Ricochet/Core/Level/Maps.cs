@@ -8,6 +8,8 @@
 // maps are back in maps.json marked "mapRoomOnly", and maps.json's "mapRoom" flag (false as shipped) puts the map room
 // between the players room and the lobby. With it off nothing reaches them: Playable() turns any such pick (an old profile,
 // a peer's vote) back into the random arena, so the default flow plays exactly as the original did.
+// U.RICO-T111 (spike, never the default): a map-room-only map may set maps.json's "hazards" to lay the arcs, laser gates and
+// foliage on its rounds (MapInfo.LaysHazards, read by GameAuthority.ResetHazards); every shipped map says false.
 using System;
 using System.Collections.Generic;
 
@@ -20,10 +22,12 @@ namespace Rea.Ricochet.Core.Level
     {
         private readonly Func<Level> _build;
 
-        internal MapInfo(int index, string id, string name, string description, Func<Level> build, bool random = false, bool mapRoomOnly = false)
+        internal MapInfo(int index, string id, string name, string description, Func<Level> build, bool random = false, bool mapRoomOnly = false,
+            bool laysHazards = false)
         {
             IsRandom = random;
             MapRoomOnly = mapRoomOnly;
+            LaysHazards = laysHazards;
             Index = index;
             Id = id;
             Name = name;
@@ -50,6 +54,14 @@ namespace Rea.Ricochet.Core.Level
         /// map room is off (<see cref="Maps.Playable"/>).
         /// </summary>
         public bool MapRoomOnly { get; }
+
+        /// <summary>
+        /// U.RICO-T111 (spike, never the default): true when maps.json's "hazards" lays this map's rounds with the electric
+        /// arcs, laser gates and foliage (HazardRules) even while hazards.json's layHazards is off. The original laid none
+        /// (U.RICO-T91), so only a map-room-only map may ask for them and every shipped map says false: while the map room is
+        /// off such a map is never played (<see cref="Maps.Playable"/>), so the default game stays bare.
+        /// </summary>
+        public bool LaysHazards { get; }
 
         /// <summary>A fresh copy of the map's level (walls and redirectors, no hazards); a random map's is the one for seed 1.</summary>
         public Level Build() => IsRandom ? LevelGenerator.Generate(1).Level : _build();

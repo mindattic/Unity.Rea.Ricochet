@@ -354,12 +354,16 @@ namespace Rea.Ricochet.Core.Commands
             return drop;
         }
 
-        /// <summary>Every hazard goes, and the level is laid again when <see cref="LaysHazards"/> (arcs, gates and foliage kept clear of every seat, player and dummy).</summary>
+        /// <summary>
+        /// Every hazard goes, and the level is laid again when <see cref="LaysHazards"/> or, U.RICO-T111 (spike, never the
+        /// default), the map being played asks for them in maps.json (<see cref="MapInfo.LaysHazards"/>): arcs, gates and
+        /// foliage kept clear of every seat, player and dummy.
+        /// </summary>
         public void ResetHazards()
         {
             ClearItemFlights(); // randomize_level: clear_objects
             Hazards.Clear();
-            if (!LaysHazards)
+            if (!LaysHazards && !Maps.At(MapIndex).LaysHazards)
             {
                 return;
             }

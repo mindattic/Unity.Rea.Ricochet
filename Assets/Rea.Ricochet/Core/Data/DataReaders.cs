@@ -230,6 +230,7 @@ namespace Rea.Ricochet.Core.Data
                 string description = e.Text("description");
                 bool isRandom = e.Flag("random");
                 bool mapRoomOnly = e.Flag("mapRoomOnly"); // U.RICO-T118: offered only by the optional map room
+                bool laysHazards = e.Flag("hazards"); // U.RICO-T111 spike: arcs, laser gates and foliage on this map, never the default
                 double[] border = e.Numbers("border", 4, false, -Reach, Reach);
                 List<double[]> walls = e.Rows("walls", 4, false, -Reach, Reach);
                 List<double[]> redirectors = e.Rows("redirectors", 5, false, -360, 360);
@@ -281,7 +282,10 @@ namespace Rea.Ricochet.Core.Data
                     e.Check(!mapRoomOnly, "mapRoomOnly", "the first map is the practice level and is never map-room-only");
                 }
 
-                maps.Add(Build(i, id, name, description, isRandom, border, walls, redirectors, mapRoomOnly));
+                // U.RICO-T111: the default level (the random arena) and the practice level stay bare as the original's; only a
+                // map the optional map room offers may lay the hazards, so with the map room off (as shipped) none is ever laid.
+                e.Check(!laysHazards || mapRoomOnly, "hazards", "only a map-room-only map may lay the arcs, laser gates and foliage (the original laid none)");
+                maps.Add(Build(i, id, name, description, isRandom, border, walls, redirectors, mapRoomOnly, laysHazards));
             }
 
             r.Check(random >= 0, "maps", "one map must be the random arena (\"random\": true)");
@@ -293,7 +297,7 @@ namespace Rea.Ricochet.Core.Data
         }
 
         private static MapInfo Build(int index, string id, string name, string description, bool isRandom, double[] border, List<double[]> walls, List<double[]> redirectors,
-            bool mapRoomOnly = false)
+            bool mapRoomOnly = false, bool laysHazards = false)
         {
             Func<Rea.Ricochet.Core.Level.Level> build = () =>
             {
@@ -311,7 +315,7 @@ namespace Rea.Ricochet.Core.Data
 
                 return new Rea.Ricochet.Core.Level.Level(border[0], border[1], border[2], border[3], w, d);
             };
-            return new MapInfo(index, id, name, description, build, isRandom, mapRoomOnly);
+            return new MapInfo(index, id, name, description, build, isRandom, mapRoomOnly, laysHazards);
         }
 
         public static AnnouncerData ReadAnnouncer(SettingsReader r)
