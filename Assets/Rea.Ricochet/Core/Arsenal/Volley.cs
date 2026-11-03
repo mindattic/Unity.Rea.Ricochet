@@ -426,8 +426,12 @@ namespace Rea.Ricochet.Core.Arsenal
         /// turned by a standing redirector) and teleports its shooter the moment it first strikes a shape or the border
         /// (teleport_player), instead of bouncing on. Returns where the shooter lands (<see cref="TeleportSpot"/>);
         /// <paramref name="path"/> is its flight, ending there.
+        /// U.RICO-T81 spike (arsenal.json's teleporterBounces, never the default): with <paramref name="bounces"/> it bounces on
+        /// off the shapes and the border like a shell and teleports on the contact that reaches <see cref="ShotRules.MaxBounces"/>
+        /// (redirector turns not counted, as before), or where its flight runs out if it never gets there.
         /// </summary>
-        public static Vec2 Teleport(Vec2 origin, double heading, Level level, ShotRules rules, double clearance, out ShotPath path)
+        public static Vec2 Teleport(Vec2 origin, double heading, Level level, ShotRules rules, double clearance, out ShotPath path,
+            bool bounces = false)
         {
             if (level == null)
             {
@@ -436,11 +440,13 @@ namespace Rea.Ricochet.Core.Arsenal
 
             rules = rules ?? ShotRules.Default;
             path = FlyItem(origin, heading, Bare(level, true), rules, ItemLooks.SpeedFactor(Item.Teleporter) * ItemLooks.RedirectorMaxSeconds);
+            int landsOn = bounces ? Math.Max(1, rules.MaxBounces) : 1;
+            int touched = 0;
             foreach (Contact contact in path.Contacts)
             {
-                if (contact.Kind != ContactKind.Redirector)
+                if (contact.Kind != ContactKind.Redirector && ++touched == landsOn)
                 {
-                    path = path.Truncate(contact.Distance); // the first shape or border: it teleports there
+                    path = path.Truncate(contact.Distance); // the first shape or border (or, bouncing, the last): it teleports there
                     break;
                 }
             }

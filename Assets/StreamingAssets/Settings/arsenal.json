@@ -1,5 +1,5 @@
 {
-  "_source": "ArsenalRules: the weapons and items and the numbers they play by (2013 original globals.gml; see Arsenal.cs). start 10 is unlimited. Ids are the Weapon and Item enum names, in the original's order. about is the hover text of its HUD icon (U.RICO-T49: the rebuild's own words; the original's icons had none). grenadeBlastsAll (U.RICO-T113 spike, never the default) makes a grenade fly through tanks and blast everyone within grenadeRadius; false is the original's grenade, which bounces off tanks and hurts only the first player its blast reaches. aimAssistTargets (U.RICO-T115 spike, never the default) makes the aim assist item turn the aim onto a shot that hits someone, as an AI would aim it; false is the original's straight line along the current aim.",
+  "_source": "ArsenalRules: the weapons and items and the numbers they play by (2013 original globals.gml; see Arsenal.cs). start 10 is unlimited. Ids are the Weapon and Item enum names, in the original's order. about is the hover text of its HUD icon (U.RICO-T49: the rebuild's own words; the original's icons had none). grenadeBlastsAll (U.RICO-T113 spike, never the default) makes a grenade fly through tanks and blast everyone within grenadeRadius; false is the original's grenade, which bounces off tanks and hurts only the first player its blast reaches. aimAssistTargets (U.RICO-T115 spike, never the default) makes the aim assist item turn the aim onto a shot that hits someone, as an AI would aim it; false is the original's straight line along the current aim. teleporterBounces (U.RICO-T81 spike, never the default) makes a teleporter bounce along its path like a shell and put you down where its bounces run out; false is the original's teleporter, which puts you down on the first shape or border it touches.",
   "defaultFuse": 2,
   "minFuse": 0.5,
   "maxFuse": 6,
@@ -12,6 +12,7 @@
   "pelletSpread": 4,
   "laserSpeed": 1,
   "railgunSpeed": 8,
+  "teleporterBounces": false,
   "aimAssistTargets": false,
   "itemEffectFirst": false,
   "weapons": [

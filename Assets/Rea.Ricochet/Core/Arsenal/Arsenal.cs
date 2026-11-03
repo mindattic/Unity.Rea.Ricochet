@@ -96,6 +96,14 @@ namespace Rea.Ricochet.Core.Arsenal
         public double RailgunSpeed { get; set; }
 
         /// <summary>
+        /// U.RICO-T81 spike, off as shipped (arsenal.json's teleporterBounces): a teleporter bounces along its path like a
+        /// shell (off the shapes and the border, through tanks and hazards, turned by a standing redirector) and puts its
+        /// shooter down where its bounces run out, on the contact that reaches the shot's bounce limit. Off, it is the
+        /// original's obj_teleporter (U.RICO-T80): it teleports its shooter on the first shape or border it touches.
+        /// </summary>
+        public bool TeleporterBounces { get; set; }
+
+        /// <summary>
         /// U.RICO-T115 spike, off as shipped (arsenal.json's aimAssistTargets): the aim assist item also turns the aim onto
         /// the shot a fully skilled AI would take at an opponent (Ai.Assist), if any reaches one, and its beam follows that
         /// whole path. Off, it is the original's obj_aimassist: a straight line along the current aim to the first wall.
@@ -135,6 +143,7 @@ namespace Rea.Ricochet.Core.Arsenal
             PelletSpread = other.PelletSpread;
             LaserSpeed = other.LaserSpeed;
             RailgunSpeed = other.RailgunSpeed;
+            TeleporterBounces = other.TeleporterBounces;
             AimAssistTargets = other.AimAssistTargets;
             ItemEffectFirst = other.ItemEffectFirst;
             Array.Copy(other._startWeapons, _startWeapons, Kinds);

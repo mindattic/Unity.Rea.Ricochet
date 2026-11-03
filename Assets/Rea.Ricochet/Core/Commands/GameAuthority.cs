@@ -827,7 +827,8 @@ namespace Rea.Ricochet.Core.Commands
             switch (item)
             {
                 case Item.Teleporter:
-                    Arsenal.Teleport(state.Position, state.Heading, LevelFor(state.Seat), Rules, state.Radius, out flight);
+                    // U.RICO-T81 spike, off unless arsenal.json sets teleporterBounces: it bounces on to its bounce limit first.
+                    Arsenal.Teleport(state.Position, state.Heading, LevelFor(state.Seat), Rules, state.Radius, out flight, Arms.TeleporterBounces);
                     break;
                 case Item.Redirector:
                     flight = Arsenal.FlyRedirector(state.Position, state.Heading, LevelFor(state.Seat), Rules);
