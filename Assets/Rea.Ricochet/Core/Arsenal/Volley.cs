@@ -339,7 +339,8 @@ namespace Rea.Ricochet.Core.Arsenal
 
                 default:
                 {
-                    ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot);
+                    // U.RICO-T89 spike: with shot.json's powerMeter on, the shot's power sets how far the shell flies.
+                    ShotPath path = BounceSolver.Solve(origin, heading, level, targets, shot, shot.Range);
                     paths.Add(path);
                     AddTargetStrike(path, 1, strikes);
                     return new Volley(Weapon.Cannon, paths, shot.Speed, strikes, false, default, 0);

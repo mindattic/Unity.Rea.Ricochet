@@ -4,5 +4,9 @@
   "muzzleOffset": 0.6,
   "speed": 18,
   "degreesPerSecond": 60,
-  "driveSpeed": 0.6875
+  "driveSpeed": 0.6875,
+  "powerMeter": false,
+  "minRange": 6,
+  "maxRange": 70,
+  "powerPerSecond": 0.5
 }

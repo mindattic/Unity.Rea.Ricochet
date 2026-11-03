@@ -1,5 +1,7 @@
 // A player's aim: the barrel's angle, turned while a key is held. aim.gml swapped the player into an "aim" action and
 // rotated image_angle; there is no power (U.RICO-T88). Plain so the input rules are testable.
+using System;
+
 namespace Rea.Ricochet.Core.Aim
 {
     public sealed class AimState
@@ -23,6 +25,33 @@ namespace Rea.Ricochet.Core.Aim
             bool changed = heading != Heading;
             Heading = heading;
             return changed;
+        }
+
+        /// <summary>U.RICO-T89 spike: the power meter's charge, 0 to 1 (only used with shot.json's powerMeter on).</summary>
+        public double Power { get; private set; }
+
+        /// <summary>
+        /// U.RICO-T89 spike: while the power key is <paramref name="held"/>, fills the meter at the rules' powerPerSecond, up to
+        /// full. Does nothing (and returns false) when shot.json's powerMeter is off, as shipped. Returns true when it changed.
+        /// </summary>
+        public bool Charge(bool held, double seconds, ShotRules rules = null)
+        {
+            rules = rules ?? ShotRules.Default;
+            if (!rules.PowerMeter || !held || !(seconds > 0))
+            {
+                return false;
+            }
+
+            double power = Math.Min(1, Power + rules.PowerPerSecond * seconds);
+            bool changed = power != Power;
+            Power = power;
+            return changed;
+        }
+
+        /// <summary>U.RICO-T89 spike: empties the meter once a shot has gone.</summary>
+        public void ResetPower()
+        {
+            Power = 0;
         }
 
         public void Set(double heading)

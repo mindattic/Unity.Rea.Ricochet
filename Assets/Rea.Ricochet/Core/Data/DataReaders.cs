@@ -51,6 +51,10 @@ namespace Rea.Ricochet.Core.Data
                 Speed = r.Number("speed", 0.1, 1000),
                 DegreesPerSecond = r.Number("degreesPerSecond", 1, 3600),
                 DriveSpeed = r.Number("driveSpeed", 0, 100),
+                PowerMeter = r.Flag("powerMeter"), // U.RICO-T89 spike: never the default
+                MinRange = r.Number("minRange", 0, 10000),
+                MaxRange = r.Number("maxRange", 0, 10000),
+                PowerPerSecond = r.Number("powerPerSecond", 0.01, 100),
             };
             r.Done();
             return rules;

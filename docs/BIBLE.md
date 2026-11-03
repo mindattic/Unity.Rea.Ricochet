@@ -105,7 +105,11 @@ clock (20 s by default, 5 to 30). PageUp / PageDown change the border (32 to 256
 until its bounce limit (5 by default) runs out, reflecting off the shapes and the border (`Core/Aim/BounceSolver`, `ShotPath`,
 `ProjectileFlight`, `Geometry`); the dotted preview shows its path. After a shot lands the next turn waits obj_endturn's 50
 steps, longer while the announcer is still speaking. Tested by `BounceSolverTests`, `GeometryTests`, `FlightAndAimTests`,
-`DrivingTests`.
+`DrivingTests`. Spike, never the default (U.RICO-T89): `shot.json`'s `powerMeter` (false as shipped) brings back a power
+meter, a held key filling it at `powerPerSecond` (`AimState.Charge`) and its power setting a shell's range from `minRange` to
+`maxRange` (`ShotRules.Range`), at the same constant speed. Against the original: a shell can then die in mid-air short of its
+bounces, so a long bank shot needs a full charge and every turn asks for a distance as well as an angle; the original's
+angle-only, full-length shot stays the default.
 
 **Damage, score and the end.** A hit does the weapon damage (100 by default, chosen from 5/10/25/33/50/100) to a 100-health
 tank and scores the shooter 100 + 25 a bounce + 5 a tenth of a second in flight (hit.gml, draw_potential.gml). The last tank
