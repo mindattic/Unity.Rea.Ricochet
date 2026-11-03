@@ -105,6 +105,7 @@ namespace Rea.Ricochet.Core.Data
                 LaserSpeed = r.Number("laserSpeed", 0.1, 100),
                 RailgunSpeed = r.Number("railgunSpeed", 0.1, 100),
                 AimAssistTargets = r.Flag("aimAssistTargets"), // U.RICO-T115 spike: never the default
+                ItemEffectFirst = r.Flag("itemEffectFirst"), // U.RICO-T83 spike: never the default
             };
             r.Check(rules.MinFuse <= rules.DefaultFuse && rules.DefaultFuse <= rules.MaxFuse, "defaultFuse", "must lie between minFuse and maxFuse");
 

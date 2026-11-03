@@ -843,7 +843,16 @@ namespace Rea.Ricochet.Core.Commands
             Emit(new ItemUsed(state.Id, item, flight));
             if (flight != null)
             {
-                _itemsInFlight.Add(new ItemInFlight(state, item, flight, hit));
+                var flying = new ItemInFlight(state, item, flight, hit);
+                _itemsInFlight.Add(flying);
+
+                // U.RICO-T83 spike, off unless arsenal.json sets itemEffectFirst: a teleporter or shrink ray lands at once and
+                // its flight is only drawn afterwards (it still holds the turn until it has flown, but arrives as nothing).
+                if (Arms.ItemEffectFirst && item != Item.Redirector)
+                {
+                    Arrive(flying);
+                    flying.Landed = true;
+                }
             }
 
             switch (item)
@@ -922,7 +931,10 @@ namespace Rea.Ricochet.Core.Commands
                     }
 
                     _itemsInFlight.RemoveAt(i--);
-                    Arrive(flying);
+                    if (!flying.Landed)
+                    {
+                        Arrive(flying);
+                    }
                 }
             });
         }
@@ -1047,6 +1059,9 @@ namespace Rea.Ricochet.Core.Commands
             public Wall Hit { get; }
 
             public double Travelled { get; set; }
+
+            /// <summary>True once its effect has landed ahead of its flight (U.RICO-T83's itemEffectFirst).</summary>
+            public bool Landed { get; set; }
         }
 
         // vortex_detonate.gml. Only this player's own vortex, only while it is still in the air, and only once: the volley is

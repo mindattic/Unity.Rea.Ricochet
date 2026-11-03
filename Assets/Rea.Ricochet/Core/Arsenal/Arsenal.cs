@@ -102,6 +102,13 @@ namespace Rea.Ricochet.Core.Arsenal
         /// </summary>
         public bool AimAssistTargets { get; set; }
 
+        /// <summary>
+        /// U.RICO-T83 spike, off as shipped (arsenal.json's itemEffectFirst): a teleporter or shrink ray takes effect the
+        /// moment it is used (the tank is put down, the shape shrinks) and its flight is drawn afterwards, only to show
+        /// where it went. Off, it is the original's: the effect lands when the flight arrives (U.RICO-T80).
+        /// </summary>
+        public bool ItemEffectFirst { get; set; }
+
         /// <summary>The stock rules, from arsenal.json (UR-T35): a new set starts as a copy of them.</summary>
         public ArsenalRules()
         {
@@ -129,6 +136,7 @@ namespace Rea.Ricochet.Core.Arsenal
             LaserSpeed = other.LaserSpeed;
             RailgunSpeed = other.RailgunSpeed;
             AimAssistTargets = other.AimAssistTargets;
+            ItemEffectFirst = other.ItemEffectFirst;
             Array.Copy(other._startWeapons, _startWeapons, Kinds);
             Array.Copy(other._startItems, _startItems, Kinds);
             Array.Copy(other._weaponsInPlay, _weaponsInPlay, Kinds);
