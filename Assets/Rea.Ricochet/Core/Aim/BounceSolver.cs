@@ -142,8 +142,7 @@ namespace Rea.Ricochet.Core.Aim
                 throw new ArgumentOutOfRangeException(nameof(step));
             }
 
-            double? best = null;
-            double bestWidth = -1;
+            var runs = new List<(double Start, double End)>();
             double? first = null;
             double last = 0;
             for (double heading = 0; heading < 360 + step; heading += step)
@@ -162,13 +161,28 @@ namespace Rea.Ricochet.Core.Aim
                 }
                 else if (first != null)
                 {
-                    if (last - first.Value > bestWidth)
-                    {
-                        bestWidth = last - first.Value;
-                        best = (first.Value + last) / 2;
-                    }
-
+                    runs.Add((first.Value, last));
                     first = null;
+                }
+            }
+
+            // The sweep is a circle: a run reaching the last heading continues into one starting at 0.
+            if (runs.Count >= 2 && runs[0].Start == 0 && runs[runs.Count - 1].End >= 360 - step)
+            {
+                (double Start, double End) tail = runs[runs.Count - 1];
+                runs[0] = (tail.Start - 360, runs[0].End);
+                runs.RemoveAt(runs.Count - 1);
+            }
+
+            double? best = null;
+            double bestWidth = -1;
+            foreach ((double Start, double End) run in runs)
+            {
+                if (run.End - run.Start > bestWidth)
+                {
+                    bestWidth = run.End - run.Start;
+                    double middle = (run.Start + run.End) / 2;
+                    best = middle < 0 ? middle + 360 : middle;
                 }
             }
 

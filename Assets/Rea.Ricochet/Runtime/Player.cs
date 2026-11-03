@@ -119,8 +119,13 @@ namespace Rea.Ricochet
         {
             get
             {
+                if (!IsAi) // a human has no key yet: IsAi is what reads it
+                {
+                    return 0;
+                }
+
                 string key = _key.Key ?? string.Empty;
-                return IsAi && key.StartsWith(Arena.AiKeyPrefix, System.StringComparison.Ordinal)
+                return key.StartsWith(Arena.AiKeyPrefix, System.StringComparison.Ordinal)
                     && int.TryParse(key.Substring(Arena.AiKeyPrefix.Length), out int number) ? number : 0;
             }
         }

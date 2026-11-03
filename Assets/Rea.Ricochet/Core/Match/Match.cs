@@ -292,6 +292,10 @@ namespace Rea.Ricochet.Core.Match
             {
                 NextTurn();
             }
+            else if (index == Current && Phase == MatchPhase.ShotInFlight)
+            {
+                ShotOver(index); // the shooter left mid-shot: its player may be gone, so nothing else would end the shot
+            }
         }
 
         /// <summary>

@@ -234,7 +234,7 @@ namespace Rea.Ricochet
         private void Leave()
         {
             _leaving = true;
-            ScreenFade.Cover(() =>
+            bool covering = ScreenFade.Cover(() =>
             {
                 _leaving = false;
                 if (_stage == Stage.Splash)
@@ -262,6 +262,10 @@ namespace Rea.Ricochet
                     done?.Invoke();
                 }
             });
+            if (!covering)
+            {
+                _leaving = false; // another cover is under way and never runs this callback: try again next frame
+            }
         }
 
         // A key, a mouse button or a pad's button pressed this frame; key is the key's name (null for a click or a button).

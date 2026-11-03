@@ -67,7 +67,7 @@ namespace Rea.Ricochet
         {
             NetSession session = _hud != null ? _hud.CurrentSession : null;
             Turns turns = session != null && session.IsLive ? Turns.For(session) : null;
-            if (turns == null || !turns.FogOfWar || turns.MatchPhase == MatchPhase.GameOver)
+            if (turns == null || !turns.FogOfWar || turns.MatchPhase == MatchPhase.GameOver || turns.MatchPhase == MatchPhase.Practice)
             {
                 if (_renderer != null && _renderer.enabled)
                 {

@@ -241,6 +241,8 @@ namespace Rea.Ricochet
                     break;
                 }
 
+                case HazardKind.Shrunk:
+                    break; // draws nothing of its own: A and B hold wall indices, not points, and Update shrinks the shape (U.RICO-T90)
                 default: // a shield wall
                     // obj_shieldwall's spr_shieldwall across the aim, playing and fading in (U.RICO-T47); lines without the art.
                     _art = ArtSprite("Shield wall", GmlSprites.ShieldWall, (A + B) * 0.5f, -2);
