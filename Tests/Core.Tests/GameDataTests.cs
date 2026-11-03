@@ -186,7 +186,7 @@ namespace Rea.Ricochet.Core.Tests
         public void AnOutOfRangeNumberNamesItsFileKeyAndLine()
         {
             var ex = Fails(s => Patched(s, "match.json", t => t.Replace("\"turnSeconds\": 20", "\"turnSeconds\": -3")));
-            Assert.That(ex.Errors[0], Does.Contain("match.json").And.Contain("'turnSeconds'").And.Contain("between 0.1 and 3600").And.Contain("(line 4)"));
+            Assert.That(ex.Errors[0], Does.Contain("match.json").And.Contain("'turnSeconds'").And.Contain("between 0.1 and 3600").And.Contain("(line 5)"));
             Assert.That(ex.Errors.Any(e => e.Contains("registry.json") && e.Contains("outside the setting's range")), Is.True, "the registry notices the stock value left its range too");
         }
 
