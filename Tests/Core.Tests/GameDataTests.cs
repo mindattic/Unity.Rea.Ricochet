@@ -39,7 +39,7 @@ namespace Rea.Ricochet.Core.Tests
             Assert.That(shipped, Is.EqualTo(GameData.Files.OrderBy(n => n).ToArray()), "no data file is left unloaded");
 
             GameData data = GameData.Load(stock);
-            Assert.That(data.Maps.Count, Is.EqualTo(2));
+            Assert.That(data.Maps.Count, Is.EqualTo(5), "the practice fixture, the random arena and the optional map room's three (U.RICO-T118)");
             Assert.That(data.Registry.Count, Is.GreaterThan(0));
         }
 
@@ -112,8 +112,12 @@ namespace Rea.Ricochet.Core.Tests
         [Test]
         public void StockContentReproducesTheCodedContent()
         {
-            Assert.That(Maps.All.Select(m => m.Name), Is.EqualTo(new[] { "Practice Range", "Random Arena" }));
+            Assert.That(Maps.All.Select(m => m.Name), Is.EqualTo(new[] { "Practice Range", "Random Arena", "Crossfire", "Pillars", "Funnel" }));
             Assert.That(Maps.RandomIndex, Is.EqualTo(1));
+            Assert.That(Maps.All.Where(m => m.MapRoomOnly).Select(m => m.Id), Is.EqualTo(new[] { "crossfire", "pillars", "funnel" }));
+            Assert.That(Maps.At(2).Build().Walls.Count, Is.EqualTo(4));
+            Assert.That(Maps.At(3).Build().Walls.Count, Is.EqualTo(7));
+            Assert.That(Maps.At(4).Build().Redirectors.Count, Is.EqualTo(2));
             Level.Level practice = Level.Level.Default();
             Assert.That((practice.Walls.Count, practice.Redirectors.Count, practice.MinX, practice.MaxY), Is.EqualTo((3, 2, -11.0, 6.0)));
             Assert.That(practice.Redirectors[1].Heading, Is.EqualTo(225));

@@ -39,6 +39,12 @@ namespace Rea.Ricochet.Core.Menu
         /// the players room.
         /// </summary>
         Setup,
+
+        /// <summary>
+        /// U.RICO-T118 (spike, never the default): the optional map room, between the players room and the lobby, only while
+        /// maps.json's "mapRoom" is on (<see cref="Maps.MapRoomEnabled"/>). The original has no map room in play (U.RICO-T101).
+        /// </summary>
+        MapRoom,
     }
 
     /// <summary>A line on the controls screen: the keys, and what they do.</summary>
@@ -104,6 +110,8 @@ namespace Rea.Ricochet.Core.Menu
                 case Room.Setup:
                     return Room.Players;
                 case Room.Players:
+                    return Maps.MapRoomEnabled ? Room.MapRoom : Room.Lobby; // U.RICO-T118: the optional map room, off as shipped
+                case Room.MapRoom:
                     return Room.Lobby;
                 case Room.Lobby:
                     return Room.Game;
@@ -127,6 +135,8 @@ namespace Rea.Ricochet.Core.Menu
                     return Room.Title;
                 case Room.Players:
                     return Room.Setup;
+                case Room.MapRoom:
+                    return Room.Players;
                 case Room.Title:
                     return Room.Title;
                 default:

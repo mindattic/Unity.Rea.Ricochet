@@ -13,7 +13,8 @@
     "HowToPlay": "How to play",
     "Credits": "Credits",
     "Lobby": "Lobby",
-    "Setup": "Start"
+    "Setup": "Start",
+    "MapRoom": "Map"
   },
   "offTheMainMenu": [
     "Setup",

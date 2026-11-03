@@ -8,6 +8,8 @@
 //     seats, how well they aim and how many aim assists everyone starts with; its Start button goes straight on to the game
 //     (obj_btn_start: hosts one from the main menu, or asks the others by the match vote in a game). There is no map room:
 //     every round is the random level and the point goal is set on the Start screen.
+//   Map (U.RICO-T118, spike, never the default): only while maps.json's "mapRoom" is on, one step on from Players: the
+//     random arena or a hand-laid map with its description, and Start. Off as shipped, so nothing reaches it.
 //   Start and Players both carry a Reset to defaults (UR-T41, the original's Default button) when Game gives them a reset:
 //     the whole setup back to the defaults and saved, the screen rebuilt to show it.
 //   Vote to kick (UR-T14, in game only): a button for each player who may be voted out.
@@ -95,6 +97,44 @@ namespace Rea.Ricochet
                 s.AddSelect("AI " + (ai + 1) + " name", names, setup.NameIndexOf(ai) + 1, v => setup.SetNameIndex(ai, v - 1));
                 s.AddRange("AI " + (ai + 1) + " skill", Ai.MinSkill, Ai.MaxSkill, setup.SkillOf(ai), v => setup.SetSkill(ai, Mathf.RoundToInt(v)),
                     wholeNumbers: true);
+            }
+        }
+
+        /// <summary>
+        /// U.RICO-T118: the optional map room (only while <see cref="Maps.MapRoomEnabled"/>): the maps it offers
+        /// (<see cref="Maps.InMapRoom"/>, the random arena first) with the chosen one's description, then <paramref name="start"/>,
+        /// labelled <paramref name="startLabel"/>, which goes on into the game.
+        /// </summary>
+        public static void BuildMap(MenuScreen s, MatchSetup setup, string startLabel, Action start, Action resetSetup = null)
+        {
+            s.Subtitle = "Pick where to play: the random arena, as the original played, or a hand-laid map.";
+            AddResetButton(s, resetSetup, () => BuildMap(s, setup, startLabel, start, resetSetup));
+            IReadOnlyList<MapInfo> offered = Maps.InMapRoom;
+            var names = new List<string>();
+            int chosen = 0;
+            for (int i = 0; i < offered.Count; i++)
+            {
+                names.Add(offered[i].Name);
+                if (offered[i].Index == setup.Map)
+                {
+                    chosen = i;
+                }
+            }
+
+            setup.Map = offered[chosen].Index; // a map the room does not offer (the practice range) is the random arena
+            MaText description = null;
+            s.AddSelect("Map", names, chosen, v =>
+            {
+                setup.Map = offered[Mathf.Clamp(v, 0, offered.Count - 1)].Index;
+                if (description != null)
+                {
+                    description.Text = Maps.At(setup.Map).Description;
+                }
+            });
+            description = s.AddText(Maps.At(setup.Map).Description, TextStyle.Muted);
+            if (start != null)
+            {
+                s.AddButton(startLabel, start, ButtonVariant.Primary);
             }
         }
 

@@ -61,7 +61,9 @@ namespace Rea.Ricochet
             _setup.ApplyTo(ArsenalRules);
             _setup.ApplyTo(MatchRules, Rules, DropRules, HazardRules);
             _aiTurn = null;
-            _authority.BeginMatch(_setup.Map, _setup.Goal, _setup.Level()); // every round is the random level (U.RICO-T101); a random map's level is rolled as round one starts
+            // Every round is the random level (U.RICO-T101); a random map's level is rolled as round one starts. U.RICO-T118: a
+            // map-room-only map (a vote or a profile from a build with the optional map room on) is the random arena while it is off.
+            _authority.BeginMatch(Maps.Playable(_setup.Map), _setup.Goal, _setup.Level());
             _humanSeats.Clear();
             for (int i = 0; i < humans.Count; i++)
             {

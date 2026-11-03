@@ -4,6 +4,10 @@
 // few hand-laid rooms instead: the same 22 x 12 border, so the sixteen seats (Seating), the practice dummies and the laid
 // hazards (HazardRules' arcs and gates) stand where they always do, with each map's mirror walls and redirectors kept
 // clear of all of them. Every peer builds the same level from the map's index, so only the index goes over the wire.
+// U.RICO-T118 (spike, never the default): the original has no map room, so U.RICO-T101 took it out of the flow. The hand-laid
+// maps are back in maps.json marked "mapRoomOnly", and maps.json's "mapRoom" flag (false as shipped) puts the map room
+// between the players room and the lobby. With it off nothing reaches them: Playable() turns any such pick (an old profile,
+// a peer's vote) back into the random arena, so the default flow plays exactly as the original did.
 using System;
 using System.Collections.Generic;
 
@@ -16,9 +20,10 @@ namespace Rea.Ricochet.Core.Level
     {
         private readonly Func<Level> _build;
 
-        internal MapInfo(int index, string id, string name, string description, Func<Level> build, bool random = false)
+        internal MapInfo(int index, string id, string name, string description, Func<Level> build, bool random = false, bool mapRoomOnly = false)
         {
             IsRandom = random;
+            MapRoomOnly = mapRoomOnly;
             Index = index;
             Id = id;
             Name = name;
@@ -39,6 +44,12 @@ namespace Rea.Ricochet.Core.Level
 
         /// <summary>True for the random arena (UR-T23): every round is laid afresh from a seed by <see cref="LevelGenerator"/>.</summary>
         public bool IsRandom { get; }
+
+        /// <summary>
+        /// U.RICO-T118: a hand-laid map only the optional map room offers (Crossfire, Pillars, Funnel); never played while the
+        /// map room is off (<see cref="Maps.Playable"/>).
+        /// </summary>
+        public bool MapRoomOnly { get; }
 
         /// <summary>A fresh copy of the map's level (walls and redirectors, no hazards); a random map's is the one for seed 1.</summary>
         public Level Build() => IsRandom ? LevelGenerator.Generate(1).Level : _build();
@@ -88,5 +99,38 @@ namespace Rea.Ricochet.Core.Level
 
         /// <summary>The previous map, wrapping.</summary>
         public static int Previous(int index) => (Clamp(index) + Count - 1) % Count;
+
+        /// <summary>
+        /// U.RICO-T118: true when maps.json switches the optional map room on (false as shipped: the original's flow, Players'
+        /// Start straight on to the game).
+        /// </summary>
+        public static bool MapRoomEnabled => Data.MapRoomEnabled;
+
+        /// <summary>
+        /// U.RICO-T118: the maps the map room lists, in order: the random arena first, then the hand-laid ones. The practice
+        /// range stays a test fixture and is not offered.
+        /// </summary>
+        public static IReadOnlyList<MapInfo> InMapRoom
+        {
+            get
+            {
+                var listed = new List<MapInfo> { At(RandomIndex) };
+                foreach (MapInfo map in All)
+                {
+                    if (map.MapRoomOnly)
+                    {
+                        listed.Add(map);
+                    }
+                }
+
+                return listed;
+            }
+        }
+
+        /// <summary>
+        /// U.RICO-T118: the map a match may really be played on: <paramref name="index"/> itself, except a map-room-only map while
+        /// the map room is off, which is the random arena (every round the random level, as the original played).
+        /// </summary>
+        public static int Playable(int index) => !MapRoomEnabled && At(index).MapRoomOnly ? RandomIndex : Clamp(index);
     }
 }

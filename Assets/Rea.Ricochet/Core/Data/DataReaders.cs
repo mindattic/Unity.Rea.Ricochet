@@ -221,6 +221,7 @@ namespace Rea.Ricochet.Core.Data
                 string name = e.Text("name");
                 string description = e.Text("description");
                 bool isRandom = e.Flag("random");
+                bool mapRoomOnly = e.Flag("mapRoomOnly"); // U.RICO-T118: offered only by the optional map room
                 double[] border = e.Numbers("border", 4, false, -Reach, Reach);
                 List<double[]> walls = e.Rows("walls", 4, false, -Reach, Reach);
                 List<double[]> redirectors = e.Rows("redirectors", 5, false, -360, 360);
@@ -266,16 +267,25 @@ namespace Rea.Ricochet.Core.Data
                     e.Check(!isRandom, "random", "the first map is the practice level and must be laid by hand");
                 }
 
-                maps.Add(Build(i, id, name, description, isRandom, border, walls, redirectors));
+                e.Check(!(isRandom && mapRoomOnly), "mapRoomOnly", "the random arena is the default level, so it cannot be map-room-only");
+                if (i == 0)
+                {
+                    e.Check(!mapRoomOnly, "mapRoomOnly", "the first map is the practice level and is never map-room-only");
+                }
+
+                maps.Add(Build(i, id, name, description, isRandom, border, walls, redirectors, mapRoomOnly));
             }
 
             r.Check(random >= 0, "maps", "one map must be the random arena (\"random\": true)");
+            bool mapRoom = r.Flag("mapRoom"); // U.RICO-T118: the optional map room, off as shipped
             r.Done();
             data.Maps = maps;
+            data.MapRoomEnabled = mapRoom;
             data.RandomMapIndex = random;
         }
 
-        private static MapInfo Build(int index, string id, string name, string description, bool isRandom, double[] border, List<double[]> walls, List<double[]> redirectors)
+        private static MapInfo Build(int index, string id, string name, string description, bool isRandom, double[] border, List<double[]> walls, List<double[]> redirectors,
+            bool mapRoomOnly = false)
         {
             Func<Rea.Ricochet.Core.Level.Level> build = () =>
             {
@@ -293,7 +303,7 @@ namespace Rea.Ricochet.Core.Data
 
                 return new Rea.Ricochet.Core.Level.Level(border[0], border[1], border[2], border[3], w, d);
             };
-            return new MapInfo(index, id, name, description, build, isRandom);
+            return new MapInfo(index, id, name, description, build, isRandom, mapRoomOnly);
         }
 
         public static AnnouncerData ReadAnnouncer(SettingsReader r)

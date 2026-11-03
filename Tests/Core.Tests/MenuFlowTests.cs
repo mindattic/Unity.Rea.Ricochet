@@ -89,9 +89,27 @@ namespace Rea.Ricochet.Core.Tests
         }
 
         [Test]
+        public void TheMapRoomIsOffAsShipped_SoPlayersGoesToTheLobby_AndNoHandLaidMapIsPlayed()
+        {
+            // U.RICO-T118 (spike, never the default): the original's flow, as U.RICO-T101 restored it.
+            Assert.That(Maps.MapRoomEnabled, Is.False);
+            Assert.That(MenuFlow.Next(Room.Players), Is.EqualTo(Room.Lobby));
+            Assert.That(MenuFlow.Next(Room.MapRoom), Is.EqualTo(Room.Lobby));
+            Assert.That(MenuFlow.Back(Room.MapRoom), Is.EqualTo(Room.Players));
+            Assert.That(MenuFlow.Title(Room.MapRoom), Is.EqualTo("Map"));
+            Assert.That(MenuFlow.OffTheMainMenu, Does.Not.Contain(Room.MapRoom));
+            Assert.That(Maps.InMapRoom.Select(m => m.Id), Is.EqualTo(new[] { "random", "crossfire", "pillars", "funnel" }));
+            foreach (MapInfo map in Maps.All)
+            {
+                int expected = map.MapRoomOnly ? Maps.RandomIndex : map.Index;
+                Assert.That(Maps.Playable(map.Index), Is.EqualTo(expected), map.Name);
+            }
+        }
+
+        [Test]
         public void TheMapsAreNamed_WrapAndClamp_AndTheFirstIsThePracticeRange()
         {
-            Assert.That(Maps.Count, Is.EqualTo(2), "the practice fixture and the random arena: no hand-laid maps in the flow (U.RICO-T101)");
+            Assert.That(Maps.Count, Is.EqualTo(5), "the practice fixture, the random arena and the optional map room's three hand-laid maps (U.RICO-T118)");
             Assert.That(Maps.All.Select(m => m.Index), Is.EqualTo(Enumerable.Range(0, Maps.Count)));
             Assert.That(Maps.All.Select(m => m.Name).Distinct().Count(), Is.EqualTo(Maps.Count));
             Assert.That(Maps.Clamp(-1), Is.EqualTo(0));

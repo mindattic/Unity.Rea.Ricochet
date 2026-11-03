@@ -94,7 +94,12 @@ namespace Rea.Ricochet
 
             // UR-T41: the setup starts where the last session left it (the original's read_config), from the profile.
             SetupMemory.Load(_setup);
-            _setup.Map = Maps.RandomIndex; // U.RICO-T101: no map room, every round is the random level (a saved older choice is dropped)
+            // U.RICO-T101: no map room, every round is the random level (a saved older choice is dropped). U.RICO-T118: only when
+            // maps.json switches the optional map room on does a remembered hand-laid map of it stay chosen.
+            if (!(Maps.MapRoomEnabled && Maps.At(_setup.Map).MapRoomOnly))
+            {
+                _setup.Map = Maps.RandomIndex;
+            }
             _saved = _setup.Clone();
 
             // The Settings screen: the kit's name and colour (read from and saved to the MindAttic profile, Unity.Shared,
@@ -225,13 +230,34 @@ namespace Rea.Ricochet
         // The players room: its Start goes straight on to the game (obj_btn_start). From the main menu that hosts a game with the
         // setup and opens the lobby (UR-T11: the join code, who is in, and the match), whose Start begins the match with everyone
         // who joined; in a game it is the match vote. There is no map room: every round is the random level.
+        // U.RICO-T118 (spike, never the default): while maps.json's "mapRoom" is on, the players room's button is Next to the
+        // optional map room instead, and the map room's button does what Start does.
         private void BuildPlayersRoom(MenuScreen s)
         {
             NetFrontEnd frontEnd = NetFrontEnd.Instance;
             RememberOnHide(s);
+            string playingAs = frontEnd != null ? frontEnd.Identity.DisplayName : null;
+            System.Action changeNameAndColour = frontEnd != null ? (System.Action)frontEnd.OpenSettings : null;
+            if (MenuFlow.Next(Room.Players) == Room.MapRoom)
+            {
+                Menus.BuildPlayers(s, _setup, playingAs, changeNameAndColour, from => from.Stack.Push(MenuFlow.Title(Room.MapRoom), BuildMapRoom), ResetSetup,
+                    "Next: " + MenuFlow.Title(Room.MapRoom));
+                return;
+            }
+
             bool inGame = frontEnd != null && frontEnd.State == FrontEndState.InGame;
-            Menus.BuildPlayers(s, _setup, frontEnd != null ? frontEnd.Identity.DisplayName : null, frontEnd != null ? (System.Action)frontEnd.OpenSettings : null,
+            Menus.BuildPlayers(s, _setup, playingAs, changeNameAndColour,
                 from => (inGame ? (System.Action)StartMatchVote : HostFromStart)(), ResetSetup, inGame ? "Vote to start a match" : Menus.StartLabel);
+        }
+
+        // U.RICO-T118: the optional map room, one step on from the players room (only while the map room is on): the random arena
+        // or a hand-laid map, then Start, which hosts from the main menu or asks everyone by the match vote in a game.
+        private void BuildMapRoom(MenuScreen s)
+        {
+            NetFrontEnd frontEnd = NetFrontEnd.Instance;
+            RememberOnHide(s);
+            bool inGame = frontEnd != null && frontEnd.State == FrontEndState.InGame;
+            Menus.BuildMap(s, _setup, inGame ? "Vote to start a match" : Menus.StartLabel, inGame ? (System.Action)StartMatchVote : HostFromStart, ResetSetup);
         }
 
         // UR-T41: a setup screen saves the setup to the profile as it closes (once, not on every step of a slider), the way

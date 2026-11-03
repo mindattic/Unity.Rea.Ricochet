@@ -87,7 +87,8 @@ obj_letter_parent's did, then the main menu. The room graph (`Core/Menu/MenuFlow
 title room's setup panel: players, shapes, type, rotation, overlap, goal, turn time, bounces) -> players (names, colours, each AI's
 skill and name; names from the original's `names_f`/`names_m` pools) -> the lobby -> the game -> the endgame podium -> the main
 menu, with settings (every match rule, the announcer, sound), controls (with rebinding), how to play and credits off the main
-menu. There is no map room: every round is the random level, as the original played. Every change of screen fades through one
+menu. There is no map room: every round is the random level, as the original played (an optional one, off as shipped, is
+U.RICO-T118's spike below). Every change of screen fades through one
 black curtain (`Core/Menu/RoomFade`). The last setup is kept in the profile as `config.ini` kept it (`SetupMemory`). Tested by
 `Tests/Core.Tests/MenuFlowTests.cs`, `SplashTests`, `TitleAndStartTests`, `SetupMemoryTests` and PlayMode `MenuFlowTests`,
 `LobbyTests`.
@@ -977,3 +978,14 @@ invented hand-laid maps (Crossfire, Pillars, Funnel and the menu's map picker) a
 are gone, the Start button hosts through `ScreenFade.Cover` as the map room's Next did, the goal lives on the Start screen, and
 every round is the random level (randomize_level); `Game` resets a remembered profile map to the random index on load. maps.json
 keeps only the practice range, as a test fixture, and the random arena.
+
+U.RICO-T118 (spike, a future enhancement that is never the default): an optional map room with hand-laid maps. maps.json's
+`mapRoom` flag (false as shipped) puts `Room.MapRoom` between the players room and the lobby (`MenuFlow.Next`; Back goes to
+Players): Players' button becomes "Next: Map", and the map room (`Menus.BuildMap`, `Game.BuildMapRoom`) offers
+`Maps.InMapRoom` (the random arena first, then Crossfire, Pillars and Funnel, back in maps.json marked `mapRoomOnly`, laid
+clear of every seat, dummy and laid hazard) with each one's description and Start, which hosts or votes as Players' Start
+does. A hand-laid map is itself every round with the fixed seat spots (`MapInfo.Layout`). With the flag off nothing reaches
+those maps: `Maps.Playable` turns a map-room-only pick (an old profile, a peer's vote) into the random arena before
+`BeginMatch`, and `Game` drops a remembered one on load, so the default flow is exactly the original's. Tested by Core
+`MenuFlowTests.TheMapRoomIsOffAsShipped_SoPlayersGoesToTheLobby_AndNoHandLaidMapIsPlayed` and the map tests in
+`MenuFlowTests` and `GameDataTests`.

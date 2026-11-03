@@ -75,6 +75,9 @@ namespace Rea.Ricochet.Core.Data
         /// <summary>The random arena's index in <see cref="Maps"/>.</summary>
         public int RandomMapIndex { get; internal set; }
 
+        /// <summary>U.RICO-T118: whether the optional map room stands between the players room and the lobby (maps.json "mapRoom").</summary>
+        public bool MapRoomEnabled { get; internal set; }
+
         public AnnouncerData Announcer { get; internal set; }
 
         public MenuData Menu { get; internal set; }
