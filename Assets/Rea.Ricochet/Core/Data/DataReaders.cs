@@ -99,6 +99,7 @@ namespace Rea.Ricochet.Core.Data
                 GrenadeRadius = r.Number("grenadeRadius", 0.1, 50),
                 GrenadeBlastsAll = r.Flag("grenadeBlastsAll"), // U.RICO-T113 spike: never the default
                 VortexRadius = r.Number("vortexRadius", 0.1, 50),
+                VortexWild = r.Flag("vortexWild"), // U.RICO-T114 spike: never the default
                 Pellets = r.Integer("pellets", 1, 100),
                 PelletSpread = r.Number("pelletSpread", 0, 90),
                 LaserSpeed = r.Number("laserSpeed", 0.1, 100),

@@ -13,7 +13,8 @@
 //   Railgun  a slug in a straight line through walls and redirectors to the border (shoot_railgun.gml's 2000 px line),
 //            hitting every player on the way.
 //   Vortex   flies like a shell and implodes where it stops, or where its shooter sets it off in mid-flight
-//            (vortex_detonate.gml, Detonate), its pull flings the level's shapes out and one that strikes a tank hurts it (VortexStorm, U.RICO-T96).
+//            (vortex_detonate.gml, Detonate), its pull flings the level's shapes out and one that strikes a tank hurts it (VortexStorm, U.RICO-T96). The U.RICO-T114 spike's wild vortex (arsenal.json
+//            vortexWild, never the default) instead hurts everyone in its pull, swallows hazards and breaches the border.
 // A shot that runs into a barrier (a hazard, UR-T6) stops there and strikes nothing: a grenade or vortex stopped by one
 // is lost without going off, as obj_shieldwall destroyed them.
 using System;
@@ -83,6 +84,12 @@ namespace Rea.Ricochet.Core.Arsenal
 
         /// <summary>A vortex's storm: where each shape it pulled in and flung out went (none for any other weapon; U.RICO-T134).</summary>
         public StormResult Storm { get; }
+
+        /// <summary>
+        /// U.RICO-T114 spike (arsenal.json vortexWild, never the default): a vortex that went off as the wild vortex, which hurt
+        /// everyone in its pull and, on landing, swallows the hazards and breaches the border it reaches (HazardField.Implode).
+        /// </summary>
+        public bool Wild { get; internal set; }
 
         /// <summary>The hazards (barrier ids) the volley's projectiles ran into, each once, in path order.</summary>
         public IReadOnlyList<int> HazardsHit
@@ -498,6 +505,24 @@ namespace Rea.Ricochet.Core.Arsenal
             if (path.End == ShotEndKind.Absorbed)
             {
                 return new Volley(Weapon.Vortex, paths, speed, strikes, false, default, 0);
+            }
+
+            // U.RICO-T114 spike, off as shipped: the wild vortex moves no shape; it hurts every tank within its pull, and the
+            // authority has it swallow the hazards and breach the border there when it lands (Volley.Wild).
+            if (arsenal.VortexWild)
+            {
+                if (targets != null)
+                {
+                    foreach (Target target in targets)
+                    {
+                        if (Vec2.Distance(path.Impact, target.Center) - target.Radius <= arsenal.VortexRadius)
+                        {
+                            strikes.Add(new Strike(target.Id, path.Bounces, 1));
+                        }
+                    }
+                }
+
+                return new Volley(Weapon.Vortex, paths, speed, strikes, true, path.Impact, arsenal.VortexRadius) { Wild = true };
             }
 
             // vortex_step.gml: the pull and blow move the level's shapes; a tank is hurt only when a flung shape strikes it.

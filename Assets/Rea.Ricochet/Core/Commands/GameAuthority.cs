@@ -1188,6 +1188,13 @@ namespace Rea.Ricochet.Core.Commands
                 Hazards.Level.Apply(volley.Storm);
             }
 
+            // U.RICO-T114 spike, off unless arsenal.json sets vortexWild: the wild vortex swallows what it reaches and
+            // breaches the border near it (each change reaches every peer as a hazard event).
+            if (volley.Weapon == Weapon.Vortex && volley.HasBlast && volley.Wild)
+            {
+                Hazards.Implode(volley.BlastCenter, volley.BlastRadius);
+            }
+
             // obj_redirector's collision events set fade: each redirector a shot (not a railgun slug) was sent on by fades away.
             if (volley.Weapon != Weapon.Railgun)
             {

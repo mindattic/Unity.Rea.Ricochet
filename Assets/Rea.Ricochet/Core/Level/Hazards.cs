@@ -8,7 +8,8 @@
 //   Vortex        shoot_vortex.gml / vortex_detonate.gml (detonate_vortex.gml is an older copy): fire again while it is in
 //                 the air to set it off there (Arsenal.Detonate). The original's vortex pulled every obj_polygon_parent
 //                 within vortexRadius (200 px) in and flung it back out; it touched no hazard and tore no border (VortexStorm,
-//                 U.RICO-T96), so the hazard field has no part in it.
+//                 U.RICO-T96), so the hazard field has no part in it. Implode is the U.RICO-T114 spike's wild vortex
+//                 (arsenal.json vortexWild, never the default): it swallows destructible hazards and breaches the border.
 //   Electricity   draw_electricity.gml: a jittering bolt between two points, drawn with random offsets every step. The
 //                 original never called it; here it is an arc between two pylons that stops any shot touching it.
 //   Laser         check_source_laser.gml: a beam whose source walks toward its end (dX, dY a step) until within 5 px. Also
@@ -500,6 +501,65 @@ namespace Rea.Ricochet.Core.Level
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// U.RICO-T114 spike, only when arsenal.json's vortexWild is on (never the default; the original's vortex touched no
+        /// hazard and no border, U.RICO-T96): the implosion at <paramref name="center"/> swallows every destructible hazard
+        /// within <paramref name="radius"/> and breaches every border side the circle reaches along the chord it cuts, which
+        /// shots then fly out through for the rest of the round. Returns the hazards swallowed and the breaches torn, in that order.
+        /// </summary>
+        public List<Hazard> Implode(Vec2 center, double radius)
+        {
+            var changed = new List<Hazard>();
+            if (!(radius > 0))
+            {
+                return changed;
+            }
+
+            for (int i = _hazards.Count - 1; i >= 0; i--)
+            {
+                Hazard hazard = _hazards[i];
+                if (hazard.Destructible && Reaches(hazard, center, radius))
+                {
+                    changed.Insert(0, hazard);
+                    Remove(hazard, HazardEnd.Swallowed);
+                }
+            }
+
+            BreachSide(center, radius, center.X - Level.MinX, true, Level.MinX, Level.MinY, Level.MaxY, changed);
+            BreachSide(center, radius, Level.MaxX - center.X, true, Level.MaxX, Level.MinY, Level.MaxY, changed);
+            BreachSide(center, radius, center.Y - Level.MinY, false, Level.MinY, Level.MinX, Level.MaxX, changed);
+            BreachSide(center, radius, Level.MaxY - center.Y, false, Level.MaxY, Level.MinX, Level.MaxX, changed);
+            return changed;
+        }
+
+        // The circle reaches a side when its gap (centre to that side) is less than the radius: the chord it cuts is breached.
+        private void BreachSide(Vec2 center, double radius, double gap, bool vertical, double at, double min, double max, List<Hazard> changed)
+        {
+            if (gap < 0 || gap >= radius)
+            {
+                return;
+            }
+
+            double half = Math.Sqrt(radius * radius - gap * gap);
+            double mid = vertical ? center.Y : center.X;
+            double from = Math.Max(min, mid - half);
+            double to = Math.Min(max, mid + half);
+            if (to - from < Geometry.Epsilon)
+            {
+                return;
+            }
+
+            changed.Add(vertical ? AddBreach(new Vec2(at, from), new Vec2(at, to)) : AddBreach(new Vec2(from, at), new Vec2(to, at)));
+        }
+
+        private static bool Reaches(Hazard hazard, Vec2 center, double radius)
+        {
+            double gap = hazard.Radius > 0 || Vec2.Distance(hazard.A, hazard.B) < Geometry.Epsilon
+                ? Vec2.Distance(hazard.A, center)
+                : Geometry.SegmentDistance(hazard.A, hazard.B, center, out _);
+            return gap <= radius + hazard.Radius;
         }
 
         /// <summary>

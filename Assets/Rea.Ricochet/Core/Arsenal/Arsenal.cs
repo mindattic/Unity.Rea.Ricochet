@@ -76,6 +76,13 @@ namespace Rea.Ricochet.Core.Arsenal
         /// <summary>The vortex's pull radius (vortexRadius = 200 px).</summary>
         public double VortexRadius { get; set; }
 
+        /// <summary>
+        /// U.RICO-T114 spike, off as shipped (arsenal.json's vortexWild): the vortex moves no shape; it hurts everyone within
+        /// <see cref="VortexRadius"/> when it goes off, swallows the destructible hazards there and breaches the border it
+        /// reaches (HazardField.Implode). Off, it is the original's vortex_step.gml (VortexStorm, U.RICO-T96).
+        /// </summary>
+        public bool VortexWild { get; set; }
+
         /// <summary>Shotgun pellets a shot fires (pelletCount = 12).</summary>
         public int Pellets { get; set; }
 
@@ -116,6 +123,7 @@ namespace Rea.Ricochet.Core.Arsenal
             GrenadeRadius = other.GrenadeRadius;
             GrenadeBlastsAll = other.GrenadeBlastsAll;
             VortexRadius = other.VortexRadius;
+            VortexWild = other.VortexWild;
             Pellets = other.Pellets;
             PelletSpread = other.PelletSpread;
             LaserSpeed = other.LaserSpeed;
