@@ -190,7 +190,7 @@ cap is the original's 8 since U.RICO-T100). Each is recorded in the BIBLE, secti
 
 ## 7. Parity verification (U.RICO-T58, 2026-10-28)
 
-How it was checked: the Windows player built clean with `Tools/run.ps1` (0 errors, `Build/Ricochet/Ricochet.exe`) and was launched muted; it opened on the splash card and went into the startup credits (screenshots taken). The rest of the walk was **not driven by play**: the player has no scripted-input hook and keystrokes sent to a shared desktop could land in other windows, and the seeded Core replay would be a new test, which this ticket may not run. So every row below rests on the code, the data files, the closed tickets' own notes and the room-by-room reading of the original's `rooms/*.gmx` recorded in section 3, not on a play-through. A real walk needs a player-side autowalk hook (filed as a follow-up). Status: **built**, **deviation** (with its reason), **left out** (on purpose).
+How it was checked: the Windows player built clean with `Tools/build.ps1` (0 errors, `Build/Ricochet/Ricochet.exe`) and was launched muted; it opened on the splash card and went into the startup credits (screenshots taken). The rest of the walk was **not driven by play**: the player has no scripted-input hook and keystrokes sent to a shared desktop could land in other windows, and the seeded Core replay would be a new test, which this ticket may not run. So every row below rests on the code, the data files, the closed tickets' own notes and the room-by-room reading of the original's `rooms/*.gmx` recorded in section 3, not on a play-through. A real walk needs a player-side autowalk hook (filed as a follow-up). Status: **built**, **deviation** (with its reason), **left out** (on purpose).
 
 | Original room or system | Status | Note |
 |---|---|---|
@@ -219,7 +219,7 @@ Section 7's manual pass was missing the two things it said it needed: a player-s
 Core replay. Both exist now.
 
 - **`-autowalk`** (`Game.RunAutowalk`, `Assets/Rea.Ricochet/Runtime/Autowalk.cs`): launched with `Tools/play.ps1 -autowalk`
-  (or any player built by `Tools/run.ps1` with `-autowalk` on its own command line), the game scripts itself through
+  (or any player built by `Tools/build.ps1` with `-autowalk` on its own command line), the game scripts itself through
   splash, title, setup, players, controls, rebind controls, how to play, credits, settings, the main menu, then hosts a
   short AI-filled practice match for the lobby, a shot in flight, pause and the endgame recap — the same rooms section 7
   checked by eye — saving a numbered screenshot of each to `Logs/autowalk/`. Every wait has a timeout, so a build that

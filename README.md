@@ -72,7 +72,7 @@ Every binding can be changed on the Controls screen; a rebind is kept in your pr
 
 ### A built player
 
-`powershell -File Tools/run.ps1` builds `Build/Ricochet/Ricochet.exe` in Unity batch mode (the Editor must be closed; the
+`powershell -File Tools/build.ps1` builds `Build/Ricochet/Ricochet.exe` in Unity batch mode (the Editor must be closed; the
 log is `Logs/deploy.log`). `powershell -File Tools/play.ps1` launches it, building it first when missing or with `-Build`,
 **muted by default** (`-muted` and `MINDATTIC_CLI_MUTED=1` for that run only, so a CLI or agent never plays sound; the
 player's saved volumes are untouched). Add `-Sound` for audio.
@@ -117,7 +117,7 @@ Assets/Rea.Ricochet/
   Tests/               EditMode and PlayMode suites
 Assets/StreamingAssets/Settings/   the rules and content as data
 Tests/                 dotnet projects compiling Core for `dotnet test Core.slnx`
-Tools/                 run.ps1 (build), play.ps1 (launch muted), unity.ps1 (batch mode), import-gml-*.ps1
+Tools/                 build.ps1 (build), ../run.ps1 (deploy), play.ps1 (launch muted), unity.ps1 (batch mode), import-gml-*.ps1
 docs/
   BIBLE.md             what the game is and is not, the laws, the game as built, the deviations
   RECONSTRUCTION.md    the original's inventory and the parity record

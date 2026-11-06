@@ -194,7 +194,7 @@ presentation section below records its own smaller deviations.
 ## 8. Running and testing {#UR-§8}
 How to open, play, build and test the game is in the [README](../README.md#quick-start); in short `dotnet test Core.slnx` for
 the rules, the Unity EditMode (`Rea.Ricochet.EditorTests`) and PlayMode (`Rea.Ricochet.Tests`) suites through `Tools/unity.ps1`,
-`Tools/run.ps1` to build the player and `Tools/play.ps1` to launch it muted.
+`Tools/build.ps1` to build the player and `Tools/play.ps1` to launch it muted.
 
 ## Fog of war (UR-T26, ported exactly in UR-T77)
 
