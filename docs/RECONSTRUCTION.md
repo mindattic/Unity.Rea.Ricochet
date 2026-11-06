@@ -208,7 +208,7 @@ How it was checked: the Windows player built clean with `Tools/build.ps1` (0 err
 | Debug keys, sheep, dead objects, laser sight item | left out | section 1.2 |
 | Section 3 rows UR-T19 to UR-T57 | built | each closed; UR-T22 (Relay) stays open on the owner's Unity Cloud account |
 | Section 3 row UR-T54 | built | closed 2026-10-28 |
-| Section 3 row UR-T58 | this section | play-through still owed, see below |
+| Section 3 row UR-T58 | this section | autowalk run 2026-11-06, see 7.1.1 |
 | Section 4 rows UR-T36, T37, T38, T39, T40 | built | their tickets are closed; the "gap" wording in section 4 predates them |
 | Section 4 row UR-T59 | built | README and BIBLE final pass; the deviations are BIBLE section 7 |
 | Section 3 row UR-T53: "covers the map room's way into the lobby" | stale | the map room is gone (U.RICO-T101) |
@@ -223,9 +223,27 @@ Core replay. Both exist now.
   splash, title, setup, players, controls, rebind controls, how to play, credits, settings, the main menu, then hosts a
   short AI-filled practice match for the lobby, a shot in flight, pause and the endgame recap — the same rooms section 7
   checked by eye — saving a numbered screenshot of each to `Logs/autowalk/`. Every wait has a timeout, so a build that
-  cannot reach a room logs a warning there instead of hanging. Running it and diffing `Logs/autowalk/*.png` against the
-  original's rooms (`R:\...\gmlRicochet`) needs an actual Unity Editor or player; that run is still owed and is the one
-  remaining step to close this out, since no agent working this ticket had a Unity install to run it with.
+  cannot reach a room logs a warning there instead of hanging.
+
+### 7.1.1 The autowalk run (U.RICO-T163, 2026-11-06)
+
+The player was built headless with `Tools/build.ps1` (Unity 6000.4.3f1 batch mode, `[Ricochet] build: Succeeded, 0
+errors`) and launched windowed (1280 x 720) and muted with `Tools/play.ps1 -autowalk`. The walk ran to the end
+(`[Autowalk] Done`) and saved 14 screenshots, kept in `Logs/autowalk/` (00-splash ... 13-endgame; the player writes them
+to `Build/Ricochet/Logs/autowalk/`). Each was compared with the original's room files
+(`R:\Projects\_PRE_2022\_PRE_2021\_PRE_2020\GameMaker\gmlricochet\Ricochet.gmx\rooms\*.room.gmx`: background, colour
+and instances), since the GameMaker 8.1 original cannot be run here. Because the walk's own captures turned out to miss
+the front end (first row), the splash and startup credits were also checked from plain window grabs of an ordinary launch
+at 4 to 32 s (no input sent).
+
+| Room | Result | Ticket |
+|---|---|---|
+| Autowalk itself | **mismatch in the hook**: its 15 s wait for the splash to clear is shorter than splash (~14 s) plus startup_credits (600 steps, 10 s), so it logged `Timed out waiting for the splash to finish` and pushed every front-end room under the splash overlay: 00-splash to 09-main-menu are one identical black frame (the opening fade), and 10-lobby, 11-match and 12-pause show the startup credits card. 13-endgame is the arena at `MatchPhase.GameOver` ("Default wins round 1!", four tanks, AI drove the match to the end), taken before the endgame recap room comes up | U.RICO-T166 |
+| splashscreen | **mismatch**: lotus card, beach picture, spotlight, "A game by / Ryan DeBraal" all as the original placed them, but on the silver room colour; the original room is on `bg_black` | U.RICO-T167 |
+| startup_credits | **mismatch**: credits image at the room's middle and the red outlined note at room_height - 60 typed out as `obj_startup_credits` draws it, but on plain silver; the original room is on `bg_titlescreen`, tiled, scrolling 1 px right a step | U.RICO-T168 |
+| titlescreen | matches the recorded deviation: `bg_titlescreen` with RICOCHET's letters climbing left to right as the original placed them, the kit's card (Start, Quit) over it (section 6) | none |
+| mainmenu, players, settings, controls, howtoplay, credits, gamescreen pause, endgame recap | **not compared**: the walk's captures of these are the splash or credits overlay (first row), so there is nothing on screen to compare yet; they are re-checked when U.RICO-T166's fixed walk is rerun | U.RICO-T166 |
+| gamescreen (match in play) | built: the arena with the original's polygon walls, the seat bars and scores along the top, the announcer card, Fire / Use Item / End Turn buttons and the angle and bounce readout, played by AI to the end of a one-round match with no exceptions in `Logs/play.log` | none |
 - **The seeded Core replay** (`Tests/Core.Tests/SeededReplayTests.cs`,
   `FullMatch_SeededReplay_FiresEveryWeaponAndUsesEveryItemOnce`): a deterministic, engine-free match (seed 7, two seats,
   health raised so nobody is knocked out partway through) that fires all six weapons and uses all six items, one each, in
