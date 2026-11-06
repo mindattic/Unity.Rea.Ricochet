@@ -76,8 +76,11 @@ Design and build order live in RFC 0001; laws live here; story and ticket status
 copy of any of these is a bug.
 
 ## 6. The game as built {#UR-§6}
-The rebuild is complete: every room and system of the original is built, and the room-by-room check against it is
-section 7 of [RECONSTRUCTION.md](RECONSTRUCTION.md), the parity record. Each line
+Every room and system of the original is built, and the room-by-room check of the code against it is
+section 7 of [RECONSTRUCTION.md](RECONSTRUCTION.md), the parity record. It is not yet verified by play
+(HOUSE-LAW-8): the `-autowalk` run compared screen by screen with the original (U.RICO-T163) and the end-to-end
+re-verification after it (U.RICO-T165) are owed, the Unity suites in CI skip until a Unity license secret is set
+(U.RICO-T164), and Join by code waits on Unity Relay (U.RICO-T22, U.RICO-T62). Each line
 below names where the rule lives and what tests it; the sections after section 8 hold each presentation system in detail
 (the original objects it reads, the numbers, its own deviations). Ticket history is in [USER_STORIES.md](USER_STORIES.md),
 never here ([UR-LAW-4](#UR-LAW-4)).
@@ -160,7 +163,8 @@ non-host; a dropped player keeps their seat for the kit's reconnect grace. Teste
 
 **Standards.** Engine-free Core held by `CoreBoundaryTests`; content and tuning as validated data (`GameDataTests` loads every
 shipped file); the Input System with one actions asset and rebinding kept in the profile; URP behind `IRenderStyle`; no IMGUI
-(`HudNoImguiTests`); CI on every push (`.github/workflows/ci.yml`) and the nightly bot smoke.
+(`HudNoImguiTests`); CI on every push (`.github/workflows/ci.yml`: the Core suite always; the Unity EditMode, PlayMode and build job and the nightly bot
+smoke only once a Unity license secret is set, U.RICO-T164).
 
 ## 7. Deviations from the original {#UR-§7}
 The rule is to rebuild the original faithfully and fix only its bugs. These are the places the rebuild differs, and why. Each

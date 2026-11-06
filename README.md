@@ -5,12 +5,15 @@ shapes and the border, and land it on an opponent before they land one on you. A
 GameMaker 8 game *Ricochet*, with the one thing the original could never do: real networked multiplayer in place of
 passing one keyboard around one machine.
 
-![Unity](https://img.shields.io/badge/unity-6000.4-black) ![Netcode for GameObjects](https://img.shields.io/badge/netcode-2.x-blue) ![.NET](https://img.shields.io/badge/dotnet-10-512BD4) ![Status](https://img.shields.io/badge/status-complete-brightgreen)
+![Unity](https://img.shields.io/badge/unity-6000.4-black) ![Netcode for GameObjects](https://img.shields.io/badge/netcode-2.x-blue) ![.NET](https://img.shields.io/badge/dotnet-10-512BD4) ![Status](https://img.shields.io/badge/status-built%2C%20verification%20pending-yellow)
 
 ## What it is
 
-Every room and system of the original is rebuilt and checked against it (the parity record is
-[docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md), section 7):
+Every room and system of the original is rebuilt and checked against its source (the parity record is
+[docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md), section 7). Not yet verified by play: the scripted `-autowalk` run and its
+screen-by-screen comparison with the original's rooms (U.RICO-T163, then the end-to-end re-verification U.RICO-T165), the
+Unity suites in CI (they skip until the owner adds a Unity license secret, U.RICO-T164) and Join by code (needs Unity Relay,
+U.RICO-T22/U.RICO-T62):
 
 - **The startup and menus**: the studio splash and startup credits, the title with its drifting RICOCHET letters, the main
   menu, the Start screen (the title room's setup panel: players, shapes, rotation, overlap, goal, turn time, bounces), the
