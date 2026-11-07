@@ -80,6 +80,12 @@ log is `Logs/deploy.log`). `powershell -File Tools/play.ps1` launches it, buildi
 **muted by default** (`-muted` and `MINDATTIC_CLI_MUTED=1` for that run only, so a CLI or agent never plays sound; the
 player's saved volumes are untouched). Add `-Sound` for audio.
 
+`powershell -File Tools/play.ps1 -Headless` runs the built player with no window for scripted testing (U.RICO-T169): it goes
+through `..\Unity.Shared\tools\Start-Headless.ps1` (`--headless -batchmode -nographics`: muted, in the background) and waits for
+the `MINDATTIC_HEADLESS_READY` line in `Logs/play.log`. The game needs no menu skip of its own: a `-batchmode` player is the
+Unity.Multiplayer kit's headless peer, which builds no menus and serves a session (the scene's `serveWhenHeadless`), so the
+game itself changes nothing. The player keeps running afterwards; stop it yourself. See Unity.Shared's README, "Headless mode".
+
 ## Tests
 
 - Core (the rules, no Unity): `dotnet test Core.slnx`. CI holds `Rea.Ricochet.Core`'s line coverage to a floor
