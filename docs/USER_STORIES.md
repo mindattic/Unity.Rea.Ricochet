@@ -243,3 +243,4 @@ _Nothing recorded yet._
 | U.RICO-T169 | 2026-11-06 | feature | closed | Adopt the shared off-by-default --headless launch mode (Unity.Shared) | 418d6f035ab37fc21b6258fe4368e4a21083ac45 |
 | U.RICO-T170 | 2026-11-17 | chore | closed | Crash recovery: commit the per-member .agent/commands/*.md catalog left uncommitted by the session crash | — |
 | U.RICO-T171 | 2026-11-17 | docs | closed | Update USER_STORIES.md | — |
+| U.RICO-T172 | 2026-11-18 | chore | closed | Remove PerformanceTestRunInfo.json, PerformanceTestRunSettings.json | — |
